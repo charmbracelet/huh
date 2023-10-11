@@ -4,7 +4,7 @@ A simple and powerful library for building interactive forms in the terminal. Po
 
 ## Tutorial
 
-`Huh?` provides a straightforward interface to prompt users for input. A `Form` may contain zero or more `Group`s. A `Group` may contain one or more `Question`s.
+`Huh?` provides a straightforward interface to prompt users for input.
 
 There are several `Question` types available to use:
 * [`Input`](#input)
