@@ -1,10 +1,10 @@
-# Huh?
+# Formula
 
 A simple and powerful library for building interactive forms in the terminal. Powered by [Bubble Tea](https://github.com/charmbracelet/bubbletea).
 
 ## Tutorial
 
-`Huh?` provides a straightforward interface to prompt users for input.
+Formula provides a straightforward interface to prompt users for input.
 
 There are several `Question` types available to use:
 * [`Input`](#input)
@@ -16,7 +16,7 @@ There are several `Question` types available to use:
 package main
 
 import (
-  "github.com/charmbracelet/huh"
+  "github.com/charmbracelet/formula"
 )
 
 type Response struct {
@@ -28,16 +28,16 @@ type Response struct {
 }
 
 func main() {
-  form := huh.NewForm().
+  form := formula.NewForm().
     Group(
-      huh.Label("Welcome to `Tacocat`!"),
-      huh.Description("> The _best_ Taco shop + Pet store ever."),
-      huh.Select().
+      formula.Label("Welcome to `Tacocat`!"),
+      formula.Description("> The _best_ Taco shop + Pet store ever."),
+      formula.Select().
         Title("Shell?").
         Option("Hard").
         Option("Soft"),
-      huh.Description("> Note, **beans** are refried."),
-      huh.Select().
+      formula.Description("> Note, **beans** are refried."),
+      formula.Select().
         Title("Base").
         Option("Chicken").
         Option("Beef").
@@ -45,24 +45,24 @@ func main() {
         Option("Beans"),
     ).
     Group(
-      huh.Description("Choose up to 4 toppings."),
-      huh.MultiSelect().
+      formula.Description("Choose up to 4 toppings."),
+      formula.MultiSelect().
         Title("Toppings").
         Options("Lettuce", "Tomatoes", "Corn", "Sour Cream", "Cheese").
         Filterable(true).
         Limit(4)
-      huh.Description("Anything else?"),
-      huh.Text().
+      formula.Description("Anything else?"),
+      formula.Text().
         Title("Special Instructions").
         CharLimit(400),
     ).
     Group(
-      huh.Label("# Discount"),
-      huh.Input().
+      formula.Label("# Discount"),
+      formula.Input().
         Key("name").
         Title("What's your name?").
-        Validate(huh.ValidateLength(0, 20)),
-      huh.Confirm().
+        Validate(formula.ValidateLength(0, 20)),
+      formula.Confirm().
         Key("discount").
         Title("Would you like 15% off"),
     )
@@ -80,9 +80,9 @@ func main() {
 `Input`s are single line text fields.
 
 ```go
-huh.Input().
+formula.Input().
   Title("What's for lunch?").
-  Validate(huh.ValidateLength(0, 20)).
+  Validate(formula.ValidateLength(0, 20)).
   Prompt("?")
 ```
 
@@ -91,9 +91,9 @@ huh.Input().
 `Text`s are multi-line text fields.
 
 ```go
-huh.Text().
+formula.Text().
   Title("Tell me a story.").
-  Validate(huh.ValidateLength(100, 400)).
+  Validate(formula.ValidateLength(100, 400)).
   Prompt(">").
   Editor(true) // open in $EDITOR
 ```
@@ -103,7 +103,7 @@ huh.Text().
 `Select`s are multiple choice questions.
 
 ```go
-huh.Select().
+formula.Select().
   Title("Pick a country.").
   Option("United States").
   Option("Germany").
@@ -115,7 +115,7 @@ huh.Select().
 Alternatively,
 
 ```go
-huh.Select().
+formula.Select().
   Title("Pick a country.").
   Options("United States", "Germany", "Brazil", "Canada").
   Cursor("→")
@@ -126,7 +126,7 @@ huh.Select().
 `MultiSelect`s are multiple choice questions but allow multiple selections.
 
 ```go
-huh.MultiSelect().
+formula.MultiSelect().
   Title("Toppings.").
   Option("Lettuce").
   Option("Tomatoes").
@@ -146,7 +146,7 @@ We'd love to hear your thoughts on this project. Feel free to drop us a note!
 
 ## Acknowledgments
 
-`huh` is inspired by the wonderful [Survey][survey] library by Alec Aivazis.
+`formula` is inspired by the wonderful [Survey][survey] library by Alec Aivazis.
 
 [survey]: https://github.com/AlecAivazis/survey
 
