@@ -16,62 +16,65 @@ There are several `Question` types available to use:
 package main
 
 import (
+  "fmt"
+  "log"
+
   "github.com/charmbracelet/huh"
 )
 
-type Response struct {
-  Shell    string
-  Base     string
-  Toppings string
-  Name     string
-  Discount string
-}
-
 func main() {
-  form := huh.NewForm().
-    Group(
-      huh.Label("Welcome to `Tacocat`!"),
-      huh.Description("> The _best_ Taco shop + Pet store ever."),
+  form := huh.NewForm(
+    // What's a taco without a shell?
+    // We'll need to know what filling to put inside too.
+    huh.Group(
       huh.Select().
         Title("Shell?").
-        Option("Hard").
-        Option("Soft"),
-      huh.Description("> Note, **beans** are refried."),
+        Required(true).
+        Options("Hard", "Soft"),
+
       huh.Select().
         Title("Base").
-        Option("Chicken").
-        Option("Beef").
-        Option("Fish").
-        Option("Beans"),
-    ).
-    Group(
-      huh.Description("Choose up to 4 toppings."),
+        Required(true).
+        Options("Chicken", "Beef", "Fish", "Beans"),
+    ),
+
+    // Prompt for toppings and special instructions.
+    // The customer can ask for up to 4 toppings.
+    huh.Group(
       huh.MultiSelect().
         Title("Toppings").
-        Options("Lettuce", "Tomatoes", "Corn", "Sour Cream", "Cheese").
+        Options("Lettuce", "Tomatoes", "Corn", "Salsa", "Sour Cream", "Cheese").
         Filterable(true).
-        Limit(4)
-      huh.Description("Anything else?"),
+        Limit(4),
+
       huh.Text().
         Title("Special Instructions").
         CharLimit(400),
-    ).
-    Group(
-      huh.Label("# Discount"),
+      ),
+
+    // Gather final details for the order.
+    huh.Group(
       huh.Input().
         Key("name").
         Title("What's your name?").
         Validate(huh.ValidateLength(0, 20)),
+
       huh.Confirm().
         Key("discount").
         Title("Would you like 15% off"),
-    )
+      ),
+  )
 
-    var res Responses
-    err := form.Run(&res)
-    if err != nil {
-      log.Fatal(err)
-    }
+  r, err := form.Run()
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  fmt.Println("A %s shell filled with %s and %s, topped with %s.",
+    r["Shell?"], r["Base"], r["Toppings"])
+
+  fmt.Println("That will be $%.2f. Thanks for your order, %s!",
+    calculatePrice(r), r["name"])
 }
 ```
 
