@@ -10,18 +10,24 @@ import (
 
 // Select is a form select field.
 type Select struct {
-	value    *string
-	title    string
-	required bool
-	options  []string
-	selected int
-	cursor   string
+	value        *string
+	title        string
+	required     bool
+	options      []string
+	selected     int
+	cursor       string
+	style        *SelectStyle
+	blurredStyle SelectStyle
+	focusedStyle SelectStyle
 }
 
 // NewSelect returns a new select field.
 func NewSelect() *Select {
+	focused, blurred := DefaultSelectStyles()
 	return &Select{
-		cursor: " > ",
+		cursor:       "> ",
+		focusedStyle: focused,
+		blurredStyle: blurred,
 	}
 }
 
@@ -55,8 +61,28 @@ func (s *Select) Cursor(cursor string) *Select {
 	return s
 }
 
+// Styles sets the styles of the select field.
+func (s *Select) Styles(focused, blurred SelectStyle) *Select {
+	s.blurredStyle = blurred
+	s.focusedStyle = focused
+	return s
+}
+
+// Focus focuses the select field.
+func (s *Select) Focus() tea.Cmd {
+	s.style = &s.focusedStyle
+	return nil
+}
+
+// Blur blurs the select field.
+func (s *Select) Blur() tea.Cmd {
+	s.style = &s.blurredStyle
+	return nil
+}
+
 // Init initializes the select field.
 func (s *Select) Init() tea.Cmd {
+	s.style = &s.blurredStyle
 	return nil
 }
 
@@ -80,12 +106,13 @@ func (s *Select) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // View renders the select field.
 func (s *Select) View() string {
 	var sb strings.Builder
-	sb.WriteString(s.title + "\n")
+	sb.WriteString(s.style.Title.Render(s.title) + "\n")
+	c := s.style.Cursor.Render(s.cursor)
 	for i, option := range s.options {
 		if s.selected == i {
-			sb.WriteString(s.cursor + option)
+			sb.WriteString(c + s.style.Selected.Render(option))
 		} else {
-			sb.WriteString(strings.Repeat(" ", lipgloss.Width(s.cursor)) + option)
+			sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)) + s.style.Unselected.Render(option))
 		}
 		sb.WriteString("\n")
 	}

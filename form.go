@@ -8,8 +8,9 @@ import (
 // Form represents a Huh? form.
 // It is a collection of groups and controls navigation between pages.
 type Form struct {
-	groups []*Group
-	page   int
+	groups   []*Group
+	page     int
+	quitting bool
 }
 
 // NewForm creates a new form with the given groups.
@@ -45,11 +46,13 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "q":
+			f.quitting = true
 			return f, tea.Quit
 		}
 
 	case nextGroupMsg:
 		if f.page == len(f.groups)-1 {
+			f.quitting = true
 			return f, tea.Quit
 		}
 		f.page = ordered.Min(f.page+1, len(f.groups)-1)
@@ -66,6 +69,9 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // View renders the form.
 func (f *Form) View() string {
+	if f.quitting {
+		return ""
+	}
 	return f.groups[f.page].View()
 }
 

@@ -27,14 +27,20 @@ type MultiSelect struct {
 	selected         []int
 	options          []option
 	value            *[]string
+	style            *MultiSelectStyle
+	blurredStyle     MultiSelectStyle
+	focusedStyle     MultiSelectStyle
 }
 
 // NewMultiSelect returns a new multi-select field.
 func NewMultiSelect() *MultiSelect {
+	f, b := DefaultMultiSelectStyles()
 	return &MultiSelect{
 		cursorPrefix:     " > ",
-		selectedPrefix:   "[•]",
-		unselectedPrefix: "[ ]",
+		selectedPrefix:   "[•] ",
+		unselectedPrefix: "[ ] ",
+		focusedStyle:     f,
+		blurredStyle:     b,
 	}
 }
 
@@ -82,8 +88,21 @@ func (m *MultiSelect) Limit(limit int) *MultiSelect {
 	return m
 }
 
+// Focus focuses the multi-select field.
+func (m *MultiSelect) Focus() tea.Cmd {
+	m.style = &m.focusedStyle
+	return nil
+}
+
+// Blur blurs the multi-select field.
+func (m *MultiSelect) Blur() tea.Cmd {
+	m.style = &m.blurredStyle
+	return nil
+}
+
 // Init initializes the multi-select field.
 func (m *MultiSelect) Init() tea.Cmd {
+	m.style = &m.blurredStyle
 	return nil
 }
 
@@ -115,25 +134,23 @@ func (m *MultiSelect) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // View renders the multi-select field.
 func (m *MultiSelect) View() string {
 	var sb strings.Builder
-	sb.WriteString(m.title + "\n")
+	sb.WriteString(m.style.Title.Render(m.title) + "\n")
+	c := m.style.Cursor.Render(m.cursorPrefix)
 	for i, option := range m.options {
 		if m.cursor == i {
-			sb.WriteString(m.cursorPrefix)
+			sb.WriteString(c)
 		} else {
-			sb.WriteString(strings.Repeat(" ", lipgloss.Width(m.cursorPrefix)))
+			sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)))
 		}
 
 		if option.selected {
-			sb.WriteString(m.selectedPrefix)
+			sb.WriteString(m.style.SelectedPrefix.Render(m.selectedPrefix))
+			sb.WriteString(m.style.Selected.Render(option.name))
 		} else {
-			sb.WriteString(m.unselectedPrefix)
+			sb.WriteString(m.style.UnselectedPrefix.Render(m.unselectedPrefix))
+			sb.WriteString(m.style.Unselected.Render(option.name))
 		}
-
-		sb.WriteString(option.name)
-
-		if i < len(m.options)-1 {
-			sb.WriteString("\n")
-		}
+		sb.WriteString("\n")
 	}
 	return sb.String()
 }

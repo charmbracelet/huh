@@ -4,7 +4,6 @@ import (
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/x/exp/ordered"
 )
 
 // Group is a collection of fields displayed together.
@@ -50,17 +49,34 @@ func prevField() tea.Msg {
 
 // Init initializes the group.
 func (g *Group) Init() tea.Cmd {
-	for _, field := range g.fields {
+	for i, field := range g.fields {
 		field.Init()
+		if i == 0 {
+			field.Focus()
+		}
 	}
 	return nil
+}
+
+// setCurrent sets the current field.
+func (g *Group) setCurrent(current int) {
+	g.fields[g.current].Blur()
+	if current < 0 {
+		current = 0
+	}
+	if current > len(g.fields)-1 {
+		current = len(g.fields) - 1
+	}
+	g.current = current
+	g.fields[g.current].Focus()
 }
 
 // Update updates the group.
 func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
-	var cmd tea.Cmd
-	g.fields[g.current], cmd = g.fields[g.current].Update(msg)
+
+	m, cmd := g.fields[g.current].Update(msg)
+	g.fields[g.current] = m.(Field)
 
 	cmds = append(cmds, cmd)
 
@@ -70,13 +86,16 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmds = append(cmds, nextGroup)
 			break
 		}
-		g.current = ordered.Min(g.current+1, len(g.fields)-1)
+
+		g.setCurrent(g.current + 1)
+
 	case prevFieldMsg:
 		if g.current == 0 {
 			cmds = append(cmds, prevGroup)
 			break
 		}
-		g.current = ordered.Max(g.current-1, 0)
+
+		g.setCurrent(g.current - 1)
 	}
 
 	return g, tea.Batch(cmds...)
