@@ -129,8 +129,8 @@ func DefaultConfirmStyles() (ConfirmStyle, ConfirmStyle) {
 	}
 	blurred := ConfirmStyle{
 		Title:      lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Selected:   lipgloss.NewStyle().Foreground(lipgloss.Color("7")).Background(lipgloss.Color("8")).Padding(0, 2).Margin(1),
-		Unselected: lipgloss.NewStyle().Foreground(lipgloss.Color("7")).Background(lipgloss.Color("0")).Padding(0, 2).Margin(1),
+		Selected:   lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Background(lipgloss.Color("0")).Padding(0, 2).Margin(1),
+		Unselected: lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Background(lipgloss.Color("0")).Padding(0, 2).Margin(1),
 	}
 	return focused, blurred
 }

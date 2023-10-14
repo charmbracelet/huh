@@ -1,23 +1,26 @@
 package huh
 
 import (
+	"github.com/charmbracelet/bubbles/paginator"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/x/exp/ordered"
 )
 
 // Form represents a Huh? form.
 // It is a collection of groups and controls navigation between pages.
 type Form struct {
-	groups   []*Group
-	page     int
-	quitting bool
+	groups    []*Group
+	paginator paginator.Model
+	quitting  bool
 }
 
 // NewForm creates a new form with the given groups.
 func NewForm(groups ...*Group) *Form {
+	p := paginator.New()
+	p.SetTotalPages(len(groups))
+
 	return &Form{
-		groups: groups,
-		page:   0,
+		groups:    groups,
+		paginator: p,
 	}
 }
 
@@ -51,18 +54,18 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case nextGroupMsg:
-		if f.page == len(f.groups)-1 {
+		if f.paginator.OnLastPage() {
 			f.quitting = true
 			return f, tea.Quit
 		}
-		f.page = ordered.Min(f.page+1, len(f.groups)-1)
+		f.paginator.NextPage()
 
 	case prevGroupMsg:
-		f.page = ordered.Max(f.page-1, 0)
+		f.paginator.PrevPage()
 	}
 
-	m, cmd := f.groups[f.page].Update(msg)
-	f.groups[f.page] = m.(*Group)
+	m, cmd := f.groups[f.paginator.Page].Update(msg)
+	f.groups[f.paginator.Page] = m.(*Group)
 
 	return f, cmd
 }
@@ -72,7 +75,7 @@ func (f *Form) View() string {
 	if f.quitting {
 		return ""
 	}
-	return f.groups[f.page].View()
+	return f.groups[f.paginator.Page].View()
 }
 
 // Run runs the form.
