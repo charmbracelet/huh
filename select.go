@@ -120,9 +120,9 @@ func (s *Select) View() string {
 	return sb.String()
 }
 
-// RunAccessible runs an accessible select field.
-func (s *Select) RunAccessible() {
-	fmt.Println(s.title)
+// Run runs an accessible select field.
+func (s *Select) Run() {
+	fmt.Println(s.style.Title.Render(s.title))
 	for i, option := range s.options {
 		fmt.Printf("%d. %s\n", i+1, option)
 	}

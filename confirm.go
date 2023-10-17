@@ -113,15 +113,15 @@ func (c *Confirm) View() string {
 	return sb.String()
 }
 
-// RunAccessible runs the confirm field in accessible mode.
-func (c *Confirm) RunAccessible() {
-	fmt.Println(c.title)
+// Run runs the confirm field in accessible mode.
+func (c *Confirm) Run() {
+	fmt.Println(c.style.Title.Render(c.title))
 	choice := accessibility.PromptBool()
 	*c.value = choice
 	if choice {
-		fmt.Println("Selected: Yes")
+		fmt.Println("Selected: " + c.affirmative)
 	} else {
-		fmt.Println("Selected: No")
+		fmt.Println("Selected: " + c.negative)
 	}
 	fmt.Println()
 }

@@ -95,7 +95,9 @@ func (f *Form) Run() error {
 	if f.accessible {
 		for _, group := range f.groups {
 			for _, field := range group.fields {
-				field.RunAccessible()
+				field.Init()
+				field.Focus()
+				field.Run()
 			}
 		}
 		return nil

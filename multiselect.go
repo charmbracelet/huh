@@ -156,15 +156,15 @@ func (m *MultiSelect) View() string {
 	return sb.String()
 }
 
-// RunAccessible runs the multi-select field in accessible mode.
-func (m *MultiSelect) RunAccessible() {
-	fmt.Println(m.title)
+// Run runs the multi-select field in accessible mode.
+func (m *MultiSelect) Run() {
+	fmt.Println(m.style.Title.Render(m.title))
 
 	for i, option := range m.options {
 		fmt.Printf("%d. %s\n", i+1, option.name)
 	}
 
-	fmt.Println("\n0. Done")
+	fmt.Println("\nType 0 to finish.\n")
 
 	var choice int
 	for {

@@ -4,10 +4,15 @@ import tea "github.com/charmbracelet/bubbletea"
 
 // Field is a form field.
 type Field interface {
+	// Bubble Tea Model
 	Init() tea.Cmd
 	Update(tea.Msg) (tea.Model, tea.Cmd)
 	View() string
-	Focus() tea.Cmd
+
+	// Bubble Tea Events
 	Blur() tea.Cmd
-	RunAccessible()
+	Focus() tea.Cmd
+
+	// Accessible Prompt (non-redraw)
+	Run()
 }

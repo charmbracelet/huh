@@ -1,6 +1,7 @@
 package huh
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/textarea"
@@ -108,6 +109,8 @@ func (t *Text) View() string {
 	return sb.String()
 }
 
-func (t *Text) RunAccessible() {
-
+func (t *Text) Run() {
+	fmt.Println(t.style.Title.Render(t.title))
+	fmt.Scanln(t.value)
+	fmt.Println()
 }

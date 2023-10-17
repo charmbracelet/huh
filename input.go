@@ -116,9 +116,9 @@ func (i *Input) View() string {
 	return sb.String()
 }
 
-// RunAccessible runs the input field in accessible mode.
-func (i *Input) RunAccessible() {
-	fmt.Println(i.title)
+// Run runs the input field in accessible mode.
+func (i *Input) Run() {
+	fmt.Println(i.style.Title.Render(i.title))
 	fmt.Scanln(i.value)
 	fmt.Println()
 }
