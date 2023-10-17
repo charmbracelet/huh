@@ -1,6 +1,7 @@
 package huh
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/textinput"
@@ -113,4 +114,11 @@ func (i *Input) View() string {
 	sb.WriteString("\n")
 
 	return sb.String()
+}
+
+// RunAccessible runs the input field in accessible mode.
+func (i *Input) RunAccessible() {
+	fmt.Println(i.title)
+	fmt.Scanln(i.value)
+	fmt.Println()
 }

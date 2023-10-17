@@ -33,57 +33,58 @@ func NewText() *Text {
 }
 
 // Value sets the value of the text field.
-func (s *Text) Value(value *string) *Text {
-	s.value = value
-	return s
+func (t *Text) Value(value *string) *Text {
+	t.value = value
+	return t
 }
 
 // Title sets the title of the text field.
-func (s *Text) Title(title string) *Text {
-	s.title = title
-	return s
+func (t *Text) Title(title string) *Text {
+	t.title = title
+	return t
 }
 
 // Required sets the text field as required.
-func (s *Text) Required(required bool) *Text {
-	s.required = required
-	return s
+func (t *Text) Required(required bool) *Text {
+	t.required = required
+	return t
 }
 
 // CharLimit sets the character limit of the text field.
-func (s *Text) CharLimit(charlimit int) *Text {
-	return s
+func (t *Text) CharLimit(charlimit int) *Text {
+	t.textarea.CharLimit = charlimit
+	return t
 }
 
 // Focus focuses the text field.
-func (s *Text) Focus() tea.Cmd {
-	s.style = &s.focusedStyle
-	cmd := s.textarea.Focus()
+func (t *Text) Focus() tea.Cmd {
+	t.style = &t.focusedStyle
+	cmd := t.textarea.Focus()
 	return cmd
 }
 
 // Blur blurs the text field.
-func (s *Text) Blur() tea.Cmd {
-	s.style = &s.blurredStyle
-	s.textarea.Blur()
+func (t *Text) Blur() tea.Cmd {
+	t.style = &t.blurredStyle
+	t.textarea.Blur()
 	return nil
 }
 
 // Init initializes the text field.
-func (s *Text) Init() tea.Cmd {
-	s.textarea.FocusedStyle = s.focusedStyle.Style
-	s.textarea.BlurredStyle = s.blurredStyle.Style
-	s.style = &s.blurredStyle
-	s.textarea.Blur()
+func (t *Text) Init() tea.Cmd {
+	t.textarea.FocusedStyle = t.focusedStyle.Style
+	t.textarea.BlurredStyle = t.blurredStyle.Style
+	t.style = &t.blurredStyle
+	t.textarea.Blur()
 	return nil
 }
 
 // Update updates the text field.
-func (s *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 	var cmd tea.Cmd
 
-	s.textarea, cmd = s.textarea.Update(msg)
+	t.textarea, cmd = t.textarea.Update(msg)
 	cmds = append(cmds, cmd)
 
 	switch msg := msg.(type) {
@@ -94,15 +95,19 @@ func (s *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	return s, tea.Batch(cmds...)
+	return t, tea.Batch(cmds...)
 }
 
 // View renders the text field.
-func (s *Text) View() string {
+func (t *Text) View() string {
 	var sb strings.Builder
-	sb.WriteString(s.style.Title.Render(s.title))
+	sb.WriteString(t.style.Title.Render(t.title))
 	sb.WriteString("\n")
-	sb.WriteString(s.textarea.View())
+	sb.WriteString(t.textarea.View())
 
 	return sb.String()
+}
+
+func (t *Text) RunAccessible() {
+
 }

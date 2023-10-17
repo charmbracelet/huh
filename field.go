@@ -9,4 +9,5 @@ type Field interface {
 	View() string
 	Focus() tea.Cmd
 	Blur() tea.Cmd
+	RunAccessible()
 }

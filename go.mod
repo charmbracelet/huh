@@ -6,7 +6,6 @@ require (
 	github.com/charmbracelet/bubbles v0.16.1
 	github.com/charmbracelet/bubbletea v0.24.2
 	github.com/charmbracelet/lipgloss v0.7.1
-	github.com/charmbracelet/x/exp/ordered v0.0.0-20231010190216-1cb11efc897d
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d
 )
 

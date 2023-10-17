@@ -1,9 +1,11 @@
 package huh
 
 import (
+	"fmt"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/huh/accessibility"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -109,4 +111,17 @@ func (c *Confirm) View() string {
 		))
 	}
 	return sb.String()
+}
+
+// RunAccessible runs the confirm field in accessible mode.
+func (c *Confirm) RunAccessible() {
+	fmt.Println(c.title)
+	choice := accessibility.PromptBool()
+	*c.value = choice
+	if choice {
+		fmt.Println("Selected: Yes")
+	} else {
+		fmt.Println("Selected: No")
+	}
+	fmt.Println()
 }

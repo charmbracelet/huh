@@ -1,11 +1,12 @@
 package huh
 
 import (
+	"fmt"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/huh/accessibility"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/x/exp/ordered"
 )
 
 // Select is a form select field.
@@ -92,9 +93,9 @@ func (s *Select) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "up", "k":
-			s.selected = ordered.Max(s.selected-1, 0)
+			s.selected = max(s.selected-1, 0)
 		case "down", "j":
-			s.selected = ordered.Min(s.selected+1, len(s.options)-1)
+			s.selected = min(s.selected+1, len(s.options)-1)
 		case "enter":
 			*s.value = s.options[s.selected]
 			return s, nextField
@@ -117,4 +118,16 @@ func (s *Select) View() string {
 		sb.WriteString("\n")
 	}
 	return sb.String()
+}
+
+// RunAccessible runs an accessible select field.
+func (s *Select) RunAccessible() {
+	fmt.Println(s.title)
+	for i, option := range s.options {
+		fmt.Printf("%d. %s\n", i+1, option)
+	}
+
+	value := s.options[accessibility.PromptInt(1, len(s.options))-1]
+	fmt.Printf("Selected: %s\n\n", value)
+	*s.value = value
 }

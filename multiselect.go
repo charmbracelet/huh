@@ -1,11 +1,12 @@
 package huh
 
 import (
+	"fmt"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/huh/accessibility"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/x/exp/ordered"
 	"golang.org/x/exp/slices"
 )
 
@@ -112,9 +113,9 @@ func (m *MultiSelect) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "up", "k":
-			m.cursor = ordered.Max(m.cursor-1, 0)
+			m.cursor = max(m.cursor-1, 0)
 		case "down", "j":
-			m.cursor = ordered.Min(m.cursor+1, len(m.options)-1)
+			m.cursor = min(m.cursor+1, len(m.options)-1)
 		case " ", "x":
 			m.options[m.cursor].selected = !m.options[m.cursor].selected
 			if m.options[m.cursor].selected {
@@ -153,4 +154,37 @@ func (m *MultiSelect) View() string {
 		sb.WriteString("\n")
 	}
 	return sb.String()
+}
+
+// RunAccessible runs the multi-select field in accessible mode.
+func (m *MultiSelect) RunAccessible() {
+	fmt.Println(m.title)
+
+	for i, option := range m.options {
+		fmt.Printf("%d. %s\n", i+1, option.name)
+	}
+
+	fmt.Println("\n0. Done")
+
+	var choice int
+	for {
+		choice = accessibility.PromptInt(0, len(m.options))
+		if choice == 0 {
+			break
+		}
+		m.options[choice-1].selected = !m.options[choice-1].selected
+		if m.options[choice-1].selected {
+			fmt.Println("Selected:", m.options[choice-1].name)
+		} else {
+			fmt.Println("Unselected:", m.options[choice-1].name)
+		}
+	}
+
+	for _, option := range m.options {
+		if option.selected {
+			*m.value = append(*m.value, option.name)
+		}
+	}
+
+	fmt.Printf("Selected: %s\n\n", strings.Join(*m.value, ", "))
 }

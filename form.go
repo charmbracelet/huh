@@ -8,9 +8,10 @@ import (
 // Form represents a Huh? form.
 // It is a collection of groups and controls navigation between pages.
 type Form struct {
-	groups    []*Group
-	paginator paginator.Model
-	quitting  bool
+	groups     []*Group
+	paginator  paginator.Model
+	accessible bool
+	quitting   bool
 }
 
 // NewForm creates a new form with the given groups.
@@ -33,6 +34,17 @@ func nextGroup() tea.Msg {
 
 func prevGroup() tea.Msg {
 	return prevGroupMsg{}
+}
+
+// Accessible sets the form to run in accessible mode to avoid redrawing the
+// views which makes it easier for screen readers to read and describe the form.
+//
+// This avoids using the Bubble Tea renderer and instead simply uses basic
+// terminal prompting to gather input which degrades the user experience but
+// provides accessibility.
+func (f *Form) Accessible(b bool) *Form {
+	f.accessible = b
+	return f
 }
 
 // Init initializes the form.
@@ -80,6 +92,15 @@ func (f *Form) View() string {
 
 // Run runs the form.
 func (f *Form) Run() error {
+	if f.accessible {
+		for _, group := range f.groups {
+			for _, field := range group.fields {
+				field.RunAccessible()
+			}
+		}
+		return nil
+	}
+
 	p := tea.NewProgram(f)
 	_, err := p.Run()
 	if err != nil {
