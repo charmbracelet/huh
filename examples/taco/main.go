@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
+	"strconv"
 	"strings"
 
 	"github.com/charmbracelet/huh"
@@ -24,6 +26,9 @@ type Taco struct {
 func main() {
 	var taco Taco
 	var order = Order{Taco: taco}
+
+	// Should we run in accessible mode?
+	accessible, _ := strconv.ParseBool(os.Getenv("HUH_ACCESSIBLE"))
 
 	form := huh.NewForm(
 		// What's a taco without a shell?
@@ -66,11 +71,12 @@ func main() {
 
 			huh.NewConfirm().
 				Value(&order.Discount).
-				Title("Would you like 15% off"),
+				Title("Would you like 15% off?"),
 		),
-	)
+	).Accessible(accessible)
 
 	err := form.Run()
+
 	if err != nil {
 		log.Fatal(err)
 	}
