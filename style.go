@@ -64,6 +64,7 @@ func DefaultMultiSelectStyles() (MultiSelectStyle, MultiSelectStyle) {
 // TextareaStyle is the style of the textarea field.
 type TextStyle struct {
 	Title lipgloss.Style
+	Help  lipgloss.Style
 	textarea.Style
 }
 
@@ -78,10 +79,12 @@ func DefaultTextStyles() (TextStyle, TextStyle) {
 
 	focused := TextStyle{
 		Title: lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
+		Help:  lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
 		Style: f,
 	}
 	blurred := TextStyle{
 		Title: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Help:  lipgloss.NewStyle().Foreground(lipgloss.Color("0")),
 		Style: b,
 	}
 
@@ -131,6 +134,25 @@ func DefaultConfirmStyles() (ConfirmStyle, ConfirmStyle) {
 		Title:      lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
 		Selected:   lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Background(lipgloss.Color("0")).Padding(0, 2).Margin(1),
 		Unselected: lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Background(lipgloss.Color("0")).Padding(0, 2).Margin(1),
+	}
+	return focused, blurred
+}
+
+// NoteStyle is the style of the Note field.
+type NoteStyle struct {
+	Title lipgloss.Style
+	Body  lipgloss.Style
+}
+
+// DefaultNoteStyles returns the default focused style of the Note field.
+func DefaultNoteStyles() (NoteStyle, NoteStyle) {
+	focused := NoteStyle{
+		Title: lipgloss.NewStyle().Foreground(lipgloss.Color("3")).Margin(1),
+		Body:  lipgloss.NewStyle().Foreground(lipgloss.Color("15")).Margin(1),
+	}
+	blurred := NoteStyle{
+		Title: lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Margin(1),
+		Body:  lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Margin(1),
 	}
 	return focused, blurred
 }

@@ -83,7 +83,9 @@ func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			*c.value = false
 		case "h", "l", "left", "right":
 			*c.value = !*c.value
-		case "enter":
+		case "shift+tab":
+			cmds = append(cmds, prevField)
+		case "enter", "tab":
 			cmds = append(cmds, nextField)
 		}
 	}

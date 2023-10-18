@@ -96,7 +96,9 @@ func (s *Select) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			s.selected = max(s.selected-1, 0)
 		case "down", "j":
 			s.selected = min(s.selected+1, len(s.options)-1)
-		case "enter":
+		case "shift+tab":
+			return s, prevField
+		case "tab", "enter":
 			*s.value = s.options[s.selected]
 			return s, nextField
 		}

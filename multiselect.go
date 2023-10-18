@@ -124,6 +124,8 @@ func (m *MultiSelect) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				i := slices.Index(*m.value, m.options[m.cursor].name)
 				*m.value = slices.Delete(*m.value, i, i+1)
 			}
+		case "shift+tab":
+			return m, prevField
 		case "tab", "enter":
 			return m, nextField
 		}

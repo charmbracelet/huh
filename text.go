@@ -92,8 +92,10 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "tab":
+		case "tab", "ctrl+d":
 			cmds = append(cmds, nextField)
+		case "shift+tab":
+			cmds = append(cmds, prevField)
 		}
 	}
 
@@ -106,6 +108,8 @@ func (t *Text) View() string {
 	sb.WriteString(t.style.Title.Render(t.title))
 	sb.WriteString("\n")
 	sb.WriteString(t.textarea.View())
+	sb.WriteString("\n")
+	sb.WriteString(t.style.Help.Render("tab • continue"))
 
 	return sb.String()
 }
