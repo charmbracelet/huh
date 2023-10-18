@@ -40,7 +40,7 @@ func main() {
 	accessible, _ := strconv.ParseBool(os.Getenv("HUH_ACCESSIBLE"))
 
 	form := huh.NewForm(
-		huh.NewGroup(huh.NewNote().Body(description)),
+		huh.NewGroup(huh.NewNote().Body(description).Next(true)),
 
 		// What's a taco without a shell?
 		// We'll need to know what filling to put inside too.

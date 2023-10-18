@@ -12,23 +12,31 @@ import (
 type Note struct {
 	body string
 
-	style        *NoteStyle
-	blurredStyle NoteStyle
-	focusedStyle NoteStyle
+	showNextButton bool
+	style          *NoteStyle
+	blurredStyle   NoteStyle
+	focusedStyle   NoteStyle
 }
 
 // NewNote creates a new note field.
 func NewNote() *Note {
 	focused, blurred := DefaultNoteStyles()
 	return &Note{
-		focusedStyle: focused,
-		blurredStyle: blurred,
+		showNextButton: false,
+		focusedStyle:   focused,
+		blurredStyle:   blurred,
 	}
 }
 
 // Body sets the title of the select field.
 func (n *Note) Body(body string) *Note {
 	n.body = body
+	return n
+}
+
+// Next sets whether to show the next button.
+func (n *Note) Next(show bool) *Note {
+	n.showNextButton = show
 	return n
 }
 
@@ -75,7 +83,9 @@ func (n *Note) View() string {
 	var sb strings.Builder
 	md, _ := glamour.Render(n.body, "auto")
 	sb.WriteString(md)
-	sb.WriteString(n.style.Next.Render("Next"))
+	if n.showNextButton {
+		sb.WriteString(n.style.Next.Render("Next"))
+	}
 	return n.style.Base.Render(sb.String())
 }
 

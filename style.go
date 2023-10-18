@@ -165,7 +165,7 @@ func DefaultNoteStyles() (NoteStyle, NoteStyle) {
 		Base:  lipgloss.NewStyle().Border(lipgloss.ThickBorder(), false).BorderLeft(true).MarginBottom(1).BorderForeground(lipgloss.Color("8")),
 		Title: lipgloss.NewStyle().Foreground(lipgloss.Color("3")).Margin(1),
 		Body:  lipgloss.NewStyle().Foreground(lipgloss.Color("15")).Margin(1),
-		Next:  lipgloss.NewStyle().Background(lipgloss.Color("3")).Foreground(lipgloss.Color("0")).Margin(0, 2).MarginBottom(1).Padding(0, 1).Bold(true),
+		Next:  lipgloss.NewStyle().Background(lipgloss.Color("5")).Foreground(lipgloss.Color("3")).Margin(1, 2).Padding(0, 1).Bold(true),
 	}
 	blurred := NoteStyle{
 		Base:  lipgloss.NewStyle().Border(lipgloss.HiddenBorder(), false).BorderLeft(true).MarginBottom(1),
