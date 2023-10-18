@@ -10,6 +10,14 @@ import (
 	"github.com/charmbracelet/huh"
 )
 
+type Spice int
+
+const (
+	Mild Spice = iota + 1
+	Medium
+	Hot
+)
+
 type Order struct {
 	Taco         Taco
 	Name         string
@@ -19,6 +27,7 @@ type Order struct {
 
 type Taco struct {
 	Shell    string
+	Spice    Spice
 	Base     string
 	Toppings []string
 }
@@ -45,17 +54,27 @@ func main() {
 		// What's a taco without a shell?
 		// We'll need to know what filling to put inside too.
 		huh.NewGroup(
-			huh.NewSelect().
+			huh.NewSelect[string]().
 				Value(&order.Taco.Shell).
+				Options("Soft", "Hard").
 				Title("Shell?").
-				Required(true).
-				Options("Hard", "Soft"),
+				Required(true),
 
-			huh.NewSelect().
+			huh.NewSelect[string]().
+				Options("Chicken", "Beef", "Fish", "Beans").
 				Value(&order.Taco.Base).
 				Title("Base").
-				Required(true).
-				Options("Chicken", "Beef", "Fish", "Beans"),
+				Required(true),
+
+			huh.NewSelect[Spice]().
+				Title("Spice Level").
+				OptionsKV(
+					huh.NewOption("Mild", Mild),
+					huh.NewOption("Medium", Medium),
+					huh.NewOption("Hot", Hot),
+				).
+				Value(&order.Taco.Spice).
+				Required(true),
 		),
 
 		// Prompt for toppings and special instructions.
