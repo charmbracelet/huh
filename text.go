@@ -6,6 +6,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/huh/accessibility"
 )
 
 // Text is a form text field.
@@ -111,6 +112,6 @@ func (t *Text) View() string {
 
 func (t *Text) Run() {
 	fmt.Println(t.style.Title.Render(t.title))
-	fmt.Scanln(t.value)
+	*t.value = accessibility.PromptString()
 	fmt.Println()
 }

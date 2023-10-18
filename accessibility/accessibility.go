@@ -66,3 +66,14 @@ func PromptBool() bool {
 
 	return choice
 }
+
+func PromptString() string {
+	var (
+		input string
+	)
+
+	fmt.Print("> ")
+	fmt.Scanln(&input)
+
+	return input
+}

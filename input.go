@@ -6,6 +6,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/huh/accessibility"
 )
 
 // Input is a form input field.
@@ -119,6 +120,6 @@ func (i *Input) View() string {
 // Run runs the input field in accessible mode.
 func (i *Input) Run() {
 	fmt.Println(i.style.Title.Render(i.title))
-	fmt.Scanln(i.value)
+	*i.value = accessibility.PromptString()
 	fmt.Println()
 }
