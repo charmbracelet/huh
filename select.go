@@ -117,9 +117,11 @@ func (s *Select) View() string {
 		} else {
 			sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)) + s.style.Unselected.Render(option))
 		}
-		sb.WriteString("\n")
+		if i < len(s.options)-1 {
+			sb.WriteString("\n")
+		}
 	}
-	return sb.String()
+	return s.style.Base.Render(sb.String())
 }
 
 // Run runs an accessible select field.

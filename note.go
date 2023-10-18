@@ -41,7 +41,7 @@ func (n *Note) Styles(focused, blurred NoteStyle) *Note {
 // Focus focuses the select field.
 func (n *Note) Focus() tea.Cmd {
 	n.style = &n.focusedStyle
-	return nextField
+	return nil
 }
 
 // Blur blurs the select field.
@@ -53,7 +53,7 @@ func (n *Note) Blur() tea.Cmd {
 // Init initializes the select field.
 func (n *Note) Init() tea.Cmd {
 	n.style = &n.blurredStyle
-	return nextField
+	return nil
 }
 
 // Update updates the select field.
@@ -61,13 +61,10 @@ func (n *Note) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "shift+tab":
-			return n, prevField
-		case "enter", "tab":
-			return n, nextField
-		default:
+		case "tab", "enter":
 			return n, nextField
 		}
+		return n, nil
 	}
 	return n, nil
 }
@@ -75,7 +72,7 @@ func (n *Note) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // View renders the select field.
 func (n *Note) View() string {
 	md, _ := glamour.Render(n.body, "auto")
-	return md
+	return n.style.Base.Render(md + n.style.Next.Render("Next"))
 }
 
 // Run runs an accessible select field.

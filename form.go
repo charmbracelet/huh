@@ -49,10 +49,11 @@ func (f *Form) Accessible(b bool) *Form {
 
 // Init initializes the form.
 func (f *Form) Init() tea.Cmd {
+	var cmds []tea.Cmd
 	for _, group := range f.groups {
-		group.Init()
+		cmds = append(cmds, group.Init())
 	}
-	return nil
+	return tea.Batch(cmds...)
 }
 
 // Update updates the form.

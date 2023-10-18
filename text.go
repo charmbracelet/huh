@@ -24,6 +24,7 @@ type Text struct {
 func NewText() *Text {
 	text := textarea.New()
 	text.ShowLineNumbers = false
+	text.Prompt = ""
 
 	f, b := DefaultTextStyles()
 
@@ -111,7 +112,7 @@ func (t *Text) View() string {
 	sb.WriteString("\n")
 	sb.WriteString(t.style.Help.Render("tab • continue"))
 
-	return sb.String()
+	return t.style.Base.Render(sb.String())
 }
 
 func (t *Text) Run() {

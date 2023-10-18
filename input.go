@@ -23,9 +23,11 @@ type Input struct {
 
 // NewInput returns a new input field.
 func NewInput() *Input {
+	input := textinput.New()
+
 	f, b := DefaultInputStyles()
 	return &Input{
-		textinput:    textinput.New(),
+		textinput:    input,
 		focusedStyle: f,
 		blurredStyle: b,
 	}
@@ -114,9 +116,8 @@ func (i *Input) View() string {
 	sb.WriteString(i.style.Title.Render(i.title))
 	sb.WriteString("\n")
 	sb.WriteString(i.textinput.View())
-	sb.WriteString("\n")
 
-	return sb.String()
+	return i.style.Base.Render(sb.String())
 }
 
 // Run runs the input field in accessible mode.

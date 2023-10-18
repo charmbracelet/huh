@@ -98,6 +98,7 @@ func (c *Confirm) View() string {
 	var sb strings.Builder
 	sb.WriteString(c.style.Title.Render(c.title))
 	sb.WriteString("\n")
+	sb.WriteString("\n")
 
 	if *c.value {
 		sb.WriteString(lipgloss.JoinHorizontal(
@@ -112,7 +113,7 @@ func (c *Confirm) View() string {
 			c.style.Selected.Render(c.negative),
 		))
 	}
-	return sb.String()
+	return c.style.Base.Render(sb.String())
 }
 
 // Run runs the confirm field in accessible mode.

@@ -37,7 +37,7 @@ type MultiSelect struct {
 func NewMultiSelect() *MultiSelect {
 	f, b := DefaultMultiSelectStyles()
 	return &MultiSelect{
-		cursorPrefix:     " > ",
+		cursorPrefix:     "> ",
 		selectedPrefix:   "[•] ",
 		unselectedPrefix: "[ ] ",
 		focusedStyle:     f,
@@ -153,9 +153,11 @@ func (m *MultiSelect) View() string {
 			sb.WriteString(m.style.UnselectedPrefix.Render(m.unselectedPrefix))
 			sb.WriteString(m.style.Unselected.Render(option.name))
 		}
-		sb.WriteString("\n")
+		if i < len(m.options)-1 {
+			sb.WriteString("\n")
+		}
 	}
-	return sb.String()
+	return m.style.Base.Render(sb.String())
 }
 
 // Run runs the multi-select field in accessible mode.

@@ -49,18 +49,18 @@ func prevField() tea.Msg {
 
 // Init initializes the group.
 func (g *Group) Init() tea.Cmd {
-	for i, field := range g.fields {
-		field.Init()
-		if i == 0 {
-			field.Focus()
-		}
+	var cmds []tea.Cmd
+	for _, field := range g.fields {
+		cmds = append(cmds, field.Init())
 	}
-	return nil
+	cmds = append(cmds, g.setCurrent(0))
+	return tea.Batch(cmds...)
 }
 
 // setCurrent sets the current field.
-func (g *Group) setCurrent(current int) {
-	g.fields[g.current].Blur()
+func (g *Group) setCurrent(current int) tea.Cmd {
+	var cmds []tea.Cmd
+	cmds = append(cmds, g.fields[g.current].Blur())
 	if current < 0 {
 		current = 0
 	}
@@ -68,7 +68,8 @@ func (g *Group) setCurrent(current int) {
 		current = len(g.fields) - 1
 	}
 	g.current = current
-	g.fields[g.current].Focus()
+	cmds = append(cmds, g.fields[g.current].Focus())
+	return tea.Batch(cmds...)
 }
 
 // Update updates the group.
@@ -87,7 +88,8 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			break
 		}
 
-		g.setCurrent(g.current + 1)
+		cmd = g.setCurrent(g.current + 1)
+		cmds = append(cmds, cmd)
 
 	case prevFieldMsg:
 		if g.current == 0 {
@@ -95,7 +97,8 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			break
 		}
 
-		g.setCurrent(g.current - 1)
+		cmd = g.setCurrent(g.current - 1)
+		cmds = append(cmds, cmd)
 	}
 
 	return g, tea.Batch(cmds...)
