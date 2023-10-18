@@ -7,16 +7,10 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh/accessibility"
 	"github.com/charmbracelet/lipgloss"
-	"golang.org/x/exp/slices"
 )
 
-type option struct {
-	name     string
-	selected bool
-}
-
 // MultiSelect is a form multi-select field.
-type MultiSelect struct {
+type MultiSelect[T any] struct {
 	title            string
 	required         bool
 	filterable       bool
@@ -25,90 +19,96 @@ type MultiSelect struct {
 	cursorPrefix     string
 	selectedPrefix   string
 	unselectedPrefix string
-	selected         []int
-	options          []option
-	value            *[]string
+	selected         []bool
+	options          []Option[T]
+	value            *[]T
 	style            *MultiSelectStyle
 	blurredStyle     MultiSelectStyle
 	focusedStyle     MultiSelectStyle
 }
 
 // NewMultiSelect returns a new multi-select field.
-func NewMultiSelect() *MultiSelect {
+func NewMultiSelect[T any](options ...T) *MultiSelect[T] {
 	f, b := DefaultMultiSelectStyles()
-	return &MultiSelect{
+
+	var opts []Option[T]
+	for _, o := range options {
+		opts = append(opts, Option[T]{Key: fmt.Sprint(o), Value: o})
+	}
+
+	return &MultiSelect[T]{
+		options:          opts,
 		cursorPrefix:     "> ",
 		selectedPrefix:   "[•] ",
 		unselectedPrefix: "[ ] ",
 		focusedStyle:     f,
 		blurredStyle:     b,
+		selected:         make([]bool, len(opts)),
 	}
 }
 
 // Value sets the value of the multi-select field.
-func (m *MultiSelect) Value(value *[]string) *MultiSelect {
+func (m *MultiSelect[T]) Value(value *[]T) *MultiSelect[T] {
 	m.value = value
 	return m
 }
 
 // Title sets the title of the multi-select field.
-func (m *MultiSelect) Title(title string) *MultiSelect {
+func (m *MultiSelect[T]) Title(title string) *MultiSelect[T] {
 	m.title = title
 	return m
 }
 
 // Required sets the multi-select field as required.
-func (m *MultiSelect) Required(required bool) *MultiSelect {
+func (m *MultiSelect[T]) Required(required bool) *MultiSelect[T] {
 	m.required = required
 	return m
 }
 
 // Options sets the options of the multi-select field.
-func (m *MultiSelect) Options(options ...string) *MultiSelect {
-	for _, o := range options {
-		m.options = append(m.options, option{o, false})
-	}
+func (m *MultiSelect[T]) Options(options ...Option[T]) *MultiSelect[T] {
+	m.options = options
 	return m
 }
 
 // Filterable sets the multi-select field as filterable.
-func (m *MultiSelect) Filterable(filterable bool) *MultiSelect {
+func (m *MultiSelect[T]) Filterable(filterable bool) *MultiSelect[T] {
 	m.filterable = filterable
 	return m
 }
 
 // Cursor sets the cursor of the multi-select field.
-func (m *MultiSelect) Cursor(cursor string) *MultiSelect {
+func (m *MultiSelect[T]) Cursor(cursor string) *MultiSelect[T] {
 	m.cursorPrefix = cursor
 	return m
 }
 
 // Limit sets the limit of the multi-select field.
-func (m *MultiSelect) Limit(limit int) *MultiSelect {
+func (m *MultiSelect[T]) Limit(limit int) *MultiSelect[T] {
 	m.limit = limit
 	return m
 }
 
 // Focus focuses the multi-select field.
-func (m *MultiSelect) Focus() tea.Cmd {
+func (m *MultiSelect[T]) Focus() tea.Cmd {
 	m.style = &m.focusedStyle
 	return nil
 }
 
 // Blur blurs the multi-select field.
-func (m *MultiSelect) Blur() tea.Cmd {
+func (m *MultiSelect[T]) Blur() tea.Cmd {
 	m.style = &m.blurredStyle
 	return nil
 }
 
 // Init initializes the multi-select field.
-func (m *MultiSelect) Init() tea.Cmd {
+func (m *MultiSelect[T]) Init() tea.Cmd {
 	m.style = &m.blurredStyle
 	return nil
 }
 
 // Update updates the multi-select field.
-func (m *MultiSelect) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -117,16 +117,12 @@ func (m *MultiSelect) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "down", "j":
 			m.cursor = min(m.cursor+1, len(m.options)-1)
 		case " ", "x":
-			m.options[m.cursor].selected = !m.options[m.cursor].selected
-			if m.options[m.cursor].selected {
-				*m.value = append(*m.value, m.options[m.cursor].name)
-			} else {
-				i := slices.Index(*m.value, m.options[m.cursor].name)
-				*m.value = slices.Delete(*m.value, i, i+1)
-			}
+			m.selected[m.cursor] = !m.selected[m.cursor]
 		case "shift+tab":
+			m.finalize()
 			return m, prevField
 		case "tab", "enter":
+			m.finalize()
 			return m, nextField
 		}
 	}
@@ -134,8 +130,17 @@ func (m *MultiSelect) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+func (m *MultiSelect[T]) finalize() {
+	*m.value = make([]T, 0)
+	for i, option := range m.options {
+		if m.selected[i] {
+			*m.value = append(*m.value, option.Value)
+		}
+	}
+}
+
 // View renders the multi-select field.
-func (m *MultiSelect) View() string {
+func (m *MultiSelect[T]) View() string {
 	var sb strings.Builder
 	sb.WriteString(m.style.Title.Render(m.title) + "\n")
 	c := m.style.Cursor.Render(m.cursorPrefix)
@@ -146,12 +151,12 @@ func (m *MultiSelect) View() string {
 			sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)))
 		}
 
-		if option.selected {
+		if m.selected[i] {
 			sb.WriteString(m.style.SelectedPrefix.Render(m.selectedPrefix))
-			sb.WriteString(m.style.Selected.Render(option.name))
+			sb.WriteString(m.style.Selected.Render(option.Key))
 		} else {
 			sb.WriteString(m.style.UnselectedPrefix.Render(m.unselectedPrefix))
-			sb.WriteString(m.style.Unselected.Render(option.name))
+			sb.WriteString(m.style.Unselected.Render(option.Key))
 		}
 		if i < len(m.options)-1 {
 			sb.WriteString("\n")
@@ -161,11 +166,11 @@ func (m *MultiSelect) View() string {
 }
 
 // Run runs the multi-select field in accessible mode.
-func (m *MultiSelect) Run() {
+func (m *MultiSelect[T]) Run() {
 	fmt.Println(m.style.Title.Render(m.title))
 
 	for i, option := range m.options {
-		fmt.Printf("%d. %s\n", i+1, option.name)
+		fmt.Printf("%d. %s\n", i+1, option.Key)
 	}
 
 	fmt.Println("\nType 0 to finish.\n")
@@ -176,19 +181,16 @@ func (m *MultiSelect) Run() {
 		if choice == 0 {
 			break
 		}
-		m.options[choice-1].selected = !m.options[choice-1].selected
-		if m.options[choice-1].selected {
-			fmt.Println("Selected:", m.options[choice-1].name)
+		if m.selected[choice-1] {
+			fmt.Println("Selected:", m.options[choice-1].Key)
 		} else {
-			fmt.Println("Unselected:", m.options[choice-1].name)
+			fmt.Println("Unselected:", m.options[choice-1].Key)
 		}
 	}
 
-	for _, option := range m.options {
-		if option.selected {
-			*m.value = append(*m.value, option.name)
+	for i, option := range m.options {
+		if m.selected[i] {
+			*m.value = append(*m.value, option.Value)
 		}
 	}
-
-	fmt.Printf("Selected: %s\n\n", strings.Join(*m.value, ", "))
 }

@@ -78,10 +78,9 @@ func main() {
 		// Prompt for toppings and special instructions.
 		// The customer can ask for up to 4 toppings.
 		huh.NewGroup(
-			huh.NewMultiSelect().
+			huh.NewMultiSelect("Lettuce", "Tomatoes", "Corn", "Salsa", "Sour Cream", "Cheese").
 				Value(&order.Taco.Toppings).
 				Title("Toppings").
-				Options("Lettuce", "Tomatoes", "Corn", "Salsa", "Sour Cream", "Cheese").
 				Filterable(true).
 				Limit(4),
 
