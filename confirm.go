@@ -72,6 +72,10 @@ func (c *Confirm) Init() tea.Cmd {
 
 // Update updates the confirm field.
 func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if c.value == nil {
+		c.value = new(bool)
+	}
+
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
@@ -95,6 +99,11 @@ func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // View renders the confirm field.
 func (c *Confirm) View() string {
+	style := c.style
+	if style == nil {
+		style = &c.blurredStyle
+	}
+
 	var sb strings.Builder
 	sb.WriteString(c.style.Title.Render(c.title))
 	sb.WriteString("\n")
@@ -103,14 +112,14 @@ func (c *Confirm) View() string {
 	if *c.value {
 		sb.WriteString(lipgloss.JoinHorizontal(
 			lipgloss.Center,
-			c.style.Selected.Render(c.affirmative),
-			c.style.Unselected.Render(c.negative),
+			style.Selected.Render(c.affirmative),
+			style.Unselected.Render(c.negative),
 		))
 	} else {
 		sb.WriteString(lipgloss.JoinHorizontal(
 			lipgloss.Center,
-			c.style.Unselected.Render(c.affirmative),
-			c.style.Selected.Render(c.negative),
+			style.Unselected.Render(c.affirmative),
+			style.Selected.Render(c.negative),
 		))
 	}
 	return c.style.Base.Render(sb.String())
