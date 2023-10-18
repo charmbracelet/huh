@@ -54,21 +54,19 @@ func main() {
 		// What's a taco without a shell?
 		// We'll need to know what filling to put inside too.
 		huh.NewGroup(
-			huh.NewSelect[string]().
-				Value(&order.Taco.Shell).
-				Options("Soft", "Hard").
+			huh.NewSelect("Soft", "Hard").
 				Title("Shell?").
+				Value(&order.Taco.Shell).
 				Required(true),
 
-			huh.NewSelect[string]().
-				Options("Chicken", "Beef", "Fish", "Beans").
+			huh.NewSelect("Chicken", "Beef", "Fish", "Beans").
 				Value(&order.Taco.Base).
 				Title("Base").
 				Required(true),
 
 			huh.NewSelect[Spice]().
 				Title("Spice Level").
-				OptionsKV(
+				Options(
 					huh.NewOption("Mild", Mild),
 					huh.NewOption("Medium", Medium),
 					huh.NewOption("Hot", Hot),
