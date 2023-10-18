@@ -2,6 +2,7 @@ package huh
 
 import (
 	"fmt"
+	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
@@ -61,18 +62,21 @@ func (n *Note) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "tab", "enter":
-			return n, nextField
+		case "shift+tab":
+			return n, prevField
 		}
-		return n, nil
+		return n, nextField
 	}
 	return n, nil
 }
 
 // View renders the select field.
 func (n *Note) View() string {
+	var sb strings.Builder
 	md, _ := glamour.Render(n.body, "auto")
-	return n.style.Base.Render(md + n.style.Next.Render("Next"))
+	sb.WriteString(md)
+	sb.WriteString(n.style.Next.Render("Next"))
+	return n.style.Base.Render(sb.String())
 }
 
 // Run runs an accessible select field.
