@@ -112,6 +112,6 @@ func main() {
 	fmt.Printf("Thanks for your order, %s!\n", order.Name)
 
 	if order.Discount {
-		fmt.Println("We added a 15% discount for your loyalty")
+		fmt.Println("Enjoy 15% off.")
 	}
 }
