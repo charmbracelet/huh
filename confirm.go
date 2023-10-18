@@ -27,6 +27,7 @@ type Confirm struct {
 func NewConfirm() *Confirm {
 	f, b := DefaultConfirmStyles()
 	return &Confirm{
+		value:        new(bool),
 		focusedStyle: f,
 		blurredStyle: b,
 		affirmative:  "Yes",
@@ -72,10 +73,6 @@ func (c *Confirm) Init() tea.Cmd {
 
 // Update updates the confirm field.
 func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if c.value == nil {
-		c.value = new(bool)
-	}
-
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {

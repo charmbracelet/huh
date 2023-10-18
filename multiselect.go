@@ -37,12 +37,14 @@ func NewMultiSelect[T any](options ...T) *MultiSelect[T] {
 	}
 
 	return &MultiSelect[T]{
+		value:            new([]T),
 		options:          opts,
 		cursorPrefix:     "> ",
 		selectedPrefix:   "[•] ",
 		unselectedPrefix: "[ ] ",
 		focusedStyle:     f,
 		blurredStyle:     b,
+		style:            &b,
 		selected:         make([]bool, len(opts)),
 	}
 }
@@ -103,7 +105,6 @@ func (m *MultiSelect[T]) Blur() tea.Cmd {
 
 // Init initializes the multi-select field.
 func (m *MultiSelect[T]) Init() tea.Cmd {
-	m.style = &m.blurredStyle
 	return nil
 }
 

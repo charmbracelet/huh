@@ -26,11 +26,18 @@ func NewInput() *Input {
 	input := textinput.New()
 
 	f, b := DefaultInputStyles()
-	return &Input{
+
+	i := &Input{
+		value:        new(string),
 		textinput:    input,
+		style:        &b,
 		focusedStyle: f,
 		blurredStyle: b,
 	}
+
+	i.updateTextinputStyle()
+
+	return i
 }
 
 // Value sets the value of the input field.
@@ -82,8 +89,6 @@ func (i *Input) Blur() tea.Cmd {
 // Init initializes the input field.
 func (i *Input) Init() tea.Cmd {
 	i.textinput.Blur()
-	i.style = &i.blurredStyle
-	i.updateTextinputStyle()
 	return nil
 }
 

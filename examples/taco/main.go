@@ -110,4 +110,8 @@ func main() {
 
 	fmt.Printf("A %s shell filled with %s and topped with %s.\n", order.Taco.Shell, order.Taco.Base, strings.Join(order.Taco.Toppings, ", "))
 	fmt.Printf("Thanks for your order, %s!\n", order.Name)
+
+	if order.Discount {
+		fmt.Println("We added a 15% discount for your loyalty")
+	}
 }

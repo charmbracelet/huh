@@ -32,8 +32,10 @@ func NewSelect[T any](options ...T) *Select[T] {
 	}
 
 	return &Select[T]{
+		value:        new(T),
 		options:      opts,
 		cursor:       "> ",
+		style:        &blurred,
 		focusedStyle: focused,
 		blurredStyle: blurred,
 	}
@@ -90,7 +92,6 @@ func (s *Select[T]) Blur() tea.Cmd {
 
 // Init initializes the select field.
 func (s *Select[T]) Init() tea.Cmd {
-	s.style = &s.blurredStyle
 	return nil
 }
 

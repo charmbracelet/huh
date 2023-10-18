@@ -28,11 +28,17 @@ func NewText() *Text {
 
 	f, b := DefaultTextStyles()
 
-	return &Text{
+	t := &Text{
+		value:        new(string),
 		textarea:     text,
+		style:        &b,
 		focusedStyle: f,
 		blurredStyle: b,
 	}
+
+	t.updateTextareaStyle()
+
+	return t
 }
 
 // Value sets the value of the text field.
@@ -59,6 +65,12 @@ func (t *Text) CharLimit(charlimit int) *Text {
 	return t
 }
 
+// updateTextareaStyle updates the style of the textarea.
+func (t *Text) updateTextareaStyle() {
+	t.textarea.FocusedStyle = t.focusedStyle.Style
+	t.textarea.BlurredStyle = t.blurredStyle.Style
+}
+
 // Focus focuses the text field.
 func (t *Text) Focus() tea.Cmd {
 	t.style = &t.focusedStyle
@@ -68,6 +80,7 @@ func (t *Text) Focus() tea.Cmd {
 
 // Blur blurs the text field.
 func (t *Text) Blur() tea.Cmd {
+	*t.value = t.textarea.Value()
 	t.style = &t.blurredStyle
 	t.textarea.Blur()
 	return nil
@@ -75,9 +88,6 @@ func (t *Text) Blur() tea.Cmd {
 
 // Init initializes the text field.
 func (t *Text) Init() tea.Cmd {
-	t.textarea.FocusedStyle = t.focusedStyle.Style
-	t.textarea.BlurredStyle = t.blurredStyle.Style
-	t.style = &t.blurredStyle
 	t.textarea.Blur()
 	return nil
 }

@@ -23,6 +23,7 @@ func NewNote() *Note {
 	focused, blurred := DefaultNoteStyles()
 	return &Note{
 		showNextButton: false,
+		style:          &blurred,
 		focusedStyle:   focused,
 		blurredStyle:   blurred,
 	}
@@ -61,7 +62,6 @@ func (n *Note) Blur() tea.Cmd {
 
 // Init initializes the select field.
 func (n *Note) Init() tea.Cmd {
-	n.style = &n.blurredStyle
 	return nil
 }
 
