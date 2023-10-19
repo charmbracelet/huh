@@ -14,7 +14,7 @@ func PromptInt(min, max int) int {
 	)
 
 	for !valid {
-		fmt.Print("Selection: ")
+		fmt.Print("Choose: ")
 
 		// We scan the entire line so that if the input is invalid, we return only
 		// one error message instead of one for each scan.
@@ -46,7 +46,7 @@ func PromptBool() bool {
 	)
 
 	for !valid {
-		fmt.Print("Selection [y/N]: ")
+		fmt.Print("Choose [y/N]: ")
 
 		// We scan the entire line so that if the input is invalid, we return only
 		// one error message instead of one for each scan.

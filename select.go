@@ -136,10 +136,10 @@ func (s *Select[T]) View() string {
 func (s *Select[T]) Run() {
 	fmt.Println(s.style.Title.Render(s.title))
 	for i, option := range s.options {
-		fmt.Printf("%d. %s\n", i+1, option)
+		fmt.Printf("%d. %s\n", i+1, option.Key)
 	}
 
 	option := s.options[accessibility.PromptInt(1, len(s.options))-1]
-	fmt.Printf("Selected: %s\n\n", option)
+	fmt.Printf("Chose: %s\n\n", option.Key)
 	*s.value = option.Value
 }

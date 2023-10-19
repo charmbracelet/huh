@@ -46,7 +46,7 @@ func main() {
 	var order = Order{Taco: taco}
 
 	// Should we run in accessible mode?
-	accessible, _ := strconv.ParseBool(os.Getenv("HUH_ACCESSIBLE"))
+	accessible, _ := strconv.ParseBool(os.Getenv("ACCESSIBLE"))
 
 	form := huh.NewForm(
 		huh.NewGroup(huh.NewNote().Body(description).Next(true)),
@@ -63,7 +63,11 @@ func main() {
 				Value(&order.Taco.Base).
 				Title("Base").
 				Required(true),
+		),
 
+		// Prompt for toppings and special instructions.
+		// The customer can ask for up to 4 toppings.
+		huh.NewGroup(
 			huh.NewSelect[Spice]().
 				Title("Spice Level").
 				Options(
@@ -73,21 +77,12 @@ func main() {
 				).
 				Value(&order.Taco.Spice).
 				Required(true),
-		),
 
-		// Prompt for toppings and special instructions.
-		// The customer can ask for up to 4 toppings.
-		huh.NewGroup(
 			huh.NewMultiSelect("Lettuce", "Tomatoes", "Corn", "Salsa", "Sour Cream", "Cheese").
 				Value(&order.Taco.Toppings).
 				Title("Toppings").
 				Filterable(true).
 				Limit(4),
-
-			huh.NewText().
-				Value(&order.Instructions).
-				Title("Special Instructions").
-				CharLimit(400),
 		),
 
 		// Gather final details for the order.
@@ -96,8 +91,15 @@ func main() {
 				Value(&order.Name).
 				Title("What's your name?"),
 
+			huh.NewText().
+				Value(&order.Instructions).
+				Title("Special Instructions").
+				CharLimit(400),
+
 			huh.NewConfirm().
 				Value(&order.Discount).
+				Affirmative("Yes!").
+				Negative("No.").
 				Title("Would you like 15% off?"),
 		),
 	).Accessible(accessible)

@@ -35,6 +35,18 @@ func NewConfirm() *Confirm {
 	}
 }
 
+// Affirmative sets the affirmative value of the confirm field.
+func (c *Confirm) Affirmative(affirmative string) *Confirm {
+	c.affirmative = affirmative
+	return c
+}
+
+// Negative sets the negative value of the confirm field.
+func (c *Confirm) Negative(negative string) *Confirm {
+	c.negative = negative
+	return c
+}
+
 // Value sets the value of the confirm field.
 func (c *Confirm) Value(value *bool) *Confirm {
 	c.value = value

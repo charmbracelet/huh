@@ -182,6 +182,7 @@ func (m *MultiSelect[T]) Run() {
 		if choice == 0 {
 			break
 		}
+		m.selected[choice-1] = !m.selected[choice-1]
 		if m.selected[choice-1] {
 			fmt.Println("Selected:", m.options[choice-1].Key)
 		} else {
@@ -189,9 +190,14 @@ func (m *MultiSelect[T]) Run() {
 		}
 	}
 
+	var values []string
+
 	for i, option := range m.options {
 		if m.selected[i] {
 			*m.value = append(*m.value, option.Value)
+			values = append(values, option.Key)
 		}
 	}
+
+	fmt.Println("Selected:", strings.Join(values, ", ")+"\n")
 }
