@@ -127,6 +127,6 @@ func (t *Text) View() string {
 
 func (t *Text) Run() {
 	fmt.Println(t.style.Title.Render(t.title))
-	*t.value = accessibility.PromptString()
+	*t.value = accessibility.PromptString("> ")
 	fmt.Println()
 }

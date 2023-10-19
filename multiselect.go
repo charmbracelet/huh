@@ -166,28 +166,46 @@ func (m *MultiSelect[T]) View() string {
 	return m.style.Base.Render(sb.String())
 }
 
-// Run runs the multi-select field in accessible mode.
-func (m *MultiSelect[T]) Run() {
-	fmt.Println(m.style.Title.Render(m.title))
+func (m *MultiSelect[T]) printOptions() {
+	var sb strings.Builder
+
+	sb.WriteString(m.style.Title.Render(m.title))
+	sb.WriteString("\n")
 
 	for i, option := range m.options {
-		fmt.Printf("%d. %s\n", i+1, option.Key)
+		var prefix string
+		if m.selected[i] {
+			prefix = m.selectedPrefix
+		} else {
+			prefix = m.unselectedPrefix
+		}
+		sb.WriteString(fmt.Sprintf("%d. %s%s", i+1, prefix, option.Key))
+		if i < len(m.options)-1 {
+			sb.WriteString("\n")
+		}
 	}
 
-	fmt.Println("\nType 0 to finish.\n")
+	fmt.Println(m.style.Base.Render(sb.String()))
+}
+
+// Run runs the multi-select field in accessible mode.
+func (m *MultiSelect[T]) Run() {
+	m.printOptions()
 
 	var choice int
 	for {
-		choice = accessibility.PromptInt(0, len(m.options))
+		choice = accessibility.PromptInt("Select: ", 0, len(m.options))
 		if choice == 0 {
 			break
 		}
 		m.selected[choice-1] = !m.selected[choice-1]
 		if m.selected[choice-1] {
-			fmt.Println("Selected:", m.options[choice-1].Key)
+			fmt.Printf("Selected: %d\n\n", choice)
 		} else {
-			fmt.Println("Unselected:", m.options[choice-1].Key)
+			fmt.Printf("Deselected: %d\n\n", choice)
 		}
+
+		m.printOptions()
 	}
 
 	var values []string

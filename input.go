@@ -128,6 +128,6 @@ func (i *Input) View() string {
 // Run runs the input field in accessible mode.
 func (i *Input) Run() {
 	fmt.Println(i.style.Title.Render(i.title))
-	*i.value = accessibility.PromptString()
+	*i.value = accessibility.PromptString("> ")
 	fmt.Println()
 }

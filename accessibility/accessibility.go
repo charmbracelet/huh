@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-func PromptInt(min, max int) int {
+func PromptInt(prompt string, min, max int) int {
 	var (
 		input  string
 		valid  bool
@@ -14,12 +14,7 @@ func PromptInt(min, max int) int {
 	)
 
 	for !valid {
-		fmt.Print("Choose: ")
-
-		// We scan the entire line so that if the input is invalid, we return only
-		// one error message instead of one for each scan.
-		fmt.Scanln(&input)
-
+		input = PromptString(prompt)
 		choice, err = strconv.Atoi(input)
 
 		if err != nil {
@@ -46,11 +41,7 @@ func PromptBool() bool {
 	)
 
 	for !valid {
-		fmt.Print("Choose [y/N]: ")
-
-		// We scan the entire line so that if the input is invalid, we return only
-		// one error message instead of one for each scan.
-		fmt.Scanln(&input)
+		input = PromptString("Choose [y/N]: ")
 
 		if input == "y" || input == "Y" {
 			choice = true
@@ -67,12 +58,12 @@ func PromptBool() bool {
 	return choice
 }
 
-func PromptString() string {
+func PromptString(prompt string) string {
 	var (
 		input string
 	)
 
-	fmt.Print("> ")
+	fmt.Print(prompt)
 	fmt.Scanln(&input)
 
 	return input

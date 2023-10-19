@@ -134,12 +134,20 @@ func (s *Select[T]) View() string {
 
 // Run runs an accessible select field.
 func (s *Select[T]) Run() {
-	fmt.Println(s.style.Title.Render(s.title))
+	var sb strings.Builder
+
+	sb.WriteString(s.style.Title.Render(s.title) + "\n")
+
 	for i, option := range s.options {
-		fmt.Printf("%d. %s\n", i+1, option.Key)
+		sb.WriteString(fmt.Sprintf("%d. %s", i+1, option.Key))
+		if i < len(s.options)-1 {
+			sb.WriteString("\n")
+		}
 	}
 
-	option := s.options[accessibility.PromptInt(1, len(s.options))-1]
+	fmt.Println(s.style.Base.Render(sb.String()))
+
+	option := s.options[accessibility.PromptInt("Choose: ", 1, len(s.options))-1]
 	fmt.Printf("Chose: %s\n\n", option.Key)
 	*s.value = option.Value
 }
