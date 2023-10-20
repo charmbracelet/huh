@@ -64,6 +64,12 @@ func (i *Input) CharLimit(charlimit int) *Input {
 	return i
 }
 
+// Placeholder sets the placeholder of the text input.
+func (i *Input) Placeholder(str string) *Input {
+	i.textinput.Placeholder = str
+	return i
+}
+
 func (i *Input) updateTextinputStyle() {
 	i.textinput.PromptStyle = i.style.Prompt
 	i.textinput.PlaceholderStyle = i.style.Placeholder
