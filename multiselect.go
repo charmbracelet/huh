@@ -175,11 +175,12 @@ func (m *MultiSelect[T]) printOptions() {
 	for i, option := range m.options {
 		var prefix string
 		if m.selected[i] {
-			prefix = m.selectedPrefix
+			prefix = m.style.SelectedPrefix.Render(m.selectedPrefix)
+			sb.WriteString(fmt.Sprintf("%d. %s%s", i+1, prefix, option.Key))
 		} else {
-			prefix = m.unselectedPrefix
+			prefix = m.style.UnselectedPrefix.Render(m.unselectedPrefix)
+			sb.WriteString(fmt.Sprintf("%d. %s%s", i+1, prefix, option.Key))
 		}
-		sb.WriteString(fmt.Sprintf("%d. %s%s", i+1, prefix, option.Key))
 		if i < len(m.options)-1 {
 			sb.WriteString("\n")
 		}
@@ -194,6 +195,10 @@ func (m *MultiSelect[T]) Run() {
 
 	var choice int
 	for {
+		fmt.Println(m.style.Help.Render(fmt.Sprintf("Select up to %d options.", m.limit)))
+		fmt.Println(m.style.Help.Render("Type 0 to continue."))
+		fmt.Println()
+
 		choice = accessibility.PromptInt("Select: ", 0, len(m.options))
 		if choice == 0 {
 			break

@@ -37,6 +37,7 @@ func DefaultSelectStyles() (SelectStyle, SelectStyle) {
 type MultiSelectStyle struct {
 	Base             lipgloss.Style
 	Title            lipgloss.Style
+	Help             lipgloss.Style
 	Cursor           lipgloss.Style
 	Selected         lipgloss.Style
 	Unselected       lipgloss.Style
@@ -49,6 +50,7 @@ func DefaultMultiSelectStyles() (MultiSelectStyle, MultiSelectStyle) {
 	focused := MultiSelectStyle{
 		Base:             lipgloss.NewStyle().Border(lipgloss.ThickBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1).BorderForeground(lipgloss.Color("8")),
 		Title:            lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
+		Help:             lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
 		Cursor:           lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
 		Selected:         lipgloss.NewStyle().Foreground(lipgloss.Color("15")),
 		Unselected:       lipgloss.NewStyle().Foreground(lipgloss.Color("7")),
@@ -58,6 +60,7 @@ func DefaultMultiSelectStyles() (MultiSelectStyle, MultiSelectStyle) {
 	blurred := MultiSelectStyle{
 		Base:             lipgloss.NewStyle().Border(lipgloss.HiddenBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1),
 		Title:            lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Help:             lipgloss.NewStyle().Foreground(lipgloss.Color("0")),
 		Cursor:           lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
 		Selected:         lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
 		Unselected:       lipgloss.NewStyle().Foreground(lipgloss.Color("8")),

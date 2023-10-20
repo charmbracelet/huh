@@ -1,7 +1,9 @@
 package accessibility
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strconv"
 )
 
@@ -59,12 +61,11 @@ func PromptBool() bool {
 }
 
 func PromptString(prompt string) string {
-	var (
-		input string
-	)
+	scanner := bufio.NewScanner(os.Stdin)
 
 	fmt.Print(prompt)
-	fmt.Scanln(&input)
+	_ = scanner.Scan()
 
-	return input
+	text := scanner.Text()
+	return text
 }
