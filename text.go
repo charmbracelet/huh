@@ -65,6 +65,12 @@ func (t *Text) CharLimit(charlimit int) *Text {
 	return t
 }
 
+// Placeholder sets the placeholder of the text field.
+func (t *Text) Placeholder(str string) *Text {
+	t.textarea.Placeholder = str
+	return t
+}
+
 // updateTextareaStyle updates the style of the textarea.
 func (t *Text) updateTextareaStyle() {
 	t.textarea.FocusedStyle = t.focusedStyle.Style
