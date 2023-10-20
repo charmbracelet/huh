@@ -11,9 +11,10 @@ import (
 
 // Confirm is a form confirm field.
 type Confirm struct {
-	value    *bool
-	title    string
-	required bool
+	value       *bool
+	title       string
+	description string
+	required    bool
 
 	affirmative string
 	negative    string
@@ -56,6 +57,12 @@ func (c *Confirm) Value(value *bool) *Confirm {
 // Title sets the title of the confirm field.
 func (c *Confirm) Title(title string) *Confirm {
 	c.title = title
+	return c
+}
+
+// Description sets the description of the confirm field.
+func (c *Confirm) Description(description string) *Confirm {
+	c.description = description
 	return c
 }
 
@@ -115,6 +122,10 @@ func (c *Confirm) View() string {
 
 	var sb strings.Builder
 	sb.WriteString(c.style.Title.Render(c.title))
+	if c.description != "" {
+		sb.WriteString("\n")
+		sb.WriteString(c.style.Description.Render(c.description))
+	}
 	sb.WriteString("\n")
 	sb.WriteString("\n")
 

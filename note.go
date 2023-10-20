@@ -10,7 +10,8 @@ import (
 
 // Note is a form note field.
 type Note struct {
-	body string
+	title       string
+	description string
 
 	showNextButton bool
 	style          *NoteStyle
@@ -29,9 +30,15 @@ func NewNote() *Note {
 	}
 }
 
-// Body sets the title of the select field.
-func (n *Note) Body(body string) *Note {
-	n.body = body
+// Title sets the title of the note field.
+func (n *Note) Title(title string) *Note {
+	n.title = title
+	return n
+}
+
+// Description sets the description of the note field.
+func (n *Note) Description(description string) *Note {
+	n.description = description
 	return n
 }
 
@@ -41,31 +48,31 @@ func (n *Note) Next(show bool) *Note {
 	return n
 }
 
-// Styles sets the styles of the select field.
+// Styles sets the styles of the note field.
 func (n *Note) Styles(focused, blurred NoteStyle) *Note {
 	n.blurredStyle = blurred
 	n.focusedStyle = focused
 	return n
 }
 
-// Focus focuses the select field.
+// Focus focuses the note field.
 func (n *Note) Focus() tea.Cmd {
 	n.style = &n.focusedStyle
 	return nil
 }
 
-// Blur blurs the select field.
+// Blur blurs the note field.
 func (n *Note) Blur() tea.Cmd {
 	n.style = &n.blurredStyle
 	return nil
 }
 
-// Init initializes the select field.
+// Init initializes the note field.
 func (n *Note) Init() tea.Cmd {
 	return nil
 }
 
-// Update updates the select field.
+// Update updates the note field.
 func (n *Note) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -78,10 +85,19 @@ func (n *Note) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return n, nil
 }
 
-// View renders the select field.
+// View renders the note field.
 func (n *Note) View() string {
 	var sb strings.Builder
-	md, _ := glamour.Render(n.body, "auto")
+
+	var body string
+
+	if n.title != "" {
+		body = fmt.Sprintf("# %s\n", n.title)
+	}
+
+	body += n.description
+
+	md, _ := glamour.Render(body, "auto")
 	sb.WriteString(md)
 	if n.showNextButton {
 		sb.WriteString(n.style.Next.Render("Next"))
@@ -89,8 +105,16 @@ func (n *Note) View() string {
 	return n.style.Base.Render(sb.String())
 }
 
-// Run runs an accessible select field.
+// Run runs an accessible note field.
 func (n *Note) Run() {
-	md, _ := glamour.Render(n.body, "auto")
+	var body string
+
+	if n.title != "" {
+		body = fmt.Sprintf("# %s\n", n.title)
+	}
+
+	body += n.description
+
+	md, _ := glamour.Render(body, "auto")
 	fmt.Println(md)
 }

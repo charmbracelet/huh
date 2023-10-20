@@ -13,6 +13,7 @@ import (
 type Select[T any] struct {
 	value        *T
 	title        string
+	description  string
 	required     bool
 	options      []Option[T]
 	selected     int
@@ -50,6 +51,12 @@ func (s *Select[T]) Value(value *T) *Select[T] {
 // Title sets the title of the select field.
 func (s *Select[T]) Title(title string) *Select[T] {
 	s.title = title
+	return s
+}
+
+// Description sets the description of the select field.
+func (s *Select[T]) Description(description string) *Select[T] {
+	s.description = description
 	return s
 }
 
@@ -118,6 +125,9 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (s *Select[T]) View() string {
 	var sb strings.Builder
 	sb.WriteString(s.style.Title.Render(s.title) + "\n")
+	if s.description != "" {
+		sb.WriteString(s.style.Description.Render(s.description) + "\n")
+	}
 	c := s.style.Cursor.Render(s.cursor)
 	for i, option := range s.options {
 		if s.selected == i {

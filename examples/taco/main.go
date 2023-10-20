@@ -32,15 +32,6 @@ type Taco struct {
 	Toppings []string
 }
 
-var description = `
-# Taco Charm
-
-Welcome to _Taco Charm_.
-
-How may we take your order?
-
-`
-
 func main() {
 	var taco Taco
 	var order = Order{Taco: taco}
@@ -49,13 +40,17 @@ func main() {
 	accessible, _ := strconv.ParseBool(os.Getenv("ACCESSIBLE"))
 
 	form := huh.NewForm(
-		huh.NewGroup(huh.NewNote().Body(description).Next(true)),
+		huh.NewGroup(huh.NewNote().
+			Title("Taco Charm").
+			Description("Welcome to _Taco Charm™_.\n\nHow may we take your order?").
+			Next(true)),
 
 		// What's a taco without a shell?
 		// We'll need to know what filling to put inside too.
 		huh.NewGroup(
 			huh.NewSelect("Soft", "Hard").
 				Title("Shell?").
+				Description("Our shells are made fresh in-house, every day.").
 				Value(&order.Taco.Shell).
 				Required(true),
 
@@ -79,8 +74,9 @@ func main() {
 				Required(true),
 
 			huh.NewMultiSelect("Lettuce", "Tomatoes", "Corn", "Salsa", "Sour Cream", "Cheese").
-				Value(&order.Taco.Toppings).
 				Title("Toppings").
+				Description("Choose up to 4.").
+				Value(&order.Taco.Toppings).
 				Filterable(true).
 				Limit(4),
 		),
@@ -97,10 +93,10 @@ func main() {
 				CharLimit(400),
 
 			huh.NewConfirm().
+				Title("Would you like 15% off?").
 				Value(&order.Discount).
 				Affirmative("Yes!").
-				Negative("No.").
-				Title("Would you like 15% off?"),
+				Negative("No."),
 		),
 	).Accessible(accessible)
 

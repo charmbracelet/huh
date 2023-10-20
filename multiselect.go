@@ -12,6 +12,7 @@ import (
 // MultiSelect is a form multi-select field.
 type MultiSelect[T any] struct {
 	title            string
+	description      string
 	required         bool
 	filterable       bool
 	limit            int
@@ -58,6 +59,12 @@ func (m *MultiSelect[T]) Value(value *[]T) *MultiSelect[T] {
 // Title sets the title of the multi-select field.
 func (m *MultiSelect[T]) Title(title string) *MultiSelect[T] {
 	m.title = title
+	return m
+}
+
+// Description sets the description of the multi-select field.
+func (m *MultiSelect[T]) Description(description string) *MultiSelect[T] {
+	m.description = description
 	return m
 }
 
@@ -144,6 +151,9 @@ func (m *MultiSelect[T]) finalize() {
 func (m *MultiSelect[T]) View() string {
 	var sb strings.Builder
 	sb.WriteString(m.style.Title.Render(m.title) + "\n")
+	if m.description != "" {
+		sb.WriteString(m.style.Description.Render(m.description) + "\n")
+	}
 	c := m.style.Cursor.Render(m.cursorPrefix)
 	for i, option := range m.options {
 		if m.cursor == i {

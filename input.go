@@ -13,6 +13,7 @@ import (
 type Input struct {
 	value        *string
 	title        string
+	description  string
 	required     bool
 	charlimit    int
 	textinput    textinput.Model
@@ -49,6 +50,12 @@ func (i *Input) Value(value *string) *Input {
 // Title sets the title of the input field.
 func (i *Input) Title(title string) *Input {
 	i.title = title
+	return i
+}
+
+// Description sets the description of the input field.
+func (i *Input) Description(description string) *Input {
+	i.description = description
 	return i
 }
 

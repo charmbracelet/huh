@@ -7,28 +7,31 @@ import (
 
 // SelectStyle is the style of the select field.
 type SelectStyle struct {
-	Base       lipgloss.Style
-	Title      lipgloss.Style
-	Cursor     lipgloss.Style
-	Selected   lipgloss.Style
-	Unselected lipgloss.Style
+	Base        lipgloss.Style
+	Title       lipgloss.Style
+	Description lipgloss.Style
+	Cursor      lipgloss.Style
+	Selected    lipgloss.Style
+	Unselected  lipgloss.Style
 }
 
 // DefaultSelectStyles returns the default focused style of the select field.
 func DefaultSelectStyles() (SelectStyle, SelectStyle) {
 	focused := SelectStyle{
-		Base:       lipgloss.NewStyle().Border(lipgloss.ThickBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1).BorderForeground(lipgloss.Color("8")),
-		Title:      lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
-		Cursor:     lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
-		Selected:   lipgloss.NewStyle().Foreground(lipgloss.Color("15")),
-		Unselected: lipgloss.NewStyle().Foreground(lipgloss.Color("7")),
+		Base:        lipgloss.NewStyle().Border(lipgloss.ThickBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1).BorderForeground(lipgloss.Color("8")),
+		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
+		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Cursor:      lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
+		Selected:    lipgloss.NewStyle().Foreground(lipgloss.Color("15")),
+		Unselected:  lipgloss.NewStyle().Foreground(lipgloss.Color("7")),
 	}
 	blurred := SelectStyle{
-		Base:       lipgloss.NewStyle().Border(lipgloss.HiddenBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1),
-		Title:      lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Cursor:     lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Selected:   lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Unselected: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Base:        lipgloss.NewStyle().Border(lipgloss.HiddenBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1),
+		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Cursor:      lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Selected:    lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Unselected:  lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
 	}
 	return focused, blurred
 }
@@ -37,6 +40,7 @@ func DefaultSelectStyles() (SelectStyle, SelectStyle) {
 type MultiSelectStyle struct {
 	Base             lipgloss.Style
 	Title            lipgloss.Style
+	Description      lipgloss.Style
 	Help             lipgloss.Style
 	Cursor           lipgloss.Style
 	Selected         lipgloss.Style
@@ -50,6 +54,7 @@ func DefaultMultiSelectStyles() (MultiSelectStyle, MultiSelectStyle) {
 	focused := MultiSelectStyle{
 		Base:             lipgloss.NewStyle().Border(lipgloss.ThickBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1).BorderForeground(lipgloss.Color("8")),
 		Title:            lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
+		Description:      lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
 		Help:             lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
 		Cursor:           lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
 		Selected:         lipgloss.NewStyle().Foreground(lipgloss.Color("15")),
@@ -60,6 +65,7 @@ func DefaultMultiSelectStyles() (MultiSelectStyle, MultiSelectStyle) {
 	blurred := MultiSelectStyle{
 		Base:             lipgloss.NewStyle().Border(lipgloss.HiddenBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1),
 		Title:            lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Description:      lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
 		Help:             lipgloss.NewStyle().Foreground(lipgloss.Color("0")),
 		Cursor:           lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
 		Selected:         lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
@@ -72,9 +78,10 @@ func DefaultMultiSelectStyles() (MultiSelectStyle, MultiSelectStyle) {
 
 // TextareaStyle is the style of the textarea field.
 type TextStyle struct {
-	Base  lipgloss.Style
-	Title lipgloss.Style
-	Help  lipgloss.Style
+	Base        lipgloss.Style
+	Title       lipgloss.Style
+	Description lipgloss.Style
+	Help        lipgloss.Style
 	textarea.Style
 }
 
@@ -86,16 +93,18 @@ func DefaultTextStyles() (TextStyle, TextStyle) {
 	b.CursorLine = lipgloss.NewStyle()
 
 	focused := TextStyle{
-		Base:  lipgloss.NewStyle().Border(lipgloss.ThickBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1).BorderForeground(lipgloss.Color("8")),
-		Title: lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
-		Help:  lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Style: f,
+		Base:        lipgloss.NewStyle().Border(lipgloss.ThickBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1).BorderForeground(lipgloss.Color("8")),
+		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
+		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Help:        lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Style:       f,
 	}
 	blurred := TextStyle{
-		Base:  lipgloss.NewStyle().Border(lipgloss.HiddenBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1),
-		Title: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Help:  lipgloss.NewStyle().Foreground(lipgloss.Color("0")),
-		Style: b,
+		Base:        lipgloss.NewStyle().Border(lipgloss.HiddenBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1),
+		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Help:        lipgloss.NewStyle().Foreground(lipgloss.Color("0")),
+		Style:       b,
 	}
 
 	return focused, blurred
@@ -105,6 +114,7 @@ func DefaultTextStyles() (TextStyle, TextStyle) {
 type InputStyle struct {
 	Base        lipgloss.Style
 	Title       lipgloss.Style
+	Description lipgloss.Style
 	Prompt      lipgloss.Style
 	Text        lipgloss.Style
 	Placeholder lipgloss.Style
@@ -115,6 +125,7 @@ func DefaultInputStyles() (InputStyle, InputStyle) {
 	focused := InputStyle{
 		Base:        lipgloss.NewStyle().Border(lipgloss.ThickBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1).BorderForeground(lipgloss.Color("8")),
 		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
+		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
 		Prompt:      lipgloss.NewStyle().Foreground(lipgloss.Color("7")),
 		Text:        lipgloss.NewStyle().Foreground(lipgloss.Color("15")),
 		Placeholder: lipgloss.NewStyle().Foreground(lipgloss.Color("7")),
@@ -122,6 +133,7 @@ func DefaultInputStyles() (InputStyle, InputStyle) {
 	blurred := InputStyle{
 		Base:        lipgloss.NewStyle().Border(lipgloss.HiddenBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1),
 		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
 		Prompt:      lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
 		Text:        lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
 		Placeholder: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
@@ -131,50 +143,56 @@ func DefaultInputStyles() (InputStyle, InputStyle) {
 
 // ConfirmStyle is the style of the confirm field.
 type ConfirmStyle struct {
-	Base       lipgloss.Style
-	Title      lipgloss.Style
-	Selected   lipgloss.Style
-	Unselected lipgloss.Style
+	Base        lipgloss.Style
+	Title       lipgloss.Style
+	Description lipgloss.Style
+	Selected    lipgloss.Style
+	Unselected  lipgloss.Style
 }
 
 // DefaultConfirmStyles returns the default focused style of the confirm field.
 func DefaultConfirmStyles() (ConfirmStyle, ConfirmStyle) {
 	focused := ConfirmStyle{
-		Base:       lipgloss.NewStyle().Border(lipgloss.ThickBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1).BorderForeground(lipgloss.Color("8")),
-		Title:      lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
-		Selected:   lipgloss.NewStyle().Foreground(lipgloss.Color("11")).Background(lipgloss.Color("4")).Padding(0, 2).MarginLeft(2),
-		Unselected: lipgloss.NewStyle().Foreground(lipgloss.Color("7")).Background(lipgloss.Color("0")).Padding(0, 2).MarginLeft(2),
+		Base:        lipgloss.NewStyle().Border(lipgloss.ThickBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1).BorderForeground(lipgloss.Color("8")),
+		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
+		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Selected:    lipgloss.NewStyle().Foreground(lipgloss.Color("11")).Background(lipgloss.Color("4")).Padding(0, 2).MarginLeft(2),
+		Unselected:  lipgloss.NewStyle().Foreground(lipgloss.Color("7")).Background(lipgloss.Color("0")).Padding(0, 2).MarginLeft(2),
 	}
 	blurred := ConfirmStyle{
-		Base:       lipgloss.NewStyle().Border(lipgloss.HiddenBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1),
-		Title:      lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Selected:   lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Background(lipgloss.Color("0")).Padding(0, 2).MarginLeft(2),
-		Unselected: lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Background(lipgloss.Color("0")).Padding(0, 2).MarginLeft(2),
+		Base:        lipgloss.NewStyle().Border(lipgloss.HiddenBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1),
+		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Selected:    lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Background(lipgloss.Color("0")).Padding(0, 2).MarginLeft(2),
+		Unselected:  lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Background(lipgloss.Color("0")).Padding(0, 2).MarginLeft(2),
 	}
 	return focused, blurred
 }
 
 // NoteStyle is the style of the Note field.
 type NoteStyle struct {
-	Base  lipgloss.Style
-	Title lipgloss.Style
-	Next  lipgloss.Style
-	Body  lipgloss.Style
+	Base        lipgloss.Style
+	Title       lipgloss.Style
+	Description lipgloss.Style
+	Next        lipgloss.Style
+	Body        lipgloss.Style
 }
 
 // DefaultNoteStyles returns the default focused style of the Note field.
 func DefaultNoteStyles() (NoteStyle, NoteStyle) {
 	focused := NoteStyle{
-		Base:  lipgloss.NewStyle().Border(lipgloss.ThickBorder(), false).BorderLeft(true).MarginBottom(1).BorderForeground(lipgloss.Color("8")),
-		Title: lipgloss.NewStyle().Foreground(lipgloss.Color("3")).Margin(1),
-		Body:  lipgloss.NewStyle().Foreground(lipgloss.Color("15")).Margin(1),
-		Next:  lipgloss.NewStyle().Background(lipgloss.Color("5")).Foreground(lipgloss.Color("3")).Margin(1, 2).Padding(0, 1).Bold(true),
+		Base:        lipgloss.NewStyle().Border(lipgloss.ThickBorder(), false).BorderLeft(true).MarginBottom(1).BorderForeground(lipgloss.Color("8")),
+		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("3")).Margin(1),
+		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Body:        lipgloss.NewStyle().Foreground(lipgloss.Color("15")).Margin(1),
+		Next:        lipgloss.NewStyle().Background(lipgloss.Color("5")).Foreground(lipgloss.Color("3")).Margin(1, 2).Padding(0, 1).Bold(true),
 	}
 	blurred := NoteStyle{
-		Base:  lipgloss.NewStyle().Border(lipgloss.HiddenBorder(), false).BorderLeft(true).MarginBottom(1),
-		Title: lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Margin(1),
-		Body:  lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Margin(1),
-		Next:  lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Margin(0, 2).MarginBottom(1),
+		Base:        lipgloss.NewStyle().Border(lipgloss.HiddenBorder(), false).BorderLeft(true).MarginBottom(1),
+		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Margin(1),
+		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Body:        lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Margin(1),
+		Next:        lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Margin(0, 2).MarginBottom(1),
 	}
 	return focused, blurred
 }
