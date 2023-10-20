@@ -7,7 +7,39 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh/accessibility"
+	"github.com/charmbracelet/lipgloss"
 )
+
+// InputStyle is the style of the input field.
+type InputStyle struct {
+	Base        lipgloss.Style
+	Title       lipgloss.Style
+	Description lipgloss.Style
+	Prompt      lipgloss.Style
+	Text        lipgloss.Style
+	Placeholder lipgloss.Style
+}
+
+// DefaultInputStyles returns the default focused style of the input field.
+func DefaultInputStyles() (InputStyle, InputStyle) {
+	focused := InputStyle{
+		Base:        lipgloss.NewStyle().Border(lipgloss.ThickBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1).BorderForeground(lipgloss.Color("8")),
+		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
+		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Prompt:      lipgloss.NewStyle().Foreground(lipgloss.Color("7")),
+		Text:        lipgloss.NewStyle().Foreground(lipgloss.Color("15")),
+		Placeholder: lipgloss.NewStyle().Foreground(lipgloss.Color("7")),
+	}
+	blurred := InputStyle{
+		Base:        lipgloss.NewStyle().Border(lipgloss.HiddenBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1),
+		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Prompt:      lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Text:        lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Placeholder: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+	}
+	return focused, blurred
+}
 
 // Input is a form input field.
 type Input struct {

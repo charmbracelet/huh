@@ -9,6 +9,34 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+// ConfirmStyle is the style of the confirm field.
+type ConfirmStyle struct {
+	Base        lipgloss.Style
+	Title       lipgloss.Style
+	Description lipgloss.Style
+	Selected    lipgloss.Style
+	Unselected  lipgloss.Style
+}
+
+// DefaultConfirmStyles returns the default focused style of the confirm field.
+func DefaultConfirmStyles() (ConfirmStyle, ConfirmStyle) {
+	focused := ConfirmStyle{
+		Base:        lipgloss.NewStyle().Border(lipgloss.ThickBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1).BorderForeground(lipgloss.Color("8")),
+		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
+		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Selected:    lipgloss.NewStyle().Foreground(lipgloss.Color("11")).Background(lipgloss.Color("4")).Padding(0, 2).MarginLeft(2),
+		Unselected:  lipgloss.NewStyle().Foreground(lipgloss.Color("7")).Background(lipgloss.Color("0")).Padding(0, 2).MarginLeft(2),
+	}
+	blurred := ConfirmStyle{
+		Base:        lipgloss.NewStyle().Border(lipgloss.HiddenBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1),
+		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Selected:    lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Background(lipgloss.Color("0")).Padding(0, 2).MarginLeft(2),
+		Unselected:  lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Background(lipgloss.Color("0")).Padding(0, 2).MarginLeft(2),
+	}
+	return focused, blurred
+}
+
 // Confirm is a form confirm field.
 type Confirm struct {
 	value       *bool

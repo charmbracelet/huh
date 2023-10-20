@@ -9,6 +9,46 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+// MultiSelectStyle is the style of the multi-select field.
+type MultiSelectStyle struct {
+	Base             lipgloss.Style
+	Title            lipgloss.Style
+	Description      lipgloss.Style
+	Help             lipgloss.Style
+	Cursor           lipgloss.Style
+	Selected         lipgloss.Style
+	Unselected       lipgloss.Style
+	SelectedPrefix   lipgloss.Style
+	UnselectedPrefix lipgloss.Style
+}
+
+// DefaultMultiSelectStyles returns the default focused style of the multi-select field.
+func DefaultMultiSelectStyles() (MultiSelectStyle, MultiSelectStyle) {
+	focused := MultiSelectStyle{
+		Base:             lipgloss.NewStyle().Border(lipgloss.ThickBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1).BorderForeground(lipgloss.Color("8")),
+		Title:            lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
+		Description:      lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Help:             lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Cursor:           lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
+		Selected:         lipgloss.NewStyle().Foreground(lipgloss.Color("15")),
+		Unselected:       lipgloss.NewStyle().Foreground(lipgloss.Color("7")),
+		SelectedPrefix:   lipgloss.NewStyle().Foreground(lipgloss.Color("15")),
+		UnselectedPrefix: lipgloss.NewStyle().Foreground(lipgloss.Color("7")),
+	}
+	blurred := MultiSelectStyle{
+		Base:             lipgloss.NewStyle().Border(lipgloss.HiddenBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1),
+		Title:            lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Description:      lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Help:             lipgloss.NewStyle().Foreground(lipgloss.Color("0")),
+		Cursor:           lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Selected:         lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Unselected:       lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		SelectedPrefix:   lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		UnselectedPrefix: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+	}
+	return focused, blurred
+}
+
 // MultiSelect is a form multi-select field.
 type MultiSelect[T any] struct {
 	title            string

@@ -7,7 +7,42 @@ import (
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh/accessibility"
+	"github.com/charmbracelet/lipgloss"
 )
+
+// TextareaStyle is the style of the textarea field.
+type TextStyle struct {
+	Base        lipgloss.Style
+	Title       lipgloss.Style
+	Description lipgloss.Style
+	Help        lipgloss.Style
+	textarea.Style
+}
+
+// DefaultTextStyles returns the default focused style of the text field.
+func DefaultTextStyles() (TextStyle, TextStyle) {
+	f, b := textarea.DefaultStyles()
+
+	f.CursorLine = lipgloss.NewStyle()
+	b.CursorLine = lipgloss.NewStyle()
+
+	focused := TextStyle{
+		Base:        lipgloss.NewStyle().Border(lipgloss.ThickBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1).BorderForeground(lipgloss.Color("8")),
+		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
+		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Help:        lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Style:       f,
+	}
+	blurred := TextStyle{
+		Base:        lipgloss.NewStyle().Border(lipgloss.HiddenBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1),
+		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Help:        lipgloss.NewStyle().Foreground(lipgloss.Color("0")),
+		Style:       b,
+	}
+
+	return focused, blurred
+}
 
 // Text is a form text field.
 type Text struct {

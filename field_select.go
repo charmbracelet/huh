@@ -9,6 +9,37 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+// SelectStyle is the style of the select field.
+type SelectStyle struct {
+	Base        lipgloss.Style
+	Title       lipgloss.Style
+	Description lipgloss.Style
+	Cursor      lipgloss.Style
+	Selected    lipgloss.Style
+	Unselected  lipgloss.Style
+}
+
+// DefaultSelectStyles returns the default focused style of the select field.
+func DefaultSelectStyles() (SelectStyle, SelectStyle) {
+	focused := SelectStyle{
+		Base:        lipgloss.NewStyle().Border(lipgloss.ThickBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1).BorderForeground(lipgloss.Color("8")),
+		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
+		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Cursor:      lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
+		Selected:    lipgloss.NewStyle().Foreground(lipgloss.Color("15")),
+		Unselected:  lipgloss.NewStyle().Foreground(lipgloss.Color("7")),
+	}
+	blurred := SelectStyle{
+		Base:        lipgloss.NewStyle().Border(lipgloss.HiddenBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1),
+		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Cursor:      lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Selected:    lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Unselected:  lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+	}
+	return focused, blurred
+}
+
 // Select is a form select field.
 type Select[T any] struct {
 	value        *T
