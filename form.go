@@ -76,7 +76,7 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "ctrl+c", "q":
+		case "ctrl+c":
 			f.quitting = true
 			return f, tea.Quit
 		}
