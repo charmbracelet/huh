@@ -66,6 +66,7 @@ type MultiSelect[T any] struct {
 	style            *MultiSelectStyle
 	blurredStyle     MultiSelectStyle
 	focusedStyle     MultiSelectStyle
+	theme            *Theme
 }
 
 // NewMultiSelect returns a new multi-select field.
@@ -273,4 +274,8 @@ func (m *MultiSelect[T]) Run() {
 	}
 
 	fmt.Println("Selected:", strings.Join(values, ", ")+"\n")
+}
+
+func (m *MultiSelect[T]) setTheme(theme *Theme) {
+	m.theme = theme
 }

@@ -14,6 +14,7 @@ type Group struct {
 	description string
 	current     int
 	errors      []error
+	theme       *Theme
 }
 
 // NewGroup creates a new group with the given fields.
