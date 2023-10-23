@@ -32,7 +32,7 @@ func NewSelect[T any](options ...T) *Select[T] {
 	return &Select[T]{
 		value:   new(T),
 		options: opts,
-		cursor:  "> ",
+		cursor:  "> ", // XXX: should this be applied in the theme (style.SetString)?
 	}
 }
 
@@ -110,29 +110,28 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // View renders the select field.
 func (s *Select[T]) View() string {
-	style := s.theme.Focused
+	styles := s.theme.Focused
 	if s.focused {
-		style = s.theme.Unfocused
+		styles = s.theme.Unfocused
 	}
 
 	var sb strings.Builder
-
-	sb.WriteString(style.Title.Render(s.title) + "\n")
+	sb.WriteString(styles.Title.Render(s.title) + "\n")
 	if s.description != "" {
-		sb.WriteString(style.Description.Render(s.description) + "\n")
+		sb.WriteString(styles.Description.Render(s.description) + "\n")
 	}
-	c := style.Cursor.Render(s.cursor)
+	c := styles.Selector.Render(s.cursor)
 	for i, option := range s.options {
 		if s.selected == i {
-			sb.WriteString(c + style.Option.Render(option.Key))
+			sb.WriteString(c + styles.Option.Render(option.Key))
 		} else {
-			sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)) + style.Option.Render(option.Key))
+			sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)) + styles.Option.Render(option.Key))
 		}
 		if i < len(s.options)-1 {
 			sb.WriteString("\n")
 		}
 	}
-	return style.Base.Render(sb.String())
+	return styles.Base.Render(sb.String())
 }
 
 // Run runs an accessible select field.
