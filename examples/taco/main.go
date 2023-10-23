@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -52,6 +53,12 @@ func main() {
 				Title("Shell?").
 				Description("Our shells are made fresh in-house, every day.").
 				Value(&order.Taco.Shell).
+				Validate(func(s string) error {
+					if s == "Soft" {
+						return errors.New("sorry, we're out of soft shells")
+					}
+					return nil
+				}).
 				Required(true),
 
 			huh.NewSelect("Chicken", "Beef", "Fish", "Beans").
@@ -77,6 +84,12 @@ func main() {
 				Title("Toppings").
 				Description("Choose up to 4.").
 				Value(&order.Taco.Toppings).
+				Validate(func(s []string) error {
+					if len(s) < 1 {
+						return fmt.Errorf("at least one topping is required")
+					}
+					return nil
+				}).
 				Filterable(true).
 				Limit(4),
 		),
@@ -86,15 +99,35 @@ func main() {
 			huh.NewInput().
 				Value(&order.Name).
 				Title("What's your name?").
+				Validate(func(s string) error {
+					if len(s) < 1 {
+						return fmt.Errorf("name is required")
+					}
+					return nil
+				}).
 				Description("For when your order is ready."),
 
 			huh.NewText().
 				Value(&order.Instructions).
 				Title("Special Instructions").
+				Validate(func(s string) error {
+					if len(s) < 1 {
+						return fmt.Errorf("instructions are required")
+					}
+					return nil
+				}).
 				CharLimit(400),
+		),
 
+		huh.NewGroup(
 			huh.NewConfirm().
 				Title("Would you like 15% off?").
+				Validate(func(b bool) error {
+					if !b {
+						return errors.New("why not?")
+					}
+					return nil
+				}).
 				Value(&order.Discount).
 				Affirmative("Yes!").
 				Negative("No."),

@@ -13,6 +13,7 @@ import (
 type MultiSelectStyle struct {
 	Base             lipgloss.Style
 	Title            lipgloss.Style
+	Error            lipgloss.Style
 	Description      lipgloss.Style
 	Help             lipgloss.Style
 	Cursor           lipgloss.Style
@@ -27,6 +28,7 @@ func DefaultMultiSelectStyles() (MultiSelectStyle, MultiSelectStyle) {
 	focused := MultiSelectStyle{
 		Base:             lipgloss.NewStyle().Border(lipgloss.ThickBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1).BorderForeground(lipgloss.Color("8")),
 		Title:            lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
+		Error:            lipgloss.NewStyle().Foreground(lipgloss.Color("9")),
 		Description:      lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
 		Help:             lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
 		Cursor:           lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
@@ -38,6 +40,7 @@ func DefaultMultiSelectStyles() (MultiSelectStyle, MultiSelectStyle) {
 	blurred := MultiSelectStyle{
 		Base:             lipgloss.NewStyle().Border(lipgloss.HiddenBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1),
 		Title:            lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Error:            lipgloss.NewStyle().Foreground(lipgloss.Color("9")),
 		Description:      lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
 		Help:             lipgloss.NewStyle().Foreground(lipgloss.Color("0")),
 		Cursor:           lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
@@ -63,6 +66,8 @@ type MultiSelect[T any] struct {
 	selected         []bool
 	options          []Option[T]
 	value            *[]T
+	validate         func([]T) error
+	err              error
 	style            *MultiSelectStyle
 	blurredStyle     MultiSelectStyle
 	focusedStyle     MultiSelectStyle
@@ -87,6 +92,9 @@ func NewMultiSelect[T any](options ...T) *MultiSelect[T] {
 		blurredStyle:     b,
 		style:            &b,
 		selected:         make([]bool, len(opts)),
+		validate: func([]T) error {
+			return nil
+		},
 	}
 }
 
@@ -138,6 +146,17 @@ func (m *MultiSelect[T]) Limit(limit int) *MultiSelect[T] {
 	return m
 }
 
+// Validate sets the validation function of the multi-select field.
+func (m *MultiSelect[T]) Validate(validate func([]T) error) *MultiSelect[T] {
+	m.validate = validate
+	return m
+}
+
+// Error returns the error of the multi-select field.
+func (m *MultiSelect[T]) Error() error {
+	return m.err
+}
+
 // Focus focuses the multi-select field.
 func (m *MultiSelect[T]) Focus() tea.Cmd {
 	m.style = &m.focusedStyle
@@ -147,6 +166,7 @@ func (m *MultiSelect[T]) Focus() tea.Cmd {
 // Blur blurs the multi-select field.
 func (m *MultiSelect[T]) Blur() tea.Cmd {
 	m.style = &m.blurredStyle
+	m.err = m.validate(*m.value)
 	return nil
 }
 
@@ -165,6 +185,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "down", "j":
 			m.cursor = min(m.cursor+1, len(m.options)-1)
 		case " ", "x":
+			m.err = nil
 			m.selected[m.cursor] = !m.selected[m.cursor]
 		case "shift+tab":
 			m.finalize()
@@ -190,7 +211,11 @@ func (m *MultiSelect[T]) finalize() {
 // View renders the multi-select field.
 func (m *MultiSelect[T]) View() string {
 	var sb strings.Builder
-	sb.WriteString(m.style.Title.Render(m.title) + "\n")
+	sb.WriteString(m.style.Title.Render(m.title))
+	if m.err != nil {
+		sb.WriteString(m.style.Error.Render(" * "))
+	}
+	sb.WriteString("\n")
 	if m.description != "" {
 		sb.WriteString(m.style.Description.Render(m.description) + "\n")
 	}

@@ -84,6 +84,11 @@ func (n *Note) Styles(focused, blurred NoteStyle) *Note {
 	return n
 }
 
+// Error returns the error of the note field.
+func (n *Note) Error() error {
+	return nil
+}
+
 // Focus focuses the note field.
 func (n *Note) Focus() tea.Cmd {
 	n.style = &n.focusedStyle

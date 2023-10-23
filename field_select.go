@@ -13,6 +13,7 @@ import (
 type SelectStyle struct {
 	Base        lipgloss.Style
 	Title       lipgloss.Style
+	Error       lipgloss.Style
 	Description lipgloss.Style
 	Cursor      lipgloss.Style
 	Selected    lipgloss.Style
@@ -24,6 +25,7 @@ func DefaultSelectStyles() (SelectStyle, SelectStyle) {
 	focused := SelectStyle{
 		Base:        lipgloss.NewStyle().Border(lipgloss.ThickBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1).BorderForeground(lipgloss.Color("8")),
 		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
+		Error:       lipgloss.NewStyle().Foreground(lipgloss.Color("9")),
 		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
 		Cursor:      lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
 		Selected:    lipgloss.NewStyle().Foreground(lipgloss.Color("15")),
@@ -32,6 +34,7 @@ func DefaultSelectStyles() (SelectStyle, SelectStyle) {
 	blurred := SelectStyle{
 		Base:        lipgloss.NewStyle().Border(lipgloss.HiddenBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1),
 		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Error:       lipgloss.NewStyle().Foreground(lipgloss.Color("9")),
 		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
 		Cursor:      lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
 		Selected:    lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
@@ -49,6 +52,8 @@ type Select[T any] struct {
 	options      []Option[T]
 	selected     int
 	cursor       string
+	err          error
+	validate     func(T) error
 	style        *SelectStyle
 	blurredStyle SelectStyle
 	focusedStyle SelectStyle
@@ -67,6 +72,7 @@ func NewSelect[T any](options ...T) *Select[T] {
 		value:        new(T),
 		options:      opts,
 		cursor:       "> ",
+		validate:     func(T) error { return nil },
 		style:        &blurred,
 		focusedStyle: focused,
 		blurredStyle: blurred,
@@ -116,6 +122,17 @@ func (s *Select[T]) Styles(focused, blurred SelectStyle) *Select[T] {
 	return s
 }
 
+// Validate sets the validation function of the select field.
+func (s *Select[T]) Validate(validate func(T) error) *Select[T] {
+	s.validate = validate
+	return s
+}
+
+// Error returns the error of the select field.
+func (s *Select[T]) Error() error {
+	return s.err
+}
+
 // Focus focuses the select field.
 func (s *Select[T]) Focus() tea.Cmd {
 	s.style = &s.focusedStyle
@@ -125,6 +142,7 @@ func (s *Select[T]) Focus() tea.Cmd {
 // Blur blurs the select field.
 func (s *Select[T]) Blur() tea.Cmd {
 	s.style = &s.blurredStyle
+	s.err = s.validate(*s.value)
 	return nil
 }
 
@@ -137,6 +155,8 @@ func (s *Select[T]) Init() tea.Cmd {
 func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		s.err = nil
+
 		switch msg.String() {
 		case "up", "k":
 			s.selected = max(s.selected-1, 0)
@@ -145,7 +165,12 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "shift+tab":
 			return s, prevField
 		case "tab", "enter":
-			*s.value = s.options[s.selected].Value
+			value := s.options[s.selected].Value
+			s.err = s.validate(value)
+			if s.err != nil {
+				return s, nil
+			}
+			*s.value = value
 			return s, nextField
 		}
 	}
@@ -155,7 +180,11 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // View renders the select field.
 func (s *Select[T]) View() string {
 	var sb strings.Builder
-	sb.WriteString(s.style.Title.Render(s.title) + "\n")
+	sb.WriteString(s.style.Title.Render(s.title))
+	if s.err != nil {
+		sb.WriteString(s.style.Error.Render(" * "))
+	}
+	sb.WriteString("\n")
 	if s.description != "" {
 		sb.WriteString(s.style.Description.Render(s.description) + "\n")
 	}
@@ -177,7 +206,8 @@ func (s *Select[T]) View() string {
 func (s *Select[T]) Run() {
 	var sb strings.Builder
 
-	sb.WriteString(s.style.Title.Render(s.title) + "\n")
+	sb.WriteString(s.style.Title.Render(s.title))
+	sb.WriteString("\n")
 
 	for i, option := range s.options {
 		sb.WriteString(fmt.Sprintf("%d. %s", i+1, option.Key))

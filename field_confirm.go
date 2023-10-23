@@ -13,6 +13,7 @@ import (
 type ConfirmStyle struct {
 	Base        lipgloss.Style
 	Title       lipgloss.Style
+	Error       lipgloss.Style
 	Description lipgloss.Style
 	Selected    lipgloss.Style
 	Unselected  lipgloss.Style
@@ -23,6 +24,7 @@ func DefaultConfirmStyles() (ConfirmStyle, ConfirmStyle) {
 	focused := ConfirmStyle{
 		Base:        lipgloss.NewStyle().Border(lipgloss.ThickBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1).BorderForeground(lipgloss.Color("8")),
 		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
+		Error:       lipgloss.NewStyle().Foreground(lipgloss.Color("9")),
 		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
 		Selected:    lipgloss.NewStyle().Foreground(lipgloss.Color("11")).Background(lipgloss.Color("4")).Padding(0, 2).MarginLeft(2),
 		Unselected:  lipgloss.NewStyle().Foreground(lipgloss.Color("7")).Background(lipgloss.Color("0")).Padding(0, 2).MarginLeft(2),
@@ -30,6 +32,7 @@ func DefaultConfirmStyles() (ConfirmStyle, ConfirmStyle) {
 	blurred := ConfirmStyle{
 		Base:        lipgloss.NewStyle().Border(lipgloss.HiddenBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1),
 		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Error:       lipgloss.NewStyle().Foreground(lipgloss.Color("9")),
 		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
 		Selected:    lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Background(lipgloss.Color("0")).Padding(0, 2).MarginLeft(2),
 		Unselected:  lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Background(lipgloss.Color("0")).Padding(0, 2).MarginLeft(2),
@@ -43,6 +46,9 @@ type Confirm struct {
 	title       string
 	description string
 	required    bool
+
+	validate func(bool) error
+	err      error
 
 	affirmative string
 	negative    string
@@ -61,6 +67,9 @@ func NewConfirm() *Confirm {
 		blurredStyle: b,
 		affirmative:  "Yes",
 		negative:     "No",
+		validate: func(b bool) error {
+			return nil
+		},
 	}
 }
 
@@ -100,6 +109,17 @@ func (c *Confirm) Required(required bool) *Confirm {
 	return c
 }
 
+// Validate sets the validation function of the confirm field.
+func (c *Confirm) Validate(validate func(bool) error) *Confirm {
+	c.validate = validate
+	return c
+}
+
+// Error returns the error of the confirm field.
+func (c *Confirm) Error() error {
+	return c.err
+}
+
 // Focus focuses the confirm field.
 func (c *Confirm) Focus() tea.Cmd {
 	c.style = &c.focusedStyle
@@ -109,6 +129,7 @@ func (c *Confirm) Focus() tea.Cmd {
 // Blur blurs the confirm field.
 func (c *Confirm) Blur() tea.Cmd {
 	c.style = &c.blurredStyle
+	c.err = c.validate(*c.value)
 	return nil
 }
 
@@ -124,6 +145,8 @@ func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		c.err = nil
+
 		switch msg.String() {
 		case "y", "Y":
 			*c.value = true
@@ -150,6 +173,9 @@ func (c *Confirm) View() string {
 
 	var sb strings.Builder
 	sb.WriteString(c.style.Title.Render(c.title))
+	if c.err != nil {
+		sb.WriteString(c.style.Error.Render(" * "))
+	}
 	if c.description != "" {
 		sb.WriteString("\n")
 		sb.WriteString(c.style.Description.Render(c.description))

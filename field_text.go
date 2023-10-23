@@ -14,6 +14,7 @@ import (
 type TextStyle struct {
 	Base        lipgloss.Style
 	Title       lipgloss.Style
+	Error       lipgloss.Style
 	Description lipgloss.Style
 	Help        lipgloss.Style
 	textarea.Style
@@ -30,12 +31,14 @@ func DefaultTextStyles() (TextStyle, TextStyle) {
 		Base:        lipgloss.NewStyle().Border(lipgloss.ThickBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1).BorderForeground(lipgloss.Color("8")),
 		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
 		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Error:       lipgloss.NewStyle().Foreground(lipgloss.Color("9")),
 		Help:        lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
 		Style:       f,
 	}
 	blurred := TextStyle{
 		Base:        lipgloss.NewStyle().Border(lipgloss.HiddenBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1),
 		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Error:       lipgloss.NewStyle().Foreground(lipgloss.Color("9")),
 		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
 		Help:        lipgloss.NewStyle().Foreground(lipgloss.Color("0")),
 		Style:       b,
@@ -50,6 +53,8 @@ type Text struct {
 	title        string
 	required     bool
 	textarea     textarea.Model
+	validate     func(string) error
+	err          error
 	style        *TextStyle
 	focusedStyle TextStyle
 	blurredStyle TextStyle
@@ -69,6 +74,7 @@ func NewText() *Text {
 		style:        &b,
 		focusedStyle: f,
 		blurredStyle: b,
+		validate:     func(s string) error { return nil },
 	}
 
 	t.updateTextareaStyle()
@@ -106,6 +112,17 @@ func (t *Text) Placeholder(str string) *Text {
 	return t
 }
 
+// Validate sets the validation function of the text field.
+func (t *Text) Validate(validate func(string) error) *Text {
+	t.validate = validate
+	return t
+}
+
+// Error returns the error of the text field.
+func (t *Text) Error() error {
+	return t.err
+}
+
 // updateTextareaStyle updates the style of the textarea.
 func (t *Text) updateTextareaStyle() {
 	t.textarea.FocusedStyle = t.focusedStyle.Style
@@ -124,6 +141,7 @@ func (t *Text) Blur() tea.Cmd {
 	*t.value = t.textarea.Value()
 	t.style = &t.blurredStyle
 	t.textarea.Blur()
+	t.err = t.validate(t.textarea.Value())
 	return nil
 }
 
@@ -148,6 +166,8 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmds = append(cmds, nextField)
 		case "shift+tab":
 			cmds = append(cmds, prevField)
+		default:
+			t.err = nil
 		}
 	}
 
@@ -158,6 +178,9 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (t *Text) View() string {
 	var sb strings.Builder
 	sb.WriteString(t.style.Title.Render(t.title))
+	if t.err != nil {
+		sb.WriteString(t.style.Error.Render(" * "))
+	}
 	sb.WriteString("\n")
 	sb.WriteString(t.textarea.View())
 	sb.WriteString("\n")

@@ -14,6 +14,7 @@ import (
 type InputStyle struct {
 	Base        lipgloss.Style
 	Title       lipgloss.Style
+	Error       lipgloss.Style
 	Description lipgloss.Style
 	Prompt      lipgloss.Style
 	Text        lipgloss.Style
@@ -26,6 +27,7 @@ func DefaultInputStyles() (InputStyle, InputStyle) {
 		Base:        lipgloss.NewStyle().Border(lipgloss.ThickBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1).BorderForeground(lipgloss.Color("8")),
 		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
 		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Error:       lipgloss.NewStyle().Foreground(lipgloss.Color("9")),
 		Prompt:      lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
 		Text:        lipgloss.NewStyle().Foreground(lipgloss.Color("15")),
 		Placeholder: lipgloss.NewStyle().Foreground(lipgloss.Color("7")),
@@ -33,6 +35,7 @@ func DefaultInputStyles() (InputStyle, InputStyle) {
 	blurred := InputStyle{
 		Base:        lipgloss.NewStyle().Border(lipgloss.HiddenBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1),
 		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Error:       lipgloss.NewStyle().Foreground(lipgloss.Color("9")),
 		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
 		Prompt:      lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
 		Text:        lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
@@ -52,6 +55,8 @@ type Input struct {
 	style        *InputStyle
 	focusedStyle InputStyle
 	blurredStyle InputStyle
+	validate     func(string) error
+	err          error
 }
 
 // NewInput returns a new input field.
@@ -66,6 +71,9 @@ func NewInput() *Input {
 		style:        &b,
 		focusedStyle: f,
 		blurredStyle: b,
+		validate: func(s string) error {
+			return nil
+		},
 	}
 
 	i.updateTextinputStyle()
@@ -115,6 +123,17 @@ func (i *Input) Placeholder(str string) *Input {
 	return i
 }
 
+// Validate sets the validator of the input field.
+func (i *Input) Validate(validate func(string) error) *Input {
+	i.validate = validate
+	return i
+}
+
+// Error returns the error of the input field.
+func (i *Input) Error() error {
+	return i.err
+}
+
 func (i *Input) updateTextinputStyle() {
 	i.textinput.PromptStyle = i.style.Prompt
 	i.textinput.PlaceholderStyle = i.style.Placeholder
@@ -134,6 +153,7 @@ func (i *Input) Blur() tea.Cmd {
 	i.style = &i.blurredStyle
 	i.textinput.Blur()
 	i.updateTextinputStyle()
+	i.err = i.validate(i.textinput.Value())
 	return nil
 }
 
@@ -159,6 +179,8 @@ func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmds = append(cmds, prevField)
 		case "enter", "tab":
 			cmds = append(cmds, nextField)
+		default:
+			i.err = nil
 		}
 	}
 
@@ -171,6 +193,9 @@ func (i *Input) View() string {
 
 	if i.title != "" {
 		sb.WriteString(i.style.Title.Render(i.title))
+		if i.err != nil {
+			sb.WriteString(i.style.Error.Render(" * "))
+		}
 		sb.WriteString("\n")
 	}
 	if i.description != "" {
