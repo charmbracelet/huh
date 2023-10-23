@@ -42,6 +42,7 @@ func NewMultiSelect[T any](options ...T) *MultiSelect[T] {
 		options:  opts,
 		selected: make([]bool, len(opts)),
 		validate: func([]T) error { return nil },
+		limit:    len(opts),
 	}
 }
 

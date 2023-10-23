@@ -83,7 +83,7 @@ func (f FieldStyles) copy() FieldStyles {
 func NewBaseTheme() *Theme {
 	var t Theme
 
-	button := lipgloss.NewStyle().Padding(0, 1).Margin(0, 1)
+	button := lipgloss.NewStyle().Padding(0, 2).MarginRight(1)
 
 	t.Focused = FieldStyles{
 		Base: lipgloss.NewStyle().
@@ -101,6 +101,105 @@ func NewBaseTheme() *Theme {
 		BlurredButton: button.Copy().
 			Foreground(lipgloss.Color("7")).
 			Background(lipgloss.Color("0")),
+	}
+
+	t.Blurred = t.Focused.copy()
+	t.Blurred.Base = t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
+	t.Blurred.MultiSelectSelector = lipgloss.NewStyle().SetString("  ")
+
+	return &t
+}
+
+// NewCharmTheme returns a new theme based on the Charm color scheme.
+func NewCharmTheme() *Theme {
+	var t Theme
+
+	button := lipgloss.NewStyle().Padding(0, 2).MarginRight(1)
+
+	t.Focused = FieldStyles{
+		Base:                lipgloss.NewStyle().PaddingLeft(1).BorderStyle(lipgloss.NormalBorder()).BorderLeft(true).BorderForeground(lipgloss.Color("8")),
+		Title:               lipgloss.NewStyle().Foreground(lipgloss.Color("99")).Bold(true),
+		Description:         lipgloss.NewStyle().Foreground(lipgloss.Color("240")),
+		Help:                lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Error:               lipgloss.NewStyle().Foreground(lipgloss.Color("9")),
+		ErrorMessage:        lipgloss.NewStyle().Foreground(lipgloss.Color("9")).SetString("* "),
+		SelectSelector:      lipgloss.NewStyle().Foreground(lipgloss.Color("212")).SetString("> "),
+		Option:              lipgloss.NewStyle().Foreground(lipgloss.Color("7")),
+		MultiSelectSelector: lipgloss.NewStyle().Foreground(lipgloss.Color("212")).SetString("> "),
+		SelectedOption:      lipgloss.NewStyle().Foreground(lipgloss.Color("212")),
+		SelectedPrefix:      lipgloss.NewStyle().Foreground(lipgloss.Color("212")).SetString("[•] "),
+		UnselectedOption:    lipgloss.NewStyle().Foreground(lipgloss.Color("7")),
+		UnselectedPrefix:    lipgloss.NewStyle().SetString("[ ] "),
+		Cursor:              lipgloss.NewStyle().Foreground(lipgloss.Color("212")),
+		Placeholder:         lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		FocusedButton:       button.Copy().Foreground(lipgloss.Color("#ffffd7")).Background(lipgloss.Color("212")),
+		BlurredButton:       button.Copy().Foreground(lipgloss.Color("7")).Background(lipgloss.Color("0")),
+	}
+
+	t.Blurred = t.Focused.copy()
+	t.Blurred.Base = t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
+	t.Blurred.MultiSelectSelector = lipgloss.NewStyle().SetString("  ")
+
+	return &t
+}
+
+// NewDraculaTheme returns a new theme based on the Dracula color scheme.
+func NewDraculaTheme() *Theme {
+	var t Theme
+
+	button := lipgloss.NewStyle().Padding(0, 2).MarginRight(1)
+
+	t.Focused = FieldStyles{
+		Base:                lipgloss.NewStyle().PaddingLeft(1).BorderStyle(lipgloss.NormalBorder()).BorderLeft(true).BorderForeground(lipgloss.Color("8")),
+		Title:               lipgloss.NewStyle().Foreground(lipgloss.Color("#bd93f9")).Bold(true),
+		Description:         lipgloss.NewStyle().Foreground(lipgloss.Color("#bd93f9")),
+		Help:                lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Error:               lipgloss.NewStyle().Foreground(lipgloss.Color("#ff5555")),
+		ErrorMessage:        lipgloss.NewStyle().Foreground(lipgloss.Color("#ff5555")).SetString("* "),
+		SelectSelector:      lipgloss.NewStyle().Foreground(lipgloss.Color("#f1fa8c")).SetString("> "),
+		Option:              lipgloss.NewStyle().Foreground(lipgloss.Color("#f8f8f2")),
+		MultiSelectSelector: lipgloss.NewStyle().Foreground(lipgloss.Color("#f1fa8c")).SetString("> "),
+		SelectedOption:      lipgloss.NewStyle().Foreground(lipgloss.Color("#f1fa8c")),
+		SelectedPrefix:      lipgloss.NewStyle().Foreground(lipgloss.Color("#f1fa8c")).SetString("[•] "),
+		UnselectedOption:    lipgloss.NewStyle().Foreground(lipgloss.Color("#f8f8f2")),
+		UnselectedPrefix:    lipgloss.NewStyle().SetString("[ ] "),
+		Cursor:              lipgloss.NewStyle().Foreground(lipgloss.Color("#f1fa8c")),
+		Placeholder:         lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		FocusedButton:       button.Copy().Foreground(lipgloss.Color("0")).Background(lipgloss.Color("#f1fa8c")).Bold(true),
+		BlurredButton:       button.Copy().Foreground(lipgloss.Color("7")).Background(lipgloss.Color("0")),
+	}
+
+	t.Blurred = t.Focused.copy()
+	t.Blurred.Base = t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
+	t.Blurred.MultiSelectSelector = lipgloss.NewStyle().SetString("  ")
+
+	return &t
+}
+
+// NewBase16Theme returns a new theme based on the base16 color scheme.
+func NewBase16Theme() *Theme {
+	var t Theme
+
+	button := lipgloss.NewStyle().Padding(0, 2).MarginRight(1)
+
+	t.Focused = FieldStyles{
+		Base:                lipgloss.NewStyle().PaddingLeft(1).BorderStyle(lipgloss.NormalBorder()).BorderLeft(true).BorderForeground(lipgloss.Color("8")),
+		Title:               lipgloss.NewStyle().Foreground(lipgloss.Color("6")),
+		Description:         lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Help:                lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		Error:               lipgloss.NewStyle().Foreground(lipgloss.Color("9")),
+		ErrorMessage:        lipgloss.NewStyle().Foreground(lipgloss.Color("9")).SetString("* "),
+		SelectSelector:      lipgloss.NewStyle().Foreground(lipgloss.Color("6")).SetString("> "),
+		Option:              lipgloss.NewStyle().Foreground(lipgloss.Color("7")),
+		MultiSelectSelector: lipgloss.NewStyle().Foreground(lipgloss.Color("6")).SetString("> "),
+		SelectedOption:      lipgloss.NewStyle().Foreground(lipgloss.Color("6")),
+		SelectedPrefix:      lipgloss.NewStyle().Foreground(lipgloss.Color("6")).SetString("[•] "),
+		UnselectedOption:    lipgloss.NewStyle().Foreground(lipgloss.Color("7")),
+		UnselectedPrefix:    lipgloss.NewStyle().SetString("[ ] "),
+		Cursor:              lipgloss.NewStyle().Foreground(lipgloss.Color("6")),
+		Placeholder:         lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
+		FocusedButton:       button.Copy().Foreground(lipgloss.Color("0")).Background(lipgloss.Color("6")),
+		BlurredButton:       button.Copy().Foreground(lipgloss.Color("7")).Background(lipgloss.Color("0")),
 	}
 
 	t.Blurred = t.Focused.copy()

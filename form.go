@@ -70,6 +70,14 @@ func (f *Form) Accessible(b bool) *Form {
 	return f
 }
 
+// Theme sets the theme on a form.
+func (f *Form) Theme(theme *Theme) *Form {
+	if theme != nil {
+		f.theme = theme
+	}
+	return f
+}
+
 // Init initializes the form.
 func (f *Form) Init() tea.Cmd {
 	var cmds []tea.Cmd
@@ -123,6 +131,10 @@ func (f *Form) View() string {
 
 // Run runs the form.
 func (f *Form) Run() error {
+	if len(f.groups) == 0 {
+		return nil
+	}
+
 	// Make theme acessible to groups and fields
 	for _, group := range f.groups {
 		group.Theme(f.theme)

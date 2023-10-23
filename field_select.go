@@ -137,7 +137,7 @@ func (s *Select[T]) View() string {
 	c := styles.SelectSelector.String()
 	for i, option := range s.options {
 		if s.selected == i {
-			sb.WriteString(c + styles.Option.Render(option.Key))
+			sb.WriteString(c + styles.SelectedOption.Render(option.Key))
 		} else {
 			sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)) + styles.Option.Render(option.Key))
 		}

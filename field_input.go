@@ -15,6 +15,7 @@ type Input struct {
 	title       string
 	description string
 
+	inline    bool
 	charlimit int
 
 	validate func(string) error
@@ -62,12 +63,6 @@ func (i *Input) Prompt(prompt string) *Input {
 	return i
 }
 
-// Validate sets the validation function of the input field.
-func (i *Input) Validate(validate func(string) error) *Input {
-	i.validate = validate
-	return i
-}
-
 // CharLimit sets the character limit of the input field.
 func (i *Input) CharLimit(charlimit int) *Input {
 	i.charlimit = charlimit
@@ -77,6 +72,18 @@ func (i *Input) CharLimit(charlimit int) *Input {
 // Placeholder sets the placeholder of the text input.
 func (i *Input) Placeholder(str string) *Input {
 	i.textinput.Placeholder = str
+	return i
+}
+
+// Inline sets whether the title and input should be on the same line.
+func (i *Input) Inline(inline bool) *Input {
+	i.inline = inline
+	return i
+}
+
+// Validate sets the validation function of the input field.
+func (i *Input) Validate(validate func(string) error) *Input {
+	i.validate = validate
 	return i
 }
 
@@ -140,11 +147,15 @@ func (i *Input) View() string {
 
 	if i.title != "" {
 		sb.WriteString(styles.Title.Render(i.title))
-		sb.WriteString("\n")
+		if !i.inline {
+			sb.WriteString("\n")
+		}
 	}
 	if i.description != "" {
 		sb.WriteString(styles.Description.Render(i.description))
-		sb.WriteString("\n")
+		if !i.inline {
+			sb.WriteString("\n")
+		}
 	}
 
 	sb.WriteString(i.textinput.View())
@@ -154,7 +165,10 @@ func (i *Input) View() string {
 
 // Run runs the input field in accessible mode.
 func (i *Input) Run() {
-	fmt.Println(i.theme.Focused.Title.Render(i.title))
+	fmt.Print(i.theme.Focused.Title.Render(i.title))
+	if !i.inline {
+		fmt.Println()
+	}
 	*i.value = accessibility.PromptString("> ")
 	fmt.Println()
 }
