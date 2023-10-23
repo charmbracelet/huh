@@ -16,6 +16,9 @@ type Confirm struct {
 	description string
 	required    bool
 
+	validate func(bool) error
+	err      error
+
 	affirmative string
 	negative    string
 
@@ -29,7 +32,19 @@ func NewConfirm() *Confirm {
 		value:       new(bool),
 		affirmative: "Yes",
 		negative:    "No",
+		validate:    func(bool) error { return nil },
 	}
+}
+
+// Validate sets the validation function of the confirm field.
+func (c *Confirm) Validate(validate func(bool) error) *Confirm {
+	c.validate = validate
+	return c
+}
+
+// Error returns the error of the confirm field.
+func (c *Confirm) Error() error {
+	return c.err
 }
 
 // Affirmative sets the affirmative value of the confirm field.
@@ -77,6 +92,7 @@ func (c *Confirm) Focus() tea.Cmd {
 // Blur blurs the confirm field.
 func (c *Confirm) Blur() tea.Cmd {
 	c.focused = false
+	c.err = c.validate(*c.value)
 	return nil
 }
 
@@ -91,6 +107,9 @@ func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+
+		c.err = nil
+
 		switch msg.String() {
 		case "y", "Y":
 			*c.value = true
@@ -117,6 +136,9 @@ func (c *Confirm) View() string {
 
 	var sb strings.Builder
 	sb.WriteString(styles.Title.Render(c.title))
+	if c.err != nil {
+		sb.WriteString(styles.Error.Render(" * "))
+	}
 	if c.description != "" {
 		sb.WriteString("\n")
 		sb.WriteString(styles.Description.Render(c.description))

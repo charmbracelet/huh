@@ -11,12 +11,18 @@ import (
 
 // Text is a form text field.
 type Text struct {
-	value    *string
-	title    string
+	value *string
+	title string
+
 	required bool
+
+	validate func(string) error
+	err      error
+
 	textarea textarea.Model
-	focused  bool
-	theme    *Theme
+
+	focused bool
+	theme   *Theme
 }
 
 // NewText returns a new text field.
@@ -28,6 +34,7 @@ func NewText() *Text {
 	t := &Text{
 		value:    new(string),
 		textarea: text,
+		validate: func(string) error { return nil },
 	}
 
 	return t
@@ -63,6 +70,17 @@ func (t *Text) Placeholder(str string) *Text {
 	return t
 }
 
+// Validate sets the validation function of the text field.
+func (t *Text) Validate(validate func(string) error) *Text {
+	t.validate = validate
+	return t
+}
+
+// Error returns the error of the text field.
+func (t *Text) Error() error {
+	return t.err
+}
+
 // Focus focuses the text field.
 func (t *Text) Focus() tea.Cmd {
 	t.focused = true
@@ -74,6 +92,7 @@ func (t *Text) Blur() tea.Cmd {
 	t.focused = false
 	*t.value = t.textarea.Value()
 	t.textarea.Blur()
+	t.err = t.validate(*t.value)
 	return nil
 }
 
@@ -93,6 +112,8 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		t.err = nil
+
 		switch msg.String() {
 		case "tab", "ctrl+d":
 			cmds = append(cmds, nextField)
@@ -113,6 +134,9 @@ func (t *Text) View() string {
 
 	var sb strings.Builder
 	sb.WriteString(styles.Title.Render(t.title))
+	if t.err != nil {
+		sb.WriteString(styles.Error.Render(" * "))
+	}
 	sb.WriteString("\n")
 	sb.WriteString(t.textarea.View())
 	sb.WriteString("\n")

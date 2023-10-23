@@ -55,6 +55,11 @@ func (n *Note) Blur() tea.Cmd {
 	return nil
 }
 
+// Error returns the error of the note field.
+func (n *Note) Error() error {
+	return nil
+}
+
 // Init initializes the note field.
 func (n *Note) Init() tea.Cmd {
 	return nil
