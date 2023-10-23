@@ -23,11 +23,12 @@ func (t Theme) copy() Theme {
 
 // FieldStyles are the styles for input fields
 type FieldStyles struct {
-	Base        lipgloss.Style
-	Title       lipgloss.Style
-	Description lipgloss.Style
-	Help        lipgloss.Style
-	Error       lipgloss.Style
+	Base         lipgloss.Style
+	Title        lipgloss.Style
+	Description  lipgloss.Style
+	Help         lipgloss.Style
+	Error        lipgloss.Style
+	ErrorMessage lipgloss.Style
 
 	// Select styles.
 	SelectSelector lipgloss.Style // Selection indicator
@@ -60,6 +61,7 @@ func (f FieldStyles) copy() FieldStyles {
 		Description:         f.Description.Copy(),
 		Help:                f.Help.Copy(),
 		Error:               f.Error.Copy(),
+		ErrorMessage:        f.Error.Copy(),
 		SelectSelector:      f.SelectSelector.Copy(),
 		Option:              f.Option.Copy(),
 		MultiSelectSelector: f.MultiSelectSelector.Copy(),
@@ -88,6 +90,7 @@ func NewBaseTheme() *Theme {
 			PaddingLeft(1).
 			BorderStyle(lipgloss.NormalBorder()).
 			BorderLeft(true),
+		ErrorMessage:        lipgloss.NewStyle().SetString("* "),
 		SelectSelector:      lipgloss.NewStyle().SetString("> "),
 		MultiSelectSelector: lipgloss.NewStyle().SetString("> "),
 		SelectedPrefix:      lipgloss.NewStyle().SetString("[•] "),
