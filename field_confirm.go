@@ -14,7 +14,6 @@ type Confirm struct {
 	value       *bool
 	title       string
 	description string
-	required    bool
 
 	validate func(bool) error
 	err      error
@@ -74,12 +73,6 @@ func (c *Confirm) Title(title string) *Confirm {
 // Description sets the description of the confirm field.
 func (c *Confirm) Description(description string) *Confirm {
 	c.description = description
-	return c
-}
-
-// Required sets the confirm field as required.
-func (c *Confirm) Required(required bool) *Confirm {
-	c.required = required
 	return c
 }
 

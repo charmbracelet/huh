@@ -16,7 +16,6 @@ type MultiSelect[T any] struct {
 
 	filterable bool
 	limit      int
-	required   bool
 
 	validate func([]T) error
 	err      error
@@ -67,12 +66,6 @@ func (m *MultiSelect[T]) Title(title string) *MultiSelect[T] {
 // Description sets the description of the multi-select field.
 func (m *MultiSelect[T]) Description(description string) *MultiSelect[T] {
 	m.description = description
-	return m
-}
-
-// Required sets the multi-select field as required.
-func (m *MultiSelect[T]) Required(required bool) *MultiSelect[T] {
-	m.required = required
 	return m
 }
 

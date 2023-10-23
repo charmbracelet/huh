@@ -57,13 +57,11 @@ func main() {
 					}
 					return nil
 				}).
-				Value(&order.Taco.Shell).
-				Required(true),
+				Value(&order.Taco.Shell),
 
 			huh.NewSelect("Chicken", "Beef", "Fish", "Beans").
 				Value(&order.Taco.Base).
-				Title("Base").
-				Required(true),
+				Title("Base"),
 		),
 
 		// Prompt for toppings and special instructions.
@@ -89,8 +87,7 @@ func main() {
 					huh.NewOption("Medium", Medium),
 					huh.NewOption("Hot", Hot),
 				).
-				Value(&order.Taco.Spice).
-				Required(true),
+				Value(&order.Taco.Spice),
 		),
 
 		// Gather final details for the order.

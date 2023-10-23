@@ -29,12 +29,10 @@ func main() {
     huh.Group(
       huh.Select().
         Title("Shell?").
-        Required(true).
         Options("Hard", "Soft"),
 
       huh.Select().
         Title("Base").
-        Required(true).
         Options("Chicken", "Beef", "Fish", "Beans"),
     ),
 
