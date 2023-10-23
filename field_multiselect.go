@@ -41,13 +41,10 @@ func NewMultiSelect[T any](options ...T) *MultiSelect[T] {
 	}
 
 	return &MultiSelect[T]{
-		value:            new([]T),
-		options:          opts,
-		cursorPrefix:     "> ",   // XXX: should this be applied in the theme (style.SetString)?
-		selectedPrefix:   "[•] ", // XXX: should this be applied in the theme (style.SetString)?
-		unselectedPrefix: "[ ] ", // XXX: should this be applied in the theme (style.SetString)?
-		selected:         make([]bool, len(opts)),
-		validate:         func([]T) error { return nil },
+		value:    new([]T),
+		options:  opts,
+		selected: make([]bool, len(opts)),
+		validate: func([]T) error { return nil },
 	}
 }
 
@@ -78,12 +75,6 @@ func (m *MultiSelect[T]) Options(options ...Option[T]) *MultiSelect[T] {
 // Filterable sets the multi-select field as filterable.
 func (m *MultiSelect[T]) Filterable(filterable bool) *MultiSelect[T] {
 	m.filterable = filterable
-	return m
-}
-
-// Cursor sets the cursor of the multi-select field.
-func (m *MultiSelect[T]) Cursor(cursor string) *MultiSelect[T] {
-	m.cursorPrefix = cursor
 	return m
 }
 
@@ -186,7 +177,7 @@ func (m *MultiSelect[T]) View() string {
 	if m.description != "" {
 		sb.WriteString(styles.Description.Render(m.description) + "\n")
 	}
-	c := styles.Selector.Render(m.cursorPrefix)
+	c := styles.Selector.String()
 	for i, option := range m.options {
 		if m.cursor == i {
 			sb.WriteString(c)
@@ -195,10 +186,10 @@ func (m *MultiSelect[T]) View() string {
 		}
 
 		if m.selected[i] {
-			sb.WriteString(styles.SelectedPrefix.Render(m.selectedPrefix))
+			sb.WriteString(styles.SelectedPrefix.String())
 			sb.WriteString(styles.SelectedOption.Render(option.Key))
 		} else {
-			sb.WriteString(styles.UnselectedPrefix.Render(m.unselectedPrefix))
+			sb.WriteString(styles.UnselectedPrefix.String())
 			sb.WriteString(styles.UnselectedOption.Render(option.Key))
 		}
 		if i < len(m.options)-1 {
@@ -220,10 +211,10 @@ func (m *MultiSelect[T]) printOptions() {
 	for i, option := range m.options {
 		var prefix string
 		if m.selected[i] {
-			prefix = styles.SelectedPrefix.Render(m.selectedPrefix)
+			prefix = styles.SelectedPrefix.String()
 			sb.WriteString(fmt.Sprintf("%d. %s%s", i+1, prefix, option.Key))
 		} else {
-			prefix = styles.UnselectedPrefix.Render(m.unselectedPrefix)
+			prefix = styles.UnselectedPrefix.String()
 			sb.WriteString(fmt.Sprintf("%d. %s%s", i+1, prefix, option.Key))
 		}
 		if i < len(m.options)-1 {
