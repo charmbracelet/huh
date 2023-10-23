@@ -7,53 +7,16 @@ import (
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh/accessibility"
-	"github.com/charmbracelet/lipgloss"
 )
-
-// TextareaStyle is the style of the textarea field.
-type TextStyle struct {
-	Base        lipgloss.Style
-	Title       lipgloss.Style
-	Description lipgloss.Style
-	Help        lipgloss.Style
-	textarea.Style
-}
-
-// DefaultTextStyles returns the default focused style of the text field.
-func DefaultTextStyles() (TextStyle, TextStyle) {
-	f, b := textarea.DefaultStyles()
-
-	f.CursorLine = lipgloss.NewStyle()
-	b.CursorLine = lipgloss.NewStyle()
-
-	focused := TextStyle{
-		Base:        lipgloss.NewStyle().Border(lipgloss.ThickBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1).BorderForeground(lipgloss.Color("8")),
-		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
-		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Help:        lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Style:       f,
-	}
-	blurred := TextStyle{
-		Base:        lipgloss.NewStyle().Border(lipgloss.HiddenBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1),
-		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Help:        lipgloss.NewStyle().Foreground(lipgloss.Color("0")),
-		Style:       b,
-	}
-
-	return focused, blurred
-}
 
 // Text is a form text field.
 type Text struct {
-	value        *string
-	title        string
-	required     bool
-	textarea     textarea.Model
-	style        *TextStyle
-	focusedStyle TextStyle
-	blurredStyle TextStyle
-	theme        *Theme
+	value    *string
+	title    string
+	required bool
+	textarea textarea.Model
+	focused  bool
+	theme    *Theme
 }
 
 // NewText returns a new text field.
@@ -62,17 +25,10 @@ func NewText() *Text {
 	text.ShowLineNumbers = false
 	text.Prompt = ""
 
-	f, b := DefaultTextStyles()
-
 	t := &Text{
-		value:        new(string),
-		textarea:     text,
-		style:        &b,
-		focusedStyle: f,
-		blurredStyle: b,
+		value:    new(string),
+		textarea: text,
 	}
-
-	t.updateTextareaStyle()
 
 	return t
 }
@@ -107,23 +63,16 @@ func (t *Text) Placeholder(str string) *Text {
 	return t
 }
 
-// updateTextareaStyle updates the style of the textarea.
-func (t *Text) updateTextareaStyle() {
-	t.textarea.FocusedStyle = t.focusedStyle.Style
-	t.textarea.BlurredStyle = t.blurredStyle.Style
-}
-
 // Focus focuses the text field.
 func (t *Text) Focus() tea.Cmd {
-	t.style = &t.focusedStyle
-	cmd := t.textarea.Focus()
-	return cmd
+	t.focused = true
+	return t.textarea.Focus()
 }
 
 // Blur blurs the text field.
 func (t *Text) Blur() tea.Cmd {
+	t.focused = false
 	*t.value = t.textarea.Value()
-	t.style = &t.blurredStyle
 	t.textarea.Blur()
 	return nil
 }
@@ -157,18 +106,23 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // View renders the text field.
 func (t *Text) View() string {
+	styles := t.theme.Unfocused
+	if t.focused {
+		styles = t.theme.Focused
+	}
+
 	var sb strings.Builder
-	sb.WriteString(t.style.Title.Render(t.title))
+	sb.WriteString(styles.Title.Render(t.title))
 	sb.WriteString("\n")
 	sb.WriteString(t.textarea.View())
 	sb.WriteString("\n")
-	sb.WriteString(t.style.Help.Render("tab • continue"))
+	sb.WriteString(styles.Help.Render("tab • continue"))
 
-	return t.style.Base.Render(sb.String())
+	return styles.Base.Render(sb.String())
 }
 
 func (t *Text) Run() {
-	fmt.Println(t.style.Title.Render(t.title))
+	fmt.Println(t.theme.Focused.Title.Render(t.title))
 	*t.value = accessibility.PromptString("> ")
 	fmt.Println()
 }
