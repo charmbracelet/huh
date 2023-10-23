@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh/accessibility"
+	"github.com/charmbracelet/lipgloss"
 )
 
 // Text is a form text field.
@@ -28,6 +29,7 @@ func NewText() *Text {
 	text := textarea.New()
 	text.ShowLineNumbers = false
 	text.Prompt = ""
+	text.FocusedStyle.CursorLine = lipgloss.NewStyle()
 
 	t := &Text{
 		value:    new(string),
