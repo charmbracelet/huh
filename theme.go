@@ -15,10 +15,23 @@ type FieldStyles struct {
 	Base        lipgloss.Style
 	Title       lipgloss.Style
 	Description lipgloss.Style
-	Selector    lipgloss.Style // Selection indicator in selects and multi-selects
-	Option      lipgloss.Style // Select options
+
+	// Select and multi-select styles
+	Selector lipgloss.Style // Selection indicator in selects and multi-selects
+	Option   lipgloss.Style // Select options
+
+	// Multi-select styles
+	SelectedOption   lipgloss.Style
+	SelectedPrefix   lipgloss.Style
+	UnselectedOption lipgloss.Style
+	UnselectedPrefix lipgloss.Style
+
+	// Textinput and teatarea styles
 	Cursor      lipgloss.Style // Cursor in textinputs and textareas
 	Placeholder lipgloss.Style
+
+	Help  lipgloss.Style
+	Error lipgloss.Style
 }
 
 // NewBaseTheme returns a new base theme with general styles to be inherited by

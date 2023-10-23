@@ -9,46 +9,6 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-// MultiSelectStyle is the style of the multi-select field.
-type MultiSelectStyle struct {
-	Base             lipgloss.Style
-	Title            lipgloss.Style
-	Description      lipgloss.Style
-	Help             lipgloss.Style
-	Cursor           lipgloss.Style
-	Selected         lipgloss.Style
-	Unselected       lipgloss.Style
-	SelectedPrefix   lipgloss.Style
-	UnselectedPrefix lipgloss.Style
-}
-
-// DefaultMultiSelectStyles returns the default focused style of the multi-select field.
-func DefaultMultiSelectStyles() (MultiSelectStyle, MultiSelectStyle) {
-	focused := MultiSelectStyle{
-		Base:             lipgloss.NewStyle().Border(lipgloss.ThickBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1).BorderForeground(lipgloss.Color("8")),
-		Title:            lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
-		Description:      lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Help:             lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Cursor:           lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
-		Selected:         lipgloss.NewStyle().Foreground(lipgloss.Color("15")),
-		Unselected:       lipgloss.NewStyle().Foreground(lipgloss.Color("7")),
-		SelectedPrefix:   lipgloss.NewStyle().Foreground(lipgloss.Color("15")),
-		UnselectedPrefix: lipgloss.NewStyle().Foreground(lipgloss.Color("7")),
-	}
-	blurred := MultiSelectStyle{
-		Base:             lipgloss.NewStyle().Border(lipgloss.HiddenBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1),
-		Title:            lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Description:      lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Help:             lipgloss.NewStyle().Foreground(lipgloss.Color("0")),
-		Cursor:           lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Selected:         lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Unselected:       lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		SelectedPrefix:   lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		UnselectedPrefix: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-	}
-	return focused, blurred
-}
-
 // MultiSelect is a form multi-select field.
 type MultiSelect[T any] struct {
 	title            string
@@ -63,16 +23,12 @@ type MultiSelect[T any] struct {
 	selected         []bool
 	options          []Option[T]
 	value            *[]T
-	style            *MultiSelectStyle
-	blurredStyle     MultiSelectStyle
-	focusedStyle     MultiSelectStyle
+	focused          bool
 	theme            *Theme
 }
 
 // NewMultiSelect returns a new multi-select field.
 func NewMultiSelect[T any](options ...T) *MultiSelect[T] {
-	f, b := DefaultMultiSelectStyles()
-
 	var opts []Option[T]
 	for _, o := range options {
 		opts = append(opts, Option[T]{Key: fmt.Sprint(o), Value: o})
@@ -81,12 +37,9 @@ func NewMultiSelect[T any](options ...T) *MultiSelect[T] {
 	return &MultiSelect[T]{
 		value:            new([]T),
 		options:          opts,
-		cursorPrefix:     "> ",
-		selectedPrefix:   "[•] ",
-		unselectedPrefix: "[ ] ",
-		focusedStyle:     f,
-		blurredStyle:     b,
-		style:            &b,
+		cursorPrefix:     "> ",   // XXX: should this be applied in the theme (style.SetString)?
+		selectedPrefix:   "[•] ", // XXX: should this be applied in the theme (style.SetString)?
+		unselectedPrefix: "[ ] ", // XXX: should this be applied in the theme (style.SetString)?
 		selected:         make([]bool, len(opts)),
 	}
 }
@@ -141,13 +94,13 @@ func (m *MultiSelect[T]) Limit(limit int) *MultiSelect[T] {
 
 // Focus focuses the multi-select field.
 func (m *MultiSelect[T]) Focus() tea.Cmd {
-	m.style = &m.focusedStyle
+	m.focused = true
 	return nil
 }
 
 // Blur blurs the multi-select field.
 func (m *MultiSelect[T]) Blur() tea.Cmd {
-	m.style = &m.blurredStyle
+	m.focused = false
 	return nil
 }
 
@@ -190,12 +143,17 @@ func (m *MultiSelect[T]) finalize() {
 
 // View renders the multi-select field.
 func (m *MultiSelect[T]) View() string {
-	var sb strings.Builder
-	sb.WriteString(m.style.Title.Render(m.title) + "\n")
-	if m.description != "" {
-		sb.WriteString(m.style.Description.Render(m.description) + "\n")
+	styles := m.theme.Focused
+	if m.focused {
+		styles = m.theme.Unfocused
 	}
-	c := m.style.Cursor.Render(m.cursorPrefix)
+
+	var sb strings.Builder
+	sb.WriteString(styles.Title.Render(m.title) + "\n")
+	if m.description != "" {
+		sb.WriteString(styles.Description.Render(m.description) + "\n")
+	}
+	c := styles.Selector.Render(m.cursorPrefix)
 	for i, option := range m.options {
 		if m.cursor == i {
 			sb.WriteString(c)
@@ -204,32 +162,35 @@ func (m *MultiSelect[T]) View() string {
 		}
 
 		if m.selected[i] {
-			sb.WriteString(m.style.SelectedPrefix.Render(m.selectedPrefix))
-			sb.WriteString(m.style.Selected.Render(option.Key))
+			sb.WriteString(styles.SelectedPrefix.Render(m.selectedPrefix))
+			sb.WriteString(styles.SelectedOption.Render(option.Key))
 		} else {
-			sb.WriteString(m.style.UnselectedPrefix.Render(m.unselectedPrefix))
-			sb.WriteString(m.style.Unselected.Render(option.Key))
+			sb.WriteString(styles.UnselectedPrefix.Render(m.unselectedPrefix))
+			sb.WriteString(styles.UnselectedOption.Render(option.Key))
 		}
 		if i < len(m.options)-1 {
 			sb.WriteString("\n")
 		}
 	}
-	return m.style.Base.Render(sb.String())
+	return styles.Base.Render(sb.String())
 }
 
 func (m *MultiSelect[T]) printOptions() {
-	var sb strings.Builder
+	var (
+		styles = m.theme.Focused
+		sb     strings.Builder
+	)
 
-	sb.WriteString(m.style.Title.Render(m.title))
+	sb.WriteString(m.theme.Focused.Title.Render(m.title))
 	sb.WriteString("\n")
 
 	for i, option := range m.options {
 		var prefix string
 		if m.selected[i] {
-			prefix = m.style.SelectedPrefix.Render(m.selectedPrefix)
+			prefix = styles.SelectedPrefix.Render(m.selectedPrefix)
 			sb.WriteString(fmt.Sprintf("%d. %s%s", i+1, prefix, option.Key))
 		} else {
-			prefix = m.style.UnselectedPrefix.Render(m.unselectedPrefix)
+			prefix = styles.UnselectedPrefix.Render(m.unselectedPrefix)
 			sb.WriteString(fmt.Sprintf("%d. %s%s", i+1, prefix, option.Key))
 		}
 		if i < len(m.options)-1 {
@@ -237,17 +198,19 @@ func (m *MultiSelect[T]) printOptions() {
 		}
 	}
 
-	fmt.Println(m.style.Base.Render(sb.String()))
+	fmt.Println(styles.Base.Render(sb.String()))
 }
 
 // Run runs the multi-select field in accessible mode.
 func (m *MultiSelect[T]) Run() {
+	styles := m.theme.Focused
+
 	m.printOptions()
 
 	var choice int
 	for {
-		fmt.Println(m.style.Help.Render(fmt.Sprintf("Select up to %d options.", m.limit)))
-		fmt.Println(m.style.Help.Render("Type 0 to continue."))
+		fmt.Println(styles.Help.Render(fmt.Sprintf("Select up to %d options.", m.limit)))
+		fmt.Println(styles.Help.Render("Type 0 to continue."))
 		fmt.Println()
 
 		choice = accessibility.PromptInt("Select: ", 0, len(m.options))
