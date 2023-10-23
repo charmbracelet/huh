@@ -130,9 +130,16 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (g *Group) View() string {
 	var s strings.Builder
 
-	for _, field := range g.fields {
+	gap := g.theme.FieldSeparator.String()
+	if gap == "" {
+		gap = "\n\n"
+	}
+
+	for i, field := range g.fields {
 		s.WriteString(field.View())
-		s.WriteString("\n")
+		if i < len(g.fields)-1 {
+			s.WriteString(gap)
+		}
 	}
 
 	for _, err := range g.Errors() {
