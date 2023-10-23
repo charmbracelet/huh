@@ -14,11 +14,16 @@ type Input struct {
 	value       *string
 	title       string
 	description string
-	required    bool
-	charlimit   int
-	textinput   textinput.Model
-	focused     bool
-	theme       *Theme
+
+	required  bool
+	charlimit int
+
+	validate func(string) error
+	err      error
+
+	textinput textinput.Model
+	focused   bool
+	theme     *Theme
 }
 
 // NewInput returns a new input field.
@@ -28,6 +33,7 @@ func NewInput() *Input {
 	i := &Input{
 		value:     new(string),
 		textinput: input,
+		validate:  func(string) error { return nil },
 	}
 
 	return i
@@ -63,6 +69,12 @@ func (i *Input) Required(required bool) *Input {
 	return i
 }
 
+// Validate sets the validation function of the input field.
+func (i *Input) Validate(validate func(string) error) *Input {
+	i.validate = validate
+	return i
+}
+
 // CharLimit sets the character limit of the input field.
 func (i *Input) CharLimit(charlimit int) *Input {
 	i.charlimit = charlimit
@@ -73,6 +85,11 @@ func (i *Input) CharLimit(charlimit int) *Input {
 func (i *Input) Placeholder(str string) *Input {
 	i.textinput.Placeholder = str
 	return i
+}
+
+// Error returns the error of the input field.
+func (i *Input) Error() error {
+	return i.err
 }
 
 // Focus focuses the input field.
@@ -91,6 +108,7 @@ func (i *Input) Blur() tea.Cmd {
 // Init initializes the input field.
 func (i *Input) Init() tea.Cmd {
 	i.textinput.Blur()
+	i.err = i.validate(*i.value)
 	return nil
 }
 
@@ -105,6 +123,8 @@ func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		i.err = nil
+
 		switch msg.String() {
 		case "shift+tab":
 			cmds = append(cmds, prevField)

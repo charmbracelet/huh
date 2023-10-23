@@ -38,6 +38,9 @@ type Field interface {
 	Blur() tea.Cmd
 	Focus() tea.Cmd
 
+	// Errors and Validation
+	Error() error
+
 	// Accessible Prompt (non-redraw)
 	Run()
 

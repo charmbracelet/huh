@@ -14,12 +14,19 @@ type Select[T any] struct {
 	value       *T
 	title       string
 	description string
-	required    bool
-	options     []Option[T]
-	selected    int
-	cursor      string
-	focused     bool
-	theme       *Theme
+
+	required bool
+
+	validate func(T) error
+	err      error
+
+	options  []Option[T]
+	selected int
+
+	cursor string
+
+	focused bool
+	theme   *Theme
 }
 
 // NewSelect returns a new select field.
@@ -30,9 +37,10 @@ func NewSelect[T any](options ...T) *Select[T] {
 	}
 
 	return &Select[T]{
-		value:   new(T),
-		options: opts,
-		cursor:  "> ", // XXX: should this be applied in the theme (style.SetString)?
+		value:    new(T),
+		options:  opts,
+		cursor:   "> ", // XXX: should this be applied in the theme (style.SetString)?
+		validate: func(T) error { return nil },
 	}
 }
 
@@ -72,6 +80,17 @@ func (s *Select[T]) Cursor(cursor string) *Select[T] {
 	return s
 }
 
+// Validate sets the validation function of the select field.
+func (s *Select[T]) Validate(validate func(T) error) *Select[T] {
+	s.validate = validate
+	return s
+}
+
+// Error returns the error of the select field.
+func (s *Select[T]) Error() error {
+	return s.err
+}
+
 // Focus focuses the select field.
 func (s *Select[T]) Focus() tea.Cmd {
 	s.focused = true
@@ -81,6 +100,7 @@ func (s *Select[T]) Focus() tea.Cmd {
 // Blur blurs the select field.
 func (s *Select[T]) Blur() tea.Cmd {
 	s.focused = false
+	s.err = s.validate(*s.value)
 	return nil
 }
 
@@ -93,6 +113,7 @@ func (s *Select[T]) Init() tea.Cmd {
 func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		s.err = nil
 		switch msg.String() {
 		case "up", "k":
 			s.selected = max(s.selected-1, 0)
@@ -116,7 +137,11 @@ func (s *Select[T]) View() string {
 	}
 
 	var sb strings.Builder
-	sb.WriteString(styles.Title.Render(s.title) + "\n")
+	sb.WriteString(styles.Title.Render(s.title))
+	if s.err != nil {
+		sb.WriteString(styles.Error.Render(" * "))
+	}
+	sb.WriteString("\n")
 	if s.description != "" {
 		sb.WriteString(styles.Description.Render(s.description) + "\n")
 	}

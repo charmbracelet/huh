@@ -11,20 +11,27 @@ import (
 
 // MultiSelect is a form multi-select field.
 type MultiSelect[T any] struct {
-	title            string
-	description      string
-	required         bool
-	filterable       bool
-	limit            int
+	title       string
+	description string
+
+	filterable bool
+	limit      int
+	required   bool
+
+	validate func([]T) error
+	err      error
+
 	cursor           int
 	cursorPrefix     string
 	selectedPrefix   string
 	unselectedPrefix string
-	selected         []bool
-	options          []Option[T]
-	value            *[]T
-	focused          bool
-	theme            *Theme
+
+	selected []bool
+	options  []Option[T]
+	value    *[]T
+
+	focused bool
+	theme   *Theme
 }
 
 // NewMultiSelect returns a new multi-select field.
@@ -41,6 +48,7 @@ func NewMultiSelect[T any](options ...T) *MultiSelect[T] {
 		selectedPrefix:   "[•] ", // XXX: should this be applied in the theme (style.SetString)?
 		unselectedPrefix: "[ ] ", // XXX: should this be applied in the theme (style.SetString)?
 		selected:         make([]bool, len(opts)),
+		validate:         func([]T) error { return nil },
 	}
 }
 
@@ -92,6 +100,17 @@ func (m *MultiSelect[T]) Limit(limit int) *MultiSelect[T] {
 	return m
 }
 
+// Validate sets the validation function of the multi-select field.
+func (m *MultiSelect[T]) Validate(validate func([]T) error) *MultiSelect[T] {
+	m.validate = validate
+	return m
+}
+
+// Error returns the error of the multi-select field.
+func (m *MultiSelect[T]) Error() error {
+	return m.err
+}
+
 // Focus focuses the multi-select field.
 func (m *MultiSelect[T]) Focus() tea.Cmd {
 	m.focused = true
@@ -101,6 +120,7 @@ func (m *MultiSelect[T]) Focus() tea.Cmd {
 // Blur blurs the multi-select field.
 func (m *MultiSelect[T]) Blur() tea.Cmd {
 	m.focused = false
+	m.err = m.validate(*m.value)
 	return nil
 }
 
@@ -113,6 +133,9 @@ func (m *MultiSelect[T]) Init() tea.Cmd {
 func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+
+		m.err = nil
+
 		switch msg.String() {
 		case "up", "k":
 			m.cursor = max(m.cursor-1, 0)
@@ -149,7 +172,11 @@ func (m *MultiSelect[T]) View() string {
 	}
 
 	var sb strings.Builder
-	sb.WriteString(styles.Title.Render(m.title) + "\n")
+	sb.WriteString(styles.Title.Render(m.title))
+	if m.err != nil {
+		sb.WriteString(styles.Error.Render(" * "))
+	}
+	sb.WriteString("\n")
 	if m.description != "" {
 		sb.WriteString(styles.Description.Render(m.description) + "\n")
 	}
