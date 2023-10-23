@@ -53,6 +53,7 @@ type Text struct {
 	style        *TextStyle
 	focusedStyle TextStyle
 	blurredStyle TextStyle
+	theme        *Theme
 }
 
 // NewText returns a new text field.
@@ -170,4 +171,8 @@ func (t *Text) Run() {
 	fmt.Println(t.style.Title.Render(t.title))
 	*t.value = accessibility.PromptString("> ")
 	fmt.Println()
+}
+
+func (t *Text) setTheme(theme *Theme) {
+	t.theme = theme
 }

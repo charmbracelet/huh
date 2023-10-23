@@ -46,6 +46,7 @@ type Note struct {
 	style          *NoteStyle
 	blurredStyle   NoteStyle
 	focusedStyle   NoteStyle
+	theme          *Theme
 }
 
 // NewNote creates a new note field.
@@ -146,4 +147,8 @@ func (n *Note) Run() {
 
 	md, _ := glamour.Render(body, "auto")
 	fmt.Println(strings.TrimSpace(md))
+}
+
+func (n *Note) setTheme(theme *Theme) {
+	n.theme = theme
 }

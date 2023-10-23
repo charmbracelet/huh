@@ -9,67 +9,30 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-// SelectStyle is the style of the select field.
-type SelectStyle struct {
-	Base        lipgloss.Style
-	Title       lipgloss.Style
-	Description lipgloss.Style
-	Cursor      lipgloss.Style
-	Selected    lipgloss.Style
-	Unselected  lipgloss.Style
-}
-
-// DefaultSelectStyles returns the default focused style of the select field.
-func DefaultSelectStyles() (SelectStyle, SelectStyle) {
-	focused := SelectStyle{
-		Base:        lipgloss.NewStyle().Border(lipgloss.ThickBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1).BorderForeground(lipgloss.Color("8")),
-		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
-		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Cursor:      lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
-		Selected:    lipgloss.NewStyle().Foreground(lipgloss.Color("15")),
-		Unselected:  lipgloss.NewStyle().Foreground(lipgloss.Color("7")),
-	}
-	blurred := SelectStyle{
-		Base:        lipgloss.NewStyle().Border(lipgloss.HiddenBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1),
-		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Cursor:      lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Selected:    lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Unselected:  lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-	}
-	return focused, blurred
-}
-
 // Select is a form select field.
 type Select[T any] struct {
-	value        *T
-	title        string
-	description  string
-	required     bool
-	options      []Option[T]
-	selected     int
-	cursor       string
-	style        *SelectStyle
-	blurredStyle SelectStyle
-	focusedStyle SelectStyle
+	value       *T
+	title       string
+	description string
+	required    bool
+	options     []Option[T]
+	selected    int
+	cursor      string
+	focused     bool
+	theme       *Theme
 }
 
 // NewSelect returns a new select field.
 func NewSelect[T any](options ...T) *Select[T] {
-	focused, blurred := DefaultSelectStyles()
-
 	var opts []Option[T]
 	for _, option := range options {
 		opts = append(opts, Option[T]{Key: fmt.Sprint(option), Value: option})
 	}
 
 	return &Select[T]{
-		value:        new(T),
-		options:      opts,
-		cursor:       "> ",
-		style:        &blurred,
-		focusedStyle: focused,
-		blurredStyle: blurred,
+		value:   new(T),
+		options: opts,
+		cursor:  "> ",
 	}
 }
 
@@ -109,22 +72,15 @@ func (s *Select[T]) Cursor(cursor string) *Select[T] {
 	return s
 }
 
-// Styles sets the styles of the select field.
-func (s *Select[T]) Styles(focused, blurred SelectStyle) *Select[T] {
-	s.blurredStyle = blurred
-	s.focusedStyle = focused
-	return s
-}
-
 // Focus focuses the select field.
 func (s *Select[T]) Focus() tea.Cmd {
-	s.style = &s.focusedStyle
+	s.focused = true
 	return nil
 }
 
 // Blur blurs the select field.
 func (s *Select[T]) Blur() tea.Cmd {
-	s.style = &s.blurredStyle
+	s.focused = false
 	return nil
 }
 
@@ -154,30 +110,36 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // View renders the select field.
 func (s *Select[T]) View() string {
-	var sb strings.Builder
-	sb.WriteString(s.style.Title.Render(s.title) + "\n")
-	if s.description != "" {
-		sb.WriteString(s.style.Description.Render(s.description) + "\n")
+	style := s.theme.Focused
+	if s.focused {
+		style = s.theme.Unfocused
 	}
-	c := s.style.Cursor.Render(s.cursor)
+
+	var sb strings.Builder
+
+	sb.WriteString(style.Title.Render(s.title) + "\n")
+	if s.description != "" {
+		sb.WriteString(style.Description.Render(s.description) + "\n")
+	}
+	c := style.Cursor.Render(s.cursor)
 	for i, option := range s.options {
 		if s.selected == i {
-			sb.WriteString(c + s.style.Selected.Render(option.Key))
+			sb.WriteString(c + style.Option.Render(option.Key))
 		} else {
-			sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)) + s.style.Unselected.Render(option.Key))
+			sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)) + style.Option.Render(option.Key))
 		}
 		if i < len(s.options)-1 {
 			sb.WriteString("\n")
 		}
 	}
-	return s.style.Base.Render(sb.String())
+	return style.Base.Render(sb.String())
 }
 
 // Run runs an accessible select field.
 func (s *Select[T]) Run() {
 	var sb strings.Builder
 
-	sb.WriteString(s.style.Title.Render(s.title) + "\n")
+	sb.WriteString(s.theme.Focused.Title.Render(s.title) + "\n")
 
 	for i, option := range s.options {
 		sb.WriteString(fmt.Sprintf("%d. %s", i+1, option.Key))
@@ -186,9 +148,13 @@ func (s *Select[T]) Run() {
 		}
 	}
 
-	fmt.Println(s.style.Base.Render(sb.String()))
+	fmt.Println(s.theme.Focused.Base.Render(sb.String()))
 
 	option := s.options[accessibility.PromptInt("Choose: ", 1, len(s.options))-1]
 	fmt.Printf("Chose: %s\n\n", option.Key)
 	*s.value = option.Value
+}
+
+func (s *Select[T]) setTheme(theme *Theme) {
+	s.theme = theme
 }

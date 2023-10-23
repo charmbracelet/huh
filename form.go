@@ -12,6 +12,7 @@ type Form struct {
 	paginator  paginator.Model
 	accessible bool
 	quitting   bool
+	theme      *Theme
 }
 
 // NewForm creates a new form with the given groups.
@@ -22,6 +23,7 @@ func NewForm(groups ...*Group) *Form {
 	return &Form{
 		groups:    groups,
 		paginator: p,
+		theme:     NewBaseTheme(),
 	}
 }
 
@@ -38,6 +40,9 @@ type Field interface {
 
 	// Accessible Prompt (non-redraw)
 	Run()
+
+	// Getter and setter for themes for internal use.
+	setTheme(*Theme)
 }
 
 type nextGroupMsg struct{}
@@ -108,6 +113,14 @@ func (f *Form) View() string {
 
 // Run runs the form.
 func (f *Form) Run() error {
+	// Make theme acessible to groups and fields
+	for _, group := range f.groups {
+		group.theme = f.theme
+		for _, field := range group.fields {
+			field.setTheme(f.theme)
+		}
+	}
+
 	if f.accessible {
 		for _, group := range f.groups {
 			for _, field := range group.fields {

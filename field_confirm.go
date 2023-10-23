@@ -50,6 +50,8 @@ type Confirm struct {
 	style        *ConfirmStyle
 	focusedStyle ConfirmStyle
 	blurredStyle ConfirmStyle
+
+	theme *Theme
 }
 
 // NewConfirm returns a new confirm field.
@@ -184,4 +186,8 @@ func (c *Confirm) Run() {
 		fmt.Println("Selected: " + c.negative)
 	}
 	fmt.Println()
+}
+
+func (c *Confirm) setTheme(theme *Theme) {
+	c.theme = theme
 }

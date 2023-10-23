@@ -52,6 +52,7 @@ type Input struct {
 	style        *InputStyle
 	focusedStyle InputStyle
 	blurredStyle InputStyle
+	theme        *Theme
 }
 
 // NewInput returns a new input field.
@@ -188,4 +189,8 @@ func (i *Input) Run() {
 	fmt.Println(i.style.Title.Render(i.title))
 	*i.value = accessibility.PromptString("> ")
 	fmt.Println()
+}
+
+func (i *Input) setTheme(theme *Theme) {
+	i.theme = theme
 }
