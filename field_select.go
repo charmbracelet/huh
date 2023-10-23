@@ -37,7 +37,6 @@ func NewSelect[T any](options ...T) *Select[T] {
 	return &Select[T]{
 		value:    new(T),
 		options:  opts,
-		cursor:   "> ", // XXX: should this be applied in the theme (style.SetString)?
 		validate: func(T) error { return nil },
 	}
 }
@@ -63,12 +62,6 @@ func (s *Select[T]) Description(description string) *Select[T] {
 // Options sets the options of the select field.
 func (s *Select[T]) Options(options ...Option[T]) *Select[T] {
 	s.options = options
-	return s
-}
-
-// Cursor sets the cursor of the select field.
-func (s *Select[T]) Cursor(cursor string) *Select[T] {
-	s.cursor = cursor
 	return s
 }
 
@@ -142,7 +135,8 @@ func (s *Select[T]) View() string {
 	if s.description != "" {
 		sb.WriteString(styles.Description.Render(s.description) + "\n")
 	}
-	c := styles.Selector.Render(s.cursor)
+
+	c := styles.Selector.String()
 	for i, option := range s.options {
 		if s.selected == i {
 			sb.WriteString(c + styles.Option.Render(option.Key))

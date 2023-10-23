@@ -54,6 +54,9 @@ func NewBaseTheme() *Theme {
 			PaddingLeft(1).
 			BorderStyle(lipgloss.HiddenBorder()).
 			BorderLeft(true),
+		Selector:         lipgloss.NewStyle().SetString("> "),
+		SelectedPrefix:   lipgloss.NewStyle().SetString("[•] "),
+		UnselectedPrefix: lipgloss.NewStyle().SetString("[ ] "),
 		FocusedButton: button.Copy().
 			Foreground(lipgloss.Color("0")).
 			Background(lipgloss.Color("7")),
@@ -63,9 +66,12 @@ func NewBaseTheme() *Theme {
 	}
 
 	t.Focused = FieldStyles{
-		Base:          t.Blurred.Base.Copy().BorderStyle(lipgloss.NormalBorder()),
-		FocusedButton: t.Blurred.FocusedButton.Copy(),
-		BlurredButton: t.Blurred.BlurredButton.Copy(),
+		Base:             t.Blurred.Base.Copy().BorderStyle(lipgloss.NormalBorder()),
+		Selector:         t.Blurred.Selector.Copy(),
+		SelectedPrefix:   t.Blurred.SelectedPrefix.Copy(),
+		UnselectedPrefix: t.Blurred.UnselectedPrefix.Copy(),
+		FocusedButton:    t.Blurred.FocusedButton.Copy(),
+		BlurredButton:    t.Blurred.BlurredButton.Copy(),
 	}
 
 	return &t
