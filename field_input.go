@@ -26,7 +26,7 @@ func DefaultInputStyles() (InputStyle, InputStyle) {
 		Base:        lipgloss.NewStyle().Border(lipgloss.ThickBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1).BorderForeground(lipgloss.Color("8")),
 		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
 		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Prompt:      lipgloss.NewStyle().Foreground(lipgloss.Color("7")),
+		Prompt:      lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
 		Text:        lipgloss.NewStyle().Foreground(lipgloss.Color("15")),
 		Placeholder: lipgloss.NewStyle().Foreground(lipgloss.Color("7")),
 	}
@@ -163,10 +163,15 @@ func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (i *Input) View() string {
 	var sb strings.Builder
 
-	sb.WriteString(i.style.Title.Render(i.title))
-	sb.WriteString("\n")
-	sb.WriteString(i.style.Description.Render(i.description))
-	sb.WriteString("\n")
+	if i.title != "" {
+		sb.WriteString(i.style.Title.Render(i.title))
+		sb.WriteString("\n")
+	}
+	if i.description != "" {
+		sb.WriteString(i.style.Description.Render(i.description))
+		sb.WriteString("\n")
+	}
+
 	sb.WriteString(i.textinput.View())
 
 	return i.style.Base.Render(sb.String())
