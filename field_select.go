@@ -21,8 +21,6 @@ type Select[T any] struct {
 	options  []Option[T]
 	selected int
 
-	cursor string
-
 	focused bool
 	theme   *Theme
 }
@@ -136,7 +134,7 @@ func (s *Select[T]) View() string {
 		sb.WriteString(styles.Description.Render(s.description) + "\n")
 	}
 
-	c := styles.Selector.String()
+	c := styles.SelectSelector.String()
 	for i, option := range s.options {
 		if s.selected == i {
 			sb.WriteString(c + styles.Option.Render(option.Key))

@@ -20,10 +20,7 @@ type MultiSelect[T any] struct {
 	validate func([]T) error
 	err      error
 
-	cursor           int
-	cursorPrefix     string
-	selectedPrefix   string
-	unselectedPrefix string
+	cursor int
 
 	selected []bool
 	options  []Option[T]
@@ -177,7 +174,7 @@ func (m *MultiSelect[T]) View() string {
 	if m.description != "" {
 		sb.WriteString(styles.Description.Render(m.description) + "\n")
 	}
-	c := styles.Selector.String()
+	c := styles.MultiSelectSelector.String()
 	for i, option := range m.options {
 		if m.cursor == i {
 			sb.WriteString(c)
