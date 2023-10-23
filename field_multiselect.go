@@ -142,6 +142,9 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "down", "j":
 			m.cursor = min(m.cursor+1, len(m.options)-1)
 		case " ", "x":
+			if !m.selected[m.cursor] && m.numSelected() >= m.limit {
+				break
+			}
 			m.selected[m.cursor] = !m.selected[m.cursor]
 		case "shift+tab":
 			m.finalize()
@@ -153,6 +156,16 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	return m, nil
+}
+
+func (m *MultiSelect[T]) numSelected() int {
+	var count int
+	for _, v := range m.selected {
+		if v {
+			count++
+		}
+	}
+	return count
 }
 
 func (m *MultiSelect[T]) finalize() {
