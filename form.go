@@ -90,6 +90,10 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case nextGroupMsg:
+		if len(f.groups[f.paginator.Page].Errors()) > 0 {
+			return f, nil
+		}
+
 		if f.paginator.OnLastPage() {
 			f.quitting = true
 			return f, tea.Quit
@@ -97,6 +101,9 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		f.paginator.NextPage()
 
 	case prevGroupMsg:
+		if len(f.groups[f.paginator.Page].Errors()) > 0 {
+			return f, nil
+		}
 		f.paginator.PrevPage()
 	}
 

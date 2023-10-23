@@ -10,10 +10,9 @@ import (
 type Group struct {
 	fields []Field
 
-	label       string
+	title       string
 	description string
 	current     int
-	errors      []error
 	theme       *Theme
 }
 
@@ -25,9 +24,9 @@ func NewGroup(fields ...Field) *Group {
 	}
 }
 
-// Label sets the group's label.
-func (g *Group) Label(label string) *Group {
-	g.label = label
+// Title sets the group's title.
+func (g *Group) Title(title string) *Group {
+	g.title = title
 	return g
 }
 
@@ -41,6 +40,18 @@ func (g *Group) Description(description string) *Group {
 func (g *Group) Theme(t *Theme) *Group {
 	g.theme = t
 	return g
+}
+
+// Errors returns the groups' fields' errors.
+func (g *Group) Errors() []error {
+	var errs []error
+	for _, field := range g.fields {
+		err := field.Error()
+		if err != nil {
+			errs = append(errs, field.Error())
+		}
+	}
+	return errs
 }
 
 type nextFieldMsg struct{}
@@ -60,7 +71,7 @@ func (g *Group) Init() tea.Cmd {
 	for _, field := range g.fields {
 		cmds = append(cmds, field.Init())
 	}
-	cmds = append(cmds, g.setCurrent(0))
+	cmds = append(cmds, g.fields[g.current].Focus())
 	return tea.Batch(cmds...)
 }
 
@@ -90,21 +101,25 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg.(type) {
 	case nextFieldMsg:
-		if g.current == len(g.fields)-1 {
+		current := g.current
+		cmd = g.setCurrent(current + 1)
+
+		if current == len(g.fields)-1 {
 			cmds = append(cmds, nextGroup)
 			break
 		}
 
-		cmd = g.setCurrent(g.current + 1)
 		cmds = append(cmds, cmd)
 
 	case prevFieldMsg:
-		if g.current == 0 {
+		current := g.current
+		cmd = g.setCurrent(current - 1)
+
+		if current == 0 {
 			cmds = append(cmds, prevGroup)
 			break
 		}
 
-		cmd = g.setCurrent(g.current - 1)
 		cmds = append(cmds, cmd)
 	}
 
@@ -117,6 +132,11 @@ func (g *Group) View() string {
 
 	for _, field := range g.fields {
 		s.WriteString(field.View())
+		s.WriteString("\n")
+	}
+
+	for _, err := range g.Errors() {
+		s.WriteString(g.theme.Focused.Error.Render(err.Error()))
 		s.WriteString("\n")
 	}
 

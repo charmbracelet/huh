@@ -51,6 +51,12 @@ func main() {
 			huh.NewSelect("Soft", "Hard").
 				Title("Shell?").
 				Description("Our shells are made fresh in-house, every day.").
+				Validate(func(t string) error {
+					if t == "Hard" {
+						return fmt.Errorf("we're out of hard shells, sorry")
+					}
+					return nil
+				}).
 				Value(&order.Taco.Shell).
 				Required(true),
 
@@ -63,6 +69,19 @@ func main() {
 		// Prompt for toppings and special instructions.
 		// The customer can ask for up to 4 toppings.
 		huh.NewGroup(
+			huh.NewMultiSelect("Lettuce", "Tomatoes", "Corn", "Salsa", "Sour Cream", "Cheese").
+				Title("Toppings").
+				Description("Choose up to 4.").
+				Validate(func(t []string) error {
+					if len(t) <= 0 {
+						return fmt.Errorf("at least one topping is required")
+					}
+					return nil
+				}).
+				Value(&order.Taco.Toppings).
+				Filterable(true).
+				Limit(4),
+
 			huh.NewSelect[Spice]().
 				Title("Spice Level").
 				Options(
@@ -72,13 +91,6 @@ func main() {
 				).
 				Value(&order.Taco.Spice).
 				Required(true),
-
-			huh.NewMultiSelect("Lettuce", "Tomatoes", "Corn", "Salsa", "Sour Cream", "Cheese").
-				Title("Toppings").
-				Description("Choose up to 4.").
-				Value(&order.Taco.Toppings).
-				Filterable(true).
-				Limit(4),
 		),
 
 		// Gather final details for the order.
