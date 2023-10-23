@@ -14,8 +14,6 @@ type Text struct {
 	value *string
 	title string
 
-	required bool
-
 	validate func(string) error
 	err      error
 
@@ -49,12 +47,6 @@ func (t *Text) Value(value *string) *Text {
 // Title sets the title of the text field.
 func (t *Text) Title(title string) *Text {
 	t.title = title
-	return t
-}
-
-// Required sets the text field as required.
-func (t *Text) Required(required bool) *Text {
-	t.required = required
 	return t
 }
 

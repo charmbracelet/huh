@@ -15,8 +15,6 @@ type Select[T any] struct {
 	title       string
 	description string
 
-	required bool
-
 	validate func(T) error
 	err      error
 
@@ -59,12 +57,6 @@ func (s *Select[T]) Title(title string) *Select[T] {
 // Description sets the description of the select field.
 func (s *Select[T]) Description(description string) *Select[T] {
 	s.description = description
-	return s
-}
-
-// Required sets the select field as required.
-func (s *Select[T]) Required(required bool) *Select[T] {
-	s.required = required
 	return s
 }
 

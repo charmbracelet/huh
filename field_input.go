@@ -15,7 +15,6 @@ type Input struct {
 	title       string
 	description string
 
-	required  bool
 	charlimit int
 
 	validate func(string) error
@@ -60,12 +59,6 @@ func (i *Input) Description(description string) *Input {
 // Prompt sets the prompt of the input field.
 func (i *Input) Prompt(prompt string) *Input {
 	i.textinput.Prompt = prompt
-	return i
-}
-
-// Required sets the input field as required.
-func (i *Input) Required(required bool) *Input {
-	i.required = required
 	return i
 }
 
