@@ -95,10 +95,12 @@ func main() {
 			huh.NewInput().
 				Value(&order.Name).
 				Title("What's your name?").
+				Placeholder("Margaret Thatcher").
 				Description("For when your order is ready."),
 
 			huh.NewText().
 				Value(&order.Instructions).
+				Placeholder("Just put it in the mailbox please").
 				Title("Special Instructions").
 				CharLimit(400),
 
