@@ -154,6 +154,7 @@ func (s *Select[T]) Run() {
 	*s.value = option.Value
 }
 
-func (s *Select[T]) setTheme(theme *Theme) {
+func (s *Select[T]) Theme(theme *Theme) Field {
 	s.theme = theme
+	return s
 }

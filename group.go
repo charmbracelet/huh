@@ -37,6 +37,12 @@ func (g *Group) Description(description string) *Group {
 	return g
 }
 
+// Theme sets the theme on a group.
+func (g *Group) Theme(t *Theme) *Group {
+	g.theme = t
+	return g
+}
+
 type nextFieldMsg struct{}
 type prevFieldMsg struct{}
 

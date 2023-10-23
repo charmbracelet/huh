@@ -41,8 +41,8 @@ type Field interface {
 	// Accessible Prompt (non-redraw)
 	Run()
 
-	// Getter and setter for themes for internal use.
-	setTheme(*Theme)
+	// Theme sets the theme on a field.
+	Theme(*Theme) Field
 }
 
 type nextGroupMsg struct{}
@@ -115,9 +115,9 @@ func (f *Form) View() string {
 func (f *Form) Run() error {
 	// Make theme acessible to groups and fields
 	for _, group := range f.groups {
-		group.theme = f.theme
+		group.Theme(f.theme)
 		for _, field := range group.fields {
-			field.setTheme(f.theme)
+			field.Theme(f.theme)
 		}
 	}
 

@@ -153,6 +153,7 @@ func (c *Confirm) Run() {
 	fmt.Println()
 }
 
-func (c *Confirm) setTheme(theme *Theme) {
+func (c *Confirm) Theme(theme *Theme) Field {
 	c.theme = theme
+	return c
 }

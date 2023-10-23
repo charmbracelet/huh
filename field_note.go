@@ -113,6 +113,7 @@ func (n *Note) Run() {
 	fmt.Println(strings.TrimSpace(md))
 }
 
-func (n *Note) setTheme(theme *Theme) {
+func (n *Note) Theme(theme *Theme) Field {
 	n.theme = theme
+	return n
 }

@@ -16,23 +16,27 @@ type FieldStyles struct {
 	Title       lipgloss.Style
 	Description lipgloss.Style
 
-	// Select and multi-select styles
+	// Select and multi-select styles.
 	Selector lipgloss.Style // Selection indicator in selects and multi-selects
 	Option   lipgloss.Style // Select options
 
-	// Multi-select styles
+	// Multi-select styles.
 	SelectedOption   lipgloss.Style
 	SelectedPrefix   lipgloss.Style
 	UnselectedOption lipgloss.Style
 	UnselectedPrefix lipgloss.Style
 
-	// Textinput and teatarea styles
+	// Textinput and teatarea styles.
 	Cursor      lipgloss.Style
 	Placeholder lipgloss.Style
 
-	// Buttons
+	// Confirm styles.
 	FocusedButton lipgloss.Style
 	BlurredButton lipgloss.Style
+
+	// Card styles.
+	Card lipgloss.Style
+	Next lipgloss.Style
 
 	Help  lipgloss.Style
 	Error lipgloss.Style
