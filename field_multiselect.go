@@ -143,9 +143,9 @@ func (m *MultiSelect[T]) finalize() {
 
 // View renders the multi-select field.
 func (m *MultiSelect[T]) View() string {
-	styles := m.theme.Focused
+	styles := m.theme.Blurred
 	if m.focused {
-		styles = m.theme.Unfocused
+		styles = m.theme.Focused
 	}
 
 	var sb strings.Builder

@@ -110,9 +110,9 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // View renders the select field.
 func (s *Select[T]) View() string {
-	styles := s.theme.Focused
+	styles := s.theme.Blurred
 	if s.focused {
-		styles = s.theme.Unfocused
+		styles = s.theme.Focused
 	}
 
 	var sb strings.Builder

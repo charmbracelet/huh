@@ -7,69 +7,28 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh/accessibility"
-	"github.com/charmbracelet/lipgloss"
 )
-
-// InputStyle is the style of the input field.
-type InputStyle struct {
-	Base        lipgloss.Style
-	Title       lipgloss.Style
-	Description lipgloss.Style
-	Prompt      lipgloss.Style
-	Text        lipgloss.Style
-	Placeholder lipgloss.Style
-}
-
-// DefaultInputStyles returns the default focused style of the input field.
-func DefaultInputStyles() (InputStyle, InputStyle) {
-	focused := InputStyle{
-		Base:        lipgloss.NewStyle().Border(lipgloss.ThickBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1).BorderForeground(lipgloss.Color("8")),
-		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
-		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Prompt:      lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
-		Text:        lipgloss.NewStyle().Foreground(lipgloss.Color("15")),
-		Placeholder: lipgloss.NewStyle().Foreground(lipgloss.Color("7")),
-	}
-	blurred := InputStyle{
-		Base:        lipgloss.NewStyle().Border(lipgloss.HiddenBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1),
-		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Prompt:      lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Text:        lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Placeholder: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-	}
-	return focused, blurred
-}
 
 // Input is a form input field.
 type Input struct {
-	value        *string
-	title        string
-	description  string
-	required     bool
-	charlimit    int
-	textinput    textinput.Model
-	style        *InputStyle
-	focusedStyle InputStyle
-	blurredStyle InputStyle
-	theme        *Theme
+	value       *string
+	title       string
+	description string
+	required    bool
+	charlimit   int
+	textinput   textinput.Model
+	focused     bool
+	theme       *Theme
 }
 
 // NewInput returns a new input field.
 func NewInput() *Input {
 	input := textinput.New()
 
-	f, b := DefaultInputStyles()
-
 	i := &Input{
-		value:        new(string),
-		textinput:    input,
-		style:        &b,
-		focusedStyle: f,
-		blurredStyle: b,
+		value:     new(string),
+		textinput: input,
 	}
-
-	i.updateTextinputStyle()
 
 	return i
 }
@@ -116,25 +75,16 @@ func (i *Input) Placeholder(str string) *Input {
 	return i
 }
 
-func (i *Input) updateTextinputStyle() {
-	i.textinput.PromptStyle = i.style.Prompt
-	i.textinput.PlaceholderStyle = i.style.Placeholder
-	i.textinput.TextStyle = i.style.Text
-}
-
 // Focus focuses the input field.
 func (i *Input) Focus() tea.Cmd {
-	i.style = &i.focusedStyle
-	cmd := i.textinput.Focus()
-	i.updateTextinputStyle()
-	return cmd
+	i.focused = true
+	return i.textinput.Focus()
 }
 
 // Blur blurs the input field.
 func (i *Input) Blur() tea.Cmd {
-	i.style = &i.blurredStyle
+	i.focused = false
 	i.textinput.Blur()
-	i.updateTextinputStyle()
 	return nil
 }
 
@@ -168,25 +118,30 @@ func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // View renders the input field.
 func (i *Input) View() string {
+	styles := i.theme.Blurred
+	if i.focused {
+		styles = i.theme.Focused
+	}
+
 	var sb strings.Builder
 
 	if i.title != "" {
-		sb.WriteString(i.style.Title.Render(i.title))
+		sb.WriteString(styles.Title.Render(i.title))
 		sb.WriteString("\n")
 	}
 	if i.description != "" {
-		sb.WriteString(i.style.Description.Render(i.description))
+		sb.WriteString(styles.Description.Render(i.description))
 		sb.WriteString("\n")
 	}
 
 	sb.WriteString(i.textinput.View())
 
-	return i.style.Base.Render(sb.String())
+	return styles.Base.Render(sb.String())
 }
 
 // Run runs the input field in accessible mode.
 func (i *Input) Run() {
-	fmt.Println(i.style.Title.Render(i.title))
+	fmt.Println(i.theme.Focused.Title.Render(i.title))
 	*i.value = accessibility.PromptString("> ")
 	fmt.Println()
 }
