@@ -122,7 +122,12 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "shift+tab":
 			return s, prevField
 		case "tab", "enter":
-			*s.value = s.options[s.selected].Value
+			value := s.options[s.selected].Value
+			s.err = s.validate(value)
+			if s.err != nil {
+				return s, nil
+			}
+			*s.value = value
 			return s, nextField
 		}
 	}
