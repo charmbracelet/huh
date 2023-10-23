@@ -11,6 +11,16 @@ type Theme struct {
 	Focused        FieldStyles
 }
 
+func (t Theme) copy() Theme {
+	return Theme{
+		Form:           t.Form.Copy(),
+		Group:          t.Group.Copy(),
+		FieldSeparator: t.FieldSeparator.Copy(),
+		Blurred:        t.Blurred.copy(),
+		Focused:        t.Focused.copy(),
+	}
+}
+
 // FieldStyles are the styles for input fields
 type FieldStyles struct {
 	Base        lipgloss.Style
@@ -42,6 +52,28 @@ type FieldStyles struct {
 	Next lipgloss.Style
 }
 
+func (f FieldStyles) copy() FieldStyles {
+	return FieldStyles{
+		Base:             f.Base.Copy(),
+		Title:            f.Title.Copy(),
+		Description:      f.Description.Copy(),
+		Help:             f.Help.Copy(),
+		Error:            f.Error.Copy(),
+		Selector:         f.Selector.Copy(),
+		Option:           f.Option.Copy(),
+		SelectedOption:   f.SelectedOption.Copy(),
+		SelectedPrefix:   f.SelectedPrefix.Copy(),
+		UnselectedOption: f.UnselectedOption.Copy(),
+		UnselectedPrefix: f.UnselectedPrefix.Copy(),
+		Cursor:           f.Cursor.Copy(),
+		Placeholder:      f.Placeholder.Copy(),
+		FocusedButton:    f.FocusedButton.Copy(),
+		BlurredButton:    f.BlurredButton.Copy(),
+		Card:             f.Card.Copy(),
+		Next:             f.Next.Copy(),
+	}
+}
+
 // NewBaseTheme returns a new base theme with general styles to be inherited by
 // other themes.
 func NewBaseTheme() *Theme {
@@ -65,14 +97,8 @@ func NewBaseTheme() *Theme {
 			Background(lipgloss.Color("0")),
 	}
 
-	t.Focused = FieldStyles{
-		Base:             t.Blurred.Base.Copy().BorderStyle(lipgloss.NormalBorder()),
-		Selector:         t.Blurred.Selector.Copy(),
-		SelectedPrefix:   t.Blurred.SelectedPrefix.Copy(),
-		UnselectedPrefix: t.Blurred.UnselectedPrefix.Copy(),
-		FocusedButton:    t.Blurred.FocusedButton.Copy(),
-		BlurredButton:    t.Blurred.BlurredButton.Copy(),
-	}
+	t.Focused = t.Blurred.copy()
+	t.Focused.Base = t.Blurred.Base.Copy().BorderStyle(lipgloss.NormalBorder())
 
 	return &t
 }
