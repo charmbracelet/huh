@@ -106,7 +106,7 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // View renders the text field.
 func (t *Text) View() string {
-	styles := t.theme.Unfocused
+	styles := t.theme.Blurred
 	if t.focused {
 		styles = t.theme.Focused
 	}

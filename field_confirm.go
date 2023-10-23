@@ -9,34 +9,6 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-// ConfirmStyle is the style of the confirm field.
-type ConfirmStyle struct {
-	Base        lipgloss.Style
-	Title       lipgloss.Style
-	Description lipgloss.Style
-	Selected    lipgloss.Style
-	Unselected  lipgloss.Style
-}
-
-// DefaultConfirmStyles returns the default focused style of the confirm field.
-func DefaultConfirmStyles() (ConfirmStyle, ConfirmStyle) {
-	focused := ConfirmStyle{
-		Base:        lipgloss.NewStyle().Border(lipgloss.ThickBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1).BorderForeground(lipgloss.Color("8")),
-		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
-		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Selected:    lipgloss.NewStyle().Foreground(lipgloss.Color("11")).Background(lipgloss.Color("4")).Padding(0, 2).MarginLeft(2),
-		Unselected:  lipgloss.NewStyle().Foreground(lipgloss.Color("7")).Background(lipgloss.Color("0")).Padding(0, 2).MarginLeft(2),
-	}
-	blurred := ConfirmStyle{
-		Base:        lipgloss.NewStyle().Border(lipgloss.HiddenBorder(), false).BorderLeft(true).PaddingLeft(1).MarginBottom(1),
-		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
-		Selected:    lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Background(lipgloss.Color("0")).Padding(0, 2).MarginLeft(2),
-		Unselected:  lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Background(lipgloss.Color("0")).Padding(0, 2).MarginLeft(2),
-	}
-	return focused, blurred
-}
-
 // Confirm is a form confirm field.
 type Confirm struct {
 	value       *bool
@@ -47,22 +19,16 @@ type Confirm struct {
 	affirmative string
 	negative    string
 
-	style        *ConfirmStyle
-	focusedStyle ConfirmStyle
-	blurredStyle ConfirmStyle
-
-	theme *Theme
+	focused bool
+	theme   *Theme
 }
 
 // NewConfirm returns a new confirm field.
 func NewConfirm() *Confirm {
-	f, b := DefaultConfirmStyles()
 	return &Confirm{
-		value:        new(bool),
-		focusedStyle: f,
-		blurredStyle: b,
-		affirmative:  "Yes",
-		negative:     "No",
+		value:       new(bool),
+		affirmative: "Yes",
+		negative:    "No",
 	}
 }
 
@@ -104,19 +70,18 @@ func (c *Confirm) Required(required bool) *Confirm {
 
 // Focus focuses the confirm field.
 func (c *Confirm) Focus() tea.Cmd {
-	c.style = &c.focusedStyle
+	c.focused = true
 	return nil
 }
 
 // Blur blurs the confirm field.
 func (c *Confirm) Blur() tea.Cmd {
-	c.style = &c.blurredStyle
+	c.focused = false
 	return nil
 }
 
 // Init initializes the confirm field.
 func (c *Confirm) Init() tea.Cmd {
-	c.style = &c.blurredStyle
 	return nil
 }
 
@@ -145,16 +110,16 @@ func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // View renders the confirm field.
 func (c *Confirm) View() string {
-	style := c.style
-	if style == nil {
-		style = &c.blurredStyle
+	styles := c.theme.Blurred
+	if c.focused {
+		styles = c.theme.Focused
 	}
 
 	var sb strings.Builder
-	sb.WriteString(c.style.Title.Render(c.title))
+	sb.WriteString(styles.Title.Render(c.title))
 	if c.description != "" {
 		sb.WriteString("\n")
-		sb.WriteString(c.style.Description.Render(c.description))
+		sb.WriteString(styles.Description.Render(c.description))
 	}
 	sb.WriteString("\n")
 	sb.WriteString("\n")
@@ -162,22 +127,22 @@ func (c *Confirm) View() string {
 	if *c.value {
 		sb.WriteString(lipgloss.JoinHorizontal(
 			lipgloss.Center,
-			style.Selected.Render(c.affirmative),
-			style.Unselected.Render(c.negative),
+			styles.FocusedButton.Render(c.affirmative),
+			styles.BlurredButton.Render(c.negative),
 		))
 	} else {
 		sb.WriteString(lipgloss.JoinHorizontal(
 			lipgloss.Center,
-			style.Unselected.Render(c.affirmative),
-			style.Selected.Render(c.negative),
+			styles.BlurredButton.Render(c.affirmative),
+			styles.FocusedButton.Render(c.negative),
 		))
 	}
-	return c.style.Base.Render(sb.String())
+	return styles.Base.Render(sb.String())
 }
 
 // Run runs the confirm field in accessible mode.
 func (c *Confirm) Run() {
-	fmt.Println(c.style.Title.Render(c.title))
+	fmt.Println(c.theme.Focused.Title.Render(c.title))
 	choice := accessibility.PromptBool()
 	*c.value = choice
 	if choice {
