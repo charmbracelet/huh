@@ -239,6 +239,7 @@ func (m *MultiSelect[T]) Run() {
 	fmt.Println("Selected:", strings.Join(values, ", ")+"\n")
 }
 
-func (m *MultiSelect[T]) setTheme(theme *Theme) {
+func (m *MultiSelect[T]) Theme(theme *Theme) Field {
 	m.theme = theme
+	return m
 }

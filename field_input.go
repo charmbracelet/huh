@@ -146,6 +146,7 @@ func (i *Input) Run() {
 	fmt.Println()
 }
 
-func (i *Input) setTheme(theme *Theme) {
+func (i *Input) Theme(theme *Theme) Field {
 	i.theme = theme
+	return i
 }

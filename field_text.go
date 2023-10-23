@@ -127,6 +127,7 @@ func (t *Text) Run() {
 	fmt.Println()
 }
 
-func (t *Text) setTheme(theme *Theme) {
+func (t *Text) Theme(theme *Theme) Field {
 	t.theme = theme
+	return t
 }
