@@ -21,7 +21,7 @@ type NoteStyle struct {
 // DefaultNoteStyles returns the default focused style of the Note field.
 func DefaultNoteStyles() (NoteStyle, NoteStyle) {
 	focused := NoteStyle{
-		Base:        lipgloss.NewStyle().Border(lipgloss.ThickBorder(), false).BorderLeft(true).MarginBottom(1).BorderForeground(lipgloss.Color("8")),
+		Base:        lipgloss.NewStyle().Border(lipgloss.ThickBorder(), false).Margin(1, 0).BorderForeground(lipgloss.Color("8")),
 		Title:       lipgloss.NewStyle().Foreground(lipgloss.Color("3")).Margin(1),
 		Description: lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
 		Body:        lipgloss.NewStyle().Foreground(lipgloss.Color("15")).Margin(1),
@@ -131,7 +131,7 @@ func (n *Note) View() string {
 	if n.showNextButton {
 		sb.WriteString(n.style.Next.Render("Next"))
 	}
-	return n.style.Base.Render(sb.String())
+	return n.style.Base.Render(strings.TrimSpace(sb.String()))
 }
 
 // Run runs an accessible note field.
@@ -145,5 +145,5 @@ func (n *Note) Run() {
 	body += n.description
 
 	md, _ := glamour.Render(body, "auto")
-	fmt.Println(md)
+	fmt.Println(strings.TrimSpace(md))
 }
