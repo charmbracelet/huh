@@ -165,6 +165,8 @@ func (i *Input) View() string {
 
 	sb.WriteString(i.style.Title.Render(i.title))
 	sb.WriteString("\n")
+	sb.WriteString(i.style.Description.Render(i.description))
+	sb.WriteString("\n")
 	sb.WriteString(i.textinput.View())
 
 	return i.style.Base.Render(sb.String())

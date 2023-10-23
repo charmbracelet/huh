@@ -85,7 +85,8 @@ func main() {
 		huh.NewGroup(
 			huh.NewInput().
 				Value(&order.Name).
-				Title("What's your name?"),
+				Title("What's your name?").
+				Description("For when your order is ready."),
 
 			huh.NewText().
 				Value(&order.Instructions).
