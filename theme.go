@@ -4,10 +4,11 @@ import "github.com/charmbracelet/lipgloss"
 
 // Theme is the style for a form.
 type Theme struct {
-	Form    lipgloss.Style
-	Group   lipgloss.Style
-	Blurred FieldStyles
-	Focused FieldStyles
+	Form           lipgloss.Style
+	Group          lipgloss.Style
+	FieldSeparator lipgloss.Style
+	Blurred        FieldStyles
+	Focused        FieldStyles
 }
 
 // FieldStyles are the styles for input fields
@@ -15,6 +16,8 @@ type FieldStyles struct {
 	Base        lipgloss.Style
 	Title       lipgloss.Style
 	Description lipgloss.Style
+	Help        lipgloss.Style
+	Error       lipgloss.Style
 
 	// Select and multi-select styles.
 	Selector lipgloss.Style // Selection indicator in selects and multi-selects
@@ -37,9 +40,6 @@ type FieldStyles struct {
 	// Card styles.
 	Card lipgloss.Style
 	Next lipgloss.Style
-
-	Help  lipgloss.Style
-	Error lipgloss.Style
 }
 
 // NewBaseTheme returns a new base theme with general styles to be inherited by
