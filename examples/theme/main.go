@@ -34,7 +34,8 @@ func main() {
 		// Display form with selected theme.
 		err = huh.NewForm(
 			huh.NewGroup(
-				huh.NewInput().Title("Thoughts"),
+				huh.NewInput().Title("Thoughts").Placeholder("What's on your mind?"),
+				huh.NewText().Title("More Thoughts").Placeholder("What else is on your mind?"),
 				huh.NewSelect("A", "B", "C").Title("Colors"),
 				huh.NewMultiSelect("Red", "Green", "Yellow").Title("Letters"),
 				huh.NewConfirm().Title("Again?").Value(&repeat),
