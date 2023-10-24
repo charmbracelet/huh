@@ -90,7 +90,7 @@ func NewDefaultKeyMap() *KeyMap {
 		Confirm: ConfirmKeyMap{
 			Next:   key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "submit")),
 			Prev:   key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),
-			Toggle: key.NewBinding(key.WithKeys("h", "j", "right", "left"), key.WithHelp("←/→", "toggle")),
+			Toggle: key.NewBinding(key.WithKeys("h", "l", "right", "left"), key.WithHelp("←/→", "toggle")),
 		},
 	}
 }

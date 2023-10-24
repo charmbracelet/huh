@@ -16,8 +16,10 @@ type Note struct {
 
 	showNextButton bool
 	focused        bool
-	theme          *Theme
-	keymap         *NoteKeyMap
+	accessible     bool
+
+	theme  *Theme
+	keymap *NoteKeyMap
 }
 
 // NewNote creates a new note field.
@@ -62,11 +64,6 @@ func (n *Note) Error() error {
 	return nil
 }
 
-// Init initializes the note field.
-func (n *Note) Init() tea.Cmd {
-	return nil
-}
-
 // KeyMap sets the keymap on a note field.
 func (n *Note) KeyMap(k *KeyMap) Field {
 	n.keymap = &k.Note
@@ -76,6 +73,17 @@ func (n *Note) KeyMap(k *KeyMap) Field {
 // KeyBinds returns the help message for the note field.
 func (n *Note) KeyBinds() []key.Binding {
 	return []key.Binding{n.keymap.Next}
+}
+
+// Accessible sets the accessible mode of the note field.
+func (n *Note) Accessible(accessible bool) Field {
+	n.accessible = accessible
+	return n
+}
+
+// Init initializes the note field.
+func (n *Note) Init() tea.Cmd {
+	return nil
 }
 
 // Update updates the note field.
@@ -120,8 +128,16 @@ func (n *Note) View() string {
 	return styles.Base.Render(sb.String())
 }
 
-// Run runs an accessible note field.
-func (n *Note) Run() {
+// Run runs the note field.
+func (n *Note) Run() error {
+	if n.accessible {
+		return n.runAccessible()
+	}
+	return Run(n)
+}
+
+// runAccessible runs an accessible note field.
+func (n *Note) runAccessible() error {
 	var body string
 
 	if n.title != "" {
@@ -132,6 +148,7 @@ func (n *Note) Run() {
 
 	md, _ := glamour.Render(body, "auto")
 	fmt.Println(strings.TrimSpace(md))
+	return nil
 }
 
 func (n *Note) Theme(theme *Theme) Field {

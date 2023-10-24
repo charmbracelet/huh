@@ -45,8 +45,11 @@ type Field interface {
 	// Errors and Validation
 	Error() error
 
-	// Accessible Prompt (non-redraw)
-	Run()
+	// Accessible sets whether the field should run in accessible mode.
+	Accessible(bool) Field
+
+	// Run runs the field individually.
+	Run() error
 
 	// Theme sets the theme on a field.
 	Theme(*Theme) Field
@@ -172,7 +175,7 @@ func (f *Form) Run() error {
 			for _, field := range group.fields {
 				field.Init()
 				field.Focus()
-				field.Run()
+				field.Accessible(true).Run()
 			}
 		}
 		return nil

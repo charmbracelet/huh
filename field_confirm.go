@@ -22,9 +22,10 @@ type Confirm struct {
 	affirmative string
 	negative    string
 
-	focused bool
-	theme   *Theme
-	keymap  *ConfirmKeyMap
+	focused    bool
+	accessible bool
+	theme      *Theme
+	keymap     *ConfirmKeyMap
 }
 
 // NewConfirm returns a new confirm field.
@@ -102,6 +103,12 @@ func (c *Confirm) KeyBinds() []key.Binding {
 	return []key.Binding{c.keymap.Toggle, c.keymap.Next, c.keymap.Prev}
 }
 
+// Accessible sets the accessible mode of the confirm field.
+func (c *Confirm) Accessible(accessible bool) Field {
+	c.accessible = accessible
+	return c
+}
+
 // Init initializes the confirm field.
 func (c *Confirm) Init() tea.Cmd {
 	return nil
@@ -165,7 +172,15 @@ func (c *Confirm) View() string {
 }
 
 // Run runs the confirm field in accessible mode.
-func (c *Confirm) Run() {
+func (c *Confirm) Run() error {
+	if c.accessible {
+		return c.runAccessible()
+	}
+	return Run(c)
+}
+
+// runAccessible runs the confirm field in accessible mode.
+func (c *Confirm) runAccessible() error {
 	fmt.Println(c.theme.Focused.Title.Render(c.title))
 	choice := accessibility.PromptBool()
 	*c.value = choice
@@ -175,6 +190,7 @@ func (c *Confirm) Run() {
 		fmt.Println("Selected: " + c.negative)
 	}
 	fmt.Println()
+	return nil
 }
 
 func (c *Confirm) Theme(theme *Theme) Field {

@@ -22,10 +22,12 @@ type Input struct {
 	validate func(string) error
 	err      error
 
-	textinput textinput.Model
-	focused   bool
-	theme     *Theme
-	keymap    *InputKeyMap
+	textinput  textinput.Model
+	focused    bool
+	accessible bool
+
+	theme  *Theme
+	keymap *InputKeyMap
 }
 
 // NewInput returns a new input field.
@@ -118,6 +120,12 @@ func (i *Input) KeyBinds() []key.Binding {
 	return []key.Binding{i.keymap.Next, i.keymap.Prev}
 }
 
+// Accessible sets the accessible mode of the input field.
+func (i *Input) Accessible(accessible bool) Field {
+	i.accessible = accessible
+	return i
+}
+
 // Init initializes the input field.
 func (i *Input) Init() tea.Cmd {
 	i.textinput.Blur()
@@ -184,13 +192,27 @@ func (i *Input) View() string {
 }
 
 // Run runs the input field in accessible mode.
-func (i *Input) Run() {
+func (i *Input) Run() error {
+	if i.accessible {
+		return i.runAccessible()
+	}
+	return i.run()
+}
+
+// run runs the input field.
+func (i *Input) run() error {
+	return Run(i)
+}
+
+// runAccessible runs the input field in accessible mode.
+func (i *Input) runAccessible() error {
 	fmt.Print(i.theme.Focused.Title.Render(i.title))
 	if !i.inline {
 		fmt.Println()
 	}
 	*i.value = accessibility.PromptString("> ", i.validate)
 	fmt.Println()
+	return nil
 }
 
 func (i *Input) Theme(theme *Theme) Field {

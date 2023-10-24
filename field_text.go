@@ -21,9 +21,11 @@ type Text struct {
 
 	textarea textarea.Model
 
-	focused bool
-	theme   *Theme
-	keymap  *TextKeyMap
+	focused    bool
+	accessible bool
+
+	theme  *Theme
+	keymap *TextKeyMap
 }
 
 // NewText returns a new text field.
@@ -103,6 +105,12 @@ func (t *Text) KeyBinds() []key.Binding {
 	return []key.Binding{t.keymap.Next, t.keymap.NewLine, t.keymap.Prev}
 }
 
+// Accessible sets the accessible mode of the text field.
+func (t *Text) Accessible(accessible bool) Field {
+	t.accessible = accessible
+	return t
+}
+
 // Init initializes the text field.
 func (t *Text) Init() tea.Cmd {
 	t.textarea.Blur()
@@ -166,10 +174,20 @@ func (t *Text) View() string {
 	return styles.Base.Render(sb.String())
 }
 
-func (t *Text) Run() {
+// Run runs the text field.
+func (t *Text) Run() error {
+	if t.accessible {
+		return t.runAccessible()
+	}
+	return Run(t)
+}
+
+// runAccessible runs an accessible text field.
+func (t *Text) runAccessible() error {
 	fmt.Println(t.theme.Focused.Title.Render(t.title))
 	*t.value = accessibility.PromptString("> ", t.validate)
 	fmt.Println()
+	return nil
 }
 
 func (t *Text) Theme(theme *Theme) Field {
