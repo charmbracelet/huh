@@ -27,9 +27,10 @@ type MultiSelect[T any] struct {
 	options  []Option[T]
 	value    *[]T
 
-	focused bool
-	theme   *Theme
-	keymap  *MultiSelectKeyMap
+	focused    bool
+	accessible bool
+	theme      *Theme
+	keymap     *MultiSelectKeyMap
 }
 
 // NewMultiSelect returns a new multi-select field.
@@ -116,6 +117,12 @@ func (m *MultiSelect[T]) KeyMap(k *KeyMap) Field {
 // KeyBinds returns the help message for the multi-select field.
 func (m *MultiSelect[T]) KeyBinds() []key.Binding {
 	return []key.Binding{m.keymap.Toggle, m.keymap.Up, m.keymap.Down, m.keymap.Next, m.keymap.Prev}
+}
+
+// Accessible sets the accessible mode of the multi-select field.
+func (m *MultiSelect[T]) Accessible(accessible bool) Field {
+	m.accessible = accessible
+	return m
 }
 
 // Init initializes the multi-select field.
@@ -242,8 +249,16 @@ func (m *MultiSelect[T]) printOptions() {
 	fmt.Println(styles.Base.Render(sb.String()))
 }
 
-// Run runs the multi-select field in accessible mode.
-func (m *MultiSelect[T]) Run() {
+// Run runs the multi-select field.
+func (m *MultiSelect[T]) Run() error {
+	if m.accessible {
+		return m.runAccessible()
+	}
+	return Run(m)
+}
+
+// runAccessible() runs the multi-select field in accessible mode.
+func (m *MultiSelect[T]) runAccessible() error {
 	styles := m.theme.Focused
 
 	m.printOptions()
@@ -278,6 +293,7 @@ func (m *MultiSelect[T]) Run() {
 	}
 
 	fmt.Println("Selected:", strings.Join(values, ", ")+"\n")
+	return nil
 }
 
 func (m *MultiSelect[T]) Theme(theme *Theme) Field {

@@ -22,9 +22,11 @@ type Select[T any] struct {
 	options  []Option[T]
 	selected int
 
-	focused bool
-	theme   *Theme
-	keymap  *SelectKeyMap
+	focused    bool
+	accessible bool
+
+	theme  *Theme
+	keymap *SelectKeyMap
 }
 
 // NewSelect returns a new select field.
@@ -100,6 +102,12 @@ func (s *Select[T]) KeyBinds() []key.Binding {
 	return []key.Binding{s.keymap.Up, s.keymap.Down, s.keymap.Next, s.keymap.Prev}
 }
 
+// Accessible sets the accessible mode of the select field.
+func (s *Select[T]) Accessible(accessible bool) Field {
+	s.accessible = accessible
+	return s
+}
+
 // Init initializes the select field.
 func (s *Select[T]) Init() tea.Cmd {
 	return nil
@@ -161,8 +169,16 @@ func (s *Select[T]) View() string {
 	return styles.Base.Render(sb.String())
 }
 
-// Run runs an accessible select field.
-func (s *Select[T]) Run() {
+// Run runs the select field.
+func (s *Select[T]) Run() error {
+	if s.accessible {
+		return s.runAccessible()
+	}
+	return Run(s)
+}
+
+// runAccessible runs an accessible select field.
+func (s *Select[T]) runAccessible() error {
 	var sb strings.Builder
 
 	sb.WriteString(s.theme.Focused.Title.Render(s.title) + "\n")
@@ -179,6 +195,7 @@ func (s *Select[T]) Run() {
 	option := s.options[accessibility.PromptInt("Choose: ", 1, len(s.options))-1]
 	fmt.Printf("Chose: %s\n\n", option.Key)
 	*s.value = option.Value
+	return nil
 }
 
 func (s *Select[T]) Theme(theme *Theme) Field {
