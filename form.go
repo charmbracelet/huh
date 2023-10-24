@@ -104,8 +104,8 @@ func (f *Form) Init() tea.Cmd {
 func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "ctrl+c":
+		switch {
+		case key.Matches(msg, f.keymap.Quit):
 			f.quitting = true
 			return f, tea.Quit
 		}

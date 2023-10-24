@@ -82,9 +82,11 @@ func (n *Note) KeyBinds() []key.Binding {
 func (n *Note) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "shift+tab":
+		switch {
+		case key.Matches(msg, n.keymap.Prev):
 			return n, prevField
+		case key.Matches(msg, n.keymap.Next):
+			return n, nextField
 		}
 		return n, nextField
 	}

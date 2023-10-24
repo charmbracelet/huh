@@ -131,20 +131,20 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		m.err = nil
 
-		switch msg.String() {
-		case "up", "k", "ctrl+p":
+		switch {
+		case key.Matches(msg, m.keymap.Up):
 			m.cursor = max(m.cursor-1, 0)
-		case "down", "j", "ctrl+n":
+		case key.Matches(msg, m.keymap.Down):
 			m.cursor = min(m.cursor+1, len(m.options)-1)
-		case " ", "x":
+		case key.Matches(msg, m.keymap.Toggle):
 			if !m.selected[m.cursor] && m.numSelected() >= m.limit {
 				break
 			}
 			m.selected[m.cursor] = !m.selected[m.cursor]
-		case "shift+tab":
+		case key.Matches(msg, m.keymap.Prev):
 			m.finalize()
 			return m, prevField
-		case "tab", "enter":
+		case key.Matches(msg, m.keymap.Next):
 			m.finalize()
 			return m, nextField
 		}
