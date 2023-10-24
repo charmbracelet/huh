@@ -8,6 +8,13 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+// Spinner represents a loading spinner.
+// To get started simply create a new spinner and call `Run`.
+//
+//	s := spinner.New()
+//	s.Run()
+//
+// ⣾  Loading...
 type Spinner struct {
 	spinner    spinner.Model
 	action     func()
@@ -72,7 +79,7 @@ func New() *Spinner {
 		action:     func() { time.Sleep(time.Second) },
 		spinner:    s,
 		style:      lipgloss.NewStyle(),
-		title:      "Loading",
+		title:      "Loading...",
 		titleStyle: lipgloss.NewStyle(),
 	}
 }

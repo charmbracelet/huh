@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
-	"github.com/briandowns/spinner"
 	"github.com/charmbracelet/huh"
+	"github.com/charmbracelet/huh/spinner"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -49,11 +48,8 @@ func main() {
 
 	switch action {
 	case Push:
-		s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
-		s.Start()
-		time.Sleep(1 * time.Second)
-		s.Stop()
-		fmt.Println("Pushing to charmbracelet/huh")
+		_ = spinner.New().Title("Pushing to charmbracelet/huh").Run()
+		fmt.Println("Pushed to charmbracelet/huh")
 	case Fork:
 		fmt.Println("Creating a fork of charmbracelet/huh...")
 	case Skip:
@@ -87,10 +83,7 @@ func main() {
 	}
 
 	if nextAction == "Submit" {
-		s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
-		s.Start()
-		time.Sleep(1 * time.Second)
-		s.Stop()
+		_ = spinner.New().Title("Submitting...").Run()
 		fmt.Println("Pull request submitted!")
 	}
 }
