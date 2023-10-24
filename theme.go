@@ -99,30 +99,32 @@ func NewBaseTheme() *Theme {
 
 	button := lipgloss.NewStyle().Padding(0, 2).MarginRight(1)
 
-	t.Focused = FieldStyles{
-		Base: lipgloss.NewStyle().
-			PaddingLeft(1).
-			BorderStyle(lipgloss.ThickBorder()).
-			BorderLeft(true),
-		ErrorMessage: lipgloss.NewStyle().
-			SetString("* "),
-		SelectSelector: lipgloss.NewStyle().
-			SetString("> "),
-		MultiSelectSelector: lipgloss.NewStyle().
-			SetString("> "),
-		SelectedPrefix: lipgloss.NewStyle().
-			SetString("[•] "),
-		UnselectedPrefix: lipgloss.NewStyle().
-			SetString("[ ] "),
-		FocusedButton: button.Copy().
-			Foreground(lipgloss.Color("0")).
-			Background(lipgloss.Color("7")),
-		BlurredButton: button.Copy().
-			Foreground(lipgloss.Color("7")).
-			Background(lipgloss.Color("0")),
-	}
+	// Focused styles.
+	f := &t.Focused
+	f.Base = lipgloss.NewStyle().
+		PaddingLeft(1).
+		BorderStyle(lipgloss.ThickBorder()).
+		BorderLeft(true)
+	f.ErrorMessage = lipgloss.NewStyle().
+		SetString("* ")
+	f.SelectSelector = lipgloss.NewStyle().
+		SetString("> ")
+	f.MultiSelectSelector = lipgloss.NewStyle().
+		SetString("> ")
+	f.SelectedPrefix = lipgloss.NewStyle().
+		SetString("[•] ")
+	f.UnselectedPrefix = lipgloss.NewStyle().
+		SetString("[ ] ")
+	f.FocusedButton = button.Copy().
+		Foreground(lipgloss.Color("0")).
+		Background(lipgloss.Color("7"))
+	f.BlurredButton = button.Copy().
+		Foreground(lipgloss.Color("7")).
+		Background(lipgloss.Color("0"))
+	f.TextInput.Placeholder = lipgloss.NewStyle().Foreground(lipgloss.Color("8"))
 
-	t.Blurred = t.Focused.copy()
+	// Blurred styles.
+	t.Blurred = f.copy()
 	t.Blurred.Base = t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
 	t.Blurred.MultiSelectSelector = lipgloss.NewStyle().SetString("  ")
 
@@ -143,8 +145,9 @@ func NewCharmTheme() *Theme {
 	f.SelectSelector.Foreground(lipgloss.Color("212"))
 	f.Option.Foreground(lipgloss.Color("7"))
 	f.MultiSelectSelector.Foreground(lipgloss.Color("212"))
-	f.SelectedOption.Foreground(lipgloss.Color("212"))
-	f.SelectedPrefix.Foreground(lipgloss.Color("212"))
+	f.SelectedOption.Foreground(lipgloss.Color("36"))
+	f.SelectedPrefix = lipgloss.NewStyle().Foreground(lipgloss.Color("29")).SetString("[✓] ")
+	f.UnselectedPrefix = lipgloss.NewStyle().SetString("[ ] ")
 	f.UnselectedOption.Foreground(lipgloss.Color("7"))
 	f.FocusedButton.Foreground(lipgloss.Color("#ffffd7")).Background(lipgloss.Color("212"))
 	f.BlurredButton.Foreground(lipgloss.Color("7")).Background(lipgloss.Color("0"))
