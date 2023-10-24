@@ -56,20 +56,20 @@ func (g *Group) Description(description string) *Group {
 	return g
 }
 
-// ShowHelp sets whether or not the group's help should be shown.
-func (g *Group) ShowHelp(showHelp bool) *Group {
+// WithHelp sets whether or not the group's help should be shown.
+func (g *Group) WithHelp(showHelp bool) *Group {
 	g.showHelp = showHelp
 	return g
 }
 
-// Theme sets the theme on a group.
-func (g *Group) Theme(t *Theme) *Group {
+// WithTheme sets the theme on a group.
+func (g *Group) WithTheme(t *Theme) *Group {
 	g.theme = t
 	return g
 }
 
-// KeyMap sets the keymap on a group.
-func (g *Group) KeyMap(k *KeyMap) *Group {
+// WithKeyMap sets the keymap on a group.
+func (g *Group) WithKeyMap(k *KeyMap) *Group {
 	g.keymap = k
 	return g
 }

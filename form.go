@@ -72,18 +72,20 @@ type Field interface {
 	// Errors and Validation
 	Error() error
 
-	// Accessible sets whether the field should run in accessible mode.
-	Accessible(bool) Field
-
 	// Run runs the field individually.
 	Run() error
 
-	// Theme sets the theme on a field.
-	Theme(*Theme) Field
-
-	// KeyMap sets the keymap on a field.
-	KeyMap(*KeyMap) Field
+	// KeyBinds returns help keybindings.
 	KeyBinds() []key.Binding
+
+	// WithTheme sets the theme on a field.
+	WithTheme(*Theme) Field
+
+	// WithAccessible sets whether the field should run in accessible mode.
+	WithAccessible(bool) Field
+
+	// WithKeyMap sets the keymap on a field.
+	WithKeyMap(*KeyMap) Field
 }
 
 // nextGroupMsg is a message to move to the next group.
@@ -119,7 +121,7 @@ func (f *Form) WithAccessible(accessible bool) *Form {
 // to the user.
 func (f *Form) WithHelp(v bool) *Form {
 	for _, group := range f.groups {
-		group.ShowHelp(v)
+		group.WithHelp(v)
 	}
 	return f
 }
@@ -145,9 +147,9 @@ func (f *Form) applyThemeToChildren() {
 		return
 	}
 	for _, group := range f.groups {
-		group.Theme(f.theme)
+		group.WithTheme(f.theme)
 		for _, field := range group.fields {
-			field.Theme(f.theme)
+			field.WithTheme(f.theme)
 		}
 	}
 }
@@ -170,9 +172,9 @@ func (f *Form) applyKeymapToChildren() {
 		return
 	}
 	for _, group := range f.groups {
-		group.KeyMap(f.keymap)
+		group.WithKeyMap(f.keymap)
 		for _, field := range group.fields {
-			field.KeyMap(f.keymap)
+			field.WithKeyMap(f.keymap)
 		}
 	}
 }
@@ -257,7 +259,7 @@ func (f *Form) runAccessible() error {
 		for _, field := range group.fields {
 			field.Init()
 			field.Focus()
-			field.Accessible(true).Run()
+			field.WithAccessible(true).Run()
 		}
 	}
 

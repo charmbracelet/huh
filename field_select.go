@@ -12,21 +12,25 @@ import (
 
 // Select is a form select field.
 type Select[T any] struct {
-	value       *T
+	value *T
+
+	// customization
 	title       string
 	description string
+	options     []Option[T]
 
+	// error handling
 	validate func(T) error
 	err      error
 
-	options  []Option[T]
+	// state
 	selected int
+	focused  bool
 
-	focused    bool
+	// options
 	accessible bool
-
-	theme  *Theme
-	keymap *SelectKeyMap
+	theme      *Theme
+	keymap     *SelectKeyMap
 }
 
 // NewSelect returns a new select field.
@@ -91,21 +95,9 @@ func (s *Select[T]) Blur() tea.Cmd {
 	return nil
 }
 
-// KeyMap sets the keymap on a select field.
-func (s *Select[T]) KeyMap(k *KeyMap) Field {
-	s.keymap = &k.Select
-	return s
-}
-
 // KeyBinds returns the help keybindings for the select field.
 func (s *Select[T]) KeyBinds() []key.Binding {
 	return []key.Binding{s.keymap.Up, s.keymap.Down, s.keymap.Next, s.keymap.Prev}
-}
-
-// Accessible sets the accessible mode of the select field.
-func (s *Select[T]) Accessible(accessible bool) Field {
-	s.accessible = accessible
-	return s
 }
 
 // Init initializes the select field.
@@ -198,7 +190,20 @@ func (s *Select[T]) runAccessible() error {
 	return nil
 }
 
-func (s *Select[T]) Theme(theme *Theme) Field {
+// WithTheme sets the theme of the select field.
+func (s *Select[T]) WithTheme(theme *Theme) Field {
 	s.theme = theme
+	return s
+}
+
+// WithKeyMap sets the keymap on a select field.
+func (s *Select[T]) WithKeyMap(k *KeyMap) Field {
+	s.keymap = &k.Select
+	return s
+}
+
+// WithAccessible sets the accessible mode of the select field.
+func (s *Select[T]) WithAccessible(accessible bool) Field {
+	s.accessible = accessible
 	return s
 }

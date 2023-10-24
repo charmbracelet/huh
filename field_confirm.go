@@ -12,17 +12,22 @@ import (
 
 // Confirm is a form confirm field.
 type Confirm struct {
-	value       *bool
+	value *bool
+
+	// customization
 	title       string
 	description string
-
-	validate func(bool) error
-	err      error
-
 	affirmative string
 	negative    string
 
-	focused    bool
+	// error handling
+	validate func(bool) error
+	err      error
+
+	// state
+	focused bool
+
+	// options
 	accessible bool
 	theme      *Theme
 	keymap     *ConfirmKeyMap
@@ -92,21 +97,9 @@ func (c *Confirm) Blur() tea.Cmd {
 	return nil
 }
 
-// KeyMap sets the keymap of the confirm field.
-func (c *Confirm) KeyMap(k *KeyMap) Field {
-	c.keymap = &k.Confirm
-	return c
-}
-
 // KeyBinds returns the help message for the confirm field.
 func (c *Confirm) KeyBinds() []key.Binding {
 	return []key.Binding{c.keymap.Toggle, c.keymap.Next, c.keymap.Prev}
-}
-
-// Accessible sets the accessible mode of the confirm field.
-func (c *Confirm) Accessible(accessible bool) Field {
-	c.accessible = accessible
-	return c
 }
 
 // Init initializes the confirm field.
@@ -193,7 +186,20 @@ func (c *Confirm) runAccessible() error {
 	return nil
 }
 
-func (c *Confirm) Theme(theme *Theme) Field {
+// WithTheme sets the theme of the confirm field.
+func (c *Confirm) WithTheme(theme *Theme) Field {
 	c.theme = theme
+	return c
+}
+
+// WithKeyMap sets the keymap of the confirm field.
+func (c *Confirm) WithKeyMap(k *KeyMap) Field {
+	c.keymap = &k.Confirm
+	return c
+}
+
+// WithAccessible sets the accessible mode of the confirm field.
+func (c *Confirm) WithAccessible(accessible bool) Field {
+	c.accessible = accessible
 	return c
 }

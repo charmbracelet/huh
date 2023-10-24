@@ -12,22 +12,25 @@ import (
 
 // MultiSelect is a form multi-select field.
 type MultiSelect[T any] struct {
+	value *[]T
+
+	// customization
 	title       string
 	description string
+	options     []Option[T]
+	filterable  bool
+	limit       int
 
-	filterable bool
-	limit      int
-
+	// error handling
 	validate func([]T) error
 	err      error
 
-	cursor int
-
+	// state
+	cursor   int
 	selected []bool
-	options  []Option[T]
-	value    *[]T
+	focused  bool
 
-	focused    bool
+	// options
 	accessible bool
 	theme      *Theme
 	keymap     *MultiSelectKeyMap
@@ -108,21 +111,9 @@ func (m *MultiSelect[T]) Blur() tea.Cmd {
 	return nil
 }
 
-// KeyMap sets the keymap of the multi-select field.
-func (m *MultiSelect[T]) KeyMap(k *KeyMap) Field {
-	m.keymap = &k.MultiSelect
-	return m
-}
-
 // KeyBinds returns the help message for the multi-select field.
 func (m *MultiSelect[T]) KeyBinds() []key.Binding {
 	return []key.Binding{m.keymap.Toggle, m.keymap.Up, m.keymap.Down, m.keymap.Next, m.keymap.Prev}
-}
-
-// Accessible sets the accessible mode of the multi-select field.
-func (m *MultiSelect[T]) Accessible(accessible bool) Field {
-	m.accessible = accessible
-	return m
 }
 
 // Init initializes the multi-select field.
@@ -296,7 +287,20 @@ func (m *MultiSelect[T]) runAccessible() error {
 	return nil
 }
 
-func (m *MultiSelect[T]) Theme(theme *Theme) Field {
+// WithTheme sets the theme of the multi-select field.
+func (m *MultiSelect[T]) WithTheme(theme *Theme) Field {
 	m.theme = theme
+	return m
+}
+
+// WithKeyMap sets the keymap of the multi-select field.
+func (m *MultiSelect[T]) WithKeyMap(k *KeyMap) Field {
+	m.keymap = &k.MultiSelect
+	return m
+}
+
+// WithAccessible sets the accessible mode of the multi-select field.
+func (m *MultiSelect[T]) WithAccessible(accessible bool) Field {
+	m.accessible = accessible
 	return m
 }

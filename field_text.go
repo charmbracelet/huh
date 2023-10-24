@@ -11,19 +11,23 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-// Text is a form text field.
+// Text is a form text field. It allows for a multi-line string input.
 type Text struct {
-	value *string
 	title string
+	value *string
 
+	// error handling
 	validate func(string) error
 	err      error
 
+	// model
 	textarea textarea.Model
 
+	// state
 	focused    bool
 	accessible bool
 
+	// form options
 	theme  *Theme
 	keymap *TextKeyMap
 }
@@ -94,21 +98,9 @@ func (t *Text) Blur() tea.Cmd {
 	return nil
 }
 
-// KeyMap sets the keymap on a text field.
-func (t *Text) KeyMap(k *KeyMap) Field {
-	t.keymap = &k.Text
-	return t
-}
-
 // KeyBinds returns the help message for the text field.
 func (t *Text) KeyBinds() []key.Binding {
 	return []key.Binding{t.keymap.Next, t.keymap.NewLine, t.keymap.Prev}
-}
-
-// Accessible sets the accessible mode of the text field.
-func (t *Text) Accessible(accessible bool) Field {
-	t.accessible = accessible
-	return t
 }
 
 // Init initializes the text field.
@@ -190,7 +182,20 @@ func (t *Text) runAccessible() error {
 	return nil
 }
 
-func (t *Text) Theme(theme *Theme) Field {
+// WithTheme sets the theme on a text field.
+func (t *Text) WithTheme(theme *Theme) Field {
 	t.theme = theme
+	return t
+}
+
+// WithKeyMap sets the keymap on a text field.
+func (t *Text) WithKeyMap(k *KeyMap) Field {
+	t.keymap = &k.Text
+	return t
+}
+
+// WithAccessible sets the accessible mode of the text field.
+func (t *Text) WithAccessible(accessible bool) Field {
+	t.accessible = accessible
 	return t
 }

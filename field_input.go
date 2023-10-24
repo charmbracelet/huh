@@ -12,22 +12,28 @@ import (
 
 // Input is a form input field.
 type Input struct {
-	value       *string
+	value *string
+
+	// customization
 	title       string
 	description string
+	inline      bool
+	charlimit   int
 
-	inline    bool
-	charlimit int
-
+	// error handling
 	validate func(string) error
 	err      error
 
-	textinput  textinput.Model
-	focused    bool
-	accessible bool
+	// model
+	textinput textinput.Model
 
-	theme  *Theme
-	keymap *InputKeyMap
+	// state
+	focused bool
+
+	// options
+	accessible bool
+	theme      *Theme
+	keymap     *InputKeyMap
 }
 
 // NewInput returns a new input field.
@@ -109,21 +115,9 @@ func (i *Input) Blur() tea.Cmd {
 	return nil
 }
 
-// KeyMap sets the keymap on an input field.
-func (i *Input) KeyMap(k *KeyMap) Field {
-	i.keymap = &k.Input
-	return i
-}
-
 // KeyBinds returns the help message for the input field.
 func (i *Input) KeyBinds() []key.Binding {
 	return []key.Binding{i.keymap.Next, i.keymap.Prev}
-}
-
-// Accessible sets the accessible mode of the input field.
-func (i *Input) Accessible(accessible bool) Field {
-	i.accessible = accessible
-	return i
 }
 
 // Init initializes the input field.
@@ -215,7 +209,20 @@ func (i *Input) runAccessible() error {
 	return nil
 }
 
-func (i *Input) Theme(theme *Theme) Field {
+// WithKeyMap sets the keymap on an input field.
+func (i *Input) WithKeyMap(k *KeyMap) Field {
+	i.keymap = &k.Input
+	return i
+}
+
+// WithAccessible sets the accessible mode of the input field.
+func (i *Input) WithAccessible(accessible bool) Field {
+	i.accessible = accessible
+	return i
+}
+
+// WithTheme sets the theme of the input field.
+func (i *Input) WithTheme(theme *Theme) Field {
 	i.theme = theme
 	return i
 }

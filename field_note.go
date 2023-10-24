@@ -11,15 +11,18 @@ import (
 
 // Note is a form note field.
 type Note struct {
+	// customization
 	title       string
 	description string
 
+	// state
 	showNextButton bool
 	focused        bool
-	accessible     bool
 
-	theme  *Theme
-	keymap *NoteKeyMap
+	// options
+	accessible bool
+	theme      *Theme
+	keymap     *NoteKeyMap
 }
 
 // NewNote creates a new note field.
@@ -64,21 +67,9 @@ func (n *Note) Error() error {
 	return nil
 }
 
-// KeyMap sets the keymap on a note field.
-func (n *Note) KeyMap(k *KeyMap) Field {
-	n.keymap = &k.Note
-	return n
-}
-
 // KeyBinds returns the help message for the note field.
 func (n *Note) KeyBinds() []key.Binding {
 	return []key.Binding{n.keymap.Next}
-}
-
-// Accessible sets the accessible mode of the note field.
-func (n *Note) Accessible(accessible bool) Field {
-	n.accessible = accessible
-	return n
 }
 
 // Init initializes the note field.
@@ -151,7 +142,20 @@ func (n *Note) runAccessible() error {
 	return nil
 }
 
-func (n *Note) Theme(theme *Theme) Field {
+// WithTheme sets the theme on a note field.
+func (n *Note) WithTheme(theme *Theme) Field {
 	n.theme = theme
+	return n
+}
+
+// WithKeyMap sets the keymap on a note field.
+func (n *Note) WithKeyMap(k *KeyMap) Field {
+	n.keymap = &k.Note
+	return n
+}
+
+// WithAccessible sets the accessible mode of the note field.
+func (n *Note) WithAccessible(accessible bool) Field {
+	n.accessible = accessible
 	return n
 }
