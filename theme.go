@@ -42,8 +42,7 @@ type FieldStyles struct {
 	UnselectedPrefix    lipgloss.Style
 
 	// Textinput and teatarea styles.
-	Cursor      lipgloss.Style
-	Placeholder lipgloss.Style
+	TextInput TextInputStyles
 
 	// Confirm styles.
 	FocusedButton lipgloss.Style
@@ -52,6 +51,22 @@ type FieldStyles struct {
 	// Card styles.
 	Card lipgloss.Style
 	Next lipgloss.Style
+}
+
+type TextInputStyles struct {
+	Cursor      lipgloss.Style
+	Placeholder lipgloss.Style
+	Prompt      lipgloss.Style
+	Text        lipgloss.Style
+}
+
+func (t TextInputStyles) copy() TextInputStyles {
+	return TextInputStyles{
+		Cursor:      t.Cursor.Copy(),
+		Placeholder: t.Placeholder.Copy(),
+		Prompt:      t.Prompt.Copy(),
+		Text:        t.Text.Copy(),
+	}
 }
 
 func (f FieldStyles) copy() FieldStyles {
@@ -69,10 +84,9 @@ func (f FieldStyles) copy() FieldStyles {
 		SelectedPrefix:      f.SelectedPrefix.Copy(),
 		UnselectedOption:    f.UnselectedOption.Copy(),
 		UnselectedPrefix:    f.UnselectedPrefix.Copy(),
-		Cursor:              f.Cursor.Copy(),
-		Placeholder:         f.Placeholder.Copy(),
 		FocusedButton:       f.FocusedButton.Copy(),
 		BlurredButton:       f.BlurredButton.Copy(),
+		TextInput:           f.TextInput.copy(),
 		Card:                f.Card.Copy(),
 		Next:                f.Next.Copy(),
 	}
@@ -132,10 +146,12 @@ func NewCharmTheme() *Theme {
 	f.SelectedOption.Foreground(lipgloss.Color("212"))
 	f.SelectedPrefix.Foreground(lipgloss.Color("212"))
 	f.UnselectedOption.Foreground(lipgloss.Color("7"))
-	f.Cursor.Foreground(lipgloss.Color("212"))
-	f.Placeholder.Foreground(lipgloss.Color("8"))
 	f.FocusedButton.Foreground(lipgloss.Color("#ffffd7")).Background(lipgloss.Color("212"))
 	f.BlurredButton.Foreground(lipgloss.Color("7")).Background(lipgloss.Color("0"))
+
+	f.TextInput.Cursor.Foreground(lipgloss.Color("212"))
+	f.TextInput.Placeholder.Foreground(lipgloss.Color("8"))
+	f.TextInput.Prompt.Foreground(lipgloss.Color("212"))
 
 	t.Blurred = f.copy()
 	t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
@@ -160,10 +176,12 @@ func NewDraculaTheme() *Theme {
 	f.SelectedOption.Foreground(lipgloss.Color("#f1fa8c"))
 	f.SelectedPrefix.Foreground(lipgloss.Color("#f1fa8c"))
 	f.UnselectedOption.Foreground(lipgloss.Color("#f8f8f2"))
-	f.Cursor.Foreground(lipgloss.Color("#f1fa8c"))
-	f.Placeholder.Foreground(lipgloss.Color("8"))
 	f.FocusedButton.Foreground(lipgloss.Color("0")).Background(lipgloss.Color("#f1fa8c")).Bold(true)
 	f.BlurredButton.Foreground(lipgloss.Color("7")).Background(lipgloss.Color("0"))
+
+	f.TextInput.Cursor.Foreground(lipgloss.Color("#f1fa8c"))
+	f.TextInput.Placeholder.Foreground(lipgloss.Color("8"))
+	f.TextInput.Prompt.Foreground(lipgloss.Color("#f1fa8c"))
 
 	t.Blurred = f.copy()
 	t.Blurred.Base = t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
@@ -188,10 +206,12 @@ func NewBase16Theme() *Theme {
 	f.SelectedOption.Foreground(lipgloss.Color("6"))
 	f.SelectedPrefix.Foreground(lipgloss.Color("6"))
 	f.UnselectedOption.Foreground(lipgloss.Color("7"))
-	f.Cursor.Foreground(lipgloss.Color("6"))
-	f.Placeholder.Foreground(lipgloss.Color("8"))
 	f.FocusedButton.Foreground(lipgloss.Color("0")).Background(lipgloss.Color("6"))
 	f.BlurredButton.Foreground(lipgloss.Color("7")).Background(lipgloss.Color("0"))
+
+	f.TextInput.Cursor.Foreground(lipgloss.Color("6"))
+	f.TextInput.Placeholder.Foreground(lipgloss.Color("8"))
+	f.TextInput.Prompt.Foreground(lipgloss.Color("6"))
 
 	t.Blurred = f.copy()
 	t.Blurred.Base = t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())

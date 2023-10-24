@@ -121,10 +121,25 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // View renders the text field.
 func (t *Text) View() string {
-	styles := t.theme.Blurred
+	var (
+		styles         FieldStyles
+		textareaStyles *textarea.Style
+	)
 	if t.focused {
 		styles = t.theme.Focused
+		textareaStyles = &t.textarea.FocusedStyle
+	} else {
+		styles = t.theme.Blurred
+		textareaStyles = &t.textarea.BlurredStyle
 	}
+
+	// NB: since the method is on a pointer receiver these are being mutated.
+	// Because this runs on every render this shouldn't matter in practice,
+	// however.
+	textareaStyles.Placeholder = styles.TextInput.Placeholder
+	textareaStyles.Text = styles.TextInput.Text
+	textareaStyles.Prompt = styles.TextInput.Prompt
+	t.textarea.Cursor.Style = styles.TextInput.Cursor
 
 	var sb strings.Builder
 	sb.WriteString(styles.Title.Render(t.title))
