@@ -2,70 +2,76 @@ package accessibility
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 )
 
+// PromptInt prompts a user for an integer between a certain range.
+//
+// Given invalid input (non-integers, integers outside of the range), the user
+// will continue to be reprompted until a valid input is given, ensuring that
+// the return value is always valid.
 func PromptInt(prompt string, min, max int) int {
 	var (
 		input  string
-		valid  bool
 		choice int
-		err    error
 	)
 
-	for !valid {
-		input = PromptString(prompt)
-		choice, err = strconv.Atoi(input)
-
-		if err != nil {
-			fmt.Println("Invalid input. Please try again.")
-			continue
+	validInt := func(s string) error {
+		i, err := strconv.Atoi(s)
+		if err != nil || i < min || i > max {
+			return errors.New("Invalid input. Please try again.")
 		}
-
-		if choice < min || choice > max {
-			fmt.Println("Invalid input. Please try again.")
-			continue
-		}
-
-		break
+		return nil
 	}
 
+	input = PromptString(prompt, validInt)
+	choice, _ = strconv.Atoi(input)
 	return choice
 }
 
+// PromptBool prompts a user for a boolean value.
+//
+// Given invalid input (non-boolean), the user will continue to be reprompted
+// until a valid input is given, ensuring that the return value is always valid.
 func PromptBool() bool {
-	var (
-		input  string
-		valid  bool
-		choice bool
-	)
-
-	for !valid {
-		input = PromptString("Choose [y/N]: ")
-
-		if input == "y" || input == "Y" {
-			choice = true
-		} else if input == "n" || input == "N" {
-			choice = false
-		} else {
-			fmt.Println("Invalid input. Please try again.")
-			continue
+	validBool := func(s string) error {
+		if len(s) == 1 && strings.Contains("yYnN", s) {
+			return nil
 		}
-
-		break
+		return errors.New("Invalid input. Please try again.")
 	}
 
-	return choice
+	input := PromptString("Choose [y/N]: ", validBool)
+	return strings.ToLower(input) == "y"
 }
 
-func PromptString(prompt string) string {
+// PromptString prompts a user for a string value and validates it against a
+// validator function. It re-prompts the user until a valid input is given.
+func PromptString(prompt string, validator func(input string) error) string {
 	scanner := bufio.NewScanner(os.Stdin)
 
-	fmt.Print(prompt)
-	_ = scanner.Scan()
+	var (
+		valid bool
+		input string
+	)
 
-	text := scanner.Text()
-	return text
+	for !valid {
+		fmt.Print(prompt)
+		_ = scanner.Scan()
+		input = scanner.Text()
+
+		err := validator(input)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+
+		break
+	}
+
+	return input
 }
