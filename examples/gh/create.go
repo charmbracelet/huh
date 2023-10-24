@@ -66,7 +66,8 @@ func main() {
 	f = huh.NewForm(
 		huh.NewGroup(
 			huh.NewInput().
-				Title("Title"),
+				Prompt("Title ").
+				Inline(true),
 			huh.NewText().
 				Title("Body"),
 		),
