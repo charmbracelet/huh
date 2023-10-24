@@ -23,12 +23,25 @@ func NewForm(groups ...*Group) *Form {
 	p := paginator.New()
 	p.SetTotalPages(len(groups))
 
-	return &Form{
+	f := Form{
 		groups:    groups,
 		paginator: p,
 		theme:     NewCharmTheme(),
 		keymap:    NewDefaultKeyMap(),
 	}
+
+	// NB: If dynamic forms come into play this will need to be applied when
+	// groups and fields are added.
+	for _, group := range f.groups {
+		group.Theme(f.theme)
+		group.KeyMap(f.keymap)
+		for _, field := range group.fields {
+			field.Theme(f.theme)
+			field.KeyMap(f.keymap)
+		}
+	}
+
+	return &f
 }
 
 // Field is a form field.
@@ -158,16 +171,6 @@ func (f *Form) View() string {
 func (f *Form) Run() error {
 	if len(f.groups) == 0 {
 		return nil
-	}
-
-	// Make theme and keymap available to groups and fields
-	for _, group := range f.groups {
-		group.Theme(f.theme)
-		group.KeyMap(f.keymap)
-		for _, field := range group.fields {
-			field.Theme(f.theme)
-			field.KeyMap(f.keymap)
-		}
 	}
 
 	if f.accessible {
