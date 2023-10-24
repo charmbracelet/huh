@@ -5,24 +5,36 @@ import (
 
 	"github.com/charmbracelet/bubbles/help"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/x/exp/ordered"
 )
 
-// Group is a collection of fields displayed together.
+// Group is a collection of fields that are displayed together with a page of
+// the form. While a group is displayed the form completer can switch between
+// fields in the group.
+//
+// If any of the fields in a group have errors, the form will not be able to
+// progress to the next group.
 type Group struct {
+	// collection of fields
 	fields []Field
 
+	// information
 	title       string
 	description string
-	current     int
 
+	// navigation
+	current int
+
+	// help
 	showHelp bool
 	help     help.Model
 
+	// form options
 	theme  *Theme
 	keymap *KeyMap
 }
 
-// NewGroup creates a new group with the given fields.
+// NewGroup returns a new group with the given fields.
 func NewGroup(fields ...Field) *Group {
 	return &Group{
 		fields:   fields,
@@ -66,21 +78,31 @@ func (g *Group) KeyMap(k *KeyMap) *Group {
 func (g *Group) Errors() []error {
 	var errs []error
 	for _, field := range g.fields {
-		err := field.Error()
-		if err != nil {
-			errs = append(errs, field.Error())
+		if err := field.Error(); err != nil {
+			errs = append(errs, err)
 		}
 	}
 	return errs
 }
 
+// nextFieldMsg is a message to move to the next field,
+//
+// each field controls when to send this message such that it is able to use
+// different key bindings or events to trigger group progression.
 type nextFieldMsg struct{}
+
+// prevFieldMsg is a message to move to the previous field.
+//
+// each field controls when to send this message such that it is able to use
+// different key bindings or events to trigger group progression.
 type prevFieldMsg struct{}
 
+// nextField is the command to move to the next field.
 func nextField() tea.Msg {
 	return nextFieldMsg{}
 }
 
+// prevField is the command to move to the previous field.
 func prevField() tea.Msg {
 	return prevFieldMsg{}
 }
@@ -88,25 +110,32 @@ func prevField() tea.Msg {
 // Init initializes the group.
 func (g *Group) Init() tea.Cmd {
 	var cmds []tea.Cmd
+
 	for _, field := range g.fields {
 		cmds = append(cmds, field.Init())
 	}
-	cmds = append(cmds, g.fields[g.current].Focus())
+
+	cmd := g.fields[g.current].Focus()
+	cmds = append(cmds, cmd)
+
 	return tea.Batch(cmds...)
 }
 
 // setCurrent sets the current field.
 func (g *Group) setCurrent(current int) tea.Cmd {
-	var cmds []tea.Cmd
-	cmds = append(cmds, g.fields[g.current].Blur())
-	if current < 0 {
-		current = 0
-	}
-	if current > len(g.fields)-1 {
-		current = len(g.fields) - 1
-	}
-	g.current = current
-	cmds = append(cmds, g.fields[g.current].Focus())
+	var (
+		cmds []tea.Cmd
+		cmd  tea.Cmd
+	)
+
+	cmd = g.fields[g.current].Blur()
+	cmds = append(cmds, cmd)
+
+	g.current = ordered.Clamp(current, 0, len(g.fields)-1)
+
+	cmd = g.fields[g.current].Focus()
+	cmds = append(cmds, cmd)
+
 	return tea.Batch(cmds...)
 }
 
@@ -172,6 +201,7 @@ func (g *Group) View() string {
 		s.WriteString("\n")
 		s.WriteString(g.theme.Focused.ErrorMessage.Render(err.Error()))
 	}
+
 	if len(g.Errors()) == 0 {
 		// If there are no errors add a gap so that the appearance of an
 		// error message doesn't cause the layout to shift.

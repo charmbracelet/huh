@@ -6,29 +6,42 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-// Form represents a Huh? form.
-// It is a collection of groups and controls navigation between pages.
+// Form is a collection of groups that are displayed one at a time on a "page".
+//
+// The form can navigate between groups and is complete once all the groups are
+// complete.
 type Form struct {
-	groups     []*Group
-	paginator  paginator.Model
+	// collection of groups
+	groups []*Group
+
+	// navigation
+	paginator paginator.Model
+
+	// whether or not to use bubble tea rendering for accessibility
+	// purposes, if true, the form will render with basic prompting primitives
+	// to be more accessible to screen readers.
 	accessible bool
-	showHelp   bool
-	quitting   bool
-	theme      *Theme
-	keymap     *KeyMap
+
+	quitting bool
+
+	// options
+	theme  *Theme
+	keymap *KeyMap
 }
 
-// NewForm creates a new form with the given groups.
+// NewForm returns a form with the given groups and default themes and
+// keybindings.
+//
+// Use With* methods to customize the form with options, such as setting
+// different themes and keybindings.
 func NewForm(groups ...*Group) *Form {
 	p := paginator.New()
 	p.SetTotalPages(len(groups))
 
-	theme := NewCharmTheme()
-
 	f := Form{
 		groups:    groups,
 		paginator: p,
-		theme:     theme,
+		theme:     NewCharmTheme(),
 		keymap:    NewDefaultKeyMap(),
 	}
 
@@ -40,7 +53,12 @@ func NewForm(groups ...*Group) *Form {
 	return &f
 }
 
-// Field is a form field.
+// Field is a primitive of a form.
+//
+// A field represents a single input control on a form such as a text input,
+// confirm button, select option, etc...
+//
+// Each field implements the Bubble Tea Model interface.
 type Field interface {
 	// Bubble Tea Model
 	Init() tea.Cmd
@@ -68,30 +86,50 @@ type Field interface {
 	KeyBinds() []key.Binding
 }
 
+// nextGroupMsg is a message to move to the next group.
 type nextGroupMsg struct{}
+
+// prevGroupMsg is a message to move to the previous group.
 type prevGroupMsg struct{}
 
+// nextGroup is the command to move to the next group.
 func nextGroup() tea.Msg {
 	return nextGroupMsg{}
 }
 
+// prevGroup is the command to move to the previous group.
 func prevGroup() tea.Msg {
 	return prevGroupMsg{}
 }
 
-// Accessible sets the form to run in accessible mode to avoid redrawing the
+// WithAccessible sets the form to run in accessible mode to avoid redrawing the
 // views which makes it easier for screen readers to read and describe the form.
 //
 // This avoids using the Bubble Tea renderer and instead simply uses basic
 // terminal prompting to gather input which degrades the user experience but
 // provides accessibility.
-func (f *Form) Accessible(b bool) *Form {
-	f.accessible = b
+func (f *Form) WithAccessible(accessible bool) *Form {
+	f.accessible = accessible
 	return f
 }
 
-// Theme sets the theme on a form.
-func (f *Form) Theme(theme *Theme) *Form {
+// WithHelp sets whether or not the form should show help.
+//
+// This allows the form groups and field to show what keybindings are available
+// to the user.
+func (f *Form) WithHelp(v bool) *Form {
+	for _, group := range f.groups {
+		group.ShowHelp(v)
+	}
+	return f
+}
+
+// WithTheme sets the theme on a form.
+//
+// This allows all groups and fields to be themed consistently, however themes
+// can be applied to each group and field individually for more granular
+// control.
+func (f *Form) WithTheme(theme *Theme) *Form {
 	if theme != nil {
 		f.theme = theme
 		f.applyThemeToChildren()
@@ -100,6 +138,8 @@ func (f *Form) Theme(theme *Theme) *Form {
 	return f
 }
 
+// applyThemeToChildren applies the form's theme to all children (groups and
+// fields).
 func (f *Form) applyThemeToChildren() {
 	if f.theme == nil {
 		return
@@ -113,14 +153,18 @@ func (f *Form) applyThemeToChildren() {
 }
 
 // KeyMap sets the keymap on a form.
-func (f *Form) KeyMap(keymap *KeyMap) *Form {
-	if keymap != nil {
-		f.keymap = keymap
-		f.applyKeymapToChildren()
+func (f *Form) WithKeyMap(keymap *KeyMap) *Form {
+	if keymap == nil {
+		return f
 	}
+
+	f.keymap = keymap
+	f.applyKeymapToChildren()
 	return f
 }
 
+// applyKeymapToChildren applies the form's keymap to all children (groups and
+// fields).
 func (f *Form) applyKeymapToChildren() {
 	if f.keymap == nil {
 		return
@@ -131,14 +175,6 @@ func (f *Form) applyKeymapToChildren() {
 			field.KeyMap(f.keymap)
 		}
 	}
-}
-
-// ShowHelp sets whether to show help on a form.
-func (f *Form) ShowHelp(v bool) *Form {
-	for _, group := range f.groups {
-		group.ShowHelp(v)
-	}
-	return f
 }
 
 // Init initializes the form.
@@ -152,6 +188,9 @@ func (f *Form) Init() tea.Cmd {
 
 // Update updates the form.
 func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	page := f.paginator.Page
+	group := f.groups[page]
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
@@ -161,7 +200,7 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case nextGroupMsg:
-		if len(f.groups[f.paginator.Page].Errors()) > 0 {
+		if len(group.Errors()) > 0 {
 			return f, nil
 		}
 
@@ -172,14 +211,14 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		f.paginator.NextPage()
 
 	case prevGroupMsg:
-		if len(f.groups[f.paginator.Page].Errors()) > 0 {
+		if len(group.Errors()) > 0 {
 			return f, nil
 		}
 		f.paginator.PrevPage()
 	}
 
-	m, cmd := f.groups[f.paginator.Page].Update(msg)
-	f.groups[f.paginator.Page] = m.(*Group)
+	m, cmd := group.Update(msg)
+	f.groups[page] = m.(*Group)
 
 	return f, cmd
 }
@@ -189,6 +228,7 @@ func (f *Form) View() string {
 	if f.quitting {
 		return ""
 	}
+
 	return f.groups[f.paginator.Page].View()
 }
 
@@ -199,20 +239,27 @@ func (f *Form) Run() error {
 	}
 
 	if f.accessible {
-		for _, group := range f.groups {
-			for _, field := range group.fields {
-				field.Init()
-				field.Focus()
-				field.Accessible(true).Run()
-			}
-		}
-		return nil
+		return f.runAccessible()
 	}
 
-	p := tea.NewProgram(f)
-	_, err := p.Run()
-	if err != nil {
-		return err
+	return f.run()
+}
+
+// run runs the form in normal mode.
+func (f *Form) run() error {
+	_, err := tea.NewProgram(f).Run()
+	return err
+}
+
+// runAccessible runs the form in accessible mode.
+func (f *Form) runAccessible() error {
+	for _, group := range f.groups {
+		for _, field := range group.fields {
+			field.Init()
+			field.Focus()
+			field.Accessible(true).Run()
+		}
 	}
+
 	return nil
 }

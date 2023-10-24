@@ -1,6 +1,6 @@
 package huh
 
-// Option is a select option.
+// Option is an option for select fields.
 type Option[T any] struct {
 	Key   string
 	Value T

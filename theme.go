@@ -2,7 +2,8 @@ package huh
 
 import "github.com/charmbracelet/lipgloss"
 
-// Theme is the style for a form.
+// Theme is a collection of styles for components of the form.
+// Themes can be applied to a form using the WithTheme option.
 type Theme struct {
 	Form           lipgloss.Style
 	Group          lipgloss.Style
@@ -11,6 +12,7 @@ type Theme struct {
 	Focused        FieldStyles
 }
 
+// copy returns a copy of a theme with all children styles copied.
 func (t Theme) copy() Theme {
 	return Theme{
 		Form:           t.Form.Copy(),
@@ -53,6 +55,7 @@ type FieldStyles struct {
 	Next lipgloss.Style
 }
 
+// TextInputStyles are the styles for text inputs.
 type TextInputStyles struct {
 	Cursor      lipgloss.Style
 	Placeholder lipgloss.Style
@@ -60,6 +63,7 @@ type TextInputStyles struct {
 	Text        lipgloss.Style
 }
 
+// copy returns a copy of a TextInputStyles with all children styles copied.
 func (t TextInputStyles) copy() TextInputStyles {
 	return TextInputStyles{
 		Cursor:      t.Cursor.Copy(),
@@ -69,6 +73,7 @@ func (t TextInputStyles) copy() TextInputStyles {
 	}
 }
 
+// copy returns a copy of a FieldStyles with all children styles copied.
 func (f FieldStyles) copy() FieldStyles {
 	return FieldStyles{
 		Base:                f.Base.Copy(),

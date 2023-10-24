@@ -110,7 +110,7 @@ func main() {
 				Affirmative("Yes!").
 				Negative("No."),
 		),
-	).Accessible(accessible)
+	).WithAccessible(accessible)
 
 	err := form.Run()
 
