@@ -23,7 +23,7 @@ func NewForm(groups ...*Group) *Form {
 	return &Form{
 		groups:    groups,
 		paginator: p,
-		theme:     NewBaseTheme(),
+		theme:     NewCharmTheme(),
 	}
 }
 

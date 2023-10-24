@@ -100,8 +100,9 @@ func (n *Note) View() string {
 	sb.WriteString(md)
 	if n.showNextButton {
 		sb.WriteString(styles.Next.Render("Next"))
+		sb.WriteString("\n")
 	}
-	return styles.Base.Render(strings.TrimSpace(sb.String()))
+	return styles.Base.Render(sb.String())
 }
 
 // Run runs an accessible note field.

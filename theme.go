@@ -150,6 +150,7 @@ func NewCharmTheme() *Theme {
 	f.UnselectedPrefix = lipgloss.NewStyle().SetString("[ ] ")
 	f.UnselectedOption.Foreground(lipgloss.Color("7"))
 	f.FocusedButton.Foreground(lipgloss.Color("#ffffd7")).Background(lipgloss.Color("212"))
+	f.Next.Foreground(lipgloss.Color("#ffff87")).Background(lipgloss.Color("212")).MarginLeft(2).Padding(0, 1)
 	f.BlurredButton.Foreground(lipgloss.Color("7")).Background(lipgloss.Color("0"))
 
 	f.TextInput.Cursor.Foreground(lipgloss.Color("212"))
