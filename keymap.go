@@ -4,6 +4,8 @@ import "github.com/charmbracelet/bubbles/key"
 
 // KeyMap is the keybindings to navigate the form.
 type KeyMap struct {
+	Quit key.Binding
+
 	Input       InputKeyMap
 	Text        TextKeyMap
 	Select      SelectKeyMap
@@ -50,13 +52,15 @@ type NoteKeyMap struct {
 
 // ConfirmKeyMap is the keybindings for confirm fields.
 type ConfirmKeyMap struct {
-	Next key.Binding
-	Prev key.Binding
+	Next   key.Binding
+	Prev   key.Binding
+	Toggle key.Binding
 }
 
 // NewDefaultKeyMap returns a new default keymap.
 func NewDefaultKeyMap() *KeyMap {
 	return &KeyMap{
+		Quit: key.NewBinding(key.WithKeys("ctrl+c")),
 		Input: InputKeyMap{
 			Next: key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "submit")),
 			Prev: key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),
@@ -80,12 +84,13 @@ func NewDefaultKeyMap() *KeyMap {
 			Down:   key.NewBinding(key.WithKeys("down", "j", "ctrl+n"), key.WithHelp("↓", "down")),
 		},
 		Note: NoteKeyMap{
-			Next: key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "submit")),
+			Next: key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "next")),
 			Prev: key.NewBinding(key.WithKeys("shift+tab")),
 		},
 		Confirm: ConfirmKeyMap{
-			Next: key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "submit")),
-			Prev: key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),
+			Next:   key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "submit")),
+			Prev:   key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),
+			Toggle: key.NewBinding(key.WithKeys("h", "j", "right", "left"), key.WithHelp("←/→", "toggle")),
 		},
 	}
 }

@@ -99,7 +99,7 @@ func (c *Confirm) KeyMap(k *KeyMap) Field {
 
 // KeyBinds returns the help message for the confirm field.
 func (c *Confirm) KeyBinds() []key.Binding {
-	return []key.Binding{c.keymap.Next, c.keymap.Prev}
+	return []key.Binding{c.keymap.Toggle, c.keymap.Next, c.keymap.Prev}
 }
 
 // Init initializes the confirm field.
@@ -116,16 +116,12 @@ func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		c.err = nil
 
-		switch msg.String() {
-		case "y", "Y":
-			*c.value = true
-		case "n", "N":
-			*c.value = false
-		case "h", "l", "left", "right":
+		switch {
+		case key.Matches(msg, c.keymap.Toggle):
 			*c.value = !*c.value
-		case "shift+tab":
+		case key.Matches(msg, c.keymap.Prev):
 			cmds = append(cmds, prevField)
-		case "enter", "tab":
+		case key.Matches(msg, c.keymap.Next):
 			cmds = append(cmds, nextField)
 		}
 	}

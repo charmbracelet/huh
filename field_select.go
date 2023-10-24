@@ -110,14 +110,14 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		s.err = nil
-		switch msg.String() {
-		case "up", "k", "ctrl+p":
+		switch {
+		case key.Matches(msg, s.keymap.Up):
 			s.selected = max(s.selected-1, 0)
-		case "down", "j", "ctrl+n":
+		case key.Matches(msg, s.keymap.Down):
 			s.selected = min(s.selected+1, len(s.options)-1)
-		case "shift+tab":
+		case key.Matches(msg, s.keymap.Prev):
 			return s, prevField
-		case "tab", "enter":
+		case key.Matches(msg, s.keymap.Next):
 			value := s.options[s.selected].Value
 			s.err = s.validate(value)
 			if s.err != nil {

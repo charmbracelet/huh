@@ -121,10 +121,10 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		t.err = nil
 
-		switch msg.String() {
-		case "tab", "ctrl+d":
+		switch {
+		case key.Matches(msg, t.keymap.Next):
 			cmds = append(cmds, nextField)
-		case "shift+tab":
+		case key.Matches(msg, t.keymap.Prev):
 			cmds = append(cmds, prevField)
 		}
 	}

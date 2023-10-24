@@ -138,10 +138,10 @@ func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		i.err = nil
 
-		switch msg.String() {
-		case "shift+tab":
+		switch {
+		case key.Matches(msg, i.keymap.Prev):
 			cmds = append(cmds, prevField)
-		case "enter", "tab":
+		case key.Matches(msg, i.keymap.Next):
 			cmds = append(cmds, nextField)
 		}
 	}
