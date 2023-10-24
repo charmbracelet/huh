@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh/accessibility"
 	"github.com/charmbracelet/lipgloss"
@@ -28,6 +29,7 @@ type MultiSelect[T any] struct {
 
 	focused bool
 	theme   *Theme
+	keymap  *MultiSelectKeyMap
 }
 
 // NewMultiSelect returns a new multi-select field.
@@ -106,6 +108,17 @@ func (m *MultiSelect[T]) Blur() tea.Cmd {
 	return nil
 }
 
+// KeyMap sets the keymap of the multi-select field.
+func (m *MultiSelect[T]) KeyMap(k *KeyMap) Field {
+	m.keymap = &k.MultiSelect
+	return m
+}
+
+// KeyBinds returns the help message for the multi-select field.
+func (m *MultiSelect[T]) KeyBinds() []key.Binding {
+	return []key.Binding{m.keymap.Toggle, m.keymap.Up, m.keymap.Down, m.keymap.Next, m.keymap.Prev}
+}
+
 // Init initializes the multi-select field.
 func (m *MultiSelect[T]) Init() tea.Cmd {
 	return nil
@@ -169,7 +182,7 @@ func (m *MultiSelect[T]) View() string {
 	var sb strings.Builder
 	sb.WriteString(styles.Title.Render(m.title))
 	if m.err != nil {
-		sb.WriteString(styles.Error.Render(" * "))
+		sb.WriteString(styles.ErrorIndicator.String())
 	}
 	sb.WriteString("\n")
 	if m.description != "" {

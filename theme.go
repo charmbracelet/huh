@@ -23,12 +23,12 @@ func (t Theme) copy() Theme {
 
 // FieldStyles are the styles for input fields
 type FieldStyles struct {
-	Base         lipgloss.Style
-	Title        lipgloss.Style
-	Description  lipgloss.Style
-	Help         lipgloss.Style
-	Error        lipgloss.Style
-	ErrorMessage lipgloss.Style
+	Base           lipgloss.Style
+	Title          lipgloss.Style
+	Description    lipgloss.Style
+	Help           lipgloss.Style
+	ErrorIndicator lipgloss.Style
+	ErrorMessage   lipgloss.Style
 
 	// Select styles.
 	SelectSelector lipgloss.Style // Selection indicator
@@ -75,8 +75,8 @@ func (f FieldStyles) copy() FieldStyles {
 		Title:               f.Title.Copy(),
 		Description:         f.Description.Copy(),
 		Help:                f.Help.Copy(),
-		Error:               f.Error.Copy(),
-		ErrorMessage:        f.Error.Copy(),
+		ErrorIndicator:      f.ErrorIndicator.Copy(),
+		ErrorMessage:        f.ErrorMessage.Copy(),
 		SelectSelector:      f.SelectSelector.Copy(),
 		Option:              f.Option.Copy(),
 		MultiSelectSelector: f.MultiSelectSelector.Copy(),
@@ -105,8 +105,10 @@ func NewBaseTheme() *Theme {
 		PaddingLeft(1).
 		BorderStyle(lipgloss.ThickBorder()).
 		BorderLeft(true)
+	f.ErrorIndicator = lipgloss.NewStyle().
+		SetString(" *")
 	f.ErrorMessage = lipgloss.NewStyle().
-		SetString("* ")
+		SetString(" *")
 	f.SelectSelector = lipgloss.NewStyle().
 		SetString("> ")
 	f.MultiSelectSelector = lipgloss.NewStyle().
@@ -122,6 +124,9 @@ func NewBaseTheme() *Theme {
 		Foreground(lipgloss.Color("7")).
 		Background(lipgloss.Color("0"))
 	f.TextInput.Placeholder = lipgloss.NewStyle().Foreground(lipgloss.Color("8"))
+
+	f.Help = lipgloss.NewStyle().
+		PaddingLeft(1)
 
 	// Blurred styles.
 	t.Blurred = f.copy()
@@ -140,7 +145,7 @@ func NewCharmTheme() *Theme {
 	f.Title.Foreground(lipgloss.Color("99")).Bold(true)
 	f.Description.Foreground(lipgloss.Color("240"))
 	f.Help.Foreground(lipgloss.Color("8"))
-	f.Error.Foreground(lipgloss.Color("9"))
+	f.ErrorIndicator.Foreground(lipgloss.Color("9"))
 	f.ErrorMessage.Foreground(lipgloss.Color("9"))
 	f.SelectSelector.Foreground(lipgloss.Color("212"))
 	f.Option.Foreground(lipgloss.Color("7"))
@@ -172,7 +177,7 @@ func NewDraculaTheme() *Theme {
 	f.Title.Foreground(lipgloss.Color("#bd93f9"))
 	f.Description.Foreground(lipgloss.Color("#bd93f9"))
 	f.Help.Foreground(lipgloss.Color("8"))
-	f.Error.Foreground(lipgloss.Color("#ff5555"))
+	f.ErrorIndicator.Foreground(lipgloss.Color("#ff5555"))
 	f.ErrorMessage.Foreground(lipgloss.Color("#ff5555"))
 	f.SelectSelector.Foreground(lipgloss.Color("#f1fa8c"))
 	f.Option.Foreground(lipgloss.Color("#f8f8f2"))
@@ -202,7 +207,7 @@ func NewBase16Theme() *Theme {
 	f.Title.Foreground(lipgloss.Color("6"))
 	f.Description.Foreground(lipgloss.Color("8"))
 	f.Help.Foreground(lipgloss.Color("8"))
-	f.Error.Foreground(lipgloss.Color("9"))
+	f.ErrorIndicator.Foreground(lipgloss.Color("9"))
 	f.ErrorMessage.Foreground(lipgloss.Color("9"))
 	f.SelectSelector.Foreground(lipgloss.Color("6"))
 	f.Option.Foreground(lipgloss.Color("7"))

@@ -1,6 +1,7 @@
 package huh
 
 import (
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/paginator"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -13,6 +14,7 @@ type Form struct {
 	accessible bool
 	quitting   bool
 	theme      *Theme
+	keymap     *KeyMap
 }
 
 // NewForm creates a new form with the given groups.
@@ -24,6 +26,7 @@ func NewForm(groups ...*Group) *Form {
 		groups:    groups,
 		paginator: p,
 		theme:     NewCharmTheme(),
+		keymap:    NewDefaultKeyMap(),
 	}
 }
 
@@ -46,6 +49,10 @@ type Field interface {
 
 	// Theme sets the theme on a field.
 	Theme(*Theme) Field
+
+	// KeyMap sets the keymap on a field.
+	KeyMap(*KeyMap) Field
+	KeyBinds() []key.Binding
 }
 
 type nextGroupMsg struct{}
@@ -75,6 +82,12 @@ func (f *Form) Theme(theme *Theme) *Form {
 	if theme != nil {
 		f.theme = theme
 	}
+	return f
+}
+
+// KeyMap sets the keymap on a form.
+func (f *Form) KeyMap(keymap *KeyMap) *Form {
+	f.keymap = keymap
 	return f
 }
 
@@ -135,11 +148,13 @@ func (f *Form) Run() error {
 		return nil
 	}
 
-	// Make theme available to groups and fields
+	// Make theme and keymap available to groups and fields
 	for _, group := range f.groups {
 		group.Theme(f.theme)
+		group.KeyMap(f.keymap)
 		for _, field := range group.fields {
 			field.Theme(f.theme)
+			field.KeyMap(f.keymap)
 		}
 	}
 

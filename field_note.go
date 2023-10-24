@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
 )
@@ -16,6 +17,7 @@ type Note struct {
 	showNextButton bool
 	focused        bool
 	theme          *Theme
+	keymap         *NoteKeyMap
 }
 
 // NewNote creates a new note field.
@@ -63,6 +65,17 @@ func (n *Note) Error() error {
 // Init initializes the note field.
 func (n *Note) Init() tea.Cmd {
 	return nil
+}
+
+// KeyMap sets the keymap on a note field.
+func (n *Note) KeyMap(k *KeyMap) Field {
+	n.keymap = &k.Note
+	return n
+}
+
+// KeyBinds returns the help message for the note field.
+func (n *Note) KeyBinds() []key.Binding {
+	return []key.Binding{n.keymap.Next}
 }
 
 // Update updates the note field.

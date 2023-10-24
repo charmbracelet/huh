@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh/accessibility"
@@ -22,6 +23,7 @@ type Text struct {
 
 	focused bool
 	theme   *Theme
+	keymap  *TextKeyMap
 }
 
 // NewText returns a new text field.
@@ -90,6 +92,17 @@ func (t *Text) Blur() tea.Cmd {
 	return nil
 }
 
+// KeyMap sets the keymap on a text field.
+func (t *Text) KeyMap(k *KeyMap) Field {
+	t.keymap = &k.Text
+	return t
+}
+
+// KeyBinds returns the help message for the text field.
+func (t *Text) KeyBinds() []key.Binding {
+	return []key.Binding{t.keymap.Next, t.keymap.NewLine, t.keymap.Prev}
+}
+
 // Init initializes the text field.
 func (t *Text) Init() tea.Cmd {
 	t.textarea.Blur()
@@ -145,12 +158,10 @@ func (t *Text) View() string {
 	var sb strings.Builder
 	sb.WriteString(styles.Title.Render(t.title))
 	if t.err != nil {
-		sb.WriteString(styles.Error.Render(" * "))
+		sb.WriteString(styles.ErrorIndicator.String())
 	}
 	sb.WriteString("\n")
 	sb.WriteString(t.textarea.View())
-	sb.WriteString("\n")
-	sb.WriteString(styles.Help.Render("tab • continue"))
 
 	return styles.Base.Render(sb.String())
 }

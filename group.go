@@ -3,6 +3,7 @@ package huh
 import (
 	"strings"
 
+	"github.com/charmbracelet/bubbles/help"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -13,7 +14,11 @@ type Group struct {
 	title       string
 	description string
 	current     int
-	theme       *Theme
+
+	help help.Model
+
+	theme  *Theme
+	keymap *KeyMap
 }
 
 // NewGroup creates a new group with the given fields.
@@ -21,6 +26,7 @@ func NewGroup(fields ...Field) *Group {
 	return &Group{
 		fields:  fields,
 		current: 0,
+		help:    help.New(),
 	}
 }
 
@@ -39,6 +45,12 @@ func (g *Group) Description(description string) *Group {
 // Theme sets the theme on a group.
 func (g *Group) Theme(t *Theme) *Group {
 	g.theme = t
+	return g
+}
+
+// KeyMap sets the keymap on a group.
+func (g *Group) KeyMap(k *KeyMap) *Group {
+	g.keymap = k
 	return g
 }
 
@@ -142,12 +154,16 @@ func (g *Group) View() string {
 		}
 	}
 
+	s.WriteString(gap)
+	s.WriteString(g.theme.Focused.Help.Render(g.help.ShortHelpView(g.fields[g.current].KeyBinds())))
+	s.WriteString("\n")
+
 	for _, err := range g.Errors() {
 		s.WriteString("\n")
 		s.WriteString(g.theme.Focused.ErrorMessage.Render(err.Error()))
 	}
 	if len(g.Errors()) == 0 {
-		// If there are no errors add a gap so that the the appearance of an
+		// If there are no errors add a gap so that the appearance of an
 		// error message doesn't cause the layout to shift.
 		//
 		// XXX: Mutli-line errors will still cause a shift. How do we handle
