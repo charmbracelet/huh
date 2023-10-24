@@ -23,24 +23,16 @@ func NewForm(groups ...*Group) *Form {
 	p := paginator.New()
 	p.SetTotalPages(len(groups))
 
+	theme := NewCharmTheme()
+
 	f := Form{
 		groups:    groups,
 		paginator: p,
-		theme:     NewCharmTheme(),
+		theme:     theme,
 		keymap:    NewDefaultKeyMap(),
 	}
 
-	// NB: If dynamic forms come into play this will need to be applied when
-	// groups and fields are added.
-	for _, group := range f.groups {
-		group.Theme(f.theme)
-		group.KeyMap(f.keymap)
-		for _, field := range group.fields {
-			field.Theme(f.theme)
-			field.KeyMap(f.keymap)
-		}
-	}
-
+	f.Theme(theme)
 	return &f
 }
 
