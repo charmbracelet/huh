@@ -139,6 +139,7 @@ func (t *Text) View() string {
 	textareaStyles.Placeholder = styles.TextInput.Placeholder
 	textareaStyles.Text = styles.TextInput.Text
 	textareaStyles.Prompt = styles.TextInput.Prompt
+	textareaStyles.CursorLine = styles.TextInput.Text
 	t.textarea.Cursor.Style = styles.TextInput.Cursor
 
 	var sb strings.Builder

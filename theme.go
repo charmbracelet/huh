@@ -218,6 +218,9 @@ func NewBase16Theme() *Theme {
 
 	t.Blurred = f.copy()
 	t.Blurred.Base = t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
+	t.Blurred.Title.Foreground(lipgloss.Color("8"))
+	t.Blurred.TextInput.Prompt.Foreground(lipgloss.Color("8"))
+	t.Blurred.TextInput.Text.Foreground(lipgloss.Color("8"))
 
 	return &t
 }
