@@ -104,7 +104,6 @@ func (m *MultiSelect[T]) Focus() tea.Cmd {
 // Blur blurs the multi-select field.
 func (m *MultiSelect[T]) Blur() tea.Cmd {
 	m.focused = false
-	m.err = m.validate(*m.value)
 	return nil
 }
 
@@ -143,9 +142,15 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.selected[m.cursor] = !m.selected[m.cursor]
 		case key.Matches(msg, m.keymap.Prev):
 			m.finalize()
+			if m.err != nil {
+				return m, nil
+			}
 			return m, prevField
 		case key.Matches(msg, m.keymap.Next):
 			m.finalize()
+			if m.err != nil {
+				return m, nil
+			}
 			return m, nextField
 		}
 	}
@@ -170,6 +175,7 @@ func (m *MultiSelect[T]) finalize() {
 			*m.value = append(*m.value, option.Value)
 		}
 	}
+	m.err = m.validate(*m.value)
 }
 
 // View renders the multi-select field.

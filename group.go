@@ -15,7 +15,8 @@ type Group struct {
 	description string
 	current     int
 
-	help help.Model
+	showHelp bool
+	help     help.Model
 
 	theme  *Theme
 	keymap *KeyMap
@@ -24,9 +25,10 @@ type Group struct {
 // NewGroup creates a new group with the given fields.
 func NewGroup(fields ...Field) *Group {
 	return &Group{
-		fields:  fields,
-		current: 0,
-		help:    help.New(),
+		fields:   fields,
+		current:  0,
+		help:     help.New(),
+		showHelp: true,
 	}
 }
 
@@ -39,6 +41,12 @@ func (g *Group) Title(title string) *Group {
 // Description sets the group's description.
 func (g *Group) Description(description string) *Group {
 	g.description = description
+	return g
+}
+
+// ShowHelp sets whether or not the group's help should be shown.
+func (g *Group) ShowHelp(showHelp bool) *Group {
+	g.showHelp = showHelp
 	return g
 }
 
@@ -154,9 +162,11 @@ func (g *Group) View() string {
 		}
 	}
 
-	s.WriteString(gap)
-	s.WriteString(g.theme.Focused.Help.Render(g.help.ShortHelpView(g.fields[g.current].KeyBinds())))
-	s.WriteString("\n")
+	if g.showHelp {
+		s.WriteString(gap)
+		s.WriteString(g.theme.Focused.Help.Render(g.help.ShortHelpView(g.fields[g.current].KeyBinds())))
+		s.WriteString("\n")
+	}
 
 	for _, err := range g.Errors() {
 		s.WriteString("\n")

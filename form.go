@@ -12,6 +12,7 @@ type Form struct {
 	groups     []*Group
 	paginator  paginator.Model
 	accessible bool
+	showHelp   bool
 	quitting   bool
 	theme      *Theme
 	keymap     *KeyMap
@@ -88,6 +89,14 @@ func (f *Form) Theme(theme *Theme) *Form {
 // KeyMap sets the keymap on a form.
 func (f *Form) KeyMap(keymap *KeyMap) *Form {
 	f.keymap = keymap
+	return f
+}
+
+// ShowHelp sets whether to show help on a form.
+func (f *Form) ShowHelp(v bool) *Form {
+	for _, group := range f.groups {
+		group.ShowHelp(v)
+	}
 	return f
 }
 
