@@ -51,7 +51,7 @@ func main() {
 				huh.NewMultiSelect("Red", "Green", "Yellow").Title("Letters"),
 				huh.NewConfirm().Title("Again?").Value(&repeat),
 			),
-		).Theme(theme).Run()
+		).WithTheme(theme).Run()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)

@@ -40,7 +40,7 @@ func main() {
 				).
 				Title("Where should we push the 'feature' branch?"),
 		),
-	).Theme(theme)
+	).WithTheme(theme)
 
 	err := f.Run()
 	if err != nil {
@@ -79,7 +79,7 @@ func main() {
 			huh.NewSelect("Submit", "Submit as draft", "Continue in browser", "Add metadata", "Cancel").
 				Title("What's next?").Value(&nextAction),
 		),
-	).Theme(theme)
+	).WithTheme(theme)
 
 	err = f.Run()
 	if err != nil {

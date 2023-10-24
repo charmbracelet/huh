@@ -156,11 +156,13 @@ func (t *Text) View() string {
 	t.textarea.Cursor.Style = styles.TextInput.Cursor
 
 	var sb strings.Builder
-	sb.WriteString(styles.Title.Render(t.title))
-	if t.err != nil {
-		sb.WriteString(styles.ErrorIndicator.String())
+	if t.title != "" {
+		sb.WriteString(styles.Title.Render(t.title))
+		if t.err != nil {
+			sb.WriteString(styles.ErrorIndicator.String())
+		}
+		sb.WriteString("\n")
 	}
-	sb.WriteString("\n")
 	sb.WriteString(t.textarea.View())
 
 	return styles.Base.Render(sb.String())
