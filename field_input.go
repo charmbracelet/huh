@@ -176,7 +176,7 @@ func (i *Input) Run() {
 	if !i.inline {
 		fmt.Println()
 	}
-	*i.value = accessibility.PromptString("> ")
+	*i.value = accessibility.PromptString("> ", i.validate)
 	fmt.Println()
 }
 
