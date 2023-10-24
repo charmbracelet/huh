@@ -1,7 +1,8 @@
 package main
 
 import (
-	"log"
+	"fmt"
+	"os"
 
 	"github.com/charmbracelet/huh"
 )
@@ -11,6 +12,7 @@ func main() {
 	var dracula *huh.Theme = huh.NewDraculaTheme()
 	var base16 *huh.Theme = huh.NewBase16Theme()
 	var charm *huh.Theme = huh.NewCharmTheme()
+	var exit *huh.Theme = nil
 
 	var theme *huh.Theme = base16
 
@@ -27,9 +29,18 @@ func main() {
 						huh.NewOption("Dracula", dracula),
 						huh.NewOption("Base 16", base16),
 						huh.NewOption("Charm", charm),
+						huh.NewOption("Exit", exit),
 					),
 			),
 		).Run()
+
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		if theme == nil {
+			break
+		}
 
 		// Display form with selected theme.
 		err = huh.NewForm(
@@ -42,7 +53,8 @@ func main() {
 			),
 		).Theme(theme).Run()
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
+			os.Exit(1)
 		}
 
 		if !repeat {
