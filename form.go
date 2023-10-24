@@ -32,7 +32,11 @@ func NewForm(groups ...*Group) *Form {
 		keymap:    NewDefaultKeyMap(),
 	}
 
-	f.Theme(theme)
+	// NB: If dynamic forms come into play this will need to be applied when
+	// groups and fields are added.
+	f.applyThemeToChildren()
+	f.applyKeymapToChildren()
+
 	return &f
 }
 
@@ -90,26 +94,43 @@ func (f *Form) Accessible(b bool) *Form {
 func (f *Form) Theme(theme *Theme) *Form {
 	if theme != nil {
 		f.theme = theme
-	}
-
-	// NB: If dynamic forms come into play this will need to be applied when
-	// groups and fields are added.
-	for _, group := range f.groups {
-		group.Theme(f.theme)
-		group.KeyMap(f.keymap)
-		for _, field := range group.fields {
-			field.Theme(f.theme)
-			field.KeyMap(f.keymap)
-		}
+		f.applyThemeToChildren()
 	}
 
 	return f
 }
 
+func (f *Form) applyThemeToChildren() {
+	if f.theme == nil {
+		return
+	}
+	for _, group := range f.groups {
+		group.Theme(f.theme)
+		for _, field := range group.fields {
+			field.Theme(f.theme)
+		}
+	}
+}
+
 // KeyMap sets the keymap on a form.
 func (f *Form) KeyMap(keymap *KeyMap) *Form {
-	f.keymap = keymap
+	if keymap != nil {
+		f.keymap = keymap
+		f.applyKeymapToChildren()
+	}
 	return f
+}
+
+func (f *Form) applyKeymapToChildren() {
+	if f.keymap == nil {
+		return
+	}
+	for _, group := range f.groups {
+		group.KeyMap(f.keymap)
+		for _, field := range group.fields {
+			field.KeyMap(f.keymap)
+		}
+	}
 }
 
 // ShowHelp sets whether to show help on a form.
