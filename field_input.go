@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh/accessibility"
@@ -24,6 +25,7 @@ type Input struct {
 	textinput textinput.Model
 	focused   bool
 	theme     *Theme
+	keymap    *InputKeyMap
 }
 
 // NewInput returns a new input field.
@@ -103,6 +105,17 @@ func (i *Input) Blur() tea.Cmd {
 	i.focused = false
 	i.textinput.Blur()
 	return nil
+}
+
+// KeyMap sets the keymap on an input field.
+func (i *Input) KeyMap(k *KeyMap) Field {
+	i.keymap = &k.Input
+	return i
+}
+
+// KeyBinds returns the help message for the input field.
+func (i *Input) KeyBinds() []key.Binding {
+	return []key.Binding{i.keymap.Next, i.keymap.Prev}
 }
 
 // Init initializes the input field.

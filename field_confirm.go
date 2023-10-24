@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh/accessibility"
 	"github.com/charmbracelet/lipgloss"
@@ -23,6 +24,7 @@ type Confirm struct {
 
 	focused bool
 	theme   *Theme
+	keymap  *ConfirmKeyMap
 }
 
 // NewConfirm returns a new confirm field.
@@ -89,6 +91,17 @@ func (c *Confirm) Blur() tea.Cmd {
 	return nil
 }
 
+// KeyMap sets the keymap of the confirm field.
+func (c *Confirm) KeyMap(k *KeyMap) Field {
+	c.keymap = &k.Confirm
+	return c
+}
+
+// KeyBinds returns the help message for the confirm field.
+func (c *Confirm) KeyBinds() []key.Binding {
+	return []key.Binding{c.keymap.Next, c.keymap.Prev}
+}
+
 // Init initializes the confirm field.
 func (c *Confirm) Init() tea.Cmd {
 	return nil
@@ -130,7 +143,7 @@ func (c *Confirm) View() string {
 	var sb strings.Builder
 	sb.WriteString(styles.Title.Render(c.title))
 	if c.err != nil {
-		sb.WriteString(styles.Error.Render(" * "))
+		sb.WriteString(styles.ErrorIndicator.String())
 	}
 	if c.description != "" {
 		sb.WriteString("\n")

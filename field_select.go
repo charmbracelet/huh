@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh/accessibility"
 	"github.com/charmbracelet/lipgloss"
@@ -23,6 +24,7 @@ type Select[T any] struct {
 
 	focused bool
 	theme   *Theme
+	keymap  *SelectKeyMap
 }
 
 // NewSelect returns a new select field.
@@ -87,6 +89,17 @@ func (s *Select[T]) Blur() tea.Cmd {
 	return nil
 }
 
+// KeyMap sets the keymap on a select field.
+func (s *Select[T]) KeyMap(k *KeyMap) Field {
+	s.keymap = &k.Select
+	return s
+}
+
+// KeyBinds returns the help keybindings for the select field.
+func (s *Select[T]) KeyBinds() []key.Binding {
+	return []key.Binding{s.keymap.Up, s.keymap.Down, s.keymap.Next, s.keymap.Prev}
+}
+
 // Init initializes the select field.
 func (s *Select[T]) Init() tea.Cmd {
 	return nil
@@ -127,7 +140,7 @@ func (s *Select[T]) View() string {
 	var sb strings.Builder
 	sb.WriteString(styles.Title.Render(s.title))
 	if s.err != nil {
-		sb.WriteString(styles.Error.Render(" * "))
+		sb.WriteString(styles.ErrorIndicator.String())
 	}
 	sb.WriteString("\n")
 	if s.description != "" {
