@@ -143,8 +143,14 @@ func (i *Input) View() string {
 		styles = i.theme.Focused
 	}
 
-	var sb strings.Builder
+	// NB: since the method is on a pointer receiver these are being mutated.
+	// Because this runs on every render this shouldn't matter in practice,
+	// however.
+	i.textinput.PromptStyle = styles.TextInput.Prompt
+	i.textinput.Cursor.Style = styles.TextInput.Cursor
+	i.textinput.TextStyle = styles.TextInput.Text
 
+	var sb strings.Builder
 	if i.title != "" {
 		sb.WriteString(styles.Title.Render(i.title))
 		if !i.inline {

@@ -135,7 +135,7 @@ func (f *Form) Run() error {
 		return nil
 	}
 
-	// Make theme acessible to groups and fields
+	// Make theme available to groups and fields
 	for _, group := range f.groups {
 		group.Theme(f.theme)
 		for _, field := range group.fields {
