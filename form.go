@@ -99,6 +99,18 @@ func (f *Form) Theme(theme *Theme) *Form {
 	if theme != nil {
 		f.theme = theme
 	}
+
+	// NB: If dynamic forms come into play this will need to be applied when
+	// groups and fields are added.
+	for _, group := range f.groups {
+		group.Theme(f.theme)
+		group.KeyMap(f.keymap)
+		for _, field := range group.fields {
+			field.Theme(f.theme)
+			field.KeyMap(f.keymap)
+		}
+	}
+
 	return f
 }
 
