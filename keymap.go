@@ -79,7 +79,7 @@ func NewDefaultKeyMap() *KeyMap {
 		MultiSelect: MultiSelectKeyMap{
 			Next:   key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "confirm")),
 			Prev:   key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),
-			Toggle: key.NewBinding(key.WithKeys("space", "x"), key.WithHelp("x", "toggle")),
+			Toggle: key.NewBinding(key.WithKeys(" ", "x"), key.WithHelp("x", "toggle")),
 			Up:     key.NewBinding(key.WithKeys("up", "k", "ctrl+p"), key.WithHelp("↑", "up")),
 			Down:   key.NewBinding(key.WithKeys("down", "j", "ctrl+n"), key.WithHelp("↓", "down")),
 		},
