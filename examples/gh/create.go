@@ -26,6 +26,7 @@ func main() {
 	var action Action
 
 	repo := "charmbracelet/huh"
+	theme := huh.NewBase16Theme()
 
 	f := huh.NewForm(
 		huh.NewGroup(
@@ -39,7 +40,7 @@ func main() {
 				).
 				Title("Where should we push the 'feature' branch?"),
 		),
-	)
+	).Theme(theme)
 
 	err := f.Run()
 	if err != nil {
@@ -73,7 +74,7 @@ func main() {
 			huh.NewSelect("Submit", "Submit as draft", "Continue in browser", "Add metadata", "Cancel").
 				Title("What's next?").Value(&nextAction),
 		),
-	)
+	).Theme(theme)
 
 	err = f.Run()
 	if err != nil {
