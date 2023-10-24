@@ -23,10 +23,12 @@ func NewForm(groups ...*Group) *Form {
 	p := paginator.New()
 	p.SetTotalPages(len(groups))
 
+	theme := NewCharmTheme()
+
 	f := Form{
 		groups:    groups,
 		paginator: p,
-		theme:     NewCharmTheme(),
+		theme:     theme,
 		keymap:    NewDefaultKeyMap(),
 	}
 
@@ -94,6 +96,7 @@ func (f *Form) Theme(theme *Theme) *Form {
 		f.theme = theme
 		f.applyThemeToChildren()
 	}
+
 	return f
 }
 
