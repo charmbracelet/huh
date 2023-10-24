@@ -7,6 +7,7 @@ require (
 	github.com/charmbracelet/bubbletea v0.24.2
 	github.com/charmbracelet/glamour v0.6.0
 	github.com/charmbracelet/lipgloss v0.7.1
+	github.com/charmbracelet/x/exp/ordered v0.0.0-20231010190216-1cb11efc897d
 )
 
 require (
