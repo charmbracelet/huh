@@ -119,9 +119,9 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.err = nil
 
 		switch msg.String() {
-		case "up", "k":
+		case "up", "k", "ctrl+p":
 			m.cursor = max(m.cursor-1, 0)
-		case "down", "j":
+		case "down", "j", "ctrl+n":
 			m.cursor = min(m.cursor+1, len(m.options)-1)
 		case " ", "x":
 			if !m.selected[m.cursor] && m.numSelected() >= m.limit {

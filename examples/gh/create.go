@@ -49,6 +49,10 @@ func main() {
 
 	switch action {
 	case Push:
+		s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
+		s.Start()
+		time.Sleep(1 * time.Second)
+		s.Stop()
 		fmt.Println("Pushing to charmbracelet/huh")
 	case Fork:
 		fmt.Println("Creating a fork of charmbracelet/huh...")

@@ -98,9 +98,9 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		s.err = nil
 		switch msg.String() {
-		case "up", "k":
+		case "up", "k", "ctrl+p":
 			s.selected = max(s.selected-1, 0)
-		case "down", "j":
+		case "down", "j", "ctrl+n":
 			s.selected = min(s.selected+1, len(s.options)-1)
 		case "shift+tab":
 			return s, prevField
