@@ -31,6 +31,7 @@ type Input struct {
 	focused bool
 
 	// options
+	width      int
 	accessible bool
 	theme      *Theme
 	keymap     *InputKeyMap
@@ -224,5 +225,11 @@ func (i *Input) WithAccessible(accessible bool) Field {
 // WithTheme sets the theme of the input field.
 func (i *Input) WithTheme(theme *Theme) Field {
 	i.theme = theme
+	return i
+}
+
+// WithWidth sets the width of the input field.
+func (i *Input) WithWidth(width int) Field {
+	i.width = width
 	return i
 }

@@ -20,6 +20,7 @@ type Note struct {
 	focused        bool
 
 	// options
+	width      int
 	accessible bool
 	theme      *Theme
 	keymap     *NoteKeyMap
@@ -157,5 +158,11 @@ func (n *Note) WithKeyMap(k *KeyMap) Field {
 // WithAccessible sets the accessible mode of the note field.
 func (n *Note) WithAccessible(accessible bool) Field {
 	n.accessible = accessible
+	return n
+}
+
+// WithWidth sets the width of the note field.
+func (n *Note) WithWidth(width int) Field {
+	n.width = width
 	return n
 }

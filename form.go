@@ -25,6 +25,7 @@ type Form struct {
 	quitting bool
 
 	// options
+	width  int
 	theme  *Theme
 	keymap *KeyMap
 }
@@ -43,12 +44,14 @@ func NewForm(groups ...*Group) *Form {
 		paginator: p,
 		theme:     NewCharmTheme(),
 		keymap:    NewDefaultKeyMap(),
+		width:     80,
 	}
 
 	// NB: If dynamic forms come into play this will need to be applied when
 	// groups and fields are added.
-	f.applyThemeToChildren()
-	f.applyKeymapToChildren()
+	f.WithTheme(f.theme)
+	f.WithKeyMap(f.keymap)
+	f.WithWidth(f.width)
 
 	return &f
 }
@@ -86,6 +89,9 @@ type Field interface {
 
 	// WithKeyMap sets the keymap on a field.
 	WithKeyMap(*KeyMap) Field
+
+	// WithWidth sets the width of a field.
+	WithWidth(int) Field
 }
 
 // nextGroupMsg is a message to move to the next group.
@@ -134,49 +140,38 @@ func (f *Form) WithHelp(v bool) *Form {
 func (f *Form) WithTheme(theme *Theme) *Form {
 	if theme != nil {
 		f.theme = theme
-		f.applyThemeToChildren()
-	}
-
-	return f
-}
-
-// applyThemeToChildren applies the form's theme to all children (groups and
-// fields).
-func (f *Form) applyThemeToChildren() {
-	if f.theme == nil {
-		return
 	}
 	for _, group := range f.groups {
-		group.WithTheme(f.theme)
-		for _, field := range group.fields {
-			field.WithTheme(f.theme)
-		}
+		group.WithTheme(theme)
 	}
+	return f
 }
 
 // KeyMap sets the keymap on a form.
 func (f *Form) WithKeyMap(keymap *KeyMap) *Form {
-	if keymap == nil {
-		return f
+	if keymap != nil {
+		f.keymap = keymap
 	}
-
-	f.keymap = keymap
-	f.applyKeymapToChildren()
+	for _, group := range f.groups {
+		group.WithKeyMap(keymap)
+	}
 	return f
 }
 
-// applyKeymapToChildren applies the form's keymap to all children (groups and
-// fields).
-func (f *Form) applyKeymapToChildren() {
-	if f.keymap == nil {
-		return
+// WithWidth sets the width of a form
+//
+// This allows all groups and fields to be sized consistently, however width
+// can be applied to each group and field individually for more granular
+// control.
+func (f *Form) WithWidth(width int) *Form {
+	if width <= 0 {
+		return f
 	}
+	f.width = width
 	for _, group := range f.groups {
-		group.WithKeyMap(f.keymap)
-		for _, field := range group.fields {
-			field.WithKeyMap(f.keymap)
-		}
+		group.WithWidth(width)
 	}
+	return f
 }
 
 // Init initializes the form.
@@ -259,7 +254,7 @@ func (f *Form) runAccessible() error {
 		for _, field := range group.fields {
 			field.Init()
 			field.Focus()
-			field.WithAccessible(true).Run()
+			_ = field.WithAccessible(true).Run()
 		}
 	}
 
