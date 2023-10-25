@@ -226,5 +226,5 @@ func (g *Group) View() string {
 		s.WriteString("\n")
 	}
 
-	return s.String()
+	return g.theme.Group.Render(s.String())
 }
