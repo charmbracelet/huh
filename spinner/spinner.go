@@ -60,7 +60,7 @@ func (s *Spinner) Action(action func()) *Spinner {
 
 // Style sets the style of the spinner.
 func (s *Spinner) Style(style lipgloss.Style) *Spinner {
-	s.style = style
+	s.spinner.Style = style
 	return s
 }
 
@@ -78,7 +78,6 @@ func New() *Spinner {
 	return &Spinner{
 		action:     func() { time.Sleep(time.Second) },
 		spinner:    s,
-		style:      lipgloss.NewStyle(),
 		title:      "Loading...",
 		titleStyle: lipgloss.NewStyle(),
 	}
