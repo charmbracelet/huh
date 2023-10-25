@@ -29,7 +29,8 @@ type Group struct {
 	showHelp bool
 	help     help.Model
 
-	// form options
+	// group options
+	width  int
 	theme  *Theme
 	keymap *KeyMap
 }
@@ -65,12 +66,27 @@ func (g *Group) WithHelp(showHelp bool) *Group {
 // WithTheme sets the theme on a group.
 func (g *Group) WithTheme(t *Theme) *Group {
 	g.theme = t
+	for _, field := range g.fields {
+		field.WithTheme(t)
+	}
 	return g
 }
 
 // WithKeyMap sets the keymap on a group.
 func (g *Group) WithKeyMap(k *KeyMap) *Group {
 	g.keymap = k
+	for _, field := range g.fields {
+		field.WithKeyMap(k)
+	}
+	return g
+}
+
+// WithWidth sets the width on a group.
+func (g *Group) WithWidth(width int) *Group {
+	g.width = width
+	for _, field := range g.fields {
+		field.WithWidth(width)
+	}
 	return g
 }
 

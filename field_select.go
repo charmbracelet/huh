@@ -28,6 +28,7 @@ type Select[T any] struct {
 	focused  bool
 
 	// options
+	width      int
 	accessible bool
 	theme      *Theme
 	keymap     *SelectKeyMap
@@ -205,5 +206,11 @@ func (s *Select[T]) WithKeyMap(k *KeyMap) Field {
 // WithAccessible sets the accessible mode of the select field.
 func (s *Select[T]) WithAccessible(accessible bool) Field {
 	s.accessible = accessible
+	return s
+}
+
+// WithWidth sets the width of the select field.
+func (s *Select[T]) WithWidth(width int) Field {
+	s.width = width
 	return s
 }

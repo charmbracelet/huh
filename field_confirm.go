@@ -28,6 +28,7 @@ type Confirm struct {
 	focused bool
 
 	// options
+	width      int
 	accessible bool
 	theme      *Theme
 	keymap     *ConfirmKeyMap
@@ -201,5 +202,11 @@ func (c *Confirm) WithKeyMap(k *KeyMap) Field {
 // WithAccessible sets the accessible mode of the confirm field.
 func (c *Confirm) WithAccessible(accessible bool) Field {
 	c.accessible = accessible
+	return c
+}
+
+// WithWidth sets the accessible mode of the confirm field.
+func (c *Confirm) WithWidth(width int) Field {
+	c.width = width
 	return c
 }

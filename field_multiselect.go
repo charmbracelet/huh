@@ -31,6 +31,7 @@ type MultiSelect[T any] struct {
 	focused  bool
 
 	// options
+	width      int
 	accessible bool
 	theme      *Theme
 	keymap     *MultiSelectKeyMap
@@ -302,5 +303,11 @@ func (m *MultiSelect[T]) WithKeyMap(k *KeyMap) Field {
 // WithAccessible sets the accessible mode of the multi-select field.
 func (m *MultiSelect[T]) WithAccessible(accessible bool) Field {
 	m.accessible = accessible
+	return m
+}
+
+// WithWidth sets the width of the multi-select field.
+func (m *MultiSelect[T]) WithWidth(width int) Field {
+	m.width = width
 	return m
 }
