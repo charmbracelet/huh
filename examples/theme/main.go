@@ -49,7 +49,7 @@ func main() {
 				huh.NewText().Title("More Thoughts").Placeholder("What else is on your mind?"),
 				huh.NewSelect("A", "B", "C").Title("Colors"),
 				huh.NewMultiSelect("Red", "Green", "Yellow").Title("Letters"),
-				huh.NewConfirm().Title("Again?").Value(&repeat),
+				huh.NewConfirm().Title("Again?").Description("Try another theme").Value(&repeat),
 			),
 		).WithTheme(theme).Run()
 		if err != nil {

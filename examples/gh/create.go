@@ -23,9 +23,11 @@ var highlight = lipgloss.NewStyle().Foreground(lipgloss.Color("#00D7D7"))
 
 func main() {
 	var action Action
+	var spinnerStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("4"))
 
 	repo := "charmbracelet/huh"
 	theme := huh.NewBase16Theme()
+	theme.FieldSeparator = lipgloss.NewStyle().SetString("\n")
 
 	f := huh.NewForm(
 		huh.NewGroup(
@@ -48,7 +50,7 @@ func main() {
 
 	switch action {
 	case Push:
-		_ = spinner.New().Title("Pushing to charmbracelet/huh").Run()
+		_ = spinner.New().Title("Pushing to charmbracelet/huh").Style(spinnerStyle).Run()
 		fmt.Println("Pushed to charmbracelet/huh")
 	case Fork:
 		fmt.Println("Creating a fork of charmbracelet/huh...")
@@ -83,7 +85,7 @@ func main() {
 	}
 
 	if nextAction == "Submit" {
-		_ = spinner.New().Title("Submitting...").Run()
+		_ = spinner.New().Title("Submitting...").Style(spinnerStyle).Run()
 		fmt.Println("Pull request submitted!")
 	}
 }
