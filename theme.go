@@ -167,7 +167,7 @@ func NewCharmTheme() *Theme {
 	f.MultiSelectSelector.Foreground(fuchsia)
 	f.SelectedOption.Foreground(green)
 	f.SelectedPrefix = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#02CF92", Dark: "#02A877"}).SetString("✓ ")
-	f.UnselectedPrefix = lipgloss.NewStyle().SetString("• ")
+	f.UnselectedPrefix = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "", Dark: "243"}).SetString("• ")
 	f.UnselectedOption.Foreground(normalFg)
 	f.FocusedButton.Foreground(cream).Background(fuchsia)
 	f.Next = f.FocusedButton.Copy()
