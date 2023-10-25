@@ -6,8 +6,10 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/huh"
+	"github.com/charmbracelet/huh/spinner"
 	"github.com/charmbracelet/lipgloss"
 	xstrings "github.com/charmbracelet/x/exp/strings"
 )
@@ -132,6 +134,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	prepareTaco := func() {
+		time.Sleep(2 * time.Second)
+	}
+
+	_ = spinner.New().Title("Preparing your taco...").Action(prepareTaco).Run()
 
 	// Print order summary.
 	{
