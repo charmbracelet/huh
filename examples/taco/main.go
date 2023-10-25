@@ -8,6 +8,8 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/huh"
+	"github.com/charmbracelet/lipgloss"
+	xstrings "github.com/charmbracelet/x/exp/strings"
 )
 
 type Spice int
@@ -17,6 +19,19 @@ const (
 	Medium
 	Hot
 )
+
+func (s Spice) String() string {
+	switch s {
+	case Mild:
+		return "mild "
+	case Medium:
+		return "medium-spicy "
+	case Hot:
+		return "hot "
+	default:
+		return ""
+	}
+}
 
 type Order struct {
 	Taco         Taco
@@ -50,7 +65,7 @@ func main() {
 		huh.NewGroup(
 			huh.NewSelect("Soft", "Hard").
 				Title("Shell?").
-				Description("Our shells are made fresh in-house, every day.").
+				Description("Our tortillas are made fresh in-house, every day.").
 				Validate(func(t string) error {
 					if t == "Hard" {
 						return fmt.Errorf("we're out of hard shells, sorry")
@@ -118,15 +133,38 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("A %s shell filled with %s and topped with %s.\n", order.Taco.Shell, order.Taco.Base, strings.Join(order.Taco.Toppings, ", "))
+	// Print order summary.
+	{
+		var sb strings.Builder
+		keyword := func(s string) string {
+			return strings.ToLower(lipgloss.NewStyle().Foreground(lipgloss.Color("212")).Render(s))
+		}
+		fmt.Fprintf(&sb,
+			"%s\n\nOne %s%s shell taco filled with %s and topped with %s.",
+			lipgloss.NewStyle().Bold(true).Render("TACO RECEIPT"),
+			keyword(order.Taco.Spice.String()),
+			keyword(order.Taco.Shell),
+			keyword(order.Taco.Base),
+			keyword(xstrings.EnglishJoin(order.Taco.Toppings, true)),
+		)
 
-	name := order.Name
-	if name != "" {
-		name = ", " + name
-	}
-	fmt.Printf("Thanks for your order%s!\n", name)
+		name := order.Name
+		if name != "" {
+			name = ", " + name
+		}
+		fmt.Fprintf(&sb, "\n\nThanks for your order%s!", name)
 
-	if order.Discount {
-		fmt.Println("Enjoy 15% off.")
+		if order.Discount {
+			fmt.Fprint(&sb, "\n\nEnjoy 15% off.")
+		}
+
+		fmt.Println(
+			lipgloss.NewStyle().
+				Width(40).
+				BorderStyle(lipgloss.RoundedBorder()).
+				BorderForeground(lipgloss.Color("63")).
+				Padding(1, 2).
+				Render(sb.String()),
+		)
 	}
 }
