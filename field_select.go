@@ -28,6 +28,7 @@ type Select[T any] struct {
 	focused  bool
 
 	// options
+	width      int
 	accessible bool
 	theme      *Theme
 	keymap     *SelectKeyMap
@@ -184,9 +185,18 @@ func (s *Select[T]) runAccessible() error {
 
 	fmt.Println(s.theme.Focused.Base.Render(sb.String()))
 
-	option := s.options[accessibility.PromptInt("Choose: ", 1, len(s.options))-1]
-	fmt.Printf("Chose: %s\n\n", option.Key)
-	*s.value = option.Value
+	for {
+		choice := accessibility.PromptInt("Choose: ", 1, len(s.options))
+		option := s.options[choice-1]
+		if err := s.validate(option.Value); err != nil {
+			fmt.Println(err.Error())
+			continue
+		}
+		fmt.Println(s.theme.Focused.SelectedOption.Render("Chose: "+option.Key) + "\n")
+		*s.value = option.Value
+		break
+	}
+
 	return nil
 }
 
@@ -205,5 +215,11 @@ func (s *Select[T]) WithKeyMap(k *KeyMap) Field {
 // WithAccessible sets the accessible mode of the select field.
 func (s *Select[T]) WithAccessible(accessible bool) Field {
 	s.accessible = accessible
+	return s
+}
+
+// WithWidth sets the width of the select field.
+func (s *Select[T]) WithWidth(width int) Field {
+	s.width = width
 	return s
 }

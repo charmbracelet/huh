@@ -24,12 +24,13 @@ type Text struct {
 	textarea textarea.Model
 
 	// state
-	focused    bool
-	accessible bool
+	focused bool
 
 	// form options
-	theme  *Theme
-	keymap *TextKeyMap
+	width      int
+	accessible bool
+	theme      *Theme
+	keymap     *TextKeyMap
 }
 
 // NewText returns a new text field.
@@ -199,5 +200,11 @@ func (t *Text) WithKeyMap(k *KeyMap) Field {
 // WithAccessible sets the accessible mode of the text field.
 func (t *Text) WithAccessible(accessible bool) Field {
 	t.accessible = accessible
+	return t
+}
+
+// WithWidth sets the width of the text field.
+func (t *Text) WithWidth(width int) Field {
+	t.width = width
 	return t
 }
