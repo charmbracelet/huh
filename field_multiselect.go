@@ -284,7 +284,7 @@ func (m *MultiSelect[T]) runAccessible() error {
 		}
 	}
 
-	fmt.Println("Selected:", strings.Join(values, ", ")+"\n")
+	fmt.Println(m.theme.Focused.SelectedOption.Render("Selected:", strings.Join(values, ", ")+"\n"))
 	return nil
 }
 

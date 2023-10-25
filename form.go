@@ -254,7 +254,7 @@ func (f *Form) runAccessible() error {
 		for _, field := range group.fields {
 			field.Init()
 			field.Focus()
-			field.WithAccessible(true).Run()
+			_ = field.WithAccessible(true).Run()
 		}
 	}
 
