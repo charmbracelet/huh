@@ -9,6 +9,15 @@ import (
 	"github.com/charmbracelet/glamour"
 )
 
+func init() {
+	// XXX: For now, unset padding on default glamour styles.
+	var uintZero uint = 0
+	glamour.DarkStyleConfig.Document.Margin = &uintZero
+	glamour.DarkStyleConfig.Document.BlockPrefix = ""
+	glamour.LightStyleConfig.Document.Margin = &uintZero
+	glamour.LightStyleConfig.Document.BlockPrefix = ""
+}
+
 // Note is a form note field.
 type Note struct {
 	// customization
@@ -114,7 +123,6 @@ func (n *Note) View() string {
 	sb.WriteString(md)
 	if n.showNextButton {
 		sb.WriteString(styles.Next.Render("Next"))
-		sb.WriteString("\n")
 	}
 	return styles.Base.Render(sb.String())
 }
