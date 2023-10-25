@@ -102,6 +102,7 @@ func (f FieldStyles) copy() FieldStyles {
 func NewBaseTheme() *Theme {
 	var t Theme
 
+	t.FieldSeparator = lipgloss.NewStyle().SetString("\n\n")
 	button := lipgloss.NewStyle().Padding(0, 2).MarginRight(1)
 
 	// Focused styles.
