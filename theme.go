@@ -28,7 +28,7 @@ type FieldStyles struct {
 	Base           lipgloss.Style
 	Title          lipgloss.Style
 	Description    lipgloss.Style
-	Help           lipgloss.Style
+	Help           lipgloss.Style // TODO: apply help coloring in theme to help bubble
 	ErrorIndicator lipgloss.Style
 	ErrorMessage   lipgloss.Style
 
@@ -102,6 +102,7 @@ func (f FieldStyles) copy() FieldStyles {
 func NewBaseTheme() *Theme {
 	var t Theme
 
+	t.FieldSeparator = lipgloss.NewStyle().SetString("\n\n")
 	button := lipgloss.NewStyle().Padding(0, 2).MarginRight(1)
 
 	// Focused styles.
@@ -145,27 +146,36 @@ func NewBaseTheme() *Theme {
 func NewCharmTheme() *Theme {
 	t := NewBaseTheme().copy()
 
-	f := &t.Focused
-	f.Base = f.Base.BorderForeground(lipgloss.Color("8"))
-	f.Title.Foreground(lipgloss.Color("99")).Bold(true)
-	f.Description.Foreground(lipgloss.Color("240"))
-	f.Help.Foreground(lipgloss.Color("8"))
-	f.ErrorIndicator.Foreground(lipgloss.Color("9"))
-	f.ErrorMessage.Foreground(lipgloss.Color("9"))
-	f.SelectSelector.Foreground(lipgloss.Color("212"))
-	f.Option.Foreground(lipgloss.Color("7"))
-	f.MultiSelectSelector.Foreground(lipgloss.Color("212"))
-	f.SelectedOption.Foreground(lipgloss.Color("36"))
-	f.SelectedPrefix = lipgloss.NewStyle().Foreground(lipgloss.Color("29")).SetString("✓ ")
-	f.UnselectedPrefix = lipgloss.NewStyle().SetString("• ")
-	f.UnselectedOption.Foreground(lipgloss.Color("7"))
-	f.FocusedButton.Foreground(lipgloss.Color("#ffffd7")).Background(lipgloss.Color("212"))
-	f.Next.Foreground(lipgloss.Color("#ffff87")).Background(lipgloss.Color("212")).MarginLeft(2).Padding(0, 1)
-	f.BlurredButton.Foreground(lipgloss.Color("7")).Background(lipgloss.Color("0"))
+	var (
+		normalFg = lipgloss.AdaptiveColor{Light: "235", Dark: "252"}
+		indigo   = lipgloss.AdaptiveColor{Light: "#5A56E0", Dark: "#7571F9"}
+		cream    = lipgloss.AdaptiveColor{Light: "#FFFDF5", Dark: "#FFFDF5"}
+		fuchsia  = lipgloss.Color("#F780E2")
+		green    = lipgloss.AdaptiveColor{Light: "#02BA84", Dark: "#02BF87"}
+		red      = lipgloss.AdaptiveColor{Light: "#FF4672", Dark: "#ED567A"}
+	)
 
-	f.TextInput.Cursor.Foreground(lipgloss.Color("212"))
-	f.TextInput.Placeholder.Foreground(lipgloss.Color("8"))
-	f.TextInput.Prompt.Foreground(lipgloss.Color("212"))
+	f := &t.Focused
+	f.Base = f.Base.BorderForeground(lipgloss.Color("238"))
+	f.Title.Foreground(indigo).Bold(true)
+	f.Description.Foreground(lipgloss.AdaptiveColor{Light: "", Dark: "243"})
+	f.Help.Foreground(lipgloss.Color("8"))
+	f.ErrorIndicator.Foreground(red)
+	f.ErrorMessage.Foreground(red)
+	f.SelectSelector.Foreground(fuchsia)
+	f.Option.Foreground(normalFg)
+	f.MultiSelectSelector.Foreground(fuchsia)
+	f.SelectedOption.Foreground(green)
+	f.SelectedPrefix = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#02CF92", Dark: "#02A877"}).SetString("✓ ")
+	f.UnselectedPrefix = lipgloss.NewStyle().SetString("• ")
+	f.UnselectedOption.Foreground(normalFg)
+	f.FocusedButton.Foreground(cream).Background(fuchsia)
+	f.Next = f.FocusedButton.Copy()
+	f.BlurredButton.Foreground(normalFg).Background(lipgloss.AdaptiveColor{Light: "252", Dark: "237"})
+
+	f.TextInput.Cursor.Foreground(green)
+	f.TextInput.Placeholder.Foreground(lipgloss.AdaptiveColor{Light: "248", Dark: "238"})
+	f.TextInput.Prompt.Foreground(fuchsia)
 
 	t.Blurred = f.copy()
 	t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
@@ -214,24 +224,24 @@ func NewBase16Theme() *Theme {
 	f.Help.Foreground(lipgloss.Color("8"))
 	f.ErrorIndicator.Foreground(lipgloss.Color("9"))
 	f.ErrorMessage.Foreground(lipgloss.Color("9"))
-	f.SelectSelector.Foreground(lipgloss.Color("6"))
+	f.SelectSelector.Foreground(lipgloss.Color("3"))
 	f.Option.Foreground(lipgloss.Color("7"))
-	f.MultiSelectSelector.Foreground(lipgloss.Color("6"))
-	f.SelectedOption.Foreground(lipgloss.Color("6"))
-	f.SelectedPrefix.Foreground(lipgloss.Color("6"))
+	f.MultiSelectSelector.Foreground(lipgloss.Color("3"))
+	f.SelectedOption.Foreground(lipgloss.Color("2"))
+	f.SelectedPrefix.Foreground(lipgloss.Color("2"))
 	f.UnselectedOption.Foreground(lipgloss.Color("7"))
-	f.FocusedButton.Foreground(lipgloss.Color("0")).Background(lipgloss.Color("6"))
+	f.FocusedButton.Foreground(lipgloss.Color("7")).Background(lipgloss.Color("5"))
 	f.BlurredButton.Foreground(lipgloss.Color("7")).Background(lipgloss.Color("0"))
 
-	f.TextInput.Cursor.Foreground(lipgloss.Color("6"))
+	f.TextInput.Cursor.Foreground(lipgloss.Color("5"))
 	f.TextInput.Placeholder.Foreground(lipgloss.Color("8"))
-	f.TextInput.Prompt.Foreground(lipgloss.Color("6"))
+	f.TextInput.Prompt.Foreground(lipgloss.Color("3"))
 
 	t.Blurred = f.copy()
 	t.Blurred.Base = t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
 	t.Blurred.Title.Foreground(lipgloss.Color("8"))
 	t.Blurred.TextInput.Prompt.Foreground(lipgloss.Color("8"))
-	t.Blurred.TextInput.Text.Foreground(lipgloss.Color("8"))
+	t.Blurred.TextInput.Text.Foreground(lipgloss.Color("7"))
 
 	return &t
 }

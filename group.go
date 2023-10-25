@@ -197,7 +197,7 @@ func (g *Group) View() string {
 
 	gap := g.theme.FieldSeparator.String()
 	if gap == "" {
-		gap = "\n\n"
+		gap = "\n"
 	}
 
 	for i, field := range g.fields {
@@ -210,7 +210,6 @@ func (g *Group) View() string {
 	if g.showHelp {
 		s.WriteString(gap)
 		s.WriteString(g.theme.Focused.Help.Render(g.help.ShortHelpView(g.fields[g.current].KeyBinds())))
-		s.WriteString("\n")
 	}
 
 	for _, err := range g.Errors() {
