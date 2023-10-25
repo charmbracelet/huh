@@ -207,22 +207,15 @@ func (g *Group) View() string {
 		}
 	}
 
-	if g.showHelp {
-		s.WriteString(gap)
+	errors := g.Errors()
+	s.WriteString(gap)
+
+	if g.showHelp && len(errors) <= 0 {
 		s.WriteString(g.theme.Focused.Help.Render(g.help.ShortHelpView(g.fields[g.current].KeyBinds())))
 	}
 
-	for _, err := range g.Errors() {
-		s.WriteString("\n")
+	for _, err := range errors {
 		s.WriteString(g.theme.Focused.ErrorMessage.Render(err.Error()))
-	}
-
-	if len(g.Errors()) == 0 {
-		// If there are no errors add a gap so that the appearance of an
-		// error message doesn't cause the layout to shift.
-		//
-		// XXX: Mutli-line errors will still cause a shift. How do we handle
-		// this?
 		s.WriteString("\n")
 	}
 
