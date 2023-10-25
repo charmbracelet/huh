@@ -19,7 +19,6 @@ type Spinner struct {
 	spinner    spinner.Model
 	action     func()
 	title      string
-	style      lipgloss.Style
 	titleStyle lipgloss.Style
 }
 
@@ -75,11 +74,13 @@ func New() *Spinner {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
 
+	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("#F780E2"))
+
 	return &Spinner{
 		action:     func() { time.Sleep(time.Second) },
 		spinner:    s,
 		title:      "Loading...",
-		titleStyle: lipgloss.NewStyle(),
+		titleStyle: lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#FFFDF5", Dark: "#FFFDF5"}),
 	}
 }
 
