@@ -62,11 +62,11 @@ func NewDefaultKeyMap() *KeyMap {
 	return &KeyMap{
 		Quit: key.NewBinding(key.WithKeys("ctrl+c")),
 		Input: InputKeyMap{
-			Next: key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "submit")),
+			Next: key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "next")),
 			Prev: key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),
 		},
 		Text: TextKeyMap{
-			Next:    key.NewBinding(key.WithKeys("tab"), key.WithHelp("tab", "submit")),
+			Next:    key.NewBinding(key.WithKeys("tab"), key.WithHelp("tab", "next")),
 			Prev:    key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),
 			NewLine: key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "new line")),
 		},
@@ -88,7 +88,7 @@ func NewDefaultKeyMap() *KeyMap {
 			Prev: key.NewBinding(key.WithKeys("shift+tab")),
 		},
 		Confirm: ConfirmKeyMap{
-			Next:   key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "submit")),
+			Next:   key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "next")),
 			Prev:   key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),
 			Toggle: key.NewBinding(key.WithKeys("h", "l", "right", "left"), key.WithHelp("←/→", "toggle")),
 		},
