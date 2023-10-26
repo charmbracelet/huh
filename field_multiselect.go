@@ -225,7 +225,7 @@ func (m *MultiSelect[T]) printOptions() {
 
 	for i, option := range m.options {
 		if m.selected[i] {
-			sb.WriteString(fmt.Sprintf("%d. %s %s", i+1, "[x]", option.Key))
+			sb.WriteString(m.theme.Focused.SelectedOption.Render(fmt.Sprintf("%d. %s %s", i+1, "[✓]", option.Key)))
 		} else {
 			sb.WriteString(fmt.Sprintf("%d. %s %s", i+1, "[ ]", option.Key))
 		}

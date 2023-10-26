@@ -205,7 +205,7 @@ func (i *Input) runAccessible() error {
 	if !i.inline {
 		fmt.Println()
 	}
-	*i.value = accessibility.PromptString("> ", i.validate)
+	*i.value = accessibility.PromptString(i.textinput.Prompt, i.validate)
 	fmt.Println()
 	return nil
 }

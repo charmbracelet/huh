@@ -179,9 +179,9 @@ func (c *Confirm) runAccessible() error {
 	choice := accessibility.PromptBool()
 	*c.value = choice
 	if choice {
-		fmt.Println("Selected: " + c.affirmative)
+		fmt.Println(c.theme.Focused.SelectedOption.Render("Chose: " + c.affirmative))
 	} else {
-		fmt.Println("Selected: " + c.negative)
+		fmt.Println(c.theme.Focused.SelectedOption.Render("Chose: " + c.negative))
 	}
 	fmt.Println()
 	return nil
