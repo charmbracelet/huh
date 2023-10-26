@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh/accessibility"
 	"github.com/charmbracelet/lipgloss"
@@ -24,8 +25,10 @@ type Select[T any] struct {
 	err      error
 
 	// state
-	selected int
-	focused  bool
+	selected  int
+	focused   bool
+	filtering bool
+	filter    textinput.Model
 
 	// options
 	width      int
@@ -41,10 +44,15 @@ func NewSelect[T any](options ...T) *Select[T] {
 		opts = append(opts, Option[T]{Key: fmt.Sprint(option), Value: option})
 	}
 
+	filter := textinput.New()
+	filter.Prompt = "/"
+
 	return &Select[T]{
-		value:    new(T),
-		options:  opts,
-		validate: func(T) error { return nil },
+		value:     new(T),
+		options:   opts,
+		validate:  func(T) error { return nil },
+		filtering: false,
+		filter:    filter,
 	}
 }
 
@@ -98,7 +106,7 @@ func (s *Select[T]) Blur() tea.Cmd {
 
 // KeyBinds returns the help keybindings for the select field.
 func (s *Select[T]) KeyBinds() []key.Binding {
-	return []key.Binding{s.keymap.Up, s.keymap.Down, s.keymap.Next, s.keymap.Prev}
+	return []key.Binding{s.keymap.Up, s.keymap.Down, s.keymap.Filter, s.keymap.SetFilter, s.keymap.Next, s.keymap.Prev}
 }
 
 // Init initializes the select field.
@@ -112,14 +120,26 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		s.err = nil
 		switch {
+		case key.Matches(msg, s.keymap.Filter):
+			s.setFilter(true)
+			return s, s.filter.Focus()
+		case key.Matches(msg, s.keymap.SetFilter):
+			s.setFilter(false)
 		case key.Matches(msg, s.keymap.Up):
 			s.selected = max(s.selected-1, 0)
 		case key.Matches(msg, s.keymap.Down):
 			s.selected = min(s.selected+1, len(s.options)-1)
 		case key.Matches(msg, s.keymap.Prev):
+			value := s.options[s.selected].Value
+			s.err = s.validate(value)
+			if s.err != nil {
+				return s, nil
+			}
+			*s.value = value
 			return s, prevField
 		case key.Matches(msg, s.keymap.Next):
 			value := s.options[s.selected].Value
+			s.setFilter(false)
 			s.err = s.validate(value)
 			if s.err != nil {
 				return s, nil
@@ -128,7 +148,12 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return s, nextField
 		}
 	}
-	return s, nil
+
+	var cmd tea.Cmd
+	if s.filtering {
+		s.filter, cmd = s.filter.Update(msg)
+	}
+	return s, cmd
 }
 
 // View renders the select field.
@@ -139,7 +164,13 @@ func (s *Select[T]) View() string {
 	}
 
 	var sb strings.Builder
-	sb.WriteString(styles.Title.Render(s.title))
+	if s.filtering {
+		sb.WriteString(s.filter.View())
+	} else if s.filter.Value() != "" {
+		sb.WriteString(styles.Title.Render(s.title) + styles.Help.Render("/"+s.filter.Value()))
+	} else {
+		sb.WriteString(styles.Title.Render(s.title))
+	}
 	if s.err != nil {
 		sb.WriteString(styles.ErrorIndicator.String())
 	}
@@ -198,9 +229,18 @@ func (s *Select[T]) runAccessible() error {
 	return nil
 }
 
+// setFilter sets the filter of the select field.
+func (s *Select[T]) setFilter(filter bool) {
+	s.filtering = filter
+	s.keymap.SetFilter.SetEnabled(filter)
+	s.keymap.Filter.SetEnabled(!filter)
+}
+
 // WithTheme sets the theme of the select field.
 func (s *Select[T]) WithTheme(theme *Theme) Field {
 	s.theme = theme
+	s.filter.Cursor.Style = s.theme.Focused.TextInput.Cursor
+	s.filter.PromptStyle = s.theme.Focused.TextInput.Prompt
 	return s
 }
 
