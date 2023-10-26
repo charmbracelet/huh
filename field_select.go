@@ -109,7 +109,7 @@ func (s *Select[T]) Blur() tea.Cmd {
 
 // KeyBinds returns the help keybindings for the select field.
 func (s *Select[T]) KeyBinds() []key.Binding {
-	return []key.Binding{s.keymap.Up, s.keymap.Down, s.keymap.Filter, s.keymap.SetFilter, s.keymap.Next, s.keymap.Prev}
+	return []key.Binding{s.keymap.Up, s.keymap.Down, s.keymap.Filter, s.keymap.SetFilter, s.keymap.ClearFilter, s.keymap.Next, s.keymap.Prev}
 }
 
 // Init initializes the select field.
@@ -132,6 +132,14 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			s.setFilter(true)
 			return s, s.filter.Focus()
 		case key.Matches(msg, s.keymap.SetFilter):
+			if len(s.filteredOptions) <= 0 {
+				s.filter.SetValue("")
+				s.filteredOptions = s.options
+			}
+			s.setFilter(false)
+		case key.Matches(msg, s.keymap.ClearFilter):
+			s.filter.SetValue("")
+			s.filteredOptions = s.options
 			s.setFilter(false)
 		case key.Matches(msg, s.keymap.Up):
 			// When filtering we should ignore j/k keybindings
@@ -236,6 +244,7 @@ func (s *Select[T]) setFilter(filter bool) {
 	s.filtering = filter
 	s.keymap.SetFilter.SetEnabled(filter)
 	s.keymap.Filter.SetEnabled(!filter)
+	s.keymap.ClearFilter.SetEnabled(!filter && s.filter.Value() != "")
 }
 
 // filterFunc returns true if the option matches the filter.
