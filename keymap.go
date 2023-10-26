@@ -77,8 +77,8 @@ func NewDefaultKeyMap() *KeyMap {
 		Select: SelectKeyMap{
 			Next:      key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "select")),
 			Prev:      key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),
-			Up:        key.NewBinding(key.WithKeys("up", "k", "ctrl+p"), key.WithHelp("↑", "up")),
-			Down:      key.NewBinding(key.WithKeys("down", "j", "ctrl+n"), key.WithHelp("↓", "down")),
+			Up:        key.NewBinding(key.WithKeys("up", "k", "ctrl+k", "ctrl+p"), key.WithHelp("↑", "up")),
+			Down:      key.NewBinding(key.WithKeys("down", "j", "ctrl+j", "ctrl+n"), key.WithHelp("↓", "down")),
 			Filter:    key.NewBinding(key.WithKeys("/"), key.WithHelp("/", "filter")),
 			SetFilter: key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "set filter"), key.WithDisabled()),
 		},
