@@ -139,7 +139,7 @@ func main() {
 		time.Sleep(2 * time.Second)
 	}
 
-	_ = spinner.New().Title("Preparing your taco...").Action(prepareTaco).Run()
+	_ = spinner.New().Title("Preparing your taco").Static(accessible).Action(prepareTaco).Run()
 
 	// Print order summary.
 	{

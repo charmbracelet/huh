@@ -1,11 +1,14 @@
 package spinner
 
 import (
+	"fmt"
+	"os"
 	"time"
 
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/muesli/termenv"
 )
 
 // Spinner represents a loading spinner.
@@ -18,6 +21,7 @@ import (
 type Spinner struct {
 	spinner    spinner.Model
 	action     func()
+	static     bool
 	title      string
 	titleStyle lipgloss.Style
 }
@@ -69,6 +73,12 @@ func (s *Spinner) TitleStyle(style lipgloss.Style) *Spinner {
 	return s
 }
 
+// Static sets the spinner to be static.
+func (s *Spinner) Static(static bool) *Spinner {
+	s.static = static
+	return s
+}
+
 // New creates a new spinner.
 func New() *Spinner {
 	s := spinner.New()
@@ -116,6 +126,10 @@ func (s *Spinner) View() string {
 
 // Run runs the spinner.
 func (s *Spinner) Run() error {
+	if s.static {
+		return s.runAccessible()
+	}
+
 	p := tea.NewProgram(s)
 
 	go func() {
@@ -124,6 +138,21 @@ func (s *Spinner) Run() error {
 	}()
 
 	_, _ = p.Run()
+
+	return nil
+}
+
+// runAccessible runs the spinner in an accessible mode (statically).
+func (s *Spinner) runAccessible() error {
+	output := termenv.NewOutput(os.Stdout)
+	output.HideCursor()
+	frame := s.spinner.Style.Render("...")
+	title := s.titleStyle.Render(s.title)
+	fmt.Print(title + frame)
+	s.action()
+	output.ShowCursor()
+	output.ClearLine()
+	output.CursorBack(len(frame) + len(title))
 
 	return nil
 }
