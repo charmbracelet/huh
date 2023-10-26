@@ -22,6 +22,7 @@ type Spinner struct {
 	spinner    spinner.Model
 	action     func()
 	static     bool
+	output     *termenv.Output
 	title      string
 	titleStyle lipgloss.Style
 }
@@ -91,6 +92,7 @@ func New() *Spinner {
 		spinner:    s,
 		title:      "Loading...",
 		titleStyle: lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#FFFDF5", Dark: "#FFFDF5"}),
+		output:     termenv.NewOutput(os.Stdout),
 	}
 }
 
@@ -144,15 +146,14 @@ func (s *Spinner) Run() error {
 
 // runAccessible runs the spinner in an accessible mode (statically).
 func (s *Spinner) runAccessible() error {
-	output := termenv.NewOutput(os.Stdout)
-	output.HideCursor()
+	s.output.HideCursor()
 	frame := s.spinner.Style.Render("...")
 	title := s.titleStyle.Render(s.title)
 	fmt.Print(title + frame)
 	s.action()
-	output.ShowCursor()
-	output.ClearLine()
-	output.CursorBack(len(frame) + len(title))
+	s.output.ShowCursor()
+	s.output.ClearLine()
+	s.output.CursorBack(len(frame) + len(title))
 
 	return nil
 }
