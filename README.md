@@ -26,38 +26,33 @@ func main() {
   form := huh.NewForm(
     // What's a taco without a shell?
     // We'll need to know what filling to put inside too.
-    huh.Group(
-      huh.Select().
-        Title("Shell?").
-        Options("Hard", "Soft"),
+    huh.NewGroup(
+      huh.NewSelect("Hard", "Soft").
+        Title("Shell?"),
 
-      huh.Select().
-        Title("Base").
-        Options("Chicken", "Beef", "Fish", "Beans"),
+      huh.Select("Chicken", "Beef", "Fish", "Beans").
+        Title("Base"),
     ),
 
     // Prompt for toppings and special instructions.
     // The customer can ask for up to 4 toppings.
     huh.Group(
-      huh.MultiSelect().
+      huh.NewMultiSelect("Lettuce", "Tomatoes", "Corn", "Salsa", "Sour Cream", "Cheese").
         Title("Toppings").
-        Options("Lettuce", "Tomatoes", "Corn", "Salsa", "Sour Cream", "Cheese").
         Limit(4),
 
-      huh.Text().
+      huh.NewText().
         Title("Special Instructions").
         CharLimit(400),
       ),
 
     // Gather final details for the order.
-    huh.Group(
-      huh.Input().
-        Key("name").
+    huh.NewGroup(
+      huh.NewInput().
         Title("What's your name?").
-        Validate(huh.ValidateLength(0, 20)),
+        Validate(validateName),
 
-      huh.Confirm().
-        Key("discount").
+      huh.NewConfirm().
         Title("Would you like 15% off"),
       ),
   )
