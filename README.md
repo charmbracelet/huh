@@ -42,7 +42,6 @@ func main() {
       huh.MultiSelect().
         Title("Toppings").
         Options("Lettuce", "Tomatoes", "Corn", "Salsa", "Sour Cream", "Cheese").
-        Filterable(true).
         Limit(4),
 
       huh.Text().
@@ -63,16 +62,10 @@ func main() {
       ),
   )
 
-  r, err := form.Run()
+  err := form.Run()
   if err != nil {
     log.Fatal(err)
   }
-
-  fmt.Println("A %s shell filled with %s and %s, topped with %s.",
-    r["Shell?"], r["Base"], r["Toppings"])
-
-  fmt.Println("That will be $%.2f. Thanks for your order, %s!",
-    calculatePrice(r), r["name"])
 }
 ```
 
@@ -83,7 +76,7 @@ func main() {
 ```go
 huh.Input().
   Title("What's for lunch?").
-  Validate(huh.ValidateLength(0, 20)).
+  Validate(validateLength).
   Prompt("?")
 ```
 
@@ -94,7 +87,7 @@ huh.Input().
 ```go
 huh.Text().
   Title("Tell me a story.").
-  Validate(huh.ValidateLength(100, 400)).
+  Validate(validateLength).
   Prompt(">").
   Editor(true) // open in $EDITOR
 ```
@@ -104,21 +97,22 @@ huh.Text().
 `Select`s are multiple choice questions.
 
 ```go
-huh.Select().
+huh.Select[Country]().
   Title("Pick a country.").
-  Option("United States").
-  Option("Germany").
-  Option("Brazil").
-  Option("Canada").
+  Options(
+    huh.NewOption("United States", "US"),
+    huh.NewOption("Germany", "DE"),
+    huh.NewOption("Brazil", "BR"),
+    huh.NewOption("Canada", "CA"),
+  ).
   Cursor("→")
 ```
 
 Alternatively,
 
 ```go
-huh.Select().
+huh.Select("United States", "Germany", "Brazil", "Canada").
   Title("Pick a country.").
-  Options("United States", "Germany", "Brazil", "Canada").
   Cursor("→")
 ```
 
@@ -129,10 +123,6 @@ huh.Select().
 ```go
 huh.MultiSelect().
   Title("Toppings.").
-  Option("Lettuce").
-  Option("Tomatoes").
-  Option("Cheese").
-  Option("Corn").
   Limit(4)
 ```
 
