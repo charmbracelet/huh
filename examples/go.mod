@@ -1,11 +1,12 @@
 module examples
 
-go 1.21.1
+go 1.21.3
 
 require (
-	github.com/briandowns/spinner v1.23.0
 	github.com/charmbracelet/huh v0.0.0-20231012162728-59074ee04da6
+	github.com/charmbracelet/huh/spinner v0.0.0-20231026161609-99e49cb14d84
 	github.com/charmbracelet/lipgloss v0.9.1
+	github.com/charmbracelet/x/exp/strings v0.0.0-20231025135604-4a717d4fb812
 )
 
 require (
@@ -17,13 +18,10 @@ require (
 	github.com/charmbracelet/bubbletea v0.24.2 // indirect
 	github.com/charmbracelet/glamour v0.6.0 // indirect
 	github.com/charmbracelet/x/exp/ordered v0.0.0-20231010190216-1cb11efc897d // indirect
-	github.com/charmbracelet/x/exp/strings v0.0.0-20231025135604-4a717d4fb812 // indirect
 	github.com/containerd/console v1.0.4-0.20230313162750-1ae8d489ac81 // indirect
 	github.com/dlclark/regexp2 v1.4.0 // indirect
-	github.com/fatih/color v1.7.0 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
-	github.com/mattn/go-colorable v0.1.2 // indirect
 	github.com/mattn/go-isatty v0.0.18 // indirect
 	github.com/mattn/go-localereader v0.0.1 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
