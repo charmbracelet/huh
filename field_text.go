@@ -2,6 +2,8 @@ package huh
 
 import (
 	"fmt"
+	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
@@ -24,6 +26,7 @@ type Text struct {
 	textarea textarea.Model
 
 	// state
+	tmpFile string
 	focused bool
 
 	// form options
@@ -40,10 +43,13 @@ func NewText() *Text {
 	text.Prompt = ""
 	text.FocusedStyle.CursorLine = lipgloss.NewStyle()
 
+	file, _ := os.CreateTemp(os.TempDir(), "*.md")
+
 	t := &Text{
 		value:    new(string),
 		textarea: text,
 		validate: func(string) error { return nil },
+		tmpFile:  file.Name(),
 	}
 
 	return t
@@ -101,8 +107,10 @@ func (t *Text) Blur() tea.Cmd {
 
 // KeyBinds returns the help message for the text field.
 func (t *Text) KeyBinds() []key.Binding {
-	return []key.Binding{t.keymap.Next, t.keymap.NewLine, t.keymap.Prev}
+	return []key.Binding{t.keymap.Next, t.keymap.Editor, t.keymap.Prev}
 }
+
+type updateValueMsg []byte
 
 // Init initializes the text field.
 func (t *Text) Init() tea.Cmd {
@@ -119,10 +127,18 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	cmds = append(cmds, cmd)
 
 	switch msg := msg.(type) {
+	case updateValueMsg:
+		t.textarea.SetValue(string(msg))
 	case tea.KeyMsg:
 		t.err = nil
 
 		switch {
+		case key.Matches(msg, t.keymap.Editor):
+			_ = os.WriteFile(t.tmpFile, []byte(t.textarea.Value()), 0644)
+			cmds = append(cmds, tea.ExecProcess(editorCmd(t.tmpFile), func(error) tea.Msg {
+				content, _ := os.ReadFile(t.tmpFile)
+				return updateValueMsg(content)
+			}))
 		case key.Matches(msg, t.keymap.Next):
 			cmds = append(cmds, nextField)
 		case key.Matches(msg, t.keymap.Prev):
@@ -183,6 +199,24 @@ func (t *Text) runAccessible() error {
 	*t.value = accessibility.PromptString("> ", t.validate)
 	fmt.Println()
 	return nil
+}
+
+const defaultEditor = "nano"
+
+// Cmd returns a *exec.Cmd editing the given path with $EDITOR or nano if no
+// $EDITOR is set.
+func editorCmd(path string) *exec.Cmd {
+	editor, args := getEditor()
+	return exec.Command(editor, append(args, path)...)
+}
+
+// getEditor returns the editor and its arguments from $EDITOR.
+func getEditor() (string, []string) {
+	editor := strings.Fields(os.Getenv("EDITOR"))
+	if len(editor) > 0 {
+		return editor[0], editor[1:]
+	}
+	return defaultEditor, nil
 }
 
 // WithTheme sets the theme on a text field.

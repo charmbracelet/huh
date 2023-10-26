@@ -25,6 +25,7 @@ type TextKeyMap struct {
 	Next    key.Binding
 	Prev    key.Binding
 	NewLine key.Binding
+	Editor  key.Binding
 }
 
 // SelectKeyMap is the keybindings for select fields.
@@ -69,6 +70,7 @@ func NewDefaultKeyMap() *KeyMap {
 			Next:    key.NewBinding(key.WithKeys("tab"), key.WithHelp("tab", "next")),
 			Prev:    key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),
 			NewLine: key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "new line")),
+			Editor:  key.NewBinding(key.WithKeys("ctrl+e"), key.WithHelp("ctrl+e", "open editor")),
 		},
 		Select: SelectKeyMap{
 			Next: key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "select")),
