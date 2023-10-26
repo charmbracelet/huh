@@ -217,28 +217,22 @@ func (m *MultiSelect[T]) View() string {
 
 func (m *MultiSelect[T]) printOptions() {
 	var (
-		styles = m.theme.Focused
-		sb     strings.Builder
+		sb strings.Builder
 	)
 
 	sb.WriteString(m.theme.Focused.Title.Render(m.title))
 	sb.WriteString("\n")
 
 	for i, option := range m.options {
-		var prefix string
 		if m.selected[i] {
-			prefix = styles.SelectedPrefix.String()
-			sb.WriteString(fmt.Sprintf("%d. %s%s", i+1, prefix, option.Key))
+			sb.WriteString(fmt.Sprintf("%d. %s %s", i+1, "[x]", option.Key))
 		} else {
-			prefix = styles.UnselectedPrefix.String()
-			sb.WriteString(fmt.Sprintf("%d. %s%s", i+1, prefix, option.Key))
+			sb.WriteString(fmt.Sprintf("%d. %s %s", i+1, "[ ]", option.Key))
 		}
-		if i < len(m.options)-1 {
-			sb.WriteString("\n")
-		}
+		sb.WriteString("\n")
 	}
 
-	fmt.Println(styles.Base.Render(sb.String()))
+	fmt.Println(m.theme.Blurred.Base.Render(sb.String()))
 }
 
 // Run runs the multi-select field.
@@ -251,18 +245,20 @@ func (m *MultiSelect[T]) Run() error {
 
 // runAccessible() runs the multi-select field in accessible mode.
 func (m *MultiSelect[T]) runAccessible() error {
-	styles := m.theme.Focused
-
 	m.printOptions()
 
 	var choice int
 	for {
-		fmt.Println(styles.Help.Render(fmt.Sprintf("Select up to %d options.", m.limit)))
-		fmt.Println(styles.Help.Render("Type 0 to continue."))
-		fmt.Println()
+		fmt.Printf("Select up to %d options. 0 to continue.\n", m.limit)
 
 		choice = accessibility.PromptInt("Select: ", 0, len(m.options))
 		if choice == 0 {
+			m.finalize()
+			err := m.validate(*m.value)
+			if err != nil {
+				fmt.Println(err)
+				continue
+			}
 			break
 		}
 		m.selected[choice-1] = !m.selected[choice-1]
@@ -284,7 +280,7 @@ func (m *MultiSelect[T]) runAccessible() error {
 		}
 	}
 
-	fmt.Println(m.theme.Focused.SelectedOption.Render("Selected:", strings.Join(values, ", ")+"\n"))
+	fmt.Println("Selected:", strings.Join(values, ", ")+"\n")
 	return nil
 }
 

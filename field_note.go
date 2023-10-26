@@ -147,7 +147,8 @@ func (n *Note) runAccessible() error {
 	body += n.description
 
 	md, _ := glamour.Render(body, "auto")
-	fmt.Println(strings.TrimSpace(md))
+	fmt.Println(n.theme.Blurred.Base.Render(strings.TrimSpace(md)))
+	fmt.Println()
 	return nil
 }
 

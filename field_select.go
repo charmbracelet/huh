@@ -178,12 +178,10 @@ func (s *Select[T]) runAccessible() error {
 
 	for i, option := range s.options {
 		sb.WriteString(fmt.Sprintf("%d. %s", i+1, option.Key))
-		if i < len(s.options)-1 {
-			sb.WriteString("\n")
-		}
+		sb.WriteString("\n")
 	}
 
-	fmt.Println(s.theme.Focused.Base.Render(sb.String()))
+	fmt.Println(s.theme.Blurred.Base.Render(sb.String()))
 
 	for {
 		choice := accessibility.PromptInt("Choose: ", 1, len(s.options))
@@ -192,7 +190,7 @@ func (s *Select[T]) runAccessible() error {
 			fmt.Println(err.Error())
 			continue
 		}
-		fmt.Println(s.theme.Focused.SelectedOption.Render("Chose: "+option.Key) + "\n")
+		fmt.Println("Chose: " + option.Key + "\n")
 		*s.value = option.Value
 		break
 	}
