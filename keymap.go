@@ -30,10 +30,12 @@ type TextKeyMap struct {
 
 // SelectKeyMap is the keybindings for select fields.
 type SelectKeyMap struct {
-	Next key.Binding
-	Prev key.Binding
-	Up   key.Binding
-	Down key.Binding
+	Next      key.Binding
+	Prev      key.Binding
+	Up        key.Binding
+	Down      key.Binding
+	Filter    key.Binding
+	SetFilter key.Binding
 }
 
 // MultiSelectKeyMap is the keybindings for multi-select fields.
@@ -73,10 +75,12 @@ func NewDefaultKeyMap() *KeyMap {
 			Editor:  key.NewBinding(key.WithKeys("ctrl+e"), key.WithHelp("ctrl+e", "open editor")),
 		},
 		Select: SelectKeyMap{
-			Next: key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "select")),
-			Prev: key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),
-			Up:   key.NewBinding(key.WithKeys("up", "k", "ctrl+p"), key.WithHelp("↑", "up")),
-			Down: key.NewBinding(key.WithKeys("down", "j", "ctrl+n"), key.WithHelp("↓", "down")),
+			Next:      key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "select")),
+			Prev:      key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),
+			Up:        key.NewBinding(key.WithKeys("up", "k", "ctrl+p"), key.WithHelp("↑", "up")),
+			Down:      key.NewBinding(key.WithKeys("down", "j", "ctrl+n"), key.WithHelp("↓", "down")),
+			Filter:    key.NewBinding(key.WithKeys("/"), key.WithHelp("/", "filter")),
+			SetFilter: key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "set filter"), key.WithDisabled()),
 		},
 		MultiSelect: MultiSelectKeyMap{
 			Next:   key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "confirm")),
