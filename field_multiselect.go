@@ -26,9 +26,8 @@ type MultiSelect[T any] struct {
 	err      error
 
 	// state
-	cursor   int
-	selected []bool
-	focused  bool
+	cursor  int
+	focused bool
 
 	// options
 	width      int
@@ -47,7 +46,6 @@ func NewMultiSelect[T any](options ...T) *MultiSelect[T] {
 	return &MultiSelect[T]{
 		value:    new([]T),
 		options:  opts,
-		selected: make([]bool, len(opts)),
 		validate: func([]T) error { return nil },
 		limit:    len(opts),
 	}
@@ -135,10 +133,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keymap.Down):
 			m.cursor = min(m.cursor+1, len(m.options)-1)
 		case key.Matches(msg, m.keymap.Toggle):
-			if !m.selected[m.cursor] && m.numSelected() >= m.limit {
-				break
-			}
-			m.selected[m.cursor] = !m.selected[m.cursor]
+			m.options[m.cursor].selected = !m.options[m.cursor].selected
 		case key.Matches(msg, m.keymap.Prev):
 			m.finalize()
 			if m.err != nil {
@@ -159,8 +154,8 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m *MultiSelect[T]) numSelected() int {
 	var count int
-	for _, v := range m.selected {
-		if v {
+	for _, o := range m.options {
+		if o.selected {
 			count++
 		}
 	}
@@ -169,8 +164,8 @@ func (m *MultiSelect[T]) numSelected() int {
 
 func (m *MultiSelect[T]) finalize() {
 	*m.value = make([]T, 0)
-	for i, option := range m.options {
-		if m.selected[i] {
+	for _, option := range m.options {
+		if option.selected {
 			*m.value = append(*m.value, option.Value)
 		}
 	}
@@ -201,7 +196,7 @@ func (m *MultiSelect[T]) View() string {
 			sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)))
 		}
 
-		if m.selected[i] {
+		if m.options[i].selected {
 			sb.WriteString(styles.SelectedPrefix.String())
 			sb.WriteString(styles.SelectedOption.Render(option.Key))
 		} else {
@@ -224,7 +219,7 @@ func (m *MultiSelect[T]) printOptions() {
 	sb.WriteString("\n")
 
 	for i, option := range m.options {
-		if m.selected[i] {
+		if option.selected {
 			sb.WriteString(m.theme.Focused.SelectedOption.Render(fmt.Sprintf("%d. %s %s", i+1, "[✓]", option.Key)))
 		} else {
 			sb.WriteString(fmt.Sprintf("%d. %s %s", i+1, "[ ]", option.Key))
@@ -261,8 +256,8 @@ func (m *MultiSelect[T]) runAccessible() error {
 			}
 			break
 		}
-		m.selected[choice-1] = !m.selected[choice-1]
-		if m.selected[choice-1] {
+		m.options[choice-1].selected = !m.options[choice-1].selected
+		if m.options[choice-1].selected {
 			fmt.Printf("Selected: %d\n\n", choice)
 		} else {
 			fmt.Printf("Deselected: %d\n\n", choice)
@@ -273,8 +268,8 @@ func (m *MultiSelect[T]) runAccessible() error {
 
 	var values []string
 
-	for i, option := range m.options {
-		if m.selected[i] {
+	for _, option := range m.options {
+		if option.selected {
 			*m.value = append(*m.value, option.Value)
 			values = append(values, option.Key)
 		}
