@@ -110,7 +110,7 @@ func main() {
 				Options(
 					huh.NewOption("Mild", Mild),
 					huh.NewOption("Medium", Medium),
-					huh.NewOption("Hot", Hot),
+					huh.NewOption("Hot", Hot).Selected(true),
 				).
 				Value(&order.Taco.Spice),
 		),
