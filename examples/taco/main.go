@@ -84,9 +84,17 @@ func main() {
 		// Prompt for toppings and special instructions.
 		// The customer can ask for up to 4 toppings.
 		huh.NewGroup(
-			huh.NewMultiSelect("Lettuce", "Tomatoes", "Corn", "Salsa", "Sour Cream", "Cheese").
+			huh.NewMultiSelect[string]().
 				Title("Toppings").
 				Description("Choose up to 4.").
+				Options(
+					huh.NewOption("Lettuce", "lettuce").Selected(true),
+					huh.NewOption("Tomatoes", "tomatoes").Selected(true),
+					huh.NewOption("Corn", "corn"),
+					huh.NewOption("Salsa", "salsa"),
+					huh.NewOption("Sour Cream", "sour cream"),
+					huh.NewOption("Cheese", "cheese"),
+				).
 				Validate(func(t []string) error {
 					if len(t) <= 0 {
 						return fmt.Errorf("at least one topping is required")
