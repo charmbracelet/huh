@@ -80,6 +80,16 @@ func (i *Input) CharLimit(charlimit int) *Input {
 	return i
 }
 
+// Password sets whether or not to hide the input while the user is typing.
+func (i *Input) Password(password bool) *Input {
+	if password {
+		i.textinput.EchoMode = textinput.EchoPassword
+	} else {
+		i.textinput.EchoMode = textinput.EchoNormal
+	}
+	return i
+}
+
 // Placeholder sets the placeholder of the text input.
 func (i *Input) Placeholder(str string) *Input {
 	i.textinput.Placeholder = str
