@@ -68,7 +68,7 @@ func main() {
 `Input`s are single line text fields.
 
 ```go
-huh.Input().
+huh.NewInput().
   Title("What's for lunch?").
   Validate(validateLength).
   Prompt("?")
@@ -79,7 +79,7 @@ huh.Input().
 `Text`s are multi-line text fields.
 
 ```go
-huh.Text().
+huh.NewText().
   Title("Tell me a story.").
   Validate(validateLength).
   Prompt(">").
@@ -91,7 +91,7 @@ huh.Text().
 `Select`s are multiple choice questions.
 
 ```go
-huh.Select[Country]().
+huh.NewSelect[Country]().
   Title("Pick a country.").
   Options(
     huh.NewOption("United States", "US"),
@@ -105,7 +105,7 @@ huh.Select[Country]().
 Alternatively,
 
 ```go
-huh.Select("United States", "Germany", "Brazil", "Canada").
+huh.NewSelect("United States", "Germany", "Brazil", "Canada").
   Title("Pick a country.").
   Cursor("→")
 ```
@@ -115,7 +115,7 @@ huh.Select("United States", "Germany", "Brazil", "Canada").
 `MultiSelect`s are multiple choice questions but allow multiple selections.
 
 ```go
-huh.MultiSelect().
+huh.NewMultiSelect().
   Title("Toppings.").
   Limit(4)
 ```
