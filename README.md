@@ -16,7 +16,6 @@ There are several `Question` types available to use:
 package main
 
 import (
-  "fmt"
   "log"
 
   "github.com/charmbracelet/huh"
@@ -30,13 +29,13 @@ func main() {
       huh.NewSelect("Hard", "Soft").
         Title("Shell?"),
 
-      huh.Select("Chicken", "Beef", "Fish", "Beans").
+      huh.NewSelect("Chicken", "Beef", "Fish", "Beans").
         Title("Base"),
     ),
 
     // Prompt for toppings and special instructions.
     // The customer can ask for up to 4 toppings.
-    huh.Group(
+    huh.NewGroup(
       huh.NewMultiSelect("Lettuce", "Tomatoes", "Corn", "Salsa", "Sour Cream", "Cheese").
         Title("Toppings").
         Limit(4),
@@ -44,7 +43,7 @@ func main() {
       huh.NewText().
         Title("Special Instructions").
         CharLimit(400),
-      ),
+    ),
 
     // Gather final details for the order.
     huh.NewGroup(
@@ -54,7 +53,7 @@ func main() {
 
       huh.NewConfirm().
         Title("Would you like 15% off"),
-      ),
+    ),
   )
 
   err := form.Run()
