@@ -39,7 +39,14 @@ func main() {
     // The customer can ask for up to 4 toppings.
     huh.NewGroup(
       huh.NewMultiSelect[string]().
-        Options(huh.NewOptions("Lettuce", "Tomatoes", "Corn", "Salsa", "Sour Cream", "Cheese")...).
+        Options(
+          huh.NewOption("Tomatoes", "tomatoes"),
+          huh.NewOption("Lettuce", "lettuce"),
+          huh.NewOption("Salsa", "salsa"),
+          huh.NewOption("Cheese", "cheese"),
+          huh.NewOption("Sour Cream", "sour cream"),
+          huh.NewOption("Corn", "corn"),
+        ).
         Title("Toppings").
         Limit(4),
 
@@ -94,22 +101,13 @@ huh.NewText().
 `Select`s are multiple choice questions.
 
 ```go
-type Country string
-
-const (
-  US = "US"
-  DE = "DE"
-  BR = "BR"
-  CA = "CA"
-)
-
-huh.NewSelect[Country]().
+huh.NewSelect[string]().
   Title("Pick a country.").
   Options(
-    huh.NewOption("United States", US),
-    huh.NewOption("Germany", DE),
-    huh.NewOption("Brazil", BR),
-    huh.NewOption("Canada", CA),
+    huh.NewOption("United States", "US"),
+    huh.NewOption("Germany", "DE"),
+    huh.NewOption("Brazil", "BR"),
+    huh.NewOption("Canada", "CA"),
   ).
   Cursor("→")
 ```
@@ -128,10 +126,17 @@ huh.NewSelect[string]().
 `MultiSelect`s are multiple choice questions but allow multiple selections.
 
 ```go
-huh.NewMultiSelect().
-  Title("Toppings.").
-  Options(huh.NewOptions("Lettuce", "Tomatoes", "Corn", "Salsa", "Sour Cream", "Cheese")...).
-  Limit(4)
+huh.NewMultiSelect[string]().
+  Options(
+    huh.NewOption("Tomatoes", "tomatoes").Selected(true),
+    huh.NewOption("Lettuce", "lettuce").Selected(true),
+    huh.NewOption("Salsa", "salsa"),
+    huh.NewOption("Cheese", "cheese").Selected(true),
+    huh.NewOption("Sour Cream", "sour cream"),
+    huh.NewOption("Corn", "corn"),
+  ).
+  Title("Toppings").
+  Limit(4),
 ```
 
 
