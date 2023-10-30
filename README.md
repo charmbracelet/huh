@@ -8,82 +8,86 @@ The above example is running from a single Go program ([source](./examples/taco/
 
 ## Tutorial
 
-`Huh?` provides a straightforward API to build forms and prompt users for input.
+`huh?` provides a straightforward API to build forms and prompt users for input.
 
-Let's build a simple form to take a order from a Taco shop.
+For this tutorial, we're building a taco order form.
 
-Start by `import`ing `huh` into your Go program.
+We start by defining our package importing `huh`.
 
 ```go
 package main
 
-import  "github.com/charmbracelet/huh"
-```
+import (
+  "log"
 
-Create fields for the order:
-
-```go
-var (
-  base     string
-  name     string
-  shell    string
-  toppings []string
+  "github.com/charmbracelet/huh"
 )
-
-shellField := huh.NewSelect[string]().
-  Options(huh.NewOptions("Hard", "Soft")...).
-  Title("Shell?").
-  Value(&shell)
-
-baseField := huh.NewSelect[string]().
-  Options(huh.NewOptions("Chicken", "Beef", "Fish", "Beans")...).
-  Title("Base?").
-  Value(&base)
-
-toppingsField := huh.NewMultiSelect[string]().
-  Options(
-    huh.NewOption("Cheese", "cheese").Selected(true),
-    huh.NewOption("Lettuce", "lettuce").Selected(true),
-    huh.NewOption("Tomatoes", "tomatoes"),
-    huh.NewOption("Corn", "corn"),
-    huh.NewOption("Salsa", "salsa"),
-    huh.NewOption("Sour Cream", "sour cream"),
-  ).
-  Title("Toppings").
-  Limit(4).
-  Value(&toppings)
-
-nameField := huh.NewInput().
-  Title("Name").
-  Value(&name)
 ```
 
-Create the form and group the fields:
+Let's start defining our form, `huh` forms contain groups which group different
+fields together such that they are displayed on the same page.
+
+We'll build three groups to get all our information for the taco order.
 
 ```go
 form := huh.NewForm(
-  huh.NewGroup(shellField, baseField),
-  huh.NewGroup(toppingsField),
-  huh.NewGroup(nameField),
+  // What's a taco without a shell?
+  // We'll need to know what filling to put inside too.
+  huh.NewGroup(
+    huh.NewSelect[string]().
+      Options(huh.NewOptions("Hard", "Soft")...).
+      Title("Shell?").
+      Value(&shell),
+
+    huh.NewSelect[string]().
+      Options(huh.NewOptions("Chicken", "Beef", "Fish", "Beans")...).
+      Title("Base").
+      Value(&base),
+  ),
+
+  // Prompt for toppings and special instructions.
+  // The customer can ask for up to 4 toppings.
+  huh.NewGroup(
+    huh.NewMultiSelect[string]().
+      Options(
+        huh.NewOption("Tomatoes", "tomatoes").Selected(true),
+        huh.NewOption("Lettuce", "lettuce").Selected(true),
+        huh.NewOption("Salsa", "salsa"),
+        huh.NewOption("Cheese", "cheese"),
+        huh.NewOption("Sour Cream", "sour cream"),
+        huh.NewOption("Corn", "corn"),
+      ).
+      Title("Toppings").
+      Limit(4).
+      Value(&toppings),
+  ),
+
+  // Gather final details for the order.
+  huh.NewGroup(
+    huh.NewInput().
+      Title("What's your name?").
+      Value(&name).
+      Validate(validateName),
+
+    huh.NewText().
+      Title("Special Instructions").
+      Value(&instructions).
+      CharLimit(400),
+
+    huh.NewConfirm().
+      Title("Would you like 15% off").
+      Value(&discount),
+  ),
 )
 ```
 
-Run the form:
+Finally, we can run the form:
 
 ```go
 err := form.Run()
 if err != nil {
   log.Fatal(err)
 }
-```
-
-Use the values:
-
-```go
-fmt.Println("Shell: ", shell)
-fmt.Println("Base: ", base)
-fmt.Println("Toppings: ", strings.Join(toppings, ", "))
-fmt.Println("Name", name)
 ```
 
 ## Field Reference
@@ -176,6 +180,10 @@ huh.NewConfirm().
   Negative("No.").
   Value(&confirm)
 ```
+
+## Themes
+
+Forms can 
 
 ## Feedback
 

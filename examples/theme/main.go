@@ -19,20 +19,16 @@ func main() {
 	repeat := true
 
 	for {
-		err := huh.NewForm(
-			huh.NewGroup(
-				huh.NewSelect[*huh.Theme]().
-					Title("Theme").
-					Value(&theme).
-					Options(
-						huh.NewOption("Default", base),
-						huh.NewOption("Dracula", dracula),
-						huh.NewOption("Base 16", base16),
-						huh.NewOption("Charm", charm),
-						huh.NewOption("Exit", exit),
-					),
-			),
-		).Run()
+		err := huh.NewSelect[*huh.Theme]().
+			Title("Theme").
+			Value(&theme).
+			Options(
+				huh.NewOption("Default", base),
+				huh.NewOption("Dracula", dracula),
+				huh.NewOption("Base 16", base16),
+				huh.NewOption("Charm", charm),
+				huh.NewOption("Exit", exit),
+			).Run()
 
 		if err != nil {
 			fmt.Println(err)
