@@ -39,22 +39,15 @@ type Select[T any] struct {
 }
 
 // NewSelect returns a new select field.
-func NewSelect[T any](options ...T) *Select[T] {
-	var opts []Option[T]
-	for _, option := range options {
-		opts = append(opts, Option[T]{Key: fmt.Sprint(option), Value: option})
-	}
-
+func NewSelect[T any]() *Select[T] {
 	filter := textinput.New()
 	filter.Prompt = "/"
 
 	return &Select[T]{
-		value:           new(T),
-		options:         opts,
-		filteredOptions: opts,
-		validate:        func(T) error { return nil },
-		filtering:       false,
-		filter:          filter,
+		value:     new(T),
+		validate:  func(T) error { return nil },
+		filtering: false,
+		filter:    filter,
 	}
 }
 

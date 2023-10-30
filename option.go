@@ -1,10 +1,21 @@
 package huh
 
+import "fmt"
+
 // Option is an option for select fields.
 type Option[T any] struct {
 	Key      string
 	Value    T
 	selected bool
+}
+
+// NewOptions returns new options from a list of values.
+func NewOptions[T any](values ...T) []Option[T] {
+	var options []Option[T]
+	for _, o := range values {
+		options = append(options, Option[T]{Key: fmt.Sprint(o), Value: o})
+	}
+	return options
 }
 
 // NewOption returns a new select option.

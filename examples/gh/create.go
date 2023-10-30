@@ -74,7 +74,8 @@ func main() {
 				Title("Body"),
 		),
 		huh.NewGroup(
-			huh.NewSelect("Submit", "Submit as draft", "Continue in browser", "Add metadata", "Cancel").
+			huh.NewSelect[string]().
+				Options(huh.NewOptions("Submit", "Submit as draft", "Continue in browser", "Add metadata", "Cancel")...).
 				Title("What's next?").Value(&nextAction),
 		),
 	).WithTheme(theme)

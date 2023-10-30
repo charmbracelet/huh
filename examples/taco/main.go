@@ -65,7 +65,8 @@ func main() {
 		// What's a taco without a shell?
 		// We'll need to know what filling to put inside too.
 		huh.NewGroup(
-			huh.NewSelect("Soft", "Hard").
+			huh.NewSelect[string]().
+				Options(huh.NewOptions("Soft", "Hard")...).
 				Title("Shell?").
 				Description("Our tortillas are made fresh in-house, every day.").
 				Validate(func(t string) error {
@@ -76,7 +77,8 @@ func main() {
 				}).
 				Value(&order.Taco.Shell),
 
-			huh.NewSelect("Chicken", "Beef", "Fish", "Beans").
+			huh.NewSelect[string]().
+				Options(huh.NewOptions("Chicken", "Beef", "Fish", "Beans")...).
 				Value(&order.Taco.Base).
 				Title("Base"),
 		),
