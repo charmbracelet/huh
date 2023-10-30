@@ -2,79 +2,81 @@
 
 A simple and powerful library for building interactive forms in the terminal. Powered by [Bubble Tea](https://github.com/charmbracelet/bubbletea).
 
-## Tutorial
-
 <img alt="Running a taco form" width="600" src="./examples/taco/taco.gif">
 
 The above example is running from a single Go program ([source](./examples/taco/main.go)).
 
-`Huh?` provides a straightforward interface to prompt users for input.
+## Tutorial
 
-There are several `Question` types available to use:
-* [`Input`](#input)
-* [`Text`](#text)
-* [`Select`](#select)
-* [`MultiSelect`](#multiple-select)
+`Huh?` provides a straightforward API to build forms and prompt users for input.
+
+Let's build a simple form to take a order from a Taco shop.
+
+Start by `import`ing `huh` into your Go program.
 
 ```go
 package main
 
-import (
-  "log"
+import  "github.com/charmbracelet/huh"
+```
 
-  "github.com/charmbracelet/huh"
+Create fields for the order:
+
+```go
+var (
+  base     string
+  name     string
+  shell    string
+  toppings []string
 )
 
-func main() {
-  form := huh.NewForm(
-    // What's a taco without a shell?
-    // We'll need to know what filling to put inside too.
-    huh.NewGroup(
-      huh.NewSelect[string]().
-        Options(huh.NewOptions("Hard", "Soft")...).
-        Title("Shell?"),
+shellField := huh.NewSelect[string]().
+  Options(huh.NewOptions("Hard", "Soft")...).
+  Title("Shell?").
+  Value(&shell)
 
-      huh.NewSelect[string]().
-        Options(huh.NewOptions("Chicken", "Beef", "Fish", "Beans")...).
-        Title("Base"),
-    ),
+baseField := huh.NewSelect[string]().
+  Options(huh.NewOptions("Chicken", "Beef", "Fish", "Beans")...).
+  Title("Base?").
+  Value(&base)
 
-    // Prompt for toppings and special instructions.
-    // The customer can ask for up to 4 toppings.
-    huh.NewGroup(
-      huh.NewMultiSelect[string]().
-        Options(
-          huh.NewOption("Tomatoes", "tomatoes"),
-          huh.NewOption("Lettuce", "lettuce"),
-          huh.NewOption("Salsa", "salsa"),
-          huh.NewOption("Cheese", "cheese"),
-          huh.NewOption("Sour Cream", "sour cream"),
-          huh.NewOption("Corn", "corn"),
-        ).
-        Title("Toppings").
-        Limit(4),
+toppingsField := huh.NewMultiSelect[string]().
+  Options(huh.NewOptions("Tomatoes", "Lettuce", "Cheese", "Salsa", "Sour Cream", "Corn")...).
+  Title("Toppings").
+  Limit(4).
+  Value(&toppings)
 
-      huh.NewText().
-        Title("Special Instructions").
-        CharLimit(400),
-    ),
+nameField := huh.NewInput().
+  Title("Name").
+  Value(&name)
+```
 
-    // Gather final details for the order.
-    huh.NewGroup(
-      huh.NewInput().
-        Title("What's your name?").
-        Validate(validateName),
+Create the form and group the fields:
 
-      huh.NewConfirm().
-        Title("Would you like 15% off"),
-    ),
-  )
+```go
+form := huh.NewForm(
+  huh.NewGroup(shellField, baseField),
+  huh.NewGroup(toppingsField),
+  huh.NewGroup(nameField),
+)
+```
 
-  err := form.Run()
-  if err != nil {
-    log.Fatal(err)
-  }
+Run the form:
+
+```go
+err := form.Run()
+if err != nil {
+  log.Fatal(err)
 }
+```
+
+Use the values:
+
+```go
+fmt.Println("Shell: ", shell)
+fmt.Println("Base: ", base)
+fmt.Println("Toppings: ", strings.Join(toppings, ", "))
+fmt.Println("Name", name)
 ```
 
 ## Input
@@ -132,12 +134,12 @@ huh.NewSelect[string]().
 ```go
 huh.NewMultiSelect[string]().
   Options(
-    huh.NewOption("Tomatoes", "tomatoes").Selected(true),
-    huh.NewOption("Lettuce", "lettuce").Selected(true),
-    huh.NewOption("Salsa", "salsa"),
     huh.NewOption("Cheese", "cheese").Selected(true),
-    huh.NewOption("Sour Cream", "sour cream"),
+    huh.NewOption("Lettuce", "lettuce").Selected(true),
+    huh.NewOption("Tomatoes", "tomatoes"),
     huh.NewOption("Corn", "corn"),
+    huh.NewOption("Salsa", "salsa"),
+    huh.NewOption("Sour Cream", "sour cream"),
   ).
   Title("Toppings").
   Limit(4),
