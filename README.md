@@ -41,7 +41,14 @@ baseField := huh.NewSelect[string]().
   Value(&base)
 
 toppingsField := huh.NewMultiSelect[string]().
-  Options(huh.NewOptions("Tomatoes", "Lettuce", "Cheese", "Salsa", "Sour Cream", "Corn")...).
+  Options(
+    huh.NewOption("Cheese", "cheese").Selected(true),
+    huh.NewOption("Lettuce", "lettuce").Selected(true),
+    huh.NewOption("Tomatoes", "tomatoes"),
+    huh.NewOption("Corn", "corn"),
+    huh.NewOption("Salsa", "salsa"),
+    huh.NewOption("Sour Cream", "sour cream"),
+  ).
   Title("Toppings").
   Limit(4).
   Value(&toppings)
