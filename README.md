@@ -4,6 +4,10 @@ A simple and powerful library for building interactive forms in the terminal. Po
 
 ## Tutorial
 
+<img alt="Running a taco form" width="600" src="./examples/taco/taco.gif">
+
+The above example is running from a single Go program ([source](./examples/taco/main.go)).
+
 `Huh?` provides a straightforward interface to prompt users for input.
 
 There are several `Question` types available to use:
