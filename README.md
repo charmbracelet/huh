@@ -26,17 +26,20 @@ func main() {
     // What's a taco without a shell?
     // We'll need to know what filling to put inside too.
     huh.NewGroup(
-      huh.NewSelect("Hard", "Soft").
+      huh.NewSelect[string]().
+        Options(huh.NewOptions("Hard", "Soft")...).
         Title("Shell?"),
 
-      huh.NewSelect("Chicken", "Beef", "Fish", "Beans").
+      huh.NewSelect[string]().
+        Options(huh.NewOptions("Chicken", "Beef", "Fish", "Beans")...).
         Title("Base"),
     ),
 
     // Prompt for toppings and special instructions.
     // The customer can ask for up to 4 toppings.
     huh.NewGroup(
-      huh.NewMultiSelect("Lettuce", "Tomatoes", "Corn", "Salsa", "Sour Cream", "Cheese").
+      huh.NewMultiSelect[string]().
+        Options(huh.NewOptions("Lettuce", "Tomatoes", "Corn", "Salsa", "Sour Cream", "Cheese")...).
         Title("Toppings").
         Limit(4),
 
@@ -91,13 +94,22 @@ huh.NewText().
 `Select`s are multiple choice questions.
 
 ```go
+type Country string
+
+const (
+  US = "US"
+  DE = "DE"
+  BR = "BR"
+  CA = "CA"
+)
+
 huh.NewSelect[Country]().
   Title("Pick a country.").
   Options(
-    huh.NewOption("United States", "US"),
-    huh.NewOption("Germany", "DE"),
-    huh.NewOption("Brazil", "BR"),
-    huh.NewOption("Canada", "CA"),
+    huh.NewOption("United States", US),
+    huh.NewOption("Germany", DE),
+    huh.NewOption("Brazil", BR),
+    huh.NewOption("Canada", CA),
   ).
   Cursor("→")
 ```
@@ -105,8 +117,9 @@ huh.NewSelect[Country]().
 Alternatively,
 
 ```go
-huh.NewSelect("United States", "Germany", "Brazil", "Canada").
+huh.NewSelect[string]().
   Title("Pick a country.").
+  Options(huh.NewOptions("United States", "Germany", "Brazil", "Canada")...).
   Cursor("→")
 ```
 
@@ -117,6 +130,7 @@ huh.NewSelect("United States", "Germany", "Brazil", "Canada").
 ```go
 huh.NewMultiSelect().
   Title("Toppings.").
+  Options(huh.NewOptions("Lettuce", "Tomatoes", "Corn", "Salsa", "Sour Cream", "Cheese")...).
   Limit(4)
 ```
 
