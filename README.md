@@ -183,7 +183,7 @@ huh.NewConfirm().
 
 ## Themes
 
-Forms can 
+Forms, Groups, and Fields can be themed using the `.Theme(theme)` method.
 
 ## Feedback
 
