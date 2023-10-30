@@ -28,3 +28,8 @@ func (o Option[T]) Selected(selected bool) Option[T] {
 	o.selected = selected
 	return o
 }
+
+// String returns the key of the option.
+func (o Option[T]) String() string {
+	return o.Key
+}
