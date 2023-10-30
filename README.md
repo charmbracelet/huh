@@ -86,7 +86,15 @@ fmt.Println("Toppings: ", strings.Join(toppings, ", "))
 fmt.Println("Name", name)
 ```
 
-## Input
+## Field Reference
+
+* [`Input`](#input): gather text input from the user
+* [`Text`](#text): gather multiline text input from the user
+* [`Select`](#select): prompt user to select an option from a list.
+* [`MultiSelect`](#multiple-select): prompt user to select multiple options from a list.
+* [`Confirm`](#confirm): ask the user a yes or no question.
+
+### Input
 
 `Input`s are single line text fields.
 
@@ -94,22 +102,24 @@ fmt.Println("Name", name)
 huh.NewInput().
   Title("What's for lunch?").
   Validate(validateLength).
-  Prompt("?")
+  Prompt("?").
+  Value(&lunch)
 ```
 
-## Text
+### Text
 
 `Text`s are multi-line text fields.
 
 ```go
 huh.NewText().
   Title("Tell me a story.").
-  Validate(validateLength).
+  Validate(checkForPlagiarism).
   Prompt(">").
-  Editor(true) // open in $EDITOR
+  Editor(true). // open in $EDITOR
+  Value(&text)
 ```
 
-## Select
+### Select
 
 `Select`s are multiple choice questions.
 
@@ -122,19 +132,21 @@ huh.NewSelect[string]().
     huh.NewOption("Brazil", "BR"),
     huh.NewOption("Canada", "CA"),
   ).
-  Cursor("→")
+  Cursor("→").
+  Value(&country)
 ```
 
-Alternatively,
+Alternatively, use the `huh.NewOptions` shorthand when keys and values are the same:
 
 ```go
 huh.NewSelect[string]().
   Title("Pick a country.").
   Options(huh.NewOptions("United States", "Germany", "Brazil", "Canada")...).
-  Cursor("→")
+  Cursor("→").
+  Value(&country)
 ```
 
-## Multiple Select
+### Multiple Select
 
 `MultiSelect`s are multiple choice questions but allow multiple selections.
 
@@ -149,9 +161,21 @@ huh.NewMultiSelect[string]().
     huh.NewOption("Sour Cream", "sour cream"),
   ).
   Title("Toppings").
-  Limit(4),
+  Limit(4).
+  Value(&toppings),
 ```
 
+### Confirm
+
+`Confirm` is a yes or no confirmation.
+
+```go
+huh.NewConfirm().
+  Title("Toppings").
+  Affirmative("Yes!").
+  Negative("No.").
+  Value(&confirm)
+```
 
 ## Feedback
 
