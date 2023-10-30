@@ -42,3 +42,5 @@ require (
 )
 
 replace github.com/charmbracelet/huh => ../
+
+replace github.com/charmbracelet/huh/spinner => ../spinner
