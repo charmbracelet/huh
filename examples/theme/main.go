@@ -47,8 +47,8 @@ func main() {
 			huh.NewGroup(
 				huh.NewInput().Title("Thoughts").Placeholder("What's on your mind?"),
 				huh.NewText().Title("More Thoughts").Placeholder("What else is on your mind?"),
-				huh.NewSelect("A", "B", "C").Title("Colors"),
-				huh.NewMultiSelect("Red", "Green", "Yellow").Title("Letters"),
+				huh.NewSelect[string]().Options(huh.NewOptions("A", "B", "C")...).Title("Colors"),
+				huh.NewMultiSelect[string]().Options(huh.NewOptions("Red", "Green", "Yellow")...).Title("Letters"),
 				huh.NewConfirm().Title("Again?").Description("Try another theme").Value(&repeat),
 			),
 		).WithTheme(theme).Run()

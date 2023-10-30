@@ -37,17 +37,10 @@ type MultiSelect[T any] struct {
 }
 
 // NewMultiSelect returns a new multi-select field.
-func NewMultiSelect[T any](options ...T) *MultiSelect[T] {
-	var opts []Option[T]
-	for _, o := range options {
-		opts = append(opts, Option[T]{Key: fmt.Sprint(o), Value: o})
-	}
-
+func NewMultiSelect[T any]() *MultiSelect[T] {
 	return &MultiSelect[T]{
 		value:    new([]T),
-		options:  opts,
 		validate: func([]T) error { return nil },
-		limit:    len(opts),
 	}
 }
 
