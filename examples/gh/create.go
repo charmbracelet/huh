@@ -28,6 +28,8 @@ func main() {
 	repo := "charmbracelet/huh"
 	theme := huh.NewBase16Theme()
 	theme.FieldSeparator = lipgloss.NewStyle().SetString("\n")
+	theme.Blurred.Help.MarginTop(1)
+	theme.Focused.Help.MarginTop(1)
 
 	f := huh.NewForm(
 		huh.NewGroup(
@@ -41,7 +43,7 @@ func main() {
 				).
 				Title("Where should we push the 'feature' branch?"),
 		),
-	).WithTheme(theme).WithHelp(false)
+	).WithTheme(theme)
 
 	err := f.Run()
 	if err != nil {
@@ -79,7 +81,7 @@ func main() {
 				Options(huh.NewOptions("Submit", "Submit as draft", "Continue in browser", "Add metadata", "Cancel")...).
 				Title("What's next?").Value(&nextAction),
 		),
-	).WithTheme(theme).WithHelp(false)
+	).WithTheme(theme)
 
 	err = f.Run()
 	if err != nil {
