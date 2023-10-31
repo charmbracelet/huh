@@ -41,7 +41,7 @@ func main() {
 				).
 				Title("Where should we push the 'feature' branch?"),
 		),
-	).WithTheme(theme)
+	).WithTheme(theme).WithHelp(false)
 
 	err := f.Run()
 	if err != nil {
@@ -61,14 +61,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Printf("Creating pull request for %s into %s in %s\n\n", highlight.Render("test"), highlight.Render("main"), repo)
+	fmt.Printf("Creating pull request for %s into %s in %s\n", highlight.Render("test"), highlight.Render("main"), repo)
 
 	var nextAction string
 
 	f = huh.NewForm(
 		huh.NewGroup(
 			huh.NewInput().
-				Prompt("Title ").
+				Title("Title ").
+				Prompt("").
 				Inline(true),
 			huh.NewText().
 				Title("Body"),
@@ -78,7 +79,7 @@ func main() {
 				Options(huh.NewOptions("Submit", "Submit as draft", "Continue in browser", "Add metadata", "Cancel")...).
 				Title("What's next?").Value(&nextAction),
 		),
-	).WithTheme(theme)
+	).WithTheme(theme).WithHelp(false)
 
 	err = f.Run()
 	if err != nil {
