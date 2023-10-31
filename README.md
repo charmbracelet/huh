@@ -10,9 +10,8 @@ The above example is running from a single Go program ([source](./examples/taco/
 
 `huh?` provides a straightforward API to build forms and prompt users for input.
 
-For this tutorial, we're building a taco order form.
-
-We start by defining our package importing `huh`.
+For this tutorial, we're building a Taco order form. Lets start by importing the
+dependencies that we'll need.
 
 ```go
 package main
@@ -24,10 +23,14 @@ import (
 )
 ```
 
-Let's start defining our form, `huh` forms contain groups which group different
-fields together such that they are displayed on the same page.
+Huh allows you to define a form with multiple groups to separate field forms
+into pages.
 
-We'll build three groups to get all our information for the taco order.
+We'll define three groups:
+
+1. Gather what taco shell and base the customer wants.
+2. Gather which taco toppings the customer wants.
+3. Gather the customer's name and any special instructions.
 
 ```go
 form := huh.NewForm(
@@ -89,7 +92,8 @@ form := huh.NewForm(
 )
 ```
 
-Finally, we can run the form:
+Once the form is defined, we can `Run()` the form to populate all of the
+variables that are passed into the field's `Value()` properties.
 
 ```go
 err := form.Run()
@@ -99,87 +103,63 @@ if err != nil {
 ```
 
 ## Field Reference
-
-* [`Input`](#input): gather text input from the user
-* [`Text`](#text): gather multiline text input from the user
-* [`Select`](#select): prompt user to select an option from a list.
-* [`MultiSelect`](#multiple-select): prompt user to select multiple options from a list.
-* [`Confirm`](#confirm): ask the user a yes or no question.
+* [`Input`](#input)
+* [`Text`](#text)
+* [`Select`](#select)
+* [`MultiSelect`](#multi-select)
+* [`Confirm`](#confirm)
 
 ### Input
 
-`Input`s are single line text fields.
-
 ```go
 huh.NewInput().
-  Title("What's for lunch?").
-  Validate(validateLength).
-  Prompt("?").
-  Value(&lunch)
+	Title("What's for lunch?").
+	Prompt("?").
+	Validate(isFood).
+	Value(&lunch)
 ```
 
 ### Text
 
-`Text`s are multi-line text fields.
-
 ```go
 huh.NewText().
-  Title("Tell me a story.").
-  Validate(checkForPlagiarism).
-  Prompt(">").
-  Editor(true). // open in $EDITOR
-  Value(&text)
+	Title("Tell me a story.").
+	Validate(checkForPlagiarism).
+	Value(&story)
 ```
 
 ### Select
 
-`Select`s are multiple choice questions.
-
 ```go
 huh.NewSelect[string]().
-  Title("Pick a country.").
-  Options(
-    huh.NewOption("United States", "US"),
-    huh.NewOption("Germany", "DE"),
-    huh.NewOption("Brazil", "BR"),
-    huh.NewOption("Canada", "CA"),
-  ).
-  Cursor("→").
-  Value(&country)
-```
-
-Alternatively, use the `huh.NewOptions` shorthand when keys and values are the same:
-
-```go
-huh.NewSelect[string]().
-  Title("Pick a country.").
-  Options(huh.NewOptions("United States", "Germany", "Brazil", "Canada")...).
-  Cursor("→").
-  Value(&country)
+	Title("Pick a country.").
+	Options(
+		huh.NewOption("United States", "US"),
+		huh.NewOption("Germany", "DE"),
+		huh.NewOption("Brazil", "BR"),
+		huh.NewOption("Canada", "CA"),
+	).
+	Value(&country)
 ```
 
 ### Multiple Select
 
-`MultiSelect`s are multiple choice questions but allow multiple selections.
-
 ```go
 huh.NewMultiSelect[string]().
-  Options(
-    huh.NewOption("Cheese", "cheese").Selected(true),
-    huh.NewOption("Lettuce", "lettuce").Selected(true),
-    huh.NewOption("Tomatoes", "tomatoes"),
-    huh.NewOption("Corn", "corn"),
-    huh.NewOption("Salsa", "salsa"),
-    huh.NewOption("Sour Cream", "sour cream"),
-  ).
-  Title("Toppings").
-  Limit(4).
-  Value(&toppings),
+	Options(
+		huh.NewOption("Cheese", "cheese").Selected(true),
+		huh.NewOption("Lettuce", "lettuce").Selected(true),
+		huh.NewOption("Corn", "corn"),
+		huh.NewOption("Salsa", "salsa"),
+		huh.NewOption("Sour Cream", "sour cream"),
+		huh.NewOption("Tomatoes", "tomatoes"),
+	).
+	Title("Toppings").
+	Limit(4).
+	Value(&toppings)
 ```
 
 ### Confirm
-
-`Confirm` is a yes or no confirmation.
 
 ```go
 huh.NewConfirm().
@@ -188,10 +168,6 @@ huh.NewConfirm().
   Negative("No.").
   Value(&confirm)
 ```
-
-## Themes
-
-Forms, Groups, and Fields can be themed using the `.Theme(theme)` method.
 
 ## Feedback
 
