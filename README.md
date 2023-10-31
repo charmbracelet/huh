@@ -23,14 +23,9 @@ import (
 )
 ```
 
-Huh allows you to define a form with multiple groups to separate field forms
-into pages.
-
-We'll define three groups:
-
-1. Gather what taco shell and base the customer wants.
-2. Gather which taco toppings the customer wants.
-3. Gather the customer's name and any special instructions.
+`huh` allows you to define a form with multiple groups to separate field forms
+into pages. We will set up a form with three groups for the customer to fill
+out.
 
 ```go
 form := huh.NewForm(
@@ -92,8 +87,7 @@ form := huh.NewForm(
 )
 ```
 
-Once the form is defined, we can `Run()` the form to populate all of the
-variables that are passed into the field's `Value()` properties.
+Finally, we can run the form:
 
 ```go
 err := form.Run()
