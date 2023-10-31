@@ -1,11 +1,12 @@
 Output taco.gif
 
 Set Height 600
-Set Width 1200
+Set Width 1000
 
 Hide
 Type "go build -o taco ." Enter
 Ctrl+L
+Sleep 1s
 Show
 
 Type "./taco"
