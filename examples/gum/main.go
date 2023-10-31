@@ -20,8 +20,8 @@ func main() {
 	case "confirm":
 		huh.NewConfirm().Run()
 	case "select":
-		huh.NewSelect(os.Args[2:]...).Run()
+		huh.NewSelect[string]().Options(huh.NewOptions(os.Args[2:]...)...).Run()
 	case "multiselect":
-		huh.NewMultiSelect(os.Args[2:]...).Run()
+		huh.NewMultiSelect[string]().Options(huh.NewOptions(os.Args[2:]...)...).Run()
 	}
 }

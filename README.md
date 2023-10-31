@@ -35,12 +35,20 @@ form := huh.NewForm(
   // We'll need to know what filling to put inside too.
   huh.NewGroup(
     huh.NewSelect[string]().
-      Options(huh.NewOptions("Hard", "Soft")...).
+      Options(
+        huh.NewOption("Soft", "soft"),
+        huh.NewOption("Hard", "hard"),
+      ).
       Title("Shell?").
       Value(&shell),
 
     huh.NewSelect[string]().
-      Options(huh.NewOptions("Chicken", "Beef", "Fish", "Beans")...).
+      Options(
+        huh.NewOption("Chicken", "chicken"),
+        huh.NewOption("Beef", "beef"),
+        huh.NewOption("Fish", "fish"),
+        huh.NewOption("Beans", "beans"),
+      ).
       Title("Base").
       Value(&base),
   ),
