@@ -187,25 +187,37 @@ func NewCharmTheme() *Theme {
 func NewDraculaTheme() *Theme {
 	t := NewBaseTheme().copy()
 
-	f := &t.Focused
-	f.Base.BorderForeground(lipgloss.Color("8"))
-	f.Title.Foreground(lipgloss.Color("#bd93f9"))
-	f.Description.Foreground(lipgloss.Color("#bd93f9"))
-	f.Help.Foreground(lipgloss.Color("8"))
-	f.ErrorIndicator.Foreground(lipgloss.Color("#ff5555"))
-	f.ErrorMessage.Foreground(lipgloss.Color("#ff5555"))
-	f.SelectSelector.Foreground(lipgloss.Color("#f1fa8c"))
-	f.Option.Foreground(lipgloss.Color("#f8f8f2"))
-	f.MultiSelectSelector.Foreground(lipgloss.Color("#f1fa8c"))
-	f.SelectedOption.Foreground(lipgloss.Color("#f1fa8c"))
-	f.SelectedPrefix.Foreground(lipgloss.Color("#f1fa8c"))
-	f.UnselectedOption.Foreground(lipgloss.Color("#f8f8f2"))
-	f.FocusedButton.Foreground(lipgloss.Color("0")).Background(lipgloss.Color("#f1fa8c")).Bold(true)
-	f.BlurredButton.Foreground(lipgloss.Color("7")).Background(lipgloss.Color("0"))
+	var (
+		background = lipgloss.AdaptiveColor{Dark: "#282a36"}
+		selection  = lipgloss.AdaptiveColor{Dark: "#44475a"}
+		foreground = lipgloss.AdaptiveColor{Dark: "#f8f8f2"}
+		comment    = lipgloss.AdaptiveColor{Dark: "#6272a4"}
+		green      = lipgloss.AdaptiveColor{Dark: "#50fa7b"}
+		purple     = lipgloss.AdaptiveColor{Dark: "#bd93f9"}
+		red        = lipgloss.AdaptiveColor{Dark: "#ff5555"}
+		yellow     = lipgloss.AdaptiveColor{Dark: "#f1fa8c"}
+	)
 
-	f.TextInput.Cursor.Foreground(lipgloss.Color("#f1fa8c"))
-	f.TextInput.Placeholder.Foreground(lipgloss.Color("8"))
-	f.TextInput.Prompt.Foreground(lipgloss.Color("#f1fa8c"))
+	f := &t.Focused
+	f.Base.BorderForeground(selection)
+	f.Title.Foreground(purple)
+	f.Description.Foreground(comment)
+	f.Help.Foreground(comment)
+	f.ErrorIndicator.Foreground(red)
+	f.ErrorMessage.Foreground(red)
+	f.SelectSelector.Foreground(yellow)
+	f.Option.Foreground(foreground)
+	f.MultiSelectSelector.Foreground(yellow)
+	f.SelectedOption.Foreground(green)
+	f.SelectedPrefix.Foreground(green)
+	f.UnselectedOption.Foreground(foreground)
+	f.UnselectedPrefix.Foreground(comment)
+	f.FocusedButton.Foreground(yellow).Background(purple).Bold(true)
+	f.BlurredButton.Foreground(foreground).Background(background)
+
+	f.TextInput.Cursor.Foreground(yellow)
+	f.TextInput.Placeholder.Foreground(comment)
+	f.TextInput.Prompt.Foreground(yellow)
 
 	t.Blurred = f.copy()
 	t.Blurred.Base = t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
