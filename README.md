@@ -29,61 +29,61 @@ out.
 
 ```go
 form := huh.NewForm(
-  // What's a taco without a shell?
-  // We'll need to know what filling to put inside too.
-  huh.NewGroup(
-    huh.NewSelect[string]().
-      Options(
-        huh.NewOption("Soft", "soft"),
-        huh.NewOption("Hard", "hard"),
-      ).
-      Title("Shell?").
-      Value(&shell),
+    // What's a taco without a shell?
+    // We'll need to know what filling to put inside too.
+    huh.NewGroup(
+        huh.NewSelect[string]().
+            Options(
+                huh.NewOption("Soft", "soft"),
+                huh.NewOption("Hard", "hard"),
+            ).
+            Title("Shell?").
+            Value(&shell),
 
-    huh.NewSelect[string]().
-      Options(
-        huh.NewOption("Chicken", "chicken"),
-        huh.NewOption("Beef", "beef"),
-        huh.NewOption("Fish", "fish"),
-        huh.NewOption("Beans", "beans"),
-      ).
-      Title("Base").
-      Value(&base),
-  ),
+        huh.NewSelect[string]().
+            Options(
+                huh.NewOption("Chicken", "chicken"),
+                huh.NewOption("Beef", "beef"),
+                huh.NewOption("Fish", "fish"),
+                huh.NewOption("Beans", "beans"),
+            ).
+            Title("Base").
+            Value(&base),
+    ),
 
-  // Prompt for toppings and special instructions.
-  // The customer can ask for up to 4 toppings.
-  huh.NewGroup(
-    huh.NewMultiSelect[string]().
-      Options(
-        huh.NewOption("Tomatoes", "tomatoes").Selected(true),
-        huh.NewOption("Lettuce", "lettuce").Selected(true),
-        huh.NewOption("Salsa", "salsa"),
-        huh.NewOption("Cheese", "cheese"),
-        huh.NewOption("Sour Cream", "sour cream"),
-        huh.NewOption("Corn", "corn"),
-      ).
-      Title("Toppings").
-      Limit(4).
-      Value(&toppings),
-  ),
+    // Prompt for toppings and special instructions.
+    // The customer can ask for up to 4 toppings.
+    huh.NewGroup(
+        huh.NewMultiSelect[string]().
+            Options(
+                huh.NewOption("Tomatoes", "tomatoes").Selected(true),
+                huh.NewOption("Lettuce", "lettuce").Selected(true),
+                huh.NewOption("Salsa", "salsa"),
+                huh.NewOption("Cheese", "cheese"),
+                huh.NewOption("Sour Cream", "sour cream"),
+                huh.NewOption("Corn", "corn"),
+            ).
+            Title("Toppings").
+            Limit(4).
+            Value(&toppings),
+    ),
 
-  // Gather final details for the order.
-  huh.NewGroup(
-    huh.NewInput().
-      Title("What's your name?").
-      Value(&name).
-      Validate(validateName),
+    // Gather final details for the order.
+    huh.NewGroup(
+        huh.NewInput().
+            Title("What's your name?").
+            Value(&name).
+            Validate(validateName),
 
-    huh.NewText().
-      Title("Special Instructions").
-      Value(&instructions).
-      CharLimit(400),
+        huh.NewText().
+            Title("Special Instructions").
+            Value(&instructions).
+            CharLimit(400),
 
-    huh.NewConfirm().
-      Title("Would you like 15% off").
-      Value(&discount),
-  ),
+        huh.NewConfirm().
+            Title("Would you like 15% off").
+            Value(&discount),
+    ),
 )
 ```
 
@@ -92,7 +92,7 @@ Finally, we can run the form:
 ```go
 err := form.Run()
 if err != nil {
-  log.Fatal(err)
+    log.Fatal(err)
 }
 ```
 
@@ -107,60 +107,60 @@ if err != nil {
 
 ```go
 huh.NewInput().
-	Title("What's for lunch?").
-	Prompt("?").
-	Validate(isFood).
-	Value(&lunch)
+    Title("What's for lunch?").
+    Prompt("?").
+    Validate(isFood).
+    Value(&lunch)
 ```
 
 ### Text
 
 ```go
 huh.NewText().
-	Title("Tell me a story.").
-	Validate(checkForPlagiarism).
-	Value(&story)
+    Title("Tell me a story.").
+    Validate(checkForPlagiarism).
+    Value(&story)
 ```
 
 ### Select
 
 ```go
 huh.NewSelect[string]().
-	Title("Pick a country.").
-	Options(
-		huh.NewOption("United States", "US"),
-		huh.NewOption("Germany", "DE"),
-		huh.NewOption("Brazil", "BR"),
-		huh.NewOption("Canada", "CA"),
-	).
-	Value(&country)
+    Title("Pick a country.").
+    Options(
+        huh.NewOption("United States", "US"),
+        huh.NewOption("Germany", "DE"),
+        huh.NewOption("Brazil", "BR"),
+        huh.NewOption("Canada", "CA"),
+    ).
+    Value(&country)
 ```
 
 ### Multiple Select
 
 ```go
 huh.NewMultiSelect[string]().
-	Options(
-		huh.NewOption("Cheese", "cheese").Selected(true),
-		huh.NewOption("Lettuce", "lettuce").Selected(true),
-		huh.NewOption("Corn", "corn"),
-		huh.NewOption("Salsa", "salsa"),
-		huh.NewOption("Sour Cream", "sour cream"),
-		huh.NewOption("Tomatoes", "tomatoes"),
-	).
-	Title("Toppings").
-	Limit(4).
-	Value(&toppings)
+    Options(
+        huh.NewOption("Cheese", "cheese").Selected(true),
+        huh.NewOption("Lettuce", "lettuce").Selected(true),
+        huh.NewOption("Corn", "corn"),
+        huh.NewOption("Salsa", "salsa"),
+        huh.NewOption("Sour Cream", "sour cream"),
+        huh.NewOption("Tomatoes", "tomatoes"),
+    ).
+    Title("Toppings").
+    Limit(4).
+    Value(&toppings)
 ```
 
 ### Confirm
 
 ```go
 huh.NewConfirm().
-  Title("Toppings").
-  Affirmative("Yes!").
-  Negative("No.").
-  Value(&confirm)
+    Title("Toppings").
+    Affirmative("Yes!").
+    Negative("No.").
+    Value(&confirm)
 ```
 
 ## Feedback
