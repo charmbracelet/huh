@@ -53,6 +53,7 @@ func NewInput() *Input {
 // Value sets the value of the input field.
 func (i *Input) Value(value *string) *Input {
 	i.value = value
+	i.textinput.SetValue(*value)
 	return i
 }
 
