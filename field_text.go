@@ -15,7 +15,6 @@ import (
 
 // Text is a form text field. It allows for a multi-line string input.
 type Text struct {
-	title string
 	value *string
 
 	// error handling
@@ -24,6 +23,10 @@ type Text struct {
 
 	// model
 	textarea textarea.Model
+
+	// customization
+	title       string
+	description string
 
 	// state
 	tmpFile string
@@ -58,12 +61,19 @@ func NewText() *Text {
 // Value sets the value of the text field.
 func (t *Text) Value(value *string) *Text {
 	t.value = value
+	t.textarea.SetValue(*value)
 	return t
 }
 
 // Title sets the title of the text field.
 func (t *Text) Title(title string) *Text {
 	t.title = title
+	return t
+}
+
+// Description sets the description of the text field.
+func (t *Text) Description(description string) *Text {
+	t.description = description
 	return t
 }
 
@@ -178,6 +188,10 @@ func (t *Text) View() string {
 		if t.err != nil {
 			sb.WriteString(styles.ErrorIndicator.String())
 		}
+		sb.WriteString("\n")
+	}
+	if t.description != "" {
+		sb.WriteString(styles.Description.Render(t.description))
 		sb.WriteString("\n")
 	}
 	sb.WriteString(t.textarea.View())
