@@ -25,11 +25,13 @@ type Text struct {
 	textarea textarea.Model
 
 	// customization
-	title       string
-	description string
+	title           string
+	description     string
+	editorCmd       string
+	editorArgs      []string
+	editorExtension string
 
 	// state
-	tmpFile string
 	focused bool
 
 	// form options
@@ -46,13 +48,15 @@ func NewText() *Text {
 	text.Prompt = ""
 	text.FocusedStyle.CursorLine = lipgloss.NewStyle()
 
-	file, _ := os.CreateTemp(os.TempDir(), "*.md")
+	editorCmd, editorArgs := getEditor()
 
 	t := &Text{
-		value:    new(string),
-		textarea: text,
-		validate: func(string) error { return nil },
-		tmpFile:  file.Name(),
+		value:           new(string),
+		textarea:        text,
+		validate:        func(string) error { return nil },
+		editorCmd:       editorCmd,
+		editorArgs:      editorArgs,
+		editorExtension: "md",
 	}
 
 	return t
@@ -92,6 +96,41 @@ func (t *Text) Placeholder(str string) *Text {
 // Validate sets the validation function of the text field.
 func (t *Text) Validate(validate func(string) error) *Text {
 	t.validate = validate
+	return t
+}
+
+const defaultEditor = "nano"
+
+// getEditor returns the editor command and arguments.
+func getEditor() (string, []string) {
+	editor := strings.Fields(os.Getenv("EDITOR"))
+	if len(editor) > 0 {
+		return editor[0], editor[1:]
+	}
+	return defaultEditor, nil
+}
+
+// Editor specifies which editor to use.
+//
+// The first argument provided is used as the editor command (vim, nvim, nano, etc...)
+// The following (optional) arguments provided are passed as arguments to the editor command.
+//
+//   .Editor("vim")
+//   .Editor("vim", "+10")
+//
+func (t *Text) Editor(editor ...string) *Text {
+	if len(editor) > 0 {
+		t.editorCmd = editor[0]
+	}
+	if len(editor) > 1 {
+		t.editorArgs = editor[1:]
+	}
+	return t
+}
+
+// EditorExtension specifies arguments to pass into the editor.
+func (t *Text) EditorExtension(extension string) *Text {
+	t.editorExtension = extension
 	return t
 }
 
@@ -144,9 +183,12 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		switch {
 		case key.Matches(msg, t.keymap.Editor):
-			_ = os.WriteFile(t.tmpFile, []byte(t.textarea.Value()), 0644)
-			cmds = append(cmds, tea.ExecProcess(editorCmd(t.tmpFile), func(error) tea.Msg {
-				content, _ := os.ReadFile(t.tmpFile)
+			ext := strings.TrimPrefix(t.editorExtension, ".")
+			tmpFile, _ := os.CreateTemp(os.TempDir(), "*."+ext)
+			cmd := exec.Command(t.editorCmd, append(t.editorArgs, tmpFile.Name())...)
+			_ = os.WriteFile(tmpFile.Name(), []byte(t.textarea.Value()), 0644)
+			cmds = append(cmds, tea.ExecProcess(cmd, func(error) tea.Msg {
+				content, _ := os.ReadFile(tmpFile.Name())
 				return updateValueMsg(content)
 			}))
 		case key.Matches(msg, t.keymap.Next):
@@ -213,24 +255,6 @@ func (t *Text) runAccessible() error {
 	*t.value = accessibility.PromptString("> ", t.validate)
 	fmt.Println()
 	return nil
-}
-
-const defaultEditor = "nano"
-
-// Cmd returns a *exec.Cmd editing the given path with $EDITOR or nano if no
-// $EDITOR is set.
-func editorCmd(path string) *exec.Cmd {
-	editor, args := getEditor()
-	return exec.Command(editor, append(args, path)...)
-}
-
-// getEditor returns the editor and its arguments from $EDITOR.
-func getEditor() (string, []string) {
-	editor := strings.Fields(os.Getenv("EDITOR"))
-	if len(editor) > 0 {
-		return editor[0], editor[1:]
-	}
-	return defaultEditor, nil
 }
 
 // WithTheme sets the theme on a text field.
