@@ -1,9 +1,15 @@
 package huh
 
 import (
+	"errors"
+
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/paginator"
 	tea "github.com/charmbracelet/bubbletea"
+)
+
+var (
+	ErrUserAborted = errors.New("user aborted")
 )
 
 // Form is a collection of groups that are displayed one at a time on a "page".
@@ -23,6 +29,7 @@ type Form struct {
 	accessible bool
 
 	quitting bool
+	aborted  bool
 
 	// options
 	width  int
@@ -192,6 +199,7 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, f.keymap.Quit):
+			f.aborted = true
 			f.quitting = true
 			return f, tea.Quit
 		}
@@ -244,7 +252,10 @@ func (f *Form) Run() error {
 
 // run runs the form in normal mode.
 func (f *Form) run() error {
-	_, err := tea.NewProgram(f).Run()
+	m, err := tea.NewProgram(f).Run()
+	if m.(*Form).aborted {
+		err = ErrUserAborted
+	}
 	return err
 }
 
