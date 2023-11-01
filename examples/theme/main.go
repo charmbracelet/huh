@@ -31,6 +31,9 @@ func main() {
 			).Run()
 
 		if err != nil {
+			if err == huh.ErrUserAborted {
+				os.Exit(130)
+			}
 			fmt.Println(err)
 			os.Exit(1)
 		}
@@ -49,6 +52,9 @@ func main() {
 			),
 		).WithTheme(theme).Run()
 		if err != nil {
+			if err == huh.ErrUserAborted {
+				os.Exit(130)
+			}
 			fmt.Println(err)
 			os.Exit(1)
 		}
