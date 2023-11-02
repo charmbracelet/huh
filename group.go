@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/bubbles/help"
+	"github.com/charmbracelet/bubbles/paginator"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/x/exp/ordered"
 )
@@ -23,7 +24,7 @@ type Group struct {
 	description string
 
 	// navigation
-	current int
+	paginator paginator.Model
 
 	// help
 	showHelp bool
@@ -37,11 +38,14 @@ type Group struct {
 
 // NewGroup returns a new group with the given fields.
 func NewGroup(fields ...Field) *Group {
+	p := paginator.New()
+	p.SetTotalPages(len(fields))
+
 	return &Group{
-		fields:   fields,
-		current:  0,
-		help:     help.New(),
-		showHelp: true,
+		fields:    fields,
+		paginator: p,
+		help:      help.New(),
+		showHelp:  true,
 	}
 }
 
@@ -131,7 +135,7 @@ func (g *Group) Init() tea.Cmd {
 		cmds = append(cmds, field.Init())
 	}
 
-	cmd := g.fields[g.current].Focus()
+	cmd := g.fields[g.paginator.Page].Focus()
 	cmds = append(cmds, cmd)
 
 	return tea.Batch(cmds...)
@@ -144,12 +148,12 @@ func (g *Group) setCurrent(current int) tea.Cmd {
 		cmd  tea.Cmd
 	)
 
-	cmd = g.fields[g.current].Blur()
+	cmd = g.fields[g.paginator.Page].Blur()
 	cmds = append(cmds, cmd)
 
-	g.current = ordered.Clamp(current, 0, len(g.fields)-1)
+	g.paginator.Page = ordered.Clamp(current, 0, len(g.fields)-1)
 
-	cmd = g.fields[g.current].Focus()
+	cmd = g.fields[g.paginator.Page].Focus()
 	cmds = append(cmds, cmd)
 
 	return tea.Batch(cmds...)
@@ -159,17 +163,17 @@ func (g *Group) setCurrent(current int) tea.Cmd {
 func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
-	m, cmd := g.fields[g.current].Update(msg)
-	g.fields[g.current] = m.(Field)
+	m, cmd := g.fields[g.paginator.Page].Update(msg)
+	g.fields[g.paginator.Page] = m.(Field)
 
 	cmds = append(cmds, cmd)
 
 	switch msg.(type) {
 	case nextFieldMsg:
-		current := g.current
+		current := g.paginator.Page
 		cmd = g.setCurrent(current + 1)
 
-		if current == len(g.fields)-1 {
+		if current >= g.paginator.TotalPages-1 {
 			cmds = append(cmds, nextGroup)
 			break
 		}
@@ -177,7 +181,7 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, cmd)
 
 	case prevFieldMsg:
-		current := g.current
+		current := g.paginator.Page
 		cmd = g.setCurrent(current - 1)
 
 		if current == 0 {
@@ -211,7 +215,7 @@ func (g *Group) View() string {
 	s.WriteString(gap)
 
 	if g.showHelp && len(errors) <= 0 {
-		s.WriteString(g.theme.Focused.Help.Render(g.help.ShortHelpView(g.fields[g.current].KeyBinds())))
+		s.WriteString(g.theme.Focused.Help.Render(g.help.ShortHelpView(g.fields[g.paginator.Page].KeyBinds())))
 	}
 
 	for _, err := range errors {
