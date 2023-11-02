@@ -249,6 +249,22 @@ func TestForm(t *testing.T) {
 		t.Error("Expected form to accept user input")
 	}
 
+	if order.Taco.Shell != "Soft" {
+		t.Error("Expected order shell to be Soft")
+	}
+
+	if order.Taco.Base != "Chicken" {
+		t.Error("Expected order shell to be Chicken")
+	}
+
+	if len(order.Taco.Toppings) != 3 {
+		t.Error("Expected order to have 3 toppings")
+	}
+
+	if order.Name != "Glen" {
+		t.Error("Expected order name to be Glen")
+	}
+
 	// TODO: Finish and submit form.
 }
 
@@ -477,8 +493,6 @@ func batchUpdate(m tea.Model, cmd tea.Cmd) tea.Model {
 			}
 		}
 		return batchUpdate(m, cmd)
-	case tea.QuitMsg:
-		fmt.Println("QUIT")
 	}
 
 	m, cmd = m.Update(msg)
