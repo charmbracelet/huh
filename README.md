@@ -169,19 +169,19 @@ Huh additionally provides a `spinner` subpackage for displaying spinners while
 performing actions. It's useful to complete an action after your user completes
 a form.
 
-<img alt="Spinner while making a taco" width="600" src="./spinner/examples/spinner/spinner.gif">
+<img alt="Spinner while making a taco" width="600" src="./spinner/examples/loading/spinner.gif">
 
 To get started, create a new spinner, set a title, set an action, and run the
 spinner:
 
 ```go
-action := func() {
-    // TODO: Make the taco...
+makeTaco := func() {
+    //...
 }
 
 err := spinner.New().
     Title("Making your taco...").
-    Action(action).
+    Action(makeTaco).
     Run()
 
 fmt.Println("Order up!")
