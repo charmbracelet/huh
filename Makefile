@@ -1,4 +1,7 @@
 $(V).SILENT:
+test:
+	go test ./...
+
 taco:
 	cd examples/taco && go run .
 

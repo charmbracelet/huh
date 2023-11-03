@@ -416,9 +416,7 @@ func TestMultiSelect(t *testing.T) {
 
 	// Move selection cursor down
 	m, _ := f.Update(keys('j'))
-	f = m.(*Form)
-
-	view = f.View()
+	view = m.View()
 
 	if strings.Contains(view, "> • Foo") {
 		t.Log(pretty.Render(view))
