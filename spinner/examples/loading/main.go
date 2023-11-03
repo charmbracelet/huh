@@ -11,6 +11,6 @@ func main() {
 	action := func() {
 		time.Sleep(2 * time.Second)
 	}
-	_ = spinner.New().Title("Loading").Action(action).Run()
-	fmt.Println("Done!")
+	_ = spinner.New().Title("Making your taco...").Action(action).Run()
+	fmt.Println("Order up!")
 }
