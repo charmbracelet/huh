@@ -1,6 +1,6 @@
 module github.com/charmbracelet/huh
 
-go 1.21.3
+go 1.21
 
 require (
 	github.com/charmbracelet/bubbles v0.16.1
