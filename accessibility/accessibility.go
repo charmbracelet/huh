@@ -23,7 +23,7 @@ func PromptInt(prompt string, min, max int) int {
 	validInt := func(s string) error {
 		i, err := strconv.Atoi(s)
 		if err != nil || i < min || i > max {
-			return errors.New("Invalid input. Please try again.")
+			return errors.New("invalid input. please try again")
 		}
 		return nil
 	}
@@ -42,7 +42,7 @@ func PromptBool() bool {
 		if len(s) == 1 && strings.Contains("yYnN", s) {
 			return nil
 		}
-		return errors.New("Invalid input. Please try again.")
+		return errors.New("invalid input. please try again")
 	}
 
 	input := PromptString("Choose [y/N]: ", validBool)

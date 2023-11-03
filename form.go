@@ -9,6 +9,7 @@ import (
 )
 
 var (
+	// ErrUserAborted is the error returned when a user exits the form before submitting.
 	ErrUserAborted = errors.New("user aborted")
 )
 
@@ -145,20 +146,24 @@ func (f *Form) WithHelp(v bool) *Form {
 // can be applied to each group and field individually for more granular
 // control.
 func (f *Form) WithTheme(theme *Theme) *Form {
-	if theme != nil {
-		f.theme = theme
+	if theme == nil {
+		return f
 	}
+	f.theme = theme
 	for _, group := range f.groups {
 		group.WithTheme(theme)
 	}
 	return f
 }
 
-// KeyMap sets the keymap on a form.
+// WithKeyMap sets the keymap on a form.
+//
+// This allows customization of the form key bindings.
 func (f *Form) WithKeyMap(keymap *KeyMap) *Form {
-	if keymap != nil {
-		f.keymap = keymap
+	if keymap == nil {
+		return f
 	}
+	f.keymap = keymap
 	for _, group := range f.groups {
 		group.WithKeyMap(keymap)
 	}

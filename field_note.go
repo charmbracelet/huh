@@ -11,11 +11,10 @@ import (
 
 func init() {
 	// XXX: For now, unset padding on default glamour styles.
-	var uintZero uint = 0
-	glamour.DarkStyleConfig.Document.Margin = &uintZero
 	glamour.DarkStyleConfig.Document.BlockPrefix = ""
-	glamour.LightStyleConfig.Document.Margin = &uintZero
+	glamour.DarkStyleConfig.Document.Margin = pointerTo[uint](0)
 	glamour.LightStyleConfig.Document.BlockPrefix = ""
+	glamour.LightStyleConfig.Document.Margin = pointerTo[uint](0)
 }
 
 // Note is a form note field.
@@ -174,4 +173,9 @@ func (n *Note) WithAccessible(accessible bool) Field {
 func (n *Note) WithWidth(width int) Field {
 	n.width = width
 	return n
+}
+
+// pointerTo returns a pointer to a value.
+func pointerTo[T any](v T) *T {
+	return &v
 }

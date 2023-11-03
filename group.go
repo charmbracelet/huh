@@ -62,8 +62,8 @@ func (g *Group) Description(description string) *Group {
 }
 
 // WithHelp sets whether or not the group's help should be shown.
-func (g *Group) WithHelp(showHelp bool) *Group {
-	g.showHelp = showHelp
+func (g *Group) WithHelp(help bool) *Group {
+	g.showHelp = help
 	return g
 }
 

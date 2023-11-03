@@ -115,9 +115,8 @@ func getEditor() (string, []string) {
 // The first argument provided is used as the editor command (vim, nvim, nano, etc...)
 // The following (optional) arguments provided are passed as arguments to the editor command.
 //
-//   .Editor("vim")
-//   .Editor("vim", "+10")
-//
+// .Editor("vim")
+// .Editor("vim", "+10")
 func (t *Text) Editor(editor ...string) *Text {
 	if len(editor) > 0 {
 		t.editorCmd = editor[0]
@@ -185,8 +184,8 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, t.keymap.Editor):
 			ext := strings.TrimPrefix(t.editorExtension, ".")
 			tmpFile, _ := os.CreateTemp(os.TempDir(), "*."+ext)
-			cmd := exec.Command(t.editorCmd, append(t.editorArgs, tmpFile.Name())...)
-			_ = os.WriteFile(tmpFile.Name(), []byte(t.textarea.Value()), 0644)
+			cmd := exec.Command(t.editorCmd, append(t.editorArgs, tmpFile.Name())...) //nolint:gosec
+			_ = os.WriteFile(tmpFile.Name(), []byte(t.textarea.Value()), 0600)
 			cmds = append(cmds, tea.ExecProcess(cmd, func(error) tea.Msg {
 				content, _ := os.ReadFile(tmpFile.Name())
 				return updateValueMsg(content)
