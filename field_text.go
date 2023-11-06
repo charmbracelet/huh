@@ -15,7 +15,9 @@ import (
 
 // Text is a form text field. It allows for a multi-line string input.
 type Text struct {
-	value *string
+	value   *string
+	results map[string]any
+	key     string
 
 	// error handling
 	validate func(string) error
@@ -66,6 +68,12 @@ func NewText() *Text {
 func (t *Text) Value(value *string) *Text {
 	t.value = value
 	t.textarea.SetValue(*value)
+	return t
+}
+
+// Key sets the key of the text field.
+func (t *Text) Key(key string) *Text {
+	t.key = key
 	return t
 }
 
@@ -147,6 +155,7 @@ func (t *Text) Blur() tea.Cmd {
 	*t.value = t.textarea.Value()
 	t.textarea.Blur()
 	t.err = t.validate(*t.value)
+	t.results[t.key] = t.textarea.Value()
 	return nil
 }
 
@@ -276,5 +285,11 @@ func (t *Text) WithAccessible(accessible bool) Field {
 // WithWidth sets the width of the text field.
 func (t *Text) WithWidth(width int) Field {
 	t.width = width
+	return t
+}
+
+// WithResults sets the results of the text field.
+func (t *Text) WithResults(r map[string]any) Field {
+	t.results = r
 	return t
 }

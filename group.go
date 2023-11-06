@@ -19,6 +19,8 @@ type Group struct {
 	// collection of fields
 	fields []Field
 
+	results map[string]any
+
 	// information
 	title       string
 	description string
