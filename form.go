@@ -8,10 +8,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-var (
-	// ErrUserAborted is the error returned when a user exits the form before submitting.
-	ErrUserAborted = errors.New("user aborted")
-)
+// ErrUserAborted is the error returned when a user exits the form before submitting.
+var ErrUserAborted = errors.New("user aborted")
 
 // Form is a collection of groups that are displayed one at a time on a "page".
 //
@@ -23,6 +21,9 @@ type Form struct {
 
 	// navigation
 	paginator paginator.Model
+
+	onConfirm func() (tea.Model, tea.Cmd)
+	onAbort   func() (tea.Model, tea.Cmd)
 
 	// whether or not to use bubble tea rendering for accessibility
 	// purposes, if true, the form will render with basic prompting primitives
@@ -47,7 +48,7 @@ func NewForm(groups ...*Group) *Form {
 	p := paginator.New()
 	p.SetTotalPages(len(groups))
 
-	f := Form{
+	f := &Form{
 		groups:    groups,
 		paginator: p,
 		theme:     NewCharmTheme(),
@@ -60,8 +61,10 @@ func NewForm(groups ...*Group) *Form {
 	f.WithTheme(f.theme)
 	f.WithKeyMap(f.keymap)
 	f.WithWidth(f.width)
+	f.onConfirm = func() (tea.Model, tea.Cmd) { return f, tea.Quit }
+	f.onAbort = func() (tea.Model, tea.Cmd) { return f, tea.Quit }
 
-	return &f
+	return f
 }
 
 // Field is a primitive of a form.
@@ -116,6 +119,16 @@ func nextGroup() tea.Msg {
 // prevGroup is the command to move to the previous group.
 func prevGroup() tea.Msg {
 	return prevGroupMsg{}
+}
+
+func (f *Form) WithOnConfirm(fn func() (tea.Model, tea.Cmd)) *Form {
+	f.onConfirm = fn
+	return f
+}
+
+func (f *Form) WithOnAbort(fn func() (tea.Model, tea.Cmd)) *Form {
+	f.onAbort = fn
+	return f
 }
 
 // WithAccessible sets the form to run in accessible mode to avoid redrawing the
@@ -206,7 +219,7 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, f.keymap.Quit):
 			f.aborted = true
 			f.quitting = true
-			return f, tea.Quit
+			return f.onAbort()
 		}
 
 	case nextGroupMsg:
@@ -216,7 +229,7 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		if f.paginator.OnLastPage() {
 			f.quitting = true
-			return f, tea.Quit
+			return f.onConfirm()
 		}
 		f.paginator.NextPage()
 
