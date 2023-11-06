@@ -12,7 +12,9 @@ import (
 
 // Confirm is a form confirm field.
 type Confirm struct {
-	value *bool
+	value   *bool
+	results map[string]any
+	key     string
 
 	// customization
 	title       string
@@ -73,6 +75,12 @@ func (c *Confirm) Value(value *bool) *Confirm {
 	return c
 }
 
+// Key sets the key of the confirm field.
+func (c *Confirm) Key(key string) *Confirm {
+	c.key = key
+	return c
+}
+
 // Title sets the title of the confirm field.
 func (c *Confirm) Title(title string) *Confirm {
 	c.title = title
@@ -95,6 +103,7 @@ func (c *Confirm) Focus() tea.Cmd {
 func (c *Confirm) Blur() tea.Cmd {
 	c.focused = false
 	c.err = c.validate(*c.value)
+	c.results[c.key] = *c.value
 	return nil
 }
 
@@ -119,7 +128,9 @@ func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		switch {
 		case key.Matches(msg, c.keymap.Toggle):
-			*c.value = !*c.value
+			v := !*c.value
+			*c.value = v
+			c.results[c.key] = v
 		case key.Matches(msg, c.keymap.Prev):
 			cmds = append(cmds, prevField)
 		case key.Matches(msg, c.keymap.Next):
@@ -211,5 +222,11 @@ func (c *Confirm) WithAccessible(accessible bool) Field {
 // WithWidth sets the accessible mode of the confirm field.
 func (c *Confirm) WithWidth(width int) Field {
 	c.width = width
+	return c
+}
+
+// WithResults sets the results of the confirm field.
+func (c *Confirm) WithResults(r map[string]any) Field {
+	c.results = r
 	return c
 }

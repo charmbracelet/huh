@@ -187,6 +187,11 @@ func (n *Note) WithWidth(width int) Field {
 	return n
 }
 
+// WithResults sets the results map of the note field.
+func (n *Note) WithResults(r map[string]any) Field {
+	return n
+}
+
 // pointerTo returns a pointer to a value.
 func pointerTo[T any](v T) *T {
 	return &v

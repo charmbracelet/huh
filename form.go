@@ -22,11 +22,8 @@ const (
 	StateAborted
 )
 
-// ErrUserAborted is the error returned when a user exits the form before
-// submitting.
-var (
-	ErrUserAborted = errors.New("user aborted")
-)
+// ErrUserAborted is the error returned when a user exits the form before submitting.
+var ErrUserAborted = errors.New("user aborted")
 
 // Form is a collection of groups that are displayed one at a time on a "page".
 //
@@ -35,6 +32,8 @@ var (
 type Form struct {
 	// collection of groups
 	groups []*Group
+
+	results map[string]any
 
 	// navigation
 	paginator paginator.Model
@@ -76,6 +75,8 @@ func NewForm(groups ...*Group) *Form {
 		theme:     NewCharmTheme(),
 		keymap:    NewDefaultKeyMap(),
 		width:     defaultWidth,
+		width:     80,
+		results:   map[string]any{},
 	}
 
 	// NB: If dynamic forms come into play this will need to be applied when
@@ -123,6 +124,9 @@ type Field interface {
 
 	// WithWidth sets the width of a field.
 	WithWidth(int) Field
+
+	// WithResults sets where to store the result of a field.
+	WithResults(map[string]any) Field
 }
 
 // nextGroupMsg is a message to move to the next group.
@@ -193,7 +197,7 @@ func (f *Form) WithKeyMap(keymap *KeyMap) *Form {
 	return f
 }
 
-// WithWidth sets the width of a form
+// WithWidth sets the width of a form.
 //
 // This allows all groups and fields to be sized consistently, however width
 // can be applied to each group and field individually for more granular
@@ -209,10 +213,16 @@ func (f *Form) WithWidth(width int) *Form {
 	return f
 }
 
+// Get returns a result from the form.
+func (f *Form) Get(key string) any {
+	return f.results[key]
+}
+
 // Init initializes the form.
 func (f *Form) Init() tea.Cmd {
 	cmds := make([]tea.Cmd, len(f.groups))
 	for i, group := range f.groups {
+		group.results = f.results
 		cmds[i] = group.Init()
 	}
 	return tea.Batch(cmds...)

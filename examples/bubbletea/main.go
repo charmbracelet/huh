@@ -13,28 +13,24 @@ var highlight = lipgloss.NewStyle().Foreground(lipgloss.Color("212")).Render
 var help = lipgloss.NewStyle().Foreground(lipgloss.Color("240")).Render
 
 type Model struct {
-	class string
-	level string
-
 	form *huh.Form
 }
 
 func NewModel() Model {
 	var m Model
-	m.class = "Warrior"
-	m.level = "1"
 	f := huh.NewForm(
 		huh.NewGroup(
 			huh.NewSelect[string]().
+				Key("class").
 				Options(huh.NewOptions("Warrior", "Mage", "Rogue")...).
 				Title("Choose your class").
-				Description("This will determine your department").
-				Value(&m.class),
+				Description("This will determine your department"),
+
 			huh.NewSelect[string]().
+				Key("level").
 				Options(huh.NewOptions("1", "20", "9999")...).
 				Title("Choose your level").
-				Description("This will determine your benefits package").
-				Value(&m.level),
+				Description("This will determine your benefits package"),
 		),
 	)
 
@@ -66,7 +62,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m Model) View() string {
 	v := "Charm Employment Application\n\n" + m.form.View()
 	if m.form.State == huh.StateCompleted {
-		v += highlight(fmt.Sprintf("You selected: Level %s, %s\n", m.level, m.class))
+		v += highlight(fmt.Sprintf("You selected: Level %s, %s\n", m.form.Get("level"), m.form.Get("class")))
 		v += help("\nctrl+c to quit\n")
 	}
 	return lipgloss.NewStyle().Margin(1, 2).Render(v)
