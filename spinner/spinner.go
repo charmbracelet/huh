@@ -21,7 +21,7 @@ import (
 type Spinner struct {
 	spinner    spinner.Model
 	action     func()
-	static     bool
+	accessible bool
 	output     *termenv.Output
 	title      string
 	titleStyle lipgloss.Style
@@ -74,9 +74,9 @@ func (s *Spinner) TitleStyle(style lipgloss.Style) *Spinner {
 	return s
 }
 
-// Static sets the spinner to be static.
-func (s *Spinner) Static(static bool) *Spinner {
-	s.static = static
+// Accessible sets the spinner to be static.
+func (s *Spinner) Accessible(accessible bool) *Spinner {
+	s.accessible = accessible
 	return s
 }
 
@@ -128,7 +128,7 @@ func (s *Spinner) View() string {
 
 // Run runs the spinner.
 func (s *Spinner) Run() error {
-	if s.static {
+	if s.accessible {
 		return s.runAccessible()
 	}
 
@@ -149,10 +149,9 @@ func (s *Spinner) runAccessible() error {
 	s.output.HideCursor()
 	frame := s.spinner.Style.Render("...")
 	title := s.titleStyle.Render(s.title)
-	fmt.Print(title + frame)
+	fmt.Println(title + frame)
 	s.action()
 	s.output.ShowCursor()
-	s.output.ClearLine()
 	s.output.CursorBack(len(frame) + len(title))
 
 	return nil
