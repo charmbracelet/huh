@@ -216,9 +216,9 @@ func (m *MultiSelect[T]) printOptions() {
 
 	for i, option := range m.options {
 		if option.selected {
-			sb.WriteString(m.theme.Focused.SelectedOption.Render(fmt.Sprintf("%d. %s %s", i+1, "[✓]", option.Key)))
+			sb.WriteString(m.theme.Focused.SelectedOption.Render(fmt.Sprintf("%d. %s %s", i+1, "✓", option.Key)))
 		} else {
-			sb.WriteString(fmt.Sprintf("%d. %s %s", i+1, "[ ]", option.Key))
+			sb.WriteString(fmt.Sprintf("%d. %s %s", i+1, " ", option.Key))
 		}
 		sb.WriteString("\n")
 	}
@@ -254,9 +254,9 @@ func (m *MultiSelect[T]) runAccessible() error {
 		}
 		m.options[choice-1].selected = !m.options[choice-1].selected
 		if m.options[choice-1].selected {
-			fmt.Printf("Selected: %d\n\n", choice)
+			fmt.Printf("Selected: %s\n\n", m.options[choice-1].Key)
 		} else {
-			fmt.Printf("Deselected: %d\n\n", choice)
+			fmt.Printf("Deselected: %s\n\n", m.options[choice-1].Key)
 		}
 
 		m.printOptions()

@@ -45,7 +45,7 @@ func PromptBool() bool {
 		return errors.New("invalid input. please try again")
 	}
 
-	input := PromptString("Choose [y/N]: ", validBool)
+	input := PromptString("Choose (y/N): ", validBool)
 	return strings.ToLower(input) == "y"
 }
 
