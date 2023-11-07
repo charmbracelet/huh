@@ -8,8 +8,25 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-// ErrUserAborted is the error returned when a user exits the form before submitting.
-var ErrUserAborted = errors.New("user aborted")
+// FormState represents the current state of the form.
+type FormState int
+
+const (
+	// StateNormal is when the user is completing the form.
+	StateNormal FormState = iota
+
+	// StateCompleted is when the user has completed the form.
+	StateCompleted
+
+	// StateAborted is when the user has aborted the form.
+	StateAborted
+)
+
+// ErrUserAborted is the error returned when a user exits the form before
+// submitting.
+var (
+	ErrUserAborted = errors.New("user aborted")
+)
 
 // Form is a collection of groups that are displayed one at a time on a "page".
 //
@@ -22,8 +39,11 @@ type Form struct {
 	// navigation
 	paginator paginator.Model
 
-	onConfirm func() (tea.Model, tea.Cmd)
-	onAbort   func() (tea.Model, tea.Cmd)
+	// callbacks
+	submitCmd tea.Cmd
+	cancelCmd tea.Cmd
+
+	State FormState
 
 	// whether or not to use bubble tea rendering for accessibility
 	// purposes, if true, the form will render with basic prompting primitives
@@ -61,8 +81,6 @@ func NewForm(groups ...*Group) *Form {
 	f.WithTheme(f.theme)
 	f.WithKeyMap(f.keymap)
 	f.WithWidth(f.width)
-	f.onConfirm = func() (tea.Model, tea.Cmd) { return f, tea.Quit }
-	f.onAbort = func() (tea.Model, tea.Cmd) { return f, tea.Quit }
 
 	return f
 }
@@ -119,16 +137,6 @@ func nextGroup() tea.Msg {
 // prevGroup is the command to move to the previous group.
 func prevGroup() tea.Msg {
 	return prevGroupMsg{}
-}
-
-func (f *Form) WithOnConfirm(fn func() (tea.Model, tea.Cmd)) *Form {
-	f.onConfirm = fn
-	return f
-}
-
-func (f *Form) WithOnAbort(fn func() (tea.Model, tea.Cmd)) *Form {
-	f.onAbort = fn
-	return f
 }
 
 // WithAccessible sets the form to run in accessible mode to avoid redrawing the
@@ -219,7 +227,8 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, f.keymap.Quit):
 			f.aborted = true
 			f.quitting = true
-			return f.onAbort()
+			f.State = StateAborted
+			return f, f.cancelCmd
 		}
 
 	case nextGroupMsg:
@@ -229,7 +238,8 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		if f.paginator.OnLastPage() {
 			f.quitting = true
-			return f.onConfirm()
+			f.State = StateCompleted
+			return f, f.submitCmd
 		}
 		f.paginator.NextPage()
 
@@ -257,6 +267,9 @@ func (f *Form) View() string {
 
 // Run runs the form.
 func (f *Form) Run() error {
+	f.submitCmd = tea.Quit
+	f.cancelCmd = tea.Quit
+
 	if len(f.groups) == 0 {
 		return nil
 	}
