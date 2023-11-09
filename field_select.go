@@ -282,7 +282,7 @@ func (s *Select[T]) runAccessible() error {
 			fmt.Println(err.Error())
 			continue
 		}
-		fmt.Println(s.theme.Focused.SelectedOption.Render("Chose: " + option.Key + "\n"))
+		fmt.Println(s.theme.Focused.SelectedOption.Render(choiceConfirmation + option.Key + "\n"))
 		*s.value = option.Value
 		break
 	}

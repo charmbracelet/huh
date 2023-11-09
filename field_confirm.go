@@ -10,6 +10,8 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+const choiceConfirmation = "Chose: "
+
 // Confirm is a form confirm field.
 type Confirm struct {
 	value *bool
@@ -179,9 +181,9 @@ func (c *Confirm) runAccessible() error {
 	choice := accessibility.PromptBool()
 	*c.value = choice
 	if choice {
-		fmt.Println(c.theme.Focused.SelectedOption.Render("Chose: " + c.affirmative))
+		fmt.Println(c.theme.Focused.SelectedOption.Render(choiceConfirmation + c.affirmative))
 	} else {
-		fmt.Println(c.theme.Focused.SelectedOption.Render("Chose: " + c.negative))
+		fmt.Println(c.theme.Focused.SelectedOption.Render(choiceConfirmation + c.negative))
 	}
 	fmt.Println()
 	return nil

@@ -23,12 +23,12 @@ func (t Theme) copy() Theme {
 	}
 }
 
-// FieldStyles are the styles for input fields
+// FieldStyles are the styles for input fields.
 type FieldStyles struct {
 	Base           lipgloss.Style
 	Title          lipgloss.Style
 	Description    lipgloss.Style
-	Help           lipgloss.Style // TODO: apply help coloring in theme to help bubble
+	Help           lipgloss.Style // XXX: apply help coloring in theme to help bubble
 	ErrorIndicator lipgloss.Style
 	ErrorMessage   lipgloss.Style
 

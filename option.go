@@ -11,9 +11,12 @@ type Option[T any] struct {
 
 // NewOptions returns new options from a list of values.
 func NewOptions[T any](values ...T) []Option[T] {
-	var options []Option[T]
+	options := make([]Option[T], len(values))
 	for _, o := range values {
-		options = append(options, Option[T]{Key: fmt.Sprint(o), Value: o})
+		options = append(options, Option[T]{
+			Key:   fmt.Sprint(o),
+			Value: o,
+		})
 	}
 	return options
 }

@@ -129,15 +129,12 @@ func prevField() tea.Msg {
 
 // Init initializes the group.
 func (g *Group) Init() tea.Cmd {
-	var cmds []tea.Cmd
-
+	cmds := make([]tea.Cmd, len(g.fields)+1)
 	for _, field := range g.fields {
 		cmds = append(cmds, field.Init())
 	}
-
 	cmd := g.fields[g.paginator.Page].Focus()
 	cmds = append(cmds, cmd)
-
 	return tea.Batch(cmds...)
 }
 
