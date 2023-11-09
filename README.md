@@ -187,6 +187,26 @@ err := spinner.New().
 fmt.Println("Order up!")
 ```
 
+Alternatively, you can also use `Context`s. The spinner will stop once the
+context is cancelled.
+
+```go
+makeTaco := func() {
+    // ...
+}
+
+ctx, _ := context.WithTimeout(context.Background(), time.Second)
+
+go makeTaco()
+
+err := spinner.New().
+    Title("Making your taco...").
+    Context(ctx).
+    Run()
+
+fmt.Println("Order up!")
+```
+
 ## Feedback
 
 We'd love to hear your thoughts on this project. Feel free to drop us a note!

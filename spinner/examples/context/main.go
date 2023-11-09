@@ -9,14 +9,9 @@ import (
 )
 
 func main() {
-	ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second)
-
-	go func() {
-		// Do some work.
-		time.Sleep(5 * time.Second)
-		cancelFunc()
-	}()
-
+	action := func() { time.Sleep(5 * time.Second) }
+	ctx, _ := context.WithTimeout(context.Background(), time.Second)
+	go action()
 	spinner.New().Context(ctx).Run()
 	fmt.Println("Done!")
 }
