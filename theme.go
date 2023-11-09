@@ -97,13 +97,19 @@ func (f FieldStyles) copy() FieldStyles {
 	}
 }
 
+const buttonPaddingHorizontal = 2
+const buttonPaddingVertical = 0
+
 // NewBaseTheme returns a new base theme with general styles to be inherited by
 // other themes.
 func NewBaseTheme() *Theme {
 	var t Theme
 
 	t.FieldSeparator = lipgloss.NewStyle().SetString("\n\n")
-	button := lipgloss.NewStyle().Padding(0, 2).MarginRight(1)
+
+	button := lipgloss.NewStyle().
+		Padding(buttonPaddingVertical, buttonPaddingHorizontal).
+		MarginRight(1)
 
 	// Focused styles.
 	f := &t.Focused
