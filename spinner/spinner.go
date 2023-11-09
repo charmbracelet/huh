@@ -1,6 +1,7 @@
 package spinner
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"time"
@@ -21,6 +22,7 @@ import (
 type Spinner struct {
 	spinner    spinner.Model
 	action     func()
+	ctx        context.Context
 	accessible bool
 	output     *termenv.Output
 	title      string
@@ -62,6 +64,12 @@ func (s *Spinner) Action(action func()) *Spinner {
 	return s
 }
 
+// Context sets the context of the spinner.
+func (s *Spinner) Context(ctx context.Context) *Spinner {
+	s.ctx = ctx
+	return s
+}
+
 // Style sets the style of the spinner.
 func (s *Spinner) Style(style lipgloss.Style) *Spinner {
 	s.spinner.Style = style
@@ -93,6 +101,7 @@ func New() *Spinner {
 		title:      "Loading...",
 		titleStyle: lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#FFFDF5", Dark: "#FFFDF5"}),
 		output:     termenv.NewOutput(os.Stdout),
+		ctx:        nil,
 	}
 }
 
@@ -132,12 +141,14 @@ func (s *Spinner) Run() error {
 		return s.runAccessible()
 	}
 
-	p := tea.NewProgram(s)
+	p := tea.NewProgram(s, tea.WithContext(s.ctx))
 
-	go func() {
-		s.action()
-		p.Quit()
-	}()
+	if s.ctx == nil {
+		go func() {
+			s.action()
+			p.Quit()
+		}()
+	}
 
 	_, _ = p.Run()
 
