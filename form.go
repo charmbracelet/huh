@@ -212,8 +212,8 @@ func (f *Form) WithWidth(width int) *Form {
 // Init initializes the form.
 func (f *Form) Init() tea.Cmd {
 	cmds := make([]tea.Cmd, len(f.groups))
-	for _, group := range f.groups {
-		cmds = append(cmds, group.Init())
+	for i, group := range f.groups {
+		cmds[i] = group.Init()
 	}
 	return tea.Batch(cmds...)
 }
