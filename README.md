@@ -105,6 +105,8 @@ if err != nil {
 
 ### Input
 
+<img alt="Input field" width="600" src="./examples/readme/input.gif">
+
 ```go
 huh.NewInput().
     Title("What's for lunch?").
@@ -114,6 +116,8 @@ huh.NewInput().
 ```
 
 ### Text
+
+<img alt="Text field" width="600" src="./examples/readme/text.gif">
 
 ```go
 huh.NewText().
