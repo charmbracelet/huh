@@ -163,9 +163,11 @@ huh.NewMultiSelect[string]().
 
 ### Confirm
 
+<img alt="Confirm field" width="600" src="./examples/readme/confirm.gif">
+
 ```go
 huh.NewConfirm().
-    Title("Toppings").
+    Title("You sure?").
     Affirmative("Yes!").
     Negative("No.").
     Value(&confirm)
