@@ -1,7 +1,7 @@
 Output theme.gif
 
 Set Width 800
-Set Height 720
+Set Height 740
 Set Padding 80
 
 Hide
@@ -37,3 +37,7 @@ Enter
 Screenshot charm-theme.png
 
 Sleep 1s
+
+Hide
+Type "rm theme"
+Enter
