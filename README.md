@@ -185,11 +185,14 @@ There are currently four predefined themes:
 * `Base 16`
 * `Default`
 
-
-<img alt="Charm-themed form" width="400" src="./examples/theme/charm-theme.png">
-<img alt="Dracula-themed form" width="400" src="./examples/theme/dracula-theme.png">
-<img alt="Base 16-themed form" width="400" src="./examples/theme/basesixteen-theme.png">
-<img alt="Default-themed form" width="400" src="./examples/theme/default-theme.png">
+<p>
+    <img alt="Charm-themed form" width="400" src="./examples/theme/charm-theme.png">
+    <img alt="Dracula-themed form" width="400" src="./examples/theme/dracula-theme.png">
+</p>
+<p>
+    <img alt="Base 16-themed form" width="400" src="./examples/theme/basesixteen-theme.png">
+    <img alt="Default-themed form" width="400" src="./examples/theme/default-theme.png">
+</p>
 
 ## Spinner
 
