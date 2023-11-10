@@ -128,6 +128,8 @@ huh.NewText().
 
 ### Select
 
+<img alt="Select field" width="600" src="./examples/readme/select.gif">
+
 ```go
 huh.NewSelect[string]().
     Title("Pick a country.").
@@ -141,6 +143,8 @@ huh.NewSelect[string]().
 ```
 
 ### Multiple Select
+
+<img alt="Multiselect field" width="600" src="./examples/readme/multiselect.gif">
 
 ```go
 huh.NewMultiSelect[string]().
