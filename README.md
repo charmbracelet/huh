@@ -180,27 +180,17 @@ or use the predefined themes.
 
 There are currently four predefined themes:
 
-* [`Charm`](#charm-theme)
-* [`Dracula`](#dracula-theme)
-* [`Base 16`](#base-16-theme)
-* [`Default`](#default-theme)
+* `Charm`
+* `Dracula`
+* `Base 16`
+* `Default`
 
-### Charm Theme
-
-<img alt="Charm-themed form" width="400" src="./examples/theme/charm-theme.png">
-
-### Dracula Theme
-
-<img alt="Dracula-themed form" width="400" src="./examples/theme/dracula-theme.png">
-
-### Base 16 Theme
-
-<img alt="Base16-themed form" width="400" src="./examples/theme/basesixteen-theme.png">
-
-### Default Theme
-
-<img alt="Default-themed form" width="400" src="./examples/theme/default-theme.png">
-
+| Theme         | Image |
+|--------------|:-----:|
+| Charm | <img alt="Charm-themed form" width="400" src="./examples/theme/charm-theme.png"> |
+| Dracula | <img alt="Dracula-themed form" width="400" src="./examples/theme/dracula-theme.png"> |
+| Base 16 | <img alt="Base 16-themed form" width="400" src="./examples/theme/basesixteen-theme.png"> |
+| Default | <img alt="Default-themed form" width="400" src="./examples/theme/default-theme.png"> |
 
 ## Spinner
 
