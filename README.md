@@ -186,24 +186,10 @@ There are currently four predefined themes:
 * `Default`
 
 
-<table>
-<tr>
-    <td>
-        <img alt="Charm-themed form" width="400" src="./examples/theme/charm-theme.png">
-    </td>
-    <td>
-        <img alt="Dracula-themed form" width="400" src="./examples/theme/dracula-theme.png">
-    </td>
-</tr>
-<tr>
-    <td>
-        <img alt="Base 16-themed form" width="400" src="./examples/theme/basesixteen-theme.png">
-    </td>
-    <td>
-        <img alt="Default-themed form" width="400" src="./examples/theme/default-theme.png">
-    </td>
-</tr>
-</table>
+<img alt="Charm-themed form" width="400" src="./examples/theme/charm-theme.png">
+<img alt="Dracula-themed form" width="400" src="./examples/theme/dracula-theme.png">
+<img alt="Base 16-themed form" width="400" src="./examples/theme/basesixteen-theme.png">
+<img alt="Default-themed form" width="400" src="./examples/theme/default-theme.png">
 
 ## Spinner
 
