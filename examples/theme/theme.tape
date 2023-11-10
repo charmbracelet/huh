@@ -1,8 +1,8 @@
 Output theme.gif
 
 Set Width 800
-Set Height 650
-Set Padding 40
+Set Height 720
+Set Padding 80
 
 Hide
 Type "go build -o theme ."
