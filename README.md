@@ -247,6 +247,13 @@ While you can use `huh` as a replacement to Bubble Tea in many applications
 where you only need to prompt the user for input. You can embed `huh` forms in
 Bubble Tea applications and use the form as a [Bubble][bubbles].
 
+```go
+type Model struct {
+    // embed form in parent model, use as bubble.
+    form *huh.Form
+}
+```
+
 See [the Bubble Tea example][example] for how to embed `huh` forms in [Bubble
 Tea][tea] applications for more advanced use cases.
 

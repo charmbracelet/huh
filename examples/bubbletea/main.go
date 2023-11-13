@@ -19,7 +19,7 @@ type Model struct {
 	form *huh.Form
 }
 
-func NewModel() *Model {
+func NewModel() Model {
 	var m Model
 	m.class = "Warrior"
 	m.level = "1"
@@ -39,14 +39,14 @@ func NewModel() *Model {
 	)
 
 	m.form = f
-	return &m
+	return m
 }
 
 func (m Model) Init() tea.Cmd {
 	return m.form.Init()
 }
 
-func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
