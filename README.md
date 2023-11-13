@@ -237,6 +237,24 @@ err := spinner.New().
 fmt.Println("Order up!")
 ```
 
+## What about [Bubble Tea][tea]?
+
+Huh doesn’t replace Bubble Tea. Rather, it is an abstraction built on Bubble Tea
+to make forms easier to code and implement. It was designed to make assembling
+powerful and feature-rich forms in Go as simple and fun as possible.
+
+While you can use `huh` as a replacement to Bubble Tea in many applications
+where you only need to prompt the user for input. You can embed `huh` forms in
+Bubble Tea applications and use the form as a [Bubble][bubbles].
+
+See [the Bubble Tea example][example] for how to embed `huh` forms in [Bubble
+Tea][tea] applications for more advanced use cases.
+
+[tea]: https://github.com/charmbracelet/bubbletea
+[bubbles]: https://github.com/charmbracelet/bubbles
+[example]: https://github.com/charmbracelet/huh/blob/main/examples/bubbletea/main.go
+
+
 ## Feedback
 
 We'd love to hear your thoughts on this project. Feel free to drop us a note!
