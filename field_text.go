@@ -152,7 +152,7 @@ func (t *Text) Blur() tea.Cmd {
 
 // KeyBinds returns the help message for the text field.
 func (t *Text) KeyBinds() []key.Binding {
-	return []key.Binding{t.keymap.Next, t.keymap.Editor, t.keymap.Prev}
+	return []key.Binding{t.keymap.Next, t.keymap.NewLine, t.keymap.Editor, t.keymap.Prev}
 }
 
 type updateValueMsg []byte
@@ -262,6 +262,7 @@ func (t *Text) WithTheme(theme *Theme) Field {
 // WithKeyMap sets the keymap on a text field.
 func (t *Text) WithKeyMap(k *KeyMap) Field {
 	t.keymap = &k.Text
+	t.textarea.KeyMap.InsertNewline.SetKeys(t.keymap.NewLine.Keys()...)
 	return t
 }
 
