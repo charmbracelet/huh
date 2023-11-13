@@ -20,3 +20,7 @@ Show
 Sleep 1s
 Type "Spaghetti"
 Sleep 2s
+
+Hide
+Type "rm input"
+Enter

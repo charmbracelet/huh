@@ -12,12 +12,14 @@ func isFood(_ string) error {
 
 func main() {
 	var lunch string
-	huh.NewInput().
+
+	input := huh.NewInput().
 		Title("What's for lunch?").
 		Prompt("? ").
 		Validate(isFood).
-		Value(&lunch).
-		Run()
+		Value(&lunch)
+
+	huh.NewForm(huh.NewGroup(input)).Run()
 
 	fmt.Printf("Yummy, %s!\n", lunch)
 }
