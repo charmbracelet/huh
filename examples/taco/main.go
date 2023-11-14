@@ -130,7 +130,8 @@ func main() {
 				Placeholder("Just put it in the mailbox please").
 				Title("Special Instructions").
 				Description("Anything we should know?").
-				CharLimit(400),
+				CharLimit(400).
+				Lines(3),
 
 			huh.NewConfirm().
 				Title("Would you like 15% off?").

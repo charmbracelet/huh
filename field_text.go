@@ -82,6 +82,12 @@ func (t *Text) Title(title string) *Text {
 	return t
 }
 
+// Lines sets the number of lines to show of the text field.
+func (t *Text) Lines(lines int) *Text {
+	t.textarea.SetHeight(lines)
+	return t
+}
+
 // Description sets the description of the text field.
 func (t *Text) Description(description string) *Text {
 	t.description = description
