@@ -187,10 +187,10 @@ There are currently four predefined themes:
 
 <br />
 <p>
-    <img alt="Charm-themed form" width="400" src="./examples/theme/charm-theme.png">
-    <img alt="Dracula-themed form" width="400" src="./examples/theme/dracula-theme.png">
-    <img alt="Base 16-themed form" width="400" src="./examples/theme/basesixteen-theme.png">
-    <img alt="Default-themed form" width="400" src="./examples/theme/default-theme.png">
+    <img alt="Charm-themed form" width="400" src="https://stuff.charm.sh/huh/themes/charm-theme.png">
+    <img alt="Dracula-themed form" width="400" src="https://stuff.charm.sh/huh/themes/dracula-theme.png">
+    <img alt="Base 16-themed form" width="400" src="https://stuff.charm.sh/huh/themes/basesixteen-theme.png">
+    <img alt="Default-themed form" width="400" src="https://stuff.charm.sh/huh/themes/default-theme.png">
 </p>
 
 ## Spinner
