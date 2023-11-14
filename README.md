@@ -2,7 +2,7 @@
 
 A simple and powerful library for building interactive forms in the terminal. Powered by [Bubble Tea](https://github.com/charmbracelet/bubbletea).
 
-<img alt="Running a taco form" width="600" src="https://vhs.charm.sh/vhs-ZVTtSplpCSsIKSJA1uBa4.gif">
+<img alt="Running a taco form" width="600" src="https://vhs.charm.sh/vhs-1en9litJd1v1VTnvXT1jJK.gif">
 
 The above example is running from a single Go program ([source](./examples/taco/main.go)).
 
