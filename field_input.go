@@ -12,9 +12,8 @@ import (
 
 // Input is a form input field.
 type Input struct {
-	value   *string
-	results map[string]any
-	key     string
+	value *string
+	key   string
 
 	// customization
 	title       string
@@ -55,7 +54,6 @@ func NewInput() *Input {
 // Value sets the value of the input field.
 func (i *Input) Value(value *string) *Input {
 	i.value = value
-	i.results[i.key] = value
 	i.textinput.SetValue(*value)
 	return i
 }
@@ -156,7 +154,6 @@ func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	i.textinput, cmd = i.textinput.Update(msg)
 	cmds = append(cmds, cmd)
 	*i.value = i.textinput.Value()
-	i.results[i.key] = i.textinput.Value()
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -253,8 +250,12 @@ func (i *Input) WithWidth(width int) Field {
 	return i
 }
 
-// WithResults sets the results of the input field.
-func (i *Input) WithResults(r map[string]any) Field {
-	i.results = r
-	return i
+// GetKey returns the key of the field.
+func (i *Input) GetKey() string {
+	return i.key
+}
+
+// GetValue returns the value of the field.
+func (i *Input) GetValue() any {
+	return *i.value
 }

@@ -75,8 +75,7 @@ func NewForm(groups ...*Group) *Form {
 		theme:     NewCharmTheme(),
 		keymap:    NewDefaultKeyMap(),
 		width:     defaultWidth,
-		width:     80,
-		results:   map[string]any{},
+		results:   make(map[string]any),
 	}
 
 	// NB: If dynamic forms come into play this will need to be applied when
@@ -125,8 +124,11 @@ type Field interface {
 	// WithWidth sets the width of a field.
 	WithWidth(int) Field
 
-	// WithResults sets where to store the result of a field.
-	WithResults(map[string]any) Field
+	// GetKey returns the field's key.
+	GetKey() string
+
+	// GetValue returns the field's value.
+	GetValue() any
 }
 
 // nextGroupMsg is a message to move to the next group.
@@ -222,7 +224,6 @@ func (f *Form) Get(key string) any {
 func (f *Form) Init() tea.Cmd {
 	cmds := make([]tea.Cmd, len(f.groups))
 	for i, group := range f.groups {
-		group.results = f.results
 		cmds[i] = group.Init()
 	}
 	return tea.Batch(cmds...)
@@ -242,6 +243,11 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			f.State = StateAborted
 			return f, f.cancelCmd
 		}
+
+	case nextFieldMsg:
+		// Form is progressing to the next field, let's save the value of the current field.
+		field := group.fields[group.paginator.Page]
+		f.results[field.GetKey()] = field.GetValue()
 
 	case nextGroupMsg:
 		if len(group.Errors()) > 0 {

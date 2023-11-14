@@ -13,9 +13,8 @@ import (
 
 // Select is a form select field.
 type Select[T any] struct {
-	value   *T
-	results map[string]any
-	key     string
+	value *T
+	key   string
 
 	// customization
 	title           string
@@ -173,7 +172,6 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return s, nil
 			}
 			*s.value = value
-			s.results[s.key] = value
 			return s, prevField
 		case key.Matches(msg, s.keymap.Next):
 			if s.selected >= len(s.filteredOptions) {
@@ -186,7 +184,6 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return s, nil
 			}
 			*s.value = value
-			s.results[s.key] = value
 			return s, nextField
 		}
 
@@ -327,8 +324,12 @@ func (s *Select[T]) WithWidth(width int) Field {
 	return s
 }
 
-// WithResults sets the results of the select field.
-func (s *Select[T]) WithResults(r map[string]any) Field {
-	s.results = r
-	return s
+// GetKey returns the key of the field.
+func (s *Select[T]) GetKey() string {
+	return s.key
+}
+
+// GetValue returns the value of the field.
+func (s *Select[T]) GetValue() any {
+	return *s.value
 }

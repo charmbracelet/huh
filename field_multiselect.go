@@ -12,9 +12,8 @@ import (
 
 // MultiSelect is a form multi-select field.
 type MultiSelect[T any] struct {
-	value   *[]T
-	results map[string]any
-	key     string
+	value *[]T
+	key   string
 
 	// customization
 	title       string
@@ -174,7 +173,6 @@ func (m *MultiSelect[T]) finalize() {
 			*m.value = append(*m.value, option.Value)
 		}
 	}
-	m.results[m.key] = *m.value
 	m.err = m.validate(*m.value)
 }
 
@@ -309,8 +307,12 @@ func (m *MultiSelect[T]) WithWidth(width int) Field {
 	return m
 }
 
-// WithResults sets the results of the multi-select field.
-func (m *MultiSelect[T]) WithResults(r map[string]any) Field {
-	m.results = r
-	return m
+// GetKey returns the multi-select's key.
+func (m *MultiSelect[T]) GetKey() string {
+	return m.key
+}
+
+// GetValue returns the multi-select's value.
+func (m *MultiSelect[T]) GetValue() any {
+	return *m.value
 }
