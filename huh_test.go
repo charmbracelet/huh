@@ -311,7 +311,7 @@ func TestText(t *testing.T) {
 		t.Error("Expected field to contain Huh.")
 	}
 
-	if !strings.Contains(view, "tab next • ctrl+e open editor • shift+tab back") {
+	if !strings.Contains(view, "enter next • alt+enter / ctrl+j new line • ctrl+e open editor • shift+tab back") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected field to contain help.")
 	}
