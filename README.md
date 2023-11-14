@@ -173,9 +173,26 @@ huh.NewConfirm().
     Value(&confirm)
 ```
 
+## Accessibility
+
+Forms can be made accessible to screen readers through setting the
+`WithAccessible` option. It's useful to set this through an environment variable
+or configuration option to allow the user to control whether their form is
+accessible for screen readers.
+
+```go
+form.WithAccessible(os.Getenv("ACCESSIBLE") != "")
+```
+
+Making the form accessible will remove redrawing and use more standard prompts
+to ensure that screen readers are able to dictate the information on screen
+correctly.
+
+<img alt="Accessible taco form" width="600" src="https://vhs.charm.sh/vhs-7cM7kuEpG5sdlgsW26M2Kq.gif">
+
 ## Themes
 
-Huh forms can be customized through themes. You can supply your own custom theme
+Forms can be customized through themes. You can supply your own custom theme
 or use the predefined themes.
 
 There are currently four predefined themes:
