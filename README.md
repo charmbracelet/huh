@@ -2,7 +2,7 @@
 
 A simple and powerful library for building interactive forms in the terminal. Powered by [Bubble Tea](https://github.com/charmbracelet/bubbletea).
 
-<img alt="Running a taco form" width="600" src="./examples/taco/taco.gif">
+<img alt="Running a taco form" width="600" src="https://vhs.charm.sh/vhs-5j1uyTU11K1P1Xku1f7PIc.gif">
 
 The above example is running from a single Go program ([source](./examples/taco/main.go)).
 
@@ -105,7 +105,7 @@ if err != nil {
 
 ### Input
 
-<img alt="Input field" width="600" src="./examples/readme/input.gif">
+<img alt="Input field" width="600" src="https://vhs.charm.sh/vhs-1ULe9JbTHfwFmm3hweRVtD.gif">
 
 ```go
 huh.NewInput().
@@ -117,7 +117,7 @@ huh.NewInput().
 
 ### Text
 
-<img alt="Text field" width="600" src="./examples/readme/text.gif">
+<img alt="Text field" width="600" src="https://vhs.charm.sh/vhs-2rrIuVSEf38bT0cwc8hfEG.gif">
 
 ```go
 huh.NewText().
@@ -128,7 +128,7 @@ huh.NewText().
 
 ### Select
 
-<img alt="Select field" width="600" src="./examples/readme/select.gif">
+<img alt="Select field" width="600" src="https://vhs.charm.sh/vhs-7wFqZlxMWgbWmOIpBqXJTi.gif">
 
 ```go
 huh.NewSelect[string]().
@@ -144,7 +144,7 @@ huh.NewSelect[string]().
 
 ### Multiple Select
 
-<img alt="Multiselect field" width="600" src="./examples/readme/multiselect.gif">
+<img alt="Multiselect field" width="600" src="https://vhs.charm.sh/vhs-7bYeyKzQNGPyPdpQqvFwkx.gif">
 
 ```go
 huh.NewMultiSelect[string]().
@@ -163,7 +163,7 @@ huh.NewMultiSelect[string]().
 
 ### Confirm
 
-<img alt="Confirm field" width="600" src="./examples/readme/confirm.gif">
+<img alt="Confirm field" width="600" src="https://vhs.charm.sh/vhs-2HeX5MdOxLsrWwsa0TNMIL.gif">
 
 ```go
 huh.NewConfirm().
@@ -199,7 +199,7 @@ Huh additionally provides a `spinner` subpackage for displaying spinners while
 performing actions. It's useful to complete an action after your user completes
 a form.
 
-<img alt="Spinner while making a taco" width="600" src="./spinner/examples/loading/spinner.gif">
+<img alt="Spinner while making a taco" width="600" src="https://vhs.charm.sh/vhs-14gSsi69ehXjpoqhY1j3UK.gif">
 
 To get started, create a new spinner, set a title, set an action, and run the
 spinner:
