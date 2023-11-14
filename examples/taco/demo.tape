@@ -7,11 +7,13 @@ Hide
 Type "go build -o taco ." Enter
 Ctrl+L
 Sleep 1s
-Show
 
-Type "./taco"
+Type "clear && ./taco"
 Sleep 500ms
 Enter
+Sleep 500ms
+
+Show
 
 Sleep 1s
 Type "n"
@@ -48,4 +50,3 @@ Sleep 5s
 Hide
 Type "rm taco" Enter
 Sleep 1s
-Show

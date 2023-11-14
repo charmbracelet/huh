@@ -51,7 +51,7 @@ type Taco struct {
 
 func main() {
 	var taco Taco
-	var order = Order{Taco: taco, Instructions: "Dressing on the side"}
+	var order = Order{Taco: taco}
 
 	// Should we run in accessible mode?
 	accessible, _ := strconv.ParseBool(os.Getenv("ACCESSIBLE"))
