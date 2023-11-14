@@ -212,12 +212,10 @@ func (i *Input) run() error {
 
 // runAccessible runs the input field in accessible mode.
 func (i *Input) runAccessible() error {
-	fmt.Print(i.theme.Focused.Title.Render(i.title))
-	if !i.inline {
-		fmt.Println()
-	}
-	*i.value = accessibility.PromptString("", i.validate)
+	fmt.Println(i.theme.Blurred.Base.Render(i.theme.Focused.Title.Render(i.title)))
 	fmt.Println()
+	*i.value = accessibility.PromptString("Input: ", i.validate)
+	fmt.Println(i.theme.Focused.SelectedOption.Render("Input: " + *i.value + "\n"))
 	return nil
 }
 

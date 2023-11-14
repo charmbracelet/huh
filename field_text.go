@@ -247,8 +247,9 @@ func (t *Text) Run() error {
 
 // runAccessible runs an accessible text field.
 func (t *Text) runAccessible() error {
-	fmt.Println(t.theme.Focused.Title.Render(t.title))
-	*t.value = accessibility.PromptString("", t.validate)
+	fmt.Println(t.theme.Blurred.Base.Render(t.theme.Focused.Title.Render(t.title)))
+	fmt.Println()
+	*t.value = accessibility.PromptString("Input: ", t.validate)
 	fmt.Println()
 	return nil
 }

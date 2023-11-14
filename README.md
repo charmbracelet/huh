@@ -188,7 +188,7 @@ Making the form accessible will remove redrawing and use more standard prompts
 to ensure that screen readers are able to dictate the information on screen
 correctly.
 
-<img alt="Accessible taco form" width="600" src="https://vhs.charm.sh/vhs-7cM7kuEpG5sdlgsW26M2Kq.gif">
+<img alt="Accessible cuisine form" width="600" src="https://vhs.charm.sh/vhs-19xEBn4LgzPZDtgzXRRJYS.gif">
 
 ## Themes
 
