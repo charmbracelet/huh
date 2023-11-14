@@ -26,6 +26,7 @@ type Note struct {
 	// state
 	showNextButton bool
 	focused        bool
+	renderer       *glamour.TermRenderer
 
 	// options
 	width      int
@@ -36,8 +37,19 @@ type Note struct {
 
 // NewNote creates a new note field.
 func NewNote() *Note {
+	r, err := glamour.NewTermRenderer(
+		glamour.WithAutoStyle(),
+		glamour.WithEmoji(),
+		glamour.WithWordWrap(0),
+	)
+
+	if err != nil {
+		r, _ = glamour.NewTermRenderer()
+	}
+
 	return &Note{
 		showNextButton: false,
+		renderer:       r,
 	}
 }
 
@@ -119,7 +131,7 @@ func (n *Note) View() string {
 
 	body += n.description
 
-	md, _ := glamour.Render(body, "auto")
+	md, _ := n.renderer.Render(body)
 	sb.WriteString(md)
 	if n.showNextButton {
 		sb.WriteString(styles.Next.Render("Next"))
@@ -145,7 +157,7 @@ func (n *Note) runAccessible() error {
 
 	body += n.description
 
-	md, _ := glamour.Render(body, "auto")
+	md, _ := n.renderer.Render(body)
 	fmt.Println(n.theme.Blurred.Base.Render(strings.TrimSpace(md)))
 	fmt.Println()
 	return nil
