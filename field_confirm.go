@@ -193,9 +193,8 @@ func (c *Confirm) runAccessible() error {
 func (c *Confirm) String() string {
 	if *c.value {
 		return c.affirmative
-	} else {
-		return c.negative
 	}
+	return c.negative
 }
 
 // WithTheme sets the theme of the confirm field.
