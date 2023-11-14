@@ -187,9 +187,14 @@ func (n *Note) WithWidth(width int) Field {
 	return n
 }
 
-// WithResults sets the results map of the note field.
-func (n *Note) WithResults(r map[string]any) Field {
-	return n
+// GetValue satisfies the Field interface, notes do not have values.
+func (n *Note) GetValue() any {
+	return nil
+}
+
+// GetKey satisfies the Field interface, notes do not have keys.
+func (n *Note) GetKey() string {
+	return ""
 }
 
 // pointerTo returns a pointer to a value.
