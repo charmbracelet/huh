@@ -100,9 +100,9 @@ func (f FieldStyles) copy() FieldStyles {
 const buttonPaddingHorizontal = 2
 const buttonPaddingVertical = 0
 
-// NewBaseTheme returns a new base theme with general styles to be inherited by
+// ThemeBase returns a new base theme with general styles to be inherited by
 // other themes.
-func NewBaseTheme() *Theme {
+func ThemeBase() *Theme {
 	var t Theme
 
 	t.FieldSeparator = lipgloss.NewStyle().SetString("\n\n")
@@ -148,9 +148,9 @@ func NewBaseTheme() *Theme {
 	return &t
 }
 
-// NewCharmTheme returns a new theme based on the Charm color scheme.
-func NewCharmTheme() *Theme {
-	t := NewBaseTheme().copy()
+// ThemeCharm returns a new theme based on the Charm color scheme.
+func ThemeCharm() *Theme {
+	t := ThemeBase().copy()
 
 	var (
 		normalFg = lipgloss.AdaptiveColor{Light: "235", Dark: "252"}
@@ -189,9 +189,9 @@ func NewCharmTheme() *Theme {
 	return &t
 }
 
-// NewDraculaTheme returns a new theme based on the Dracula color scheme.
-func NewDraculaTheme() *Theme {
-	t := NewBaseTheme().copy()
+// ThemeDracula returns a new theme based on the Dracula color scheme.
+func ThemeDracula() *Theme {
+	t := ThemeBase().copy()
 
 	var (
 		background = lipgloss.AdaptiveColor{Dark: "#282a36"}
@@ -231,9 +231,9 @@ func NewDraculaTheme() *Theme {
 	return &t
 }
 
-// NewBase16Theme returns a new theme based on the base16 color scheme.
-func NewBase16Theme() *Theme {
-	t := NewBaseTheme().copy()
+// ThemeBase16 returns a new theme based on the base16 color scheme.
+func ThemeBase16() *Theme {
+	t := ThemeBase().copy()
 
 	f := &t.Focused
 	f.Base.BorderForeground(lipgloss.Color("8"))

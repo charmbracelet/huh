@@ -8,10 +8,10 @@ import (
 )
 
 func main() {
-	var base *huh.Theme = huh.NewBaseTheme()
-	var dracula *huh.Theme = huh.NewDraculaTheme()
-	var base16 *huh.Theme = huh.NewBase16Theme()
-	var charm *huh.Theme = huh.NewCharmTheme()
+	var base *huh.Theme = huh.ThemeBase()
+	var dracula *huh.Theme = huh.ThemeDracula()
+	var base16 *huh.Theme = huh.ThemeBase16()
+	var charm *huh.Theme = huh.ThemeCharm()
 	var exit *huh.Theme = nil
 
 	var theme *huh.Theme = base16

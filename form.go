@@ -72,7 +72,7 @@ func NewForm(groups ...*Group) *Form {
 	f := &Form{
 		groups:    groups,
 		paginator: p,
-		theme:     NewCharmTheme(),
+		theme:     ThemeCharm(),
 		keymap:    NewDefaultKeyMap(),
 		width:     defaultWidth,
 		results:   make(map[string]any),
