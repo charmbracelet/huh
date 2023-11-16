@@ -231,6 +231,11 @@ func (f *Form) Init() tea.Cmd {
 
 // Update updates the form.
 func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	// If the form is aborted or completed there's no need to update it.
+	if f.State != StateNormal {
+		return f, nil
+	}
+
 	page := f.paginator.Page
 	group := f.groups[page]
 
