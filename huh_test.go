@@ -29,7 +29,7 @@ func TestForm(t *testing.T) {
 	}
 
 	var taco Taco
-	var order = Order{Taco: taco}
+	order := Order{Taco: taco}
 
 	f := NewForm(
 		NewGroup(
@@ -440,6 +440,28 @@ func TestMultiSelect(t *testing.T) {
 	if !strings.Contains(view, "x toggle • ↑ up • ↓ down • enter confirm • shift+tab back") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected field to contain help.")
+	}
+}
+
+func TestHideGroup(t *testing.T) {
+	f := NewForm(
+		NewGroup(NewNote().Description("Foo")).WithHide(true),
+		NewGroup(NewNote().Description("Bar")),
+		NewGroup(NewNote().Description("Baz")),
+		NewGroup(NewNote().Description("Qux")).WithHideFunc(func() bool { return false }).WithHide(true),
+	)
+	f.Update(f.Init())
+
+	if v := f.View(); !strings.Contains(v, "Bar") {
+		t.Log(pretty.Render(v))
+		t.Error("expected Bar to not be hidden")
+	}
+
+	f.Update(nextGroup())
+
+	if v := f.View(); !strings.Contains(v, "Baz") {
+		t.Log(pretty.Render(v))
+		t.Error("expected Baz to not be hidden")
 	}
 }
 

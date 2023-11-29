@@ -226,6 +226,11 @@ func (f *Form) Init() tea.Cmd {
 	for i, group := range f.groups {
 		cmds[i] = group.Init()
 	}
+
+	if f.isGroupHidden() {
+		cmds = append(cmds, nextGroup)
+	}
+
 	return tea.Batch(cmds...)
 }
 
@@ -266,17 +271,33 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		f.paginator.NextPage()
 
+		if f.isGroupHidden() {
+			return f, nextGroup
+		}
+
 	case prevGroupMsg:
 		if len(group.Errors()) > 0 {
 			return f, nil
 		}
 		f.paginator.PrevPage()
+
+		if f.isGroupHidden() {
+			return f, prevGroup
+		}
 	}
 
 	m, cmd := group.Update(msg)
 	f.groups[page] = m.(*Group)
 
 	return f, cmd
+}
+
+func (f *Form) isGroupHidden() bool {
+	hide := f.groups[f.paginator.Page].hide
+	if hide == nil {
+		return false
+	}
+	return hide()
 }
 
 // View renders the form.
