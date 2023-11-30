@@ -25,77 +25,69 @@ const (
 func (s Spice) String() string {
 	switch s {
 	case Mild:
-		return "mild "
+		return "Mild "
 	case Medium:
-		return "medium-spicy "
+		return "Medium-Spicy "
 	case Hot:
-		return "hot "
+		return "Spicy-Hot "
 	default:
 		return ""
 	}
 }
 
 type Order struct {
-	Taco         Taco
+	Burger       Burger
+	Side         string
 	Name         string
 	Instructions string
 	Discount     bool
 }
 
-type Taco struct {
-	Shell    string
-	Spice    Spice
-	Base     string
+type Burger struct {
+	Type     string
 	Toppings []string
+	Spice    Spice
 }
 
 func main() {
-	var taco Taco
-	var order = Order{Taco: taco}
+	var burger Burger
+	var order = Order{Burger: burger}
 
 	// Should we run in accessible mode?
 	accessible, _ := strconv.ParseBool(os.Getenv("ACCESSIBLE"))
 
 	form := huh.NewForm(
 		huh.NewGroup(huh.NewNote().
-			Title("Taco Charm").
-			Description("Welcome to _Taco Charm™_.\n\nHow may we take your order?").
+			Title("Charmburger").
+			Description("Welcome to _Charmburger™_.\n\nHow may we take your order?").
 			Next(true)),
 
-		// What's a taco without a shell?
-		// We'll need to know what filling to put inside too.
+		// Choose a burger.
+		// We'll need to know what topping to add too.
 		huh.NewGroup(
 			huh.NewSelect[string]().
-				Options(huh.NewOptions("Soft", "Hard")...).
-				Title("Shell?").
-				Description("Our tortillas are made fresh in-house, every day.").
+				Options(huh.NewOptions("Charmburger Classic", "Chickwich", "Fishburger", "Charmpossible™ Burger")...).
+				Title("Choose your burger").
+				Description("At Charm we truly have a burger for everyone.").
 				Validate(func(t string) error {
-					if t == "Hard" {
-						return fmt.Errorf("we're out of hard shells, sorry")
+					if t == "Fishburger" {
+						return fmt.Errorf("no fish today, sorry")
 					}
 					return nil
 				}).
-				Value(&order.Taco.Shell),
+				Value(&order.Burger.Type),
 
-			huh.NewSelect[string]().
-				Options(huh.NewOptions("Chicken", "Beef", "Fish", "Beans")...).
-				Value(&order.Taco.Base).
-				Title("Base"),
-		),
-
-		// Prompt for toppings and special instructions.
-		// The customer can ask for up to 4 toppings.
-		huh.NewGroup(
 			huh.NewMultiSelect[string]().
 				Title("Toppings").
 				Description("Choose up to 4.").
 				Options(
-					huh.NewOption("Lettuce", "lettuce").Selected(true),
-					huh.NewOption("Tomatoes", "tomatoes").Selected(true),
-					huh.NewOption("Corn", "corn"),
-					huh.NewOption("Salsa", "salsa"),
-					huh.NewOption("Sour Cream", "sour cream"),
-					huh.NewOption("Cheese", "cheese"),
+					huh.NewOption("Lettuce", "Lettuce").Selected(true),
+					huh.NewOption("Tomatoes", "Tomatoes").Selected(true),
+					huh.NewOption("Charm Sauce", "Charm Sauce"),
+					huh.NewOption("Jalapeños", "Jalapeños"),
+					huh.NewOption("Cheese", "Cheese"),
+					huh.NewOption("Vegan Cheese", "Vegan Cheese"),
+					huh.NewOption("Nutella", "Nutella"),
 				).
 				Validate(func(t []string) error {
 					if len(t) <= 0 {
@@ -103,18 +95,28 @@ func main() {
 					}
 					return nil
 				}).
-				Value(&order.Taco.Toppings).
+				Value(&order.Burger.Toppings).
 				Filterable(true).
 				Limit(4),
+		),
 
+		// Prompt for toppings and special instructions.
+		// The customer can ask for up to 4 toppings.
+		huh.NewGroup(
 			huh.NewSelect[Spice]().
-				Title("Spice Level").
+				Title("Spice level").
 				Options(
 					huh.NewOption("Mild", Mild),
 					huh.NewOption("Medium", Medium),
 					huh.NewOption("Hot", Hot).Selected(true),
 				).
-				Value(&order.Taco.Spice),
+				Value(&order.Burger.Spice),
+
+			huh.NewSelect[string]().
+				Options(huh.NewOptions("Fries", "Disco Fries", "R&B Fries", "Carrots")...).
+				Value(&order.Side).
+				Title("Sides").
+				Description("You get one free side with this order."),
 		),
 
 		// Gather final details for the order.
@@ -147,25 +149,25 @@ func main() {
 		log.Fatal(err)
 	}
 
-	prepareTaco := func() {
+	prepareBurger := func() {
 		time.Sleep(2 * time.Second)
 	}
 
-	_ = spinner.New().Title("Preparing your taco").Accessible(accessible).Action(prepareTaco).Run()
+	_ = spinner.New().Title("Preparing your burger...").Accessible(accessible).Action(prepareBurger).Run()
 
 	// Print order summary.
 	{
 		var sb strings.Builder
 		keyword := func(s string) string {
-			return strings.ToLower(lipgloss.NewStyle().Foreground(lipgloss.Color("212")).Render(s))
+			return lipgloss.NewStyle().Foreground(lipgloss.Color("212")).Render(s)
 		}
 		fmt.Fprintf(&sb,
-			"%s\n\nOne %s%s shell taco filled with %s and topped with %s.",
-			lipgloss.NewStyle().Bold(true).Render("TACO RECEIPT"),
-			keyword(order.Taco.Spice.String()),
-			keyword(order.Taco.Shell),
-			keyword(order.Taco.Base),
-			keyword(xstrings.EnglishJoin(order.Taco.Toppings, true)),
+			"%s\n\nOne %s%s, topped with %s with %s on the side.",
+			lipgloss.NewStyle().Bold(true).Render("BURGER RECEIPT"),
+			keyword(order.Burger.Spice.String()),
+			keyword(order.Burger.Type),
+			keyword(xstrings.EnglishJoin(order.Burger.Toppings, true)),
+			keyword(order.Side),
 		)
 
 		name := order.Name
@@ -180,7 +182,7 @@ func main() {
 
 		fmt.Println(
 			lipgloss.NewStyle().
-				Width(40).
+				Width(48).
 				BorderStyle(lipgloss.RoundedBorder()).
 				BorderForeground(lipgloss.Color("63")).
 				Padding(1, 2).

@@ -7,8 +7,8 @@ test:
 spinner:
 	cd spinner/examples/loading && go run .
 
-taco:
-	cd examples/taco && go run .
+burger:
+	cd examples/burger && go run .
 
 theme:
 	cd examples/theme && go run .
