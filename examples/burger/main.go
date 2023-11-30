@@ -106,9 +106,9 @@ func main() {
 			huh.NewSelect[Spice]().
 				Title("Spice level").
 				Options(
-					huh.NewOption("Mild", Mild),
+					huh.NewOption("Mild", Mild).Selected(true),
 					huh.NewOption("Medium", Medium),
-					huh.NewOption("Hot", Hot).Selected(true),
+					huh.NewOption("Hot", Hot),
 				).
 				Value(&order.Burger.Spice),
 
@@ -133,7 +133,7 @@ func main() {
 				Title("Special Instructions").
 				Description("Anything we should know?").
 				CharLimit(400).
-				Lines(3),
+				Lines(5),
 
 			huh.NewConfirm().
 				Title("Would you like 15% off?").

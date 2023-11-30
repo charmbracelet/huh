@@ -1,14 +1,14 @@
-Output taco.gif
+Output burger.gif
 
-Set Height 600
+Set Height 700
 Set Width 1000
 
 Hide
-Type "go build -o taco ." Enter
+Type "go build -o burger ." Enter
 Ctrl+L
 Sleep 1s
 
-Type "clear && ./taco"
+Type "clear && ./burger"
 Sleep 500ms
 Enter
 Sleep 500ms
@@ -18,35 +18,38 @@ Show
 Sleep 1s
 Type "n"
 Sleep 1s
-Down
+Down 2
 Sleep 500ms Enter
 Sleep 1s
-Up
+Up@500ms
 Sleep 500ms Enter
-Sleep 1s
-Down@500ms 2
-Sleep 500ms Enter
-Sleep 1s
-Down@500ms 3
+Sleep 500ms
+Down@300ms 3
+Sleep 300ms
 Space
+Sleep 750ms Enter
+Sleep 500ms
+Down@300ms 2
 Sleep 500ms Enter
+Sleep 750ms
+Down@300ms
 Sleep 500ms Enter
 
 Sleep 1s
 
-Type "Glen"
+Type "Hilda"
 Sleep 500ms Enter
 
 Sleep 1s
 Type "Extra spicy please!"
 Sleep 500ms Tab
 
-Sleep 1s
+Sleep 750ms
 Left
-Sleep 1s Enter
+Sleep 750ms Enter
 
 Sleep 5s
 
 Hide
-Type "rm taco" Enter
+Type "rm burger" Enter
 Sleep 1s

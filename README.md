@@ -2,16 +2,16 @@
 
 A simple and powerful library for building interactive forms in the terminal. Powered by [Bubble Tea](https://github.com/charmbracelet/bubbletea).
 
-<img alt="Running a taco form" width="600" src="https://vhs.charm.sh/vhs-1en9litJd1v1VTnvXT1jJK.gif">
+<img alt="Running a burger form" width="600" src="https://vhs.charm.sh/vhs-717b54Ag22l5YUjEgVtpdS.gif">
 
-The above example is running from a single Go program ([source](./examples/taco/main.go)).
+The above example is running from a single Go program ([source](./examples/burger/main.go)).
 
 ## Tutorial
 
 `huh?` provides a straightforward API to build forms and prompt users for input.
 
-For this tutorial, we're building a Taco order form. Lets start by importing the
-dependencies that we'll need.
+For this tutorial, we're building a Burger order form. Lets start by importing
+the dependencies that we'll need.
 
 ```go
 package main
@@ -29,26 +29,17 @@ out.
 
 ```go
 form := huh.NewForm(
-    // What's a taco without a shell?
-    // We'll need to know what filling to put inside too.
+    // Prompt the user to choose a burger.
     huh.NewGroup(
         huh.NewSelect[string]().
             Options(
-                huh.NewOption("Soft", "soft"),
-                huh.NewOption("Hard", "hard"),
+                huh.NewOption("Charmburger Classic", "classic"),
+                huh.NewOption("Chickwich", "chickwich"),
+                huh.NewOption("Fishburger", "Fishburger"),
+                huh.NewOption("Charmpossible™ Burger", "charmpossible"),
             ).
-            Title("Shell?").
-            Value(&shell),
-
-        huh.NewSelect[string]().
-            Options(
-                huh.NewOption("Chicken", "chicken"),
-                huh.NewOption("Beef", "beef"),
-                huh.NewOption("Fish", "fish"),
-                huh.NewOption("Beans", "beans"),
-            ).
-            Title("Base").
-            Value(&base),
+            Title("Choose your burger").
+            Value(&burger),
     ),
 
     // Prompt for toppings and special instructions.
@@ -56,12 +47,13 @@ form := huh.NewForm(
     huh.NewGroup(
         huh.NewMultiSelect[string]().
             Options(
-                huh.NewOption("Tomatoes", "tomatoes").Selected(true),
-                huh.NewOption("Lettuce", "lettuce").Selected(true),
-                huh.NewOption("Salsa", "salsa"),
-                huh.NewOption("Cheese", "cheese"),
-                huh.NewOption("Sour Cream", "sour cream"),
-                huh.NewOption("Corn", "corn"),
+                huh.NewOption("Lettuce", "Lettuce").Selected(true),
+                huh.NewOption("Tomatoes", "Tomatoes").Selected(true),
+                huh.NewOption("Charm Sauce", "Charm Sauce"),
+                huh.NewOption("Jalapeños", "Jalapeños"),
+                huh.NewOption("Cheese", "Cheese"),
+                huh.NewOption("Vegan Cheese", "Vegan Cheese"),
+                huh.NewOption("Nutella", "Nutella"),
             ).
             Title("Toppings").
             Limit(4).
@@ -216,19 +208,19 @@ Huh additionally provides a `spinner` subpackage for displaying spinners while
 performing actions. It's useful to complete an action after your user completes
 a form.
 
-<img alt="Spinner while making a taco" width="600" src="https://vhs.charm.sh/vhs-14gSsi69ehXjpoqhY1j3UK.gif">
+<img alt="Spinner while making a burger" width="600" src="https://vhs.charm.sh/vhs-5uVCseHk9F5C4MdtZdwhIc.gif">
 
 To get started, create a new spinner, set a title, set an action, and run the
 spinner:
 
 ```go
-makeTaco := func() {
+makeBurger := func() {
     //...
 }
 
 err := spinner.New().
-    Title("Making your taco...").
-    Action(makeTaco).
+    Title("Making your burger...").
+    Action(makeBurger).
     Run()
 
 fmt.Println("Order up!")
@@ -238,16 +230,16 @@ Alternatively, you can also use `Context`s. The spinner will stop once the
 context is cancelled.
 
 ```go
-makeTaco := func() {
+makeBurger := func() {
     // ...
 }
 
 ctx, _ := context.WithTimeout(context.Background(), time.Second)
 
-go makeTaco()
+go makeBurger()
 
 err := spinner.New().
-    Title("Making your taco...").
+    Title("Making your burger...").
     Context(ctx).
     Run()
 

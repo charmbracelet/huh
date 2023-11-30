@@ -71,33 +71,23 @@ func main() {
 
 	// Form
 	var (
-		shell        string
-		base         string
+		burger       string
 		name         string
 		instructions string
 	)
 
 	form := huh.NewForm(
-		// What's a taco without a shell?
-		// We'll need to know what filling to put inside too.
+		// Prompt the user to choose a burger.
 		huh.NewGroup(
 			huh.NewSelect[string]().
 				Options(
-					huh.NewOption("Soft", "soft"),
-					huh.NewOption("Hard", "hard"),
+					huh.NewOption("Charmburger Classic", "classic"),
+					huh.NewOption("Chickwich", "chickwich"),
+					huh.NewOption("Fishburger", "Fishburger"),
+					huh.NewOption("Charmpossible™ Burger", "charmpossible"),
 				).
-				Title("Shell?").
-				Value(&shell),
-
-			huh.NewSelect[string]().
-				Options(
-					huh.NewOption("Chicken", "chicken"),
-					huh.NewOption("Beef", "beef"),
-					huh.NewOption("Fish", "fish"),
-					huh.NewOption("Beans", "beans"),
-				).
-				Title("Base").
-				Value(&base),
+				Title("Choose your burger").
+				Value(&burger),
 		),
 
 		// Prompt for toppings and special instructions.
@@ -105,12 +95,13 @@ func main() {
 		huh.NewGroup(
 			huh.NewMultiSelect[string]().
 				Options(
-					huh.NewOption("Tomatoes", "tomatoes").Selected(true),
-					huh.NewOption("Lettuce", "lettuce").Selected(true),
-					huh.NewOption("Salsa", "salsa"),
-					huh.NewOption("Cheese", "cheese"),
-					huh.NewOption("Sour Cream", "sour cream"),
-					huh.NewOption("Corn", "corn"),
+					huh.NewOption("Lettuce", "Lettuce").Selected(true),
+					huh.NewOption("Tomatoes", "Tomatoes").Selected(true),
+					huh.NewOption("Charm Sauce", "Charm Sauce"),
+					huh.NewOption("Jalapeños", "Jalapeños"),
+					huh.NewOption("Cheese", "Cheese"),
+					huh.NewOption("Vegan Cheese", "Vegan Cheese"),
+					huh.NewOption("Nutella", "Nutella"),
 				).
 				Title("Toppings").
 				Limit(4).
