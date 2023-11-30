@@ -2,7 +2,7 @@ Output multiselect.gif
 
 Set Width 1150
 Set Padding 40
-Set Height 450
+Set Height 500
 Set FontSize 28
 
 Hide
@@ -30,3 +30,4 @@ Sleep 2s
 
 Hide
 Type "rm multiselect" Enter
+Sleep 1s

@@ -141,12 +141,13 @@ huh.NewSelect[string]().
 ```go
 huh.NewMultiSelect[string]().
     Options(
-        huh.NewOption("Cheese", "cheese").Selected(true),
-        huh.NewOption("Lettuce", "lettuce").Selected(true),
-        huh.NewOption("Corn", "corn"),
-        huh.NewOption("Salsa", "salsa"),
-        huh.NewOption("Sour Cream", "sour cream"),
-        huh.NewOption("Tomatoes", "tomatoes"),
+        huh.NewOption("Lettuce", "Lettuce").Selected(true),
+        huh.NewOption("Tomatoes", "Tomatoes").Selected(true),
+        huh.NewOption("Charm Sauce", "Charm Sauce"),
+        huh.NewOption("Jalapeños", "Jalapeños"),
+        huh.NewOption("Cheese", "Cheese"),
+        huh.NewOption("Vegan Cheese", "Vegan Cheese"),
+        huh.NewOption("Nutella", "Nutella"),
     ).
     Title("Toppings").
     Limit(4).
@@ -155,7 +156,7 @@ huh.NewMultiSelect[string]().
 
 ### Confirm
 
-<img alt="Confirm field" width="600" src="https://vhs.charm.sh/vhs-2HeX5MdOxLsrWwsa0TNMIL.gif">
+<img alt="Confirm field" width="600" src="https://vhs.charm.sh/vhs-3pCtJgM9EH1tcO0VNtSV3I.gif">
 
 ```go
 huh.NewConfirm().
