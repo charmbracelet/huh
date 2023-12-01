@@ -2,7 +2,7 @@ Output multiselect.gif
 
 Set Width 1150
 Set Padding 40
-Set Height 500
+Set Height 480
 Set FontSize 28
 
 Hide

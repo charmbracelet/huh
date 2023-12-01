@@ -136,7 +136,7 @@ huh.NewSelect[string]().
 
 ### Multiple Select
 
-<img alt="Multiselect field" width="600" src="https://vhs.charm.sh/vhs-7bYeyKzQNGPyPdpQqvFwkx.gif">
+<img alt="Multiselect field" width="600" src="https://vhs.charm.sh/vhs-3TLImcoexOehRNLELysMpK.gif">
 
 ```go
 huh.NewMultiSelect[string]().
@@ -156,7 +156,7 @@ huh.NewMultiSelect[string]().
 
 ### Confirm
 
-<img alt="Confirm field" width="600" src="https://vhs.charm.sh/vhs-3pCtJgM9EH1tcO0VNtSV3I.gif">
+<img alt="Confirm field" width="600" src="https://vhs.charm.sh/vhs-2HeX5MdOxLsrWwsa0TNMIL.gif">
 
 ```go
 huh.NewConfirm().
