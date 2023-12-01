@@ -2,7 +2,7 @@
 
 A simple and powerful library for building interactive forms in the terminal. Powered by [Bubble Tea](https://github.com/charmbracelet/bubbletea).
 
-<img alt="Running a burger form" width="600" src="https://vhs.charm.sh/vhs-717b54Ag22l5YUjEgVtpdS.gif">
+<img alt="Running a burger form" width="600" src="https://vhs.charm.sh/vhs-3J4i6HE3yBmz6SUO3HqILr.gif">
 
 The above example is running from a single Go program ([source](./examples/burger/main.go)).
 
@@ -92,7 +92,7 @@ if err != nil {
 * [`Input`](#input)
 * [`Text`](#text)
 * [`Select`](#select)
-* [`MultiSelect`](#multi-select)
+* [`MultiSelect`](#multiple-select)
 * [`Confirm`](#confirm)
 
 ### Input

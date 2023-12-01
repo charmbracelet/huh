@@ -182,7 +182,7 @@ func main() {
 
 		fmt.Println(
 			lipgloss.NewStyle().
-				Width(48).
+				Width(40).
 				BorderStyle(lipgloss.RoundedBorder()).
 				BorderForeground(lipgloss.Color("63")).
 				Padding(1, 2).
