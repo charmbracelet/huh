@@ -119,8 +119,8 @@ func (m Model) View() string {
 	s := m.styles
 
 	var class string
-	if m.getFormValue("class") != "" {
-		class = "Class: " + m.getFormValue("class")
+	if m.form.GetString("class") != "" {
+		class = "Class: " + m.form.GetString("class")
 	}
 
 	// Form (left side)
@@ -141,13 +141,13 @@ func (m Model) View() string {
 			level          string
 		)
 
-		if m.getFormValue("level") != "" {
-			level = "Level: " + m.getFormValue("level")
+		if m.form.GetString("level") != "" {
+			level = "Level: " + m.form.GetString("level")
 			role, jobDescription = m.getRole()
 			role = "\n\n" + s.StatusHeader.Render("Projected Role") + "\n" + role
 			jobDescription = "\n\n" + s.StatusHeader.Render("Duties") + "\n" + jobDescription
 		}
-		if m.getFormValue("class") != "" {
+		if m.form.GetString("class") != "" {
 			buildInfo = fmt.Sprintf("%s\n%s", class, level)
 		}
 
@@ -180,17 +180,9 @@ func (m Model) appBoundaryView(text string) string {
 	)
 }
 
-func (m Model) getFormValue(key string) string {
-	s, ok := m.form.Get(key).(string)
-	if !ok {
-		return ""
-	}
-	return s
-}
-
 func (m Model) getRole() (string, string) {
-	level := m.getFormValue("level")
-	switch m.getFormValue("class") {
+	level := m.form.GetString("level")
+	switch m.form.GetString("class") {
 	case "Warrior":
 		switch level {
 		case "1":
