@@ -3,6 +3,7 @@ package huh
 import (
 	"errors"
 
+	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/paginator"
 	tea "github.com/charmbracelet/bubbletea"
@@ -158,13 +159,24 @@ func (f *Form) WithAccessible(accessible bool) *Form {
 	return f
 }
 
-// WithHelp sets whether or not the form should show help.
+// WithShowHelp sets whether or not the form should show help.
 //
 // This allows the form groups and field to show what keybindings are available
 // to the user.
-func (f *Form) WithHelp(v bool) *Form {
+func (f *Form) WithShowHelp(v bool) *Form {
 	for _, group := range f.groups {
-		group.WithHelp(v)
+		group.WithShowHelp(v)
+	}
+	return f
+}
+
+// WithShowErrors sets whether or not the form should show help.
+//
+// This allows the form groups and field to show what keybindings are available
+// to the user.
+func (f *Form) WithShowErrors(v bool) *Form {
+	for _, group := range f.groups {
+		group.WithShowErrors(v)
 	}
 	return f
 }
@@ -213,6 +225,22 @@ func (f *Form) WithWidth(width int) *Form {
 		group.WithWidth(width)
 	}
 	return f
+}
+
+// Errors returns the current groups' errors.
+func (f *Form) Errors() []error {
+	return f.groups[f.paginator.Page].Errors()
+}
+
+// Help returns the current groups' help.
+func (f *Form) Help() help.Model {
+	return f.groups[f.paginator.Page].help
+}
+
+// KeyBinds returns the current fields' keybinds.
+func (f *Form) KeyBinds() []key.Binding {
+	group := f.groups[f.paginator.Page]
+	return group.fields[group.paginator.Page].KeyBinds()
 }
 
 // Get returns a result from the form.
