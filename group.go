@@ -34,6 +34,7 @@ type Group struct {
 	width  int
 	theme  *Theme
 	keymap *KeyMap
+	hide   func() bool
 }
 
 // NewGroup returns a new group with the given fields.
@@ -91,6 +92,18 @@ func (g *Group) WithWidth(width int) *Group {
 	for _, field := range g.fields {
 		field.WithWidth(width)
 	}
+	return g
+}
+
+// WithHide sets whether this group should be skipped.
+func (g *Group) WithHide(hide bool) *Group {
+	g.WithHideFunc(func() bool { return hide })
+	return g
+}
+
+// WithHideFunc sets the function that checks if this group should be skipped.
+func (g *Group) WithHideFunc(hideFunc func() bool) *Group {
+	g.hide = hideFunc
 	return g
 }
 
