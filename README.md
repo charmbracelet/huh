@@ -89,13 +89,15 @@ if err != nil {
 ```
 
 ## Field Reference
-* [`Input`](#input)
-* [`Text`](#text)
-* [`Select`](#select)
-* [`MultiSelect`](#multiple-select)
-* [`Confirm`](#confirm)
+* [`Input`](#input): single line text input
+* [`Text`](#text): multi-line text input
+* [`Select`](#select): select an option from a list
+* [`MultiSelect`](#multiple-select): select multiple options from a list
+* [`Confirm`](#confirm): confirm an action (yes or no)
 
 ### Input
+
+Prompt the user for a single line of text.
 
 <img alt="Input field" width="600" src="https://vhs.charm.sh/vhs-1ULe9JbTHfwFmm3hweRVtD.gif">
 
@@ -109,6 +111,8 @@ huh.NewInput().
 
 ### Text
 
+Prompt the user for multiple lines of text.
+
 <img alt="Text field" width="600" src="https://vhs.charm.sh/vhs-2rrIuVSEf38bT0cwc8hfEG.gif">
 
 ```go
@@ -119,6 +123,8 @@ huh.NewText().
 ```
 
 ### Select
+
+Prompt the user to select from a list.
 
 <img alt="Select field" width="600" src="https://vhs.charm.sh/vhs-7wFqZlxMWgbWmOIpBqXJTi.gif">
 
@@ -135,6 +141,8 @@ huh.NewSelect[string]().
 ```
 
 ### Multiple Select
+
+Prompt the user to select multiple options from a list.
 
 <img alt="Multiselect field" width="600" src="https://vhs.charm.sh/vhs-3TLImcoexOehRNLELysMpK.gif">
 
@@ -155,6 +163,8 @@ huh.NewMultiSelect[string]().
 ```
 
 ### Confirm
+
+Prompt the user to confirm an option (yes or no).
 
 <img alt="Confirm field" width="600" src="https://vhs.charm.sh/vhs-2HeX5MdOxLsrWwsa0TNMIL.gif">
 
