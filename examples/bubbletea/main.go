@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
@@ -84,7 +85,14 @@ func NewModel() Model {
 				Description("This will determine your benefits package"),
 
 			huh.NewConfirm().
+				Key("done").
 				Title("All done?").
+				Validate(func(v bool) error {
+					if !v {
+						return fmt.Errorf("Welp, finish up then")
+					}
+					return nil
+				}).
 				Affirmative("Yep").
 				Negative("Wait, no"),
 		),
@@ -107,67 +115,83 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
+	var cmds []tea.Cmd
+
+	// Process the form
 	form, cmd := m.form.Update(msg)
 	if f, ok := form.(*huh.Form); ok {
 		m.form = f
+		cmds = append(cmds, cmd)
 	}
 
-	return m, cmd
+	if m.form.State == huh.StateCompleted {
+		// Quit when the form is done.
+		cmds = append(cmds, tea.Quit)
+	}
+
+	return m, tea.Batch(cmds...)
 }
 
 func (m Model) View() string {
 	s := m.styles
 
-	var class string
-	if m.form.GetString("class") != "" {
-		class = "Class: " + m.form.GetString("class")
-	}
+	switch m.form.State {
+	case huh.StateCompleted:
+		title, role := m.getRole()
+		title = s.Highlight.Render(title)
+		var b strings.Builder
+		fmt.Fprintf(&b, "Congratulations, you’re Charm’s newest\n%s!\n\n", title)
+		fmt.Fprintf(&b, "Your job description is as follows:\n\n%s\n\nPlease proceed to HR immeidately.", role)
+		return s.Status.Copy().Width(48).MarginLeft(2).Render(b.String()) + "\n\n"
+	default:
 
-	// Form (left side)
-	v := m.form.View()
-	if m.form.State == huh.StateCompleted {
-		v += s.Highlight.Render(fmt.Sprintf("You selected: Level %s, %s\n", m.form.Get("level"), m.form.Get("class")))
-		v += s.Help.Render("\nctrl+c to quit\n")
-	}
-	form := m.lg.NewStyle().Margin(1, 2).Render(v)
-
-	// Status (right side)
-	var status string
-	{
-		var (
-			buildInfo      = "(None)"
-			role           string
-			jobDescription string
-			level          string
-		)
-
-		if m.form.GetString("level") != "" {
-			level = "Level: " + m.form.GetString("level")
-			role, jobDescription = m.getRole()
-			role = "\n\n" + s.StatusHeader.Render("Projected Role") + "\n" + role
-			jobDescription = "\n\n" + s.StatusHeader.Render("Duties") + "\n" + jobDescription
-		}
+		var class string
 		if m.form.GetString("class") != "" {
-			buildInfo = fmt.Sprintf("%s\n%s", class, level)
+			class = "Class: " + m.form.GetString("class")
 		}
 
-		const statusWidth = 28
-		statusMarginLeft := m.width - statusWidth - lipgloss.Width(form) - s.Status.GetMarginRight()
-		status = s.Status.Copy().
-			Height(lipgloss.Height(form)).
-			Width(statusWidth).
-			MarginLeft(statusMarginLeft).
-			Render(s.StatusHeader.Render("Current Build") + "\n" +
-				buildInfo +
-				role +
-				jobDescription)
+		// Form (left side)
+		v := m.form.View()
+		form := m.lg.NewStyle().Margin(1, 2).Render(v)
+
+		// Status (right side)
+		var status string
+		{
+			var (
+				buildInfo      = "(None)"
+				role           string
+				jobDescription string
+				level          string
+			)
+
+			if m.form.GetString("level") != "" {
+				level = "Level: " + m.form.GetString("level")
+				role, jobDescription = m.getRole()
+				role = "\n\n" + s.StatusHeader.Render("Projected Role") + "\n" + role
+				jobDescription = "\n\n" + s.StatusHeader.Render("Duties") + "\n" + jobDescription
+			}
+			if m.form.GetString("class") != "" {
+				buildInfo = fmt.Sprintf("%s\n%s", class, level)
+			}
+
+			const statusWidth = 28
+			statusMarginLeft := m.width - statusWidth - lipgloss.Width(form) - s.Status.GetMarginRight()
+			status = s.Status.Copy().
+				Height(lipgloss.Height(form)).
+				Width(statusWidth).
+				MarginLeft(statusMarginLeft).
+				Render(s.StatusHeader.Render("Current Build") + "\n" +
+					buildInfo +
+					role +
+					jobDescription)
+		}
+
+		header := m.appBoundaryView("Charm Employment Application")
+		body := lipgloss.JoinHorizontal(lipgloss.Top, form, status)
+		footer := m.appBoundaryView("")
+
+		return s.Base.Render(header + "\n" + body + "\n\n" + footer)
 	}
-
-	header := m.appBoundaryView("Charm Employment Application")
-	body := lipgloss.JoinHorizontal(lipgloss.Top, form, status)
-	footer := m.appBoundaryView("")
-
-	return s.Base.Render(header + "\n" + body + "\n\n" + footer)
 }
 
 func (m Model) appBoundaryView(text string) string {
