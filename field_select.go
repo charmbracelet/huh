@@ -217,7 +217,7 @@ func (s *Select[T]) View() string {
 	if s.filtering {
 		sb.WriteString(s.filter.View())
 	} else if s.filter.Value() != "" {
-		sb.WriteString(styles.Title.Render(s.title) + styles.Help.Render("/"+s.filter.Value()))
+		sb.WriteString(styles.Title.Render(s.title) + styles.Description.Render("/"+s.filter.Value()))
 	} else {
 		sb.WriteString(styles.Title.Render(s.title))
 	}

@@ -30,6 +30,9 @@ type Group struct {
 	showHelp bool
 	help     help.Model
 
+	// errors
+	showErrors bool
+
 	// group options
 	width  int
 	theme  *Theme
@@ -43,10 +46,11 @@ func NewGroup(fields ...Field) *Group {
 	p.SetTotalPages(len(fields))
 
 	return &Group{
-		fields:    fields,
-		paginator: p,
-		help:      help.New(),
-		showHelp:  true,
+		fields:     fields,
+		paginator:  p,
+		help:       help.New(),
+		showHelp:   true,
+		showErrors: true,
 	}
 }
 
@@ -62,9 +66,15 @@ func (g *Group) Description(description string) *Group {
 	return g
 }
 
-// WithHelp sets whether or not the group's help should be shown.
-func (g *Group) WithHelp(help bool) *Group {
-	g.showHelp = help
+// WithShowHelp sets whether or not the group's help should be shown.
+func (g *Group) WithShowHelp(show bool) *Group {
+	g.showHelp = show
+	return g
+}
+
+// WithShowErrors sets whether or not the group's errors should be shown.
+func (g *Group) WithShowErrors(show bool) *Group {
+	g.showErrors = show
 	return g
 }
 
@@ -225,7 +235,11 @@ func (g *Group) View() string {
 	s.WriteString(gap)
 
 	if g.showHelp && len(errors) <= 0 {
-		s.WriteString(g.theme.Focused.Help.Render(g.help.ShortHelpView(g.fields[g.paginator.Page].KeyBinds())))
+		s.WriteString(g.help.ShortHelpView(g.fields[g.paginator.Page].KeyBinds()))
+	}
+
+	if !g.showErrors {
+		return s.String()
 	}
 
 	for _, err := range errors {

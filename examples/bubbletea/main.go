@@ -13,6 +13,7 @@ import (
 const maxWidth = 80
 
 var (
+	red    = lipgloss.AdaptiveColor{Light: "#FE5F86", Dark: "#FE5F86"}
 	indigo = lipgloss.AdaptiveColor{Light: "#5A56E0", Dark: "#7571F9"}
 	green  = lipgloss.AdaptiveColor{Light: "#02BA84", Dark: "#02BF87"}
 )
@@ -23,6 +24,7 @@ type Styles struct {
 	Status,
 	StatusHeader,
 	Highlight,
+	Error,
 	Help lipgloss.Style
 }
 
@@ -45,6 +47,10 @@ func NewStyles(lg *lipgloss.Renderer) *Styles {
 		Bold(true)
 	s.Highlight = lg.NewStyle().
 		Foreground(lipgloss.Color("212"))
+	s.Error = lg.NewStyle().
+		Foreground(red).
+		Bold(true).
+		Padding(0, 1, 0, 4)
 	s.Help = lg.NewStyle().
 		Foreground(lipgloss.Color("240"))
 	return &s
@@ -96,7 +102,9 @@ func NewModel() Model {
 				Affirmative("Yep").
 				Negative("Wait, no"),
 		),
-	).WithHelp(false)
+	).
+		WithShowHelp(false).
+		WithShowErrors(false)
 	return m
 }
 
@@ -186,12 +194,28 @@ func (m Model) View() string {
 					jobDescription)
 		}
 
+		errors := m.form.Errors()
 		header := m.appBoundaryView("Charm Employment Application")
+		if len(errors) > 0 {
+			header = m.appErrorBoundaryView(m.errorView())
+		}
 		body := lipgloss.JoinHorizontal(lipgloss.Top, form, status)
-		footer := m.appBoundaryView("")
+
+		footer := m.appBoundaryView(m.form.Help().ShortHelpView(m.form.KeyBinds()))
+		if len(errors) > 0 {
+			footer = m.appErrorBoundaryView("")
+		}
 
 		return s.Base.Render(header + "\n" + body + "\n\n" + footer)
 	}
+}
+
+func (m Model) errorView() string {
+	var s string
+	for _, err := range m.form.Errors() {
+		s += err.Error()
+	}
+	return s
 }
 
 func (m Model) appBoundaryView(text string) string {
@@ -201,6 +225,16 @@ func (m Model) appBoundaryView(text string) string {
 		m.styles.HeaderText.Render(text),
 		lipgloss.WithWhitespaceChars("/"),
 		lipgloss.WithWhitespaceForeground(indigo),
+	)
+}
+
+func (m Model) appErrorBoundaryView(text string) string {
+	return lipgloss.PlaceHorizontal(
+		m.width,
+		lipgloss.Left,
+		m.styles.Error.Render(text),
+		lipgloss.WithWhitespaceChars("/"),
+		lipgloss.WithWhitespaceForeground(red),
 	)
 }
 

@@ -1,6 +1,9 @@
 package huh
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"github.com/charmbracelet/bubbles/help"
+	"github.com/charmbracelet/lipgloss"
+)
 
 // Theme is a collection of styles for components of the form.
 // Themes can be applied to a form using the WithTheme option.
@@ -28,9 +31,9 @@ type FieldStyles struct {
 	Base           lipgloss.Style
 	Title          lipgloss.Style
 	Description    lipgloss.Style
-	Help           lipgloss.Style // XXX: apply help coloring in theme to help bubble
 	ErrorIndicator lipgloss.Style
 	ErrorMessage   lipgloss.Style
+	Help           help.Styles
 
 	// Select styles.
 	SelectSelector lipgloss.Style // Selection indicator
@@ -76,10 +79,18 @@ func (t TextInputStyles) copy() TextInputStyles {
 // copy returns a copy of a FieldStyles with all children styles copied.
 func (f FieldStyles) copy() FieldStyles {
 	return FieldStyles{
-		Base:                f.Base.Copy(),
-		Title:               f.Title.Copy(),
-		Description:         f.Description.Copy(),
-		Help:                f.Help.Copy(),
+		Base:        f.Base.Copy(),
+		Title:       f.Title.Copy(),
+		Description: f.Description.Copy(),
+		Help: help.Styles{
+			Ellipsis:       f.Help.Ellipsis.Copy(),
+			ShortKey:       f.Help.ShortKey.Copy(),
+			ShortDesc:      f.Help.ShortDesc.Copy(),
+			ShortSeparator: f.Help.ShortSeparator.Copy(),
+			FullKey:        f.Help.FullKey.Copy(),
+			FullDesc:       f.Help.FullDesc.Copy(),
+			FullSeparator:  f.Help.FullSeparator.Copy(),
+		},
 		ErrorIndicator:      f.ErrorIndicator.Copy(),
 		ErrorMessage:        f.ErrorMessage.Copy(),
 		SelectSelector:      f.SelectSelector.Copy(),
@@ -137,8 +148,7 @@ func ThemeBase() *Theme {
 		Background(lipgloss.Color("0"))
 	f.TextInput.Placeholder = lipgloss.NewStyle().Foreground(lipgloss.Color("8"))
 
-	f.Help = lipgloss.NewStyle().
-		PaddingLeft(1)
+	f.Help = help.New().Styles
 
 	// Blurred styles.
 	t.Blurred = f.copy()
@@ -165,7 +175,6 @@ func ThemeCharm() *Theme {
 	f.Base = f.Base.BorderForeground(lipgloss.Color("238"))
 	f.Title.Foreground(indigo).Bold(true)
 	f.Description.Foreground(lipgloss.AdaptiveColor{Light: "", Dark: "243"})
-	f.Help.Foreground(lipgloss.Color("8"))
 	f.ErrorIndicator.Foreground(red)
 	f.ErrorMessage.Foreground(red)
 	f.SelectSelector.Foreground(fuchsia)
@@ -208,7 +217,6 @@ func ThemeDracula() *Theme {
 	f.Base.BorderForeground(selection)
 	f.Title.Foreground(purple)
 	f.Description.Foreground(comment)
-	f.Help.Foreground(comment)
 	f.ErrorIndicator.Foreground(red)
 	f.ErrorMessage.Foreground(red)
 	f.SelectSelector.Foreground(yellow)
@@ -239,7 +247,6 @@ func ThemeBase16() *Theme {
 	f.Base.BorderForeground(lipgloss.Color("8"))
 	f.Title.Foreground(lipgloss.Color("6"))
 	f.Description.Foreground(lipgloss.Color("8"))
-	f.Help.Foreground(lipgloss.Color("8"))
 	f.ErrorIndicator.Foreground(lipgloss.Color("9"))
 	f.ErrorMessage.Foreground(lipgloss.Color("9"))
 	f.SelectSelector.Foreground(lipgloss.Color("3"))
