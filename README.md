@@ -257,7 +257,7 @@ While you can use `huh` as a replacement to Bubble Tea in many applications
 where you only need to prompt the user for input. You can embed `huh` forms in
 Bubble Tea applications and use the form as a [Bubble][bubbles].
 
-<img alt="Bubbletea + Huh?" width="350" src="https://stuff.charm.sh/huh/bubbletea-huh.png">
+<img alt="Bubbletea + Huh?" width="174" src="https://stuff.charm.sh/huh/bubbletea-huh.png">
 
 ```go
 type Model struct {
