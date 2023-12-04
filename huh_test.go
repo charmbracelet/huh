@@ -450,7 +450,8 @@ func TestHideGroup(t *testing.T) {
 		NewGroup(NewNote().Description("Baz")),
 		NewGroup(NewNote().Description("Qux")).WithHideFunc(func() bool { return false }).WithHide(true),
 	)
-	f.Update(f.Init())
+
+	f = batchUpdate(f, f.Init()).(*Form)
 
 	if v := f.View(); !strings.Contains(v, "Bar") {
 		t.Log(pretty.Render(v))
@@ -462,6 +463,13 @@ func TestHideGroup(t *testing.T) {
 	if v := f.View(); !strings.Contains(v, "Baz") {
 		t.Log(pretty.Render(v))
 		t.Error("expected Baz to not be hidden")
+	}
+
+	f = batchUpdate(f, nextGroup).(*Form)
+
+	if v := f.View(); strings.Contains(v, "Qux") {
+		t.Log(pretty.Render(v))
+		t.Error("expected Qux to be hidden")
 	}
 }
 
