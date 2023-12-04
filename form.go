@@ -220,6 +220,33 @@ func (f *Form) Get(key string) any {
 	return f.results[key]
 }
 
+// GetString returns a result as a string from the form.
+func (f *Form) GetString(key string) string {
+	v, ok := f.results[key].(string)
+	if !ok {
+		return ""
+	}
+	return v
+}
+
+// GetInt returns a result as a string from the form.
+func (f *Form) GetInt(key string) int {
+	v, ok := f.results[key].(int)
+	if !ok {
+		return 0
+	}
+	return v
+}
+
+// GetBool returns a result as a string from the form.
+func (f *Form) GetBool(key string) bool {
+	v, ok := f.results[key].(bool)
+	if !ok {
+		return false
+	}
+	return v
+}
+
 // Init initializes the form.
 func (f *Form) Init() tea.Cmd {
 	cmds := make([]tea.Cmd, len(f.groups))
