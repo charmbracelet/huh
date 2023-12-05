@@ -237,7 +237,7 @@ and run the spinner:
 <table>
 
 <tr>
-<td> Action </td><td> Context </td>
+<td> Action </td><td> Context </td></tr>
 <tr>
 <td>
 
@@ -254,7 +254,8 @@ fmt.Println("Order up!")
 <td>
 
 ```go
-ctx, _ := context.WithTimeout(context.Background(), time.Second)
+ctx, _ := context.WithTimeout(ctx, timeout)
+
 go makeBurger()
 
 err := spinner.New().
