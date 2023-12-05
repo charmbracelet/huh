@@ -254,8 +254,6 @@ fmt.Println("Order up!")
 <td>
 
 ```go
-ctx, _ := context.WithTimeout(ctx, timeout)
-
 go makeBurger()
 
 err := spinner.New().
