@@ -1,6 +1,7 @@
 # Huh?
 
-A simple and powerful library for building interactive forms in the terminal. Powered by [Bubble Tea](https://github.com/charmbracelet/bubbletea).
+A simple and powerful library for building interactive forms in the terminal.
+Powered by [Bubble Tea](https://github.com/charmbracelet/bubbletea).
 
 <img alt="Running a burger form" width="600" src="https://vhs.charm.sh/vhs-3J4i6HE3yBmz6SUO3HqILr.gif">
 
@@ -8,10 +9,10 @@ The above example is running from a single Go program ([source](./examples/burge
 
 ## Tutorial
 
-`huh?` provides a straightforward API to build forms and prompt users for input.
+`huh?` is a Go library to build forms to prompt users for input. Build complex
+survey forms in a few lines of Go.
 
-For this tutorial, we're building a Burger order form. Lets start by importing
-the dependencies that we'll need.
+Let's build a Burger order form. To start, let's import `charmbracelet/huh`:
 
 ```go
 package main
@@ -23,13 +24,13 @@ import (
 )
 ```
 
-`huh` allows you to define a form with multiple groups to separate field forms
-into pages. We will set up a form with three groups for the customer to fill
-out.
+`huh` separates forms into groups (you can think of groups as pages). Groups are
+made of fields (e.g. `Select`, `Input`, `Text`). We will set up three groups for
+the customer to fill out.
 
 ```go
 form := huh.NewForm(
-    // Prompt the user to choose a burger.
+    // Ask the user for a base burger and toppings.
     huh.NewGroup(
         huh.NewSelect[string]().
             Options(
@@ -42,8 +43,8 @@ form := huh.NewForm(
             Value(&burger),
     ),
 
-    // Prompt for toppings and special instructions.
-    // The customer can ask for up to 4 toppings.
+    // Let the user select multiple toppings.
+    // We allow a maximum limit of 4 toppings.
     huh.NewGroup(
         huh.NewMultiSelect[string]().
             Options(
@@ -60,7 +61,7 @@ form := huh.NewForm(
             Value(&toppings),
     ),
 
-    // Gather final details for the order.
+    // Gather some final details about the order.
     huh.NewGroup(
         huh.NewInput().
             Title("What's your name?").
@@ -79,7 +80,7 @@ form := huh.NewForm(
 )
 ```
 
-Finally, we can run the form:
+Finally, run the form:
 
 ```go
 err := form.Run()
@@ -89,6 +90,7 @@ if err != nil {
 ```
 
 ## Field Reference
+
 * [`Input`](#input): single line text input
 * [`Text`](#text): multi-line text input
 * [`Select`](#select): select an option from a list
@@ -96,12 +98,17 @@ if err != nil {
 * [`Confirm`](#confirm): confirm an action (yes or no)
 
 > [!TIP]
-> You can also run any field individually without adding it to a form.
-> Simply use the `Run()` method available on each field.
+> Each field can also be run individually for quick input gathering.
+> Simply use the `Run` method.
 
 ```go
 var name string
-huh.NewInput().Title("What's your name?").Value(&name).Run()
+
+huh.NewInput().
+    Title("What's your name?").
+    Value(&name).
+    Run() // this is blocking...
+
 fmt.Printf("Hey, %s!\n", name)
 ```
 
@@ -134,7 +141,7 @@ huh.NewText().
 
 ### Select
 
-Prompt the user to select from a list.
+Prompt the user to select a single option from a list.
 
 <img alt="Select field" width="600" src="https://vhs.charm.sh/vhs-7wFqZlxMWgbWmOIpBqXJTi.gif">
 
@@ -152,7 +159,7 @@ huh.NewSelect[string]().
 
 ### Multiple Select
 
-Prompt the user to select multiple options from a list.
+Prompt the user to select multiple (zero or more) options from a list.
 
 <img alt="Multiselect field" width="600" src="https://vhs.charm.sh/vhs-3TLImcoexOehRNLELysMpK.gif">
 
@@ -174,7 +181,7 @@ huh.NewMultiSelect[string]().
 
 ### Confirm
 
-Prompt the user to confirm an option (yes or no).
+Prompt the user to confirm (Yes or No).
 
 <img alt="Confirm field" width="600" src="https://vhs.charm.sh/vhs-2HeX5MdOxLsrWwsa0TNMIL.gif">
 
@@ -188,27 +195,28 @@ huh.NewConfirm().
 
 ## Accessibility
 
-Forms can be made accessible to screen readers through setting the
-`WithAccessible` option. It's useful to set this through an environment variable
-or configuration option to allow the user to control whether their form is
-accessible for screen readers.
+Prevent redrawing the screen with the `WithAccessible` option. This is useful
+for screen readers to provide better dictation of the output.
+
+> [!TIP]
+> We recommend setting this through an environment variable or configuration
+> option to allow the user to control accessibility.
 
 ```go
-form.WithAccessible(os.Getenv("ACCESSIBLE") != "")
+accessibleMode := os.Getenv("ACCESSIBLE") != ""
+form.WithAccessible(accessibleMode)
 ```
 
-Making the form accessible will remove redrawing and use more standard prompts
-to ensure that screen readers are able to dictate the information on screen
-correctly.
+Accessible forms will remove redrawing in favor of standard prompts, providing
+better dictation of the information on screen for the visually impaired.
 
 <img alt="Accessible cuisine form" width="600" src="https://vhs.charm.sh/vhs-19xEBn4LgzPZDtgzXRRJYS.gif">
 
 ## Themes
 
-Forms can be customized through themes. You can supply your own custom theme
-or use the predefined themes.
+Forms can be themed.
 
-There are currently four predefined themes:
+Supply your own custom theme or choose from one of the four predefined themes:
 
 * `Charm`
 * `Dracula`
@@ -225,14 +233,13 @@ There are currently four predefined themes:
 
 ## Spinner
 
-Huh additionally provides a `spinner` subpackage for displaying spinners while
-performing actions. It's useful to complete an action after your user completes
-a form.
+Spinners come built in to `huh` for loading actions. It's useful to indicate
+loading while completing an action after a form is submitted.
 
 <img alt="Spinner while making a burger" width="600" src="https://vhs.charm.sh/vhs-5uVCseHk9F5C4MdtZdwhIc.gif">
 
-To get started, create a new spinner, set a title, set an action (or `Context`),
-and run the spinner:
+
+Create a new spinner, set a title, set the action (or provide a `Context`), and run the spinner:
 
 <table>
 
@@ -270,13 +277,12 @@ fmt.Println("Order up!")
 
 ## What about [Bubble Tea][tea]?
 
-Huh doesn’t replace Bubble Tea. Rather, it is an abstraction built on Bubble Tea
-to make forms easier to code and implement. It was designed to make assembling
-powerful and feature-rich forms in Go as simple and fun as possible.
+Huh is an abstraction built on Bubble Tea to make forms easier to code and
+implement. You can use `huh` to replace Bubble Tea if you only need to gather
+input from the user via a form.
 
-While you can use `huh` as a replacement to Bubble Tea in many applications
-where you only need to prompt the user for input. You can embed `huh` forms in
-Bubble Tea applications and use the form as a [Bubble][bubbles].
+For more complex use cases, however, you can embed `huh` forms within Bubble Tea
+applications to add forms to your applications.
 
 <img alt="Bubbletea + Huh?" width="174" src="https://stuff.charm.sh/huh/bubbletea-huh.png">
 
