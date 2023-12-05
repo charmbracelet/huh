@@ -235,6 +235,9 @@ To get started, create a new spinner, set a title, set an action (or `Context`),
 and run the spinner:
 
 <table>
+
+<tr>
+<td> Action </td><td> Context </td>
 <tr>
 <td>
 
