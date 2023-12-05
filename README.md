@@ -336,6 +336,8 @@ func (m Model) View() string {
 
 ```
 
+<img alt="Bubble Tea embedded form example" width="800" src="https://vhs.charm.sh/vhs-3wGaB7EUKWmojeaHpARMUv.gif">
+
 See [the Bubble Tea example][example] for how to embed `huh` forms in [Bubble
 Tea][tea] applications for more advanced use cases.
 

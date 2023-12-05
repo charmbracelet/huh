@@ -24,33 +24,30 @@ type Styles struct {
 	Status,
 	StatusHeader,
 	Highlight,
-	Error,
+	ErrorHeaderText,
 	Help lipgloss.Style
 }
 
 func NewStyles(lg *lipgloss.Renderer) *Styles {
 	s := Styles{}
 	s.Base = lg.NewStyle().
-		Padding(1, 4, 2, 1)
+		Padding(1, 4, 0, 1)
 	s.HeaderText = lg.NewStyle().
 		Foreground(indigo).
 		Bold(true).
-		Padding(0, 1, 0, 4)
+		Padding(0, 1, 0, 2)
 	s.Status = lg.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(indigo).
 		PaddingLeft(1).
-		MarginTop(1).
-		MarginRight(2)
+		MarginTop(1)
 	s.StatusHeader = lg.NewStyle().
 		Foreground(green).
 		Bold(true)
 	s.Highlight = lg.NewStyle().
 		Foreground(lipgloss.Color("212"))
-	s.Error = lg.NewStyle().
-		Foreground(red).
-		Bold(true).
-		Padding(0, 1, 0, 4)
+	s.ErrorHeaderText = s.HeaderText.Copy().
+		Foreground(red)
 	s.Help = lg.NewStyle().
 		Foreground(lipgloss.Color("240"))
 	return &s
@@ -150,7 +147,7 @@ func (m Model) View() string {
 		var b strings.Builder
 		fmt.Fprintf(&b, "Congratulations, you’re Charm’s newest\n%s!\n\n", title)
 		fmt.Fprintf(&b, "Your job description is as follows:\n\n%s\n\nPlease proceed to HR immeidately.", role)
-		return s.Status.Copy().Width(48).MarginLeft(2).Render(b.String()) + "\n\n"
+		return s.Status.Copy().Margin(0, 1).Padding(1, 2).Width(48).Render(b.String()) + "\n\n"
 	default:
 
 		var class string
@@ -159,8 +156,8 @@ func (m Model) View() string {
 		}
 
 		// Form (left side)
-		v := m.form.View()
-		form := m.lg.NewStyle().Margin(1, 2).Render(v)
+		v := strings.TrimSuffix(m.form.View(), "\n\n")
+		form := m.lg.NewStyle().Margin(1, 0).Render(v)
 
 		// Status (right side)
 		var status string
@@ -232,7 +229,7 @@ func (m Model) appErrorBoundaryView(text string) string {
 	return lipgloss.PlaceHorizontal(
 		m.width,
 		lipgloss.Left,
-		m.styles.Error.Render(text),
+		m.styles.ErrorHeaderText.Render(text),
 		lipgloss.WithWhitespaceChars("/"),
 		lipgloss.WithWhitespaceForeground(red),
 	)
