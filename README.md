@@ -235,10 +235,6 @@ To get started, create a new spinner, set a title, set an action, and run the
 spinner:
 
 ```go
-makeBurger := func() {
-    //...
-}
-
 err := spinner.New().
     Title("Making your burger...").
     Action(makeBurger).
@@ -247,16 +243,11 @@ err := spinner.New().
 fmt.Println("Order up!")
 ```
 
-Alternatively, you can also use `Context`s. The spinner will stop once the
-context is cancelled.
+> [!NOTE]
+> You can also use `Context`s. The spinner will stop once the context is cancelled.
 
 ```go
-makeBurger := func() {
-    // ...
-}
-
 ctx, _ := context.WithTimeout(context.Background(), time.Second)
-
 go makeBurger()
 
 err := spinner.New().
