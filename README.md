@@ -176,6 +176,22 @@ huh.NewConfirm().
     Value(&confirm)
 ```
 
+## Run
+
+You can also run any field individually without creating a form or groups with
+the `Run()` method on each field. This is useful for prompting for one-off
+inputs.
+
+Simply create a new input and `Run` it.
+
+```go
+var confirm bool
+huh.NewConfirm().Title("Are you sure?").Value(&confirm).Run()
+if confirm {
+    // do something...
+}
+```
+
 ## Accessibility
 
 Forms can be made accessible to screen readers through setting the
