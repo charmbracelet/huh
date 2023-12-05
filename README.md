@@ -95,6 +95,16 @@ if err != nil {
 * [`MultiSelect`](#multiple-select): select multiple options from a list
 * [`Confirm`](#confirm): confirm an action (yes or no)
 
+> [!TIP]
+> You can also run any field individually without adding it to a form.
+> Simply use the `Run()` method available on each field.
+
+```go
+var name string
+huh.NewInput().Title("What's your name?").Value(&name).Run()
+fmt.Printf("Hey, %s!\n", name)
+```
+
 ### Input
 
 Prompt the user for a single line of text.
@@ -107,16 +117,6 @@ huh.NewInput().
     Prompt("?").
     Validate(isFood).
     Value(&lunch)
-```
-
-> [!TIP]
-> You can also run any field individually without adding it to a form.
-> Simply use the `Run()` method available on each field.
-
-```go
-var name string
-huh.NewInput().Title("What's your name?").Value(&name).Run()
-fmt.Printf("Hey, %s!\n", name)
 ```
 
 ### Text
