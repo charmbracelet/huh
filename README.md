@@ -109,6 +109,16 @@ huh.NewInput().
     Value(&lunch)
 ```
 
+> [!TIP]
+> You can also run any field individually without adding it to a form with the
+> `Run` method, which is available on each field.
+
+```go
+var name string
+huh.NewInput().Title("What's your name?").Value(&name).Run()
+fmt.Printf("Hey, %s!\n", name)
+```
+
 ### Text
 
 Prompt the user for multiple lines of text.
@@ -174,22 +184,6 @@ huh.NewConfirm().
     Affirmative("Yes!").
     Negative("No.").
     Value(&confirm)
-```
-
-## Run
-
-You can also run any field individually without creating a form or groups with
-the `Run()` method on each field. This is useful for prompting for one-off
-inputs.
-
-Simply create a new input and `Run` it.
-
-```go
-var confirm bool
-huh.NewConfirm().Title("Are you sure?").Value(&confirm).Run()
-if confirm {
-    // do something...
-}
 ```
 
 ## Accessibility
