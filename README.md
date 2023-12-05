@@ -237,7 +237,7 @@ and run the spinner:
 <table>
 
 <tr>
-<td> Action </td><td> Context </td></tr>
+<td> <strong>Action Style</strong> </td><td> <strong>Context Style</strong> </td></tr>
 <tr>
 <td>
 
