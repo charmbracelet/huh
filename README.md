@@ -231,8 +231,12 @@ a form.
 
 <img alt="Spinner while making a burger" width="600" src="https://vhs.charm.sh/vhs-5uVCseHk9F5C4MdtZdwhIc.gif">
 
-To get started, create a new spinner, set a title, set an action, and run the
-spinner:
+To get started, create a new spinner, set a title, set an action (or `Context`),
+and run the spinner:
+
+<table>
+<tr>
+<td>
 
 ```go
 err := spinner.New().
@@ -243,8 +247,8 @@ err := spinner.New().
 fmt.Println("Order up!")
 ```
 
-> [!NOTE]
-> You can also use `Context`s. The spinner will stop once the context is cancelled.
+</td>
+<td>
 
 ```go
 ctx, _ := context.WithTimeout(context.Background(), time.Second)
@@ -257,6 +261,10 @@ err := spinner.New().
 
 fmt.Println("Order up!")
 ```
+
+</td>
+</tr>
+</table>
 
 ## What about [Bubble Tea][tea]?
 
