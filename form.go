@@ -275,6 +275,30 @@ func (f *Form) GetBool(key string) bool {
 	return v
 }
 
+// NextGroup moves the form to the next group.
+func (f *Form) NextGroup() tea.Cmd {
+	_, cmd := f.Update(nextGroup())
+	return cmd
+}
+
+// PrevGroup moves the form to the next group.
+func (f *Form) PrevGroup() tea.Cmd {
+	_, cmd := f.Update(prevGroup())
+	return cmd
+}
+
+// NextField moves the form to the next field.
+func (f *Form) NextField() tea.Cmd {
+	_, cmd := f.Update(nextField())
+	return cmd
+}
+
+// NextField moves the form to the next field.
+func (f *Form) PrevField() tea.Cmd {
+	_, cmd := f.Update(prevField())
+	return cmd
+}
+
 // Init initializes the form.
 func (f *Form) Init() tea.Cmd {
 	cmds := make([]tea.Cmd, len(f.groups))
