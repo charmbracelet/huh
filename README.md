@@ -110,8 +110,8 @@ huh.NewInput().
 ```
 
 > [!TIP]
-> You can also run any field individually without adding it to a form with the
-> `Run` method, which is available on each field.
+> You can also run any field individually without adding it to a form.
+> Simply use the `Run()` method available on each field.
 
 ```go
 var name string
