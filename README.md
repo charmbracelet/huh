@@ -227,8 +227,8 @@ huh.NewConfirm().
 
 ## Accessibility
 
-Prevent redrawing the screen with the `WithAccessible` option. This is useful
-for screen readers to provide better dictation of the output.
+`huh?` has a special rendering option designed specifically for screen readers.
+You can enable it with `form.WithAccessible(true)`.
 
 > [!TIP]
 > We recommend setting this through an environment variable or configuration
