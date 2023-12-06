@@ -1,7 +1,7 @@
 # Huh?
 
-A simple and powerful library for building interactive forms in the terminal.
-Powered by [Bubble Tea](https://github.com/charmbracelet/bubbletea).
+A simple, powerful library for building interactive forms in the terminal.
+Powered by [Bubble Tea][tea].
 
 <img alt="Running a burger form" width="600" src="https://vhs.charm.sh/vhs-3J4i6HE3yBmz6SUO3HqILr.gif">
 
@@ -9,10 +9,11 @@ The above example is running from a single Go program ([source](./examples/burge
 
 ## Tutorial
 
-`huh?` is a Go library to build forms to prompt users for input. Build complex
-survey forms in a few lines of Go.
+`huh?` is a Go library for prompting users for input. You can build complex
+forms in a few lines of Go.
 
-Let's build a Burger order form. To start, let's import `charmbracelet/huh`:
+Let’s build a Burger order form. To start, let's import `charmbracelet/huh` and
+define a few variables to store the data we'll prompt for.
 
 ```go
 package main
@@ -22,11 +23,19 @@ import (
 
   "github.com/charmbracelet/huh"
 )
+
+var (
+    burger string
+    toppings []string
+    name string
+    instructions string
+    discount bool
+)
 ```
 
-`huh` separates forms into groups (you can think of groups as pages). Groups are
-made of fields (e.g. `Select`, `Input`, `Text`). We will set up three groups for
-the customer to fill out.
+`huh` separates forms into groups (you can think of groups as pages). Groups
+are made of fields (e.g. `Select`, `Input`, `Text`). We will set up three
+groups for the customer to fill out.
 
 ```go
 form := huh.NewForm(
@@ -36,7 +45,7 @@ form := huh.NewForm(
             Options(
                 huh.NewOption("Charmburger Classic", "classic"),
                 huh.NewOption("Chickwich", "chickwich"),
-                huh.NewOption("Fishburger", "Fishburger"),
+                huh.NewOption("Fishburger", "fishburger"),
                 huh.NewOption("Charmpossible™ Burger", "charmpossible"),
             ).
             Title("Choose your burger").
@@ -87,7 +96,15 @@ err := form.Run()
 if err != nil {
     log.Fatal(err)
 }
+
+if !discount {
+    fmt.Println("What?? You didn’t take the discount?!"
+}
 ```
+
+And that’s it! For more info see [the full source
+code](./examples/burger/main.go) for this example and
+[the docs](https://pkg.go.dev/github.com/charmbracelet/huh?tab=doc).
 
 ## Field Reference
 
