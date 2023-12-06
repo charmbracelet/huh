@@ -91,11 +91,11 @@ if err != nil {
 
 ## Field Reference
 
-* [`Input`](#input): single line text input
-* [`Text`](#text): multi-line text input
-* [`Select`](#select): select an option from a list
-* [`MultiSelect`](#multiple-select): select multiple options from a list
-* [`Confirm`](#confirm): confirm an action (yes or no)
+- [`Input`](#input): single line text input
+- [`Text`](#text): multi-line text input
+- [`Select`](#select): select an option from a list
+- [`MultiSelect`](#multiple-select): select multiple options from a list
+- [`Confirm`](#confirm): confirm an action (yes or no)
 
 > [!TIP]
 > Each field can also be run individually for quick input gathering.
@@ -218,10 +218,10 @@ Forms can be themed.
 
 Supply your own custom theme or choose from one of the four predefined themes:
 
-* `Charm`
-* `Dracula`
-* `Base 16`
-* `Default`
+- `Charm`
+- `Dracula`
+- `Base 16`
+- `Default`
 
 <br />
 <p>
@@ -237,7 +237,6 @@ Spinners come built in to `huh` for loading actions. It's useful to indicate
 loading while completing an action after a form is submitted.
 
 <img alt="Spinner while making a burger" width="600" src="https://vhs.charm.sh/vhs-5uVCseHk9F5C4MdtZdwhIc.gif">
-
 
 Create a new spinner, set a title, set the action (or provide a `Context`), and run the spinner:
 
@@ -345,14 +344,13 @@ Tea][tea] applications for more advanced use cases.
 [bubbles]: https://github.com/charmbracelet/bubbles
 [example]: https://github.com/charmbracelet/huh/blob/main/examples/bubbletea/main.go
 
-
 ## Feedback
 
 We'd love to hear your thoughts on this project. Feel free to drop us a note!
 
-* [Twitter](https://twitter.com/charmcli)
-* [The Fediverse](https://mastodon.social/@charmcli)
-* [Discord](https://charm.sh/chat)
+- [Twitter](https://twitter.com/charmcli)
+- [The Fediverse](https://mastodon.social/@charmcli)
+- [Discord](https://charm.sh/chat)
 
 ## Acknowledgments
 
@@ -364,7 +362,7 @@ We'd love to hear your thoughts on this project. Feel free to drop us a note!
 
 [MIT](https://github.com/charmbracelet/bubbletea/raw/master/LICENSE)
 
-***
+---
 
 Part of [Charm](https://charm.sh).
 
