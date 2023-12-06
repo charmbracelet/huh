@@ -242,9 +242,8 @@ better dictation of the information on screen for the visually impaired.
 
 ## Themes
 
-Forms can be themed.
-
-Supply your own custom theme or choose from one of the four predefined themes:
+`huh?` contains a powerful theme abstraction. Supply your own custom theme or
+choose from one of the four predefined themes:
 
 - `Charm`
 - `Dracula`
@@ -258,6 +257,12 @@ Supply your own custom theme or choose from one of the four predefined themes:
     <img alt="Base 16-themed form" width="400" src="https://stuff.charm.sh/huh/themes/basesixteen-theme.png">
     <img alt="Default-themed form" width="400" src="https://stuff.charm.sh/huh/themes/default-theme.png">
 </p>
+
+Themes can take advantage of the full range of
+[Lip Gloss][lipgloss] style options. For a high level theme reference see
+[the docs](https://pkg.go.dev/github.com/charmbracelet/huh#Theme).
+
+[lipgloss]: https://github.com/charmbracelet/lipgloss
 
 ## Spinner
 
