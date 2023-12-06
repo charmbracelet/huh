@@ -74,7 +74,7 @@ form := huh.NewForm(
             CharLimit(400),
 
         huh.NewConfirm().
-            Title("Would you like 15% off").
+            Title("Would you like 15% off?").
             Value(&discount),
     ),
 )
