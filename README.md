@@ -37,19 +37,18 @@ form := huh.NewForm(
         // Ask the user for a base burger and toppings.
         huh.NewSelect[string]().
             Title("Choose your burger").
-            Value(&burger).
             Options(
                 huh.NewOption("Charmburger Classic", "classic"),
                 huh.NewOption("Chickwich", "chickwich"),
                 huh.NewOption("Fishburger", "fishburger"),
                 huh.NewOption("Charmpossible™ Burger", "charmpossible"),
-            ),
+            ).
+            Value(&burger),
 
         // Let the user select multiple toppings. We allow a maximum limit of
         // 4 toppings.
         huh.NewMultiSelect[string]().
             Title("Toppings").
-            Value(&toppings).
             Options(
                 huh.NewOption("Lettuce", "lettuce").Selected(true),
                 huh.NewOption("Tomatoes", "tomatoes").Selected(true),
@@ -58,18 +57,19 @@ form := huh.NewForm(
                 huh.NewOption("Vegan Cheese", "vegan cheese"),
                 huh.NewOption("Nutella", "nutella"),
             ).
-            Limit(4),
+            Limit(4).
+            Value(&toppings),
 
         // Values in selects and multi-selects can by any type you want. We’ve
         // been using recording strings above whereas here we’ll store integers.
         huh.NewSelect[int]().
             Title("How much Charm Sauce do you want?").
-            Value(&sauceLevel).
             Options(
                 huh.NewOption("None", 0),
                 huh.NewOption("A little", 1),
                 huh.NewOption("A lot", 2),
-            ),
+            ).
+            Value(&sauceLevel),
     ),
 
     // Gather some final details about the order.
@@ -88,8 +88,8 @@ form := huh.NewForm(
 
         huh.NewText().
             Title("Special Instructions").
-            Value(&instructions).
-            CharLimit(400),
+            CharLimit(400).
+            Value(&instructions),
 
         huh.NewConfirm().
             Title("Would you like 15% off?").
