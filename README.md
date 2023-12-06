@@ -264,10 +264,10 @@ Themes can take advantage of the full range of
 
 [lipgloss]: https://github.com/charmbracelet/lipgloss
 
-## Spinner
+## Bonus: Spinner
 
-Spinners come built in to `huh` for loading actions. It's useful to indicate
-loading while completing an action after a form is submitted.
+`huh?` ships with a standalone spinner package. It’s useful for indicating
+background activity after a form is submitted.
 
 <img alt="Spinner while making a burger" width="600" src="https://vhs.charm.sh/vhs-5uVCseHk9F5C4MdtZdwhIc.gif">
 
@@ -296,6 +296,7 @@ fmt.Println("Order up!")
 go makeBurger()
 
 err := spinner.New().
+    Type(spinner.Line).
     Title("Making your burger...").
     Context(ctx).
     Run()
@@ -307,21 +308,26 @@ fmt.Println("Order up!")
 </tr>
 </table>
 
-## What about [Bubble Tea][tea]?
+For more on Spinners see the [spinner examples](./spinner/examples) and
+[the spinner docs](https://pkg.go.dev/github.com/charmbracelet/huh@main/spinner).
 
-Huh is an abstraction built on Bubble Tea to make forms easier to code and
-implement. You can use `huh` to replace Bubble Tea if you only need to gather
-input from the user via a form.
-
-For more complex use cases, however, you can embed `huh` forms within Bubble Tea
-applications to add forms to your applications.
+## What about in Bubble Tea?
 
 <img alt="Bubbletea + Huh?" width="174" src="https://stuff.charm.sh/huh/bubbletea-huh.png">
 
+In addition to its standalone mode, `huh?` has first-class support for
+[Bubble Tea][tea] and can be easily integrated into Bubble Tea applications. 
+It’s incredibly useful in portions of your Bubble Tea application that need 
+form-like input.
+
+A `huh.Form` is merely a `tea.Model`, so you can use it just as 
+you would any other [Bubble](https://github.com/charmbracelet/bubbles).
+
+<img alt="Bubble Tea embedded form example" width="800" src="https://vhs.charm.sh/vhs-3wGaB7EUKWmojeaHpARMUv.gif">
+
 ```go
 type Model struct {
-    // embed form in parent model, use as bubble.
-    form *huh.Form
+    form *huh.Form // huh.Form is just a tea.Model
 }
 
 func NewModel() Model {
@@ -349,6 +355,7 @@ func (m Model) Init() tea.Cmd {
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     // ...
 
+    // Send messages through the form and save the updated form accordingly.
     form, cmd := m.form.Update(msg)
     if f, ok := form.(*huh.Form); ok {
         m.form = f
@@ -368,10 +375,8 @@ func (m Model) View() string {
 
 ```
 
-<img alt="Bubble Tea embedded form example" width="800" src="https://vhs.charm.sh/vhs-3wGaB7EUKWmojeaHpARMUv.gif">
-
-See [the Bubble Tea example][example] for how to embed `huh` forms in [Bubble
-Tea][tea] applications for more advanced use cases.
+For more info in using `huh?` in Bubble Tea applications see [the full Bubble
+Tea example][example].
 
 [tea]: https://github.com/charmbracelet/bubbletea
 [bubbles]: https://github.com/charmbracelet/bubbles
