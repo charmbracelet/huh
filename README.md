@@ -43,7 +43,7 @@ form := huh.NewForm(
                 huh.NewOption("Fishburger", "fishburger"),
                 huh.NewOption("Charmpossible™ Burger", "charmpossible"),
             ).
-            Value(&burger),
+            Value(&burger), // store the chosen option in the "burger" variable
 
         // Let the user select multiple toppings. We allow a maximum limit of
         // 4 toppings.
@@ -60,8 +60,9 @@ form := huh.NewForm(
             Limit(4).
             Value(&toppings),
 
-        // Values in selects and multi-selects can by any type you want. We’ve
-        // been using recording strings above whereas here we’ll store integers.
+        // Option values in selects and multi-selects can by any type you
+        // want. We’ve been using recording strings above whereas here we’ll 
+        // store integers. Note the generic "[int]" directive below.
         huh.NewSelect[int]().
             Title("How much Charm Sauce do you want?").
             Options(
