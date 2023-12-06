@@ -4,7 +4,7 @@ A simple, powerful library for building interactive forms and prompts in the ter
 
 <img alt="Running a burger form" width="600" src="https://vhs.charm.sh/vhs-3J4i6HE3yBmz6SUO3HqILr.gif">
 
-`huh?` is easy to use in a standalone fashion, can be 
+`huh?` is easy to use in a standalone fashion, can be
 [integrated into a Bubble Tea application](#what-about-bubble-tea) and contains
 a first-class [accessible mode](#accessibility) mode for screen readers.
 
@@ -64,7 +64,7 @@ form := huh.NewForm(
             Value(&toppings),
 
         // Option values in selects and multi-selects can by any type you
-        // want. We’ve been using recording strings above whereas here we’ll 
+        // want. We’ve been using recording strings above whereas here we’ll
         // store integers. Note the generic "[int]" directive below.
         huh.NewSelect[int]().
             Title("How much Charm Sauce do you want?").
@@ -320,13 +320,13 @@ For more on Spinners see the [spinner examples](./spinner/examples) and
 <img alt="Bubbletea + Huh?" width="174" src="https://stuff.charm.sh/huh/bubbletea-huh.png">
 
 In addition to its standalone mode, `huh?` has first-class support for
-[Bubble Tea][tea] and can be easily integrated into Bubble Tea applications. 
-It’s incredibly useful in portions of your Bubble Tea application that need 
+[Bubble Tea][tea] and can be easily integrated into Bubble Tea applications.
+It’s incredibly useful in portions of your Bubble Tea application that need
 form-like input.
 
 <img alt="Bubble Tea embedded form example" width="800" src="https://vhs.charm.sh/vhs-3wGaB7EUKWmojeaHpARMUv.gif">
 
-A `huh.Form` is merely a `tea.Model`, so you can use it just as 
+A `huh.Form` is merely a `tea.Model`, so you can use it just as
 you would any other [Bubble](https://github.com/charmbracelet/bubbles).
 
 ```go
@@ -359,7 +359,6 @@ func (m Model) Init() tea.Cmd {
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     // ...
 
-    // Send messages through the form and save the updated form accordingly.
     form, cmd := m.form.Update(msg)
     if f, ok := form.(*huh.Form); ok {
         m.form = f
@@ -396,7 +395,7 @@ We'd love to hear your thoughts on this project. Feel free to drop us a note!
 
 ## Acknowledgments
 
-`huh` is inspired by the wonderful [Survey][survey] library by Alec Aivazis.
+`huh?` is inspired by the wonderful [Survey][survey] library by Alec Aivazis.
 
 [survey]: https://github.com/AlecAivazis/survey
 
