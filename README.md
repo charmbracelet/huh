@@ -1,9 +1,12 @@
 # Huh?
 
 A simple, powerful library for building interactive forms and prompts in the terminal.
-Powered by [Bubble Tea][tea].
 
 <img alt="Running a burger form" width="600" src="https://vhs.charm.sh/vhs-3J4i6HE3yBmz6SUO3HqILr.gif">
+
+`huh?` is easy to use in a standalone fashion, can be 
+[integrated into a Bubble Tea application](#what-about-bubble-tea) and contains
+a first-class [accessible mode](#accessibility) mode for screen readers.
 
 The above example is running from a single Go program ([source](./examples/burger/main.go)).
 
@@ -312,7 +315,7 @@ fmt.Println("Order up!")
 For more on Spinners see the [spinner examples](./spinner/examples) and
 [the spinner docs](https://pkg.go.dev/github.com/charmbracelet/huh@main/spinner).
 
-## What about in Bubble Tea?
+## What about Bubble Tea?
 
 <img alt="Bubbletea + Huh?" width="174" src="https://stuff.charm.sh/huh/bubbletea-huh.png">
 
@@ -321,10 +324,10 @@ In addition to its standalone mode, `huh?` has first-class support for
 It’s incredibly useful in portions of your Bubble Tea application that need 
 form-like input.
 
+<img alt="Bubble Tea embedded form example" width="800" src="https://vhs.charm.sh/vhs-3wGaB7EUKWmojeaHpARMUv.gif">
+
 A `huh.Form` is merely a `tea.Model`, so you can use it just as 
 you would any other [Bubble](https://github.com/charmbracelet/bubbles).
-
-<img alt="Bubble Tea embedded form example" width="800" src="https://vhs.charm.sh/vhs-3wGaB7EUKWmojeaHpARMUv.gif">
 
 ```go
 type Model struct {
