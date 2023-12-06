@@ -20,6 +20,7 @@ import "github.com/charmbracelet/huh"
 var (
     burger string
     toppings []string
+    sauceLevel int
     name string
     instructions string
     discount bool
@@ -32,35 +33,43 @@ groups for the customer to fill out.
 
 ```go
 form := huh.NewForm(
-    // Ask the user for a base burger and toppings.
     huh.NewGroup(
+        // Ask the user for a base burger and toppings.
         huh.NewSelect[string]().
+            Title("Choose your burger").
+            Value(&burger).
             Options(
                 huh.NewOption("Charmburger Classic", "classic"),
                 huh.NewOption("Chickwich", "chickwich"),
                 huh.NewOption("Fishburger", "fishburger"),
                 huh.NewOption("Charmpossible™ Burger", "charmpossible"),
-            ).
-            Title("Choose your burger").
-            Value(&burger),
-    ),
+            ),
 
-    // Let the user select multiple toppings.
-    // We allow a maximum limit of 4 toppings.
-    huh.NewGroup(
+        // Let the user select multiple toppings. We allow a maximum limit of
+        // 4 toppings.
         huh.NewMultiSelect[string]().
-            Options(
-                huh.NewOption("Lettuce", "Lettuce").Selected(true),
-                huh.NewOption("Tomatoes", "Tomatoes").Selected(true),
-                huh.NewOption("Charm Sauce", "Charm Sauce"),
-                huh.NewOption("Jalapeños", "Jalapeños"),
-                huh.NewOption("Cheese", "Cheese"),
-                huh.NewOption("Vegan Cheese", "Vegan Cheese"),
-                huh.NewOption("Nutella", "Nutella"),
-            ).
             Title("Toppings").
-            Limit(4).
-            Value(&toppings),
+            Value(&toppings).
+            Options(
+                huh.NewOption("Lettuce", "lettuce").Selected(true),
+                huh.NewOption("Tomatoes", "tomatoes").Selected(true),
+                huh.NewOption("Jalapeños", "jalapeños"),
+                huh.NewOption("Cheese", "cheese"),
+                huh.NewOption("Vegan Cheese", "vegan cheese"),
+                huh.NewOption("Nutella", "nutella"),
+            ).
+            Limit(4),
+
+        // Values in selects and multi-selects can by any type you want. We’ve
+        // been using recording strings above whereas here we’ll store integers.
+        huh.NewSelect[int]().
+            Title("How much Charm Sauce do you want?").
+            Value(&sauceLevel).
+            Options(
+                huh.NewOption("None", 0),
+                huh.NewOption("A little", 1),
+                huh.NewOption("A lot", 2),
+            ),
     ),
 
     // Gather some final details about the order.
@@ -68,7 +77,14 @@ form := huh.NewForm(
         huh.NewInput().
             Title("What's your name?").
             Value(&name).
-            Validate(validateName),
+            // Validating fields is easy. The form will mark erroneous fields
+            // and display error messages accordingly.
+            Validate(func(s string) error {
+                if s == "Frank" {
+                    return errors.New("Sorry, we don’t serve customers named Frank.")
+                }
+                return nil
+            }),
 
         huh.NewText().
             Title("Special Instructions").
@@ -95,9 +111,11 @@ if !discount {
 }
 ```
 
-And that’s it! For more info see [the full source
-code](./examples/burger/main.go) for this example and
-[the docs](https://pkg.go.dev/github.com/charmbracelet/huh?tab=doc).
+And that’s it! For more info see [the full source][burgersource] for this
+example as well as [the docs][docs].
+
+[burgersource]: ./examples/burger/main.go
+[docs]: https://pkg.go.dev/github.com/charmbracelet/huh?tab=doc
 
 ## Field Reference
 
