@@ -5,7 +5,7 @@ A simple, powerful library for building interactive forms and prompts in the ter
 <img alt="Running a burger form" width="600" src="https://vhs.charm.sh/vhs-3J4i6HE3yBmz6SUO3HqILr.gif">
 
 `huh?` is easy to use in a standalone fashion, can be
-[integrated into a Bubble Tea application](#what-about-bubble-tea) and contains
+[integrated into a Bubble Tea application](#what-about-bubble-tea), and contains
 a first-class [accessible mode](#accessibility) mode for screen readers.
 
 The above example is running from a single Go program ([source](./examples/burger/main.go)).
