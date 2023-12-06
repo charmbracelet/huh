@@ -1,6 +1,6 @@
 # Huh?
 
-A simple, powerful library for building interactive forms in the terminal.
+A simple, powerful library for building interactive forms and prompts in the terminal.
 Powered by [Bubble Tea][tea].
 
 <img alt="Running a burger form" width="600" src="https://vhs.charm.sh/vhs-3J4i6HE3yBmz6SUO3HqILr.gif">
@@ -9,11 +9,8 @@ The above example is running from a single Go program ([source](./examples/burge
 
 ## Tutorial
 
-`huh?` is a Go library for prompting users for input. You can build complex
-forms in a few lines of Go.
-
-Let’s build a Burger order form. To start, let's import `charmbracelet/huh` and
-define a few variables to store the data we'll prompt for.
+Let’s build a form for ordering burgers. To start, we’ll import the library and
+define a few variables where’ll we store answers.
 
 ```go
 package main
@@ -29,7 +26,7 @@ var (
 )
 ```
 
-`huh` separates forms into groups (you can think of groups as pages). Groups
+`huh?` separates forms into groups (you can think of groups as pages). Groups
 are made of fields (e.g. `Select`, `Input`, `Text`). We will set up three
 groups for the customer to fill out.
 
