@@ -18,11 +18,7 @@ define a few variables to store the data we'll prompt for.
 ```go
 package main
 
-import (
-  "log"
-
-  "github.com/charmbracelet/huh"
-)
+import "github.com/charmbracelet/huh"
 
 var (
     burger string
