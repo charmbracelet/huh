@@ -98,8 +98,8 @@ if err != nil {
 - [`Confirm`](#confirm): confirm an action (yes or no)
 
 > [!TIP]
-> Each field can also be run individually for quick input gathering.
-> Simply use the `Run` method.
+> Just want to prompt the user with a single field? Each field has a `Run`
+> method that can be used as a shorthand for gathering quick and easy input.
 
 ```go
 var name string
