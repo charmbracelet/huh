@@ -1,64 +1,79 @@
 # Huh?
 
-A simple and powerful library for building interactive forms in the terminal.
-Powered by [Bubble Tea](https://github.com/charmbracelet/bubbletea).
+A simple, powerful library for building interactive forms and prompts in the terminal.
 
 <img alt="Running a burger form" width="600" src="https://vhs.charm.sh/vhs-3J4i6HE3yBmz6SUO3HqILr.gif">
+
+`huh?` is easy to use in a standalone fashion, can be
+[integrated into a Bubble Tea application](#what-about-bubble-tea), and contains
+a first-class [accessible mode](#accessibility) mode for screen readers.
 
 The above example is running from a single Go program ([source](./examples/burger/main.go)).
 
 ## Tutorial
 
-`huh?` is a Go library to build forms to prompt users for input. Build complex
-survey forms in a few lines of Go.
-
-Let's build a Burger order form. To start, let's import `charmbracelet/huh`:
+Let’s build a form for ordering burgers. To start, we’ll import the library and
+define a few variables where’ll we store answers.
 
 ```go
 package main
 
-import (
-  "log"
+import "github.com/charmbracelet/huh"
 
-  "github.com/charmbracelet/huh"
+var (
+    burger string
+    toppings []string
+    sauceLevel int
+    name string
+    instructions string
+    discount bool
 )
 ```
 
-`huh` separates forms into groups (you can think of groups as pages). Groups are
-made of fields (e.g. `Select`, `Input`, `Text`). We will set up three groups for
-the customer to fill out.
+`huh?` separates forms into groups (you can think of groups as pages). Groups
+are made of fields (e.g. `Select`, `Input`, `Text`). We will set up three
+groups for the customer to fill out.
 
 ```go
 form := huh.NewForm(
-    // Ask the user for a base burger and toppings.
     huh.NewGroup(
+        // Ask the user for a base burger and toppings.
         huh.NewSelect[string]().
+            Title("Choose your burger").
             Options(
                 huh.NewOption("Charmburger Classic", "classic"),
                 huh.NewOption("Chickwich", "chickwich"),
-                huh.NewOption("Fishburger", "Fishburger"),
+                huh.NewOption("Fishburger", "fishburger"),
                 huh.NewOption("Charmpossible™ Burger", "charmpossible"),
             ).
-            Title("Choose your burger").
-            Value(&burger),
-    ),
+            Value(&burger), // store the chosen option in the "burger" variable
 
-    // Let the user select multiple toppings.
-    // We allow a maximum limit of 4 toppings.
-    huh.NewGroup(
+        // Let the user select multiple toppings. We allow a maximum limit of
+        // 4 toppings.
         huh.NewMultiSelect[string]().
-            Options(
-                huh.NewOption("Lettuce", "Lettuce").Selected(true),
-                huh.NewOption("Tomatoes", "Tomatoes").Selected(true),
-                huh.NewOption("Charm Sauce", "Charm Sauce"),
-                huh.NewOption("Jalapeños", "Jalapeños"),
-                huh.NewOption("Cheese", "Cheese"),
-                huh.NewOption("Vegan Cheese", "Vegan Cheese"),
-                huh.NewOption("Nutella", "Nutella"),
-            ).
             Title("Toppings").
+            Options(
+                huh.NewOption("Lettuce", "lettuce").Selected(true),
+                huh.NewOption("Tomatoes", "tomatoes").Selected(true),
+                huh.NewOption("Jalapeños", "jalapeños"),
+                huh.NewOption("Cheese", "cheese"),
+                huh.NewOption("Vegan Cheese", "vegan cheese"),
+                huh.NewOption("Nutella", "nutella"),
+            ).
             Limit(4).
             Value(&toppings),
+
+        // Option values in selects and multi-selects can by any type you
+        // want. We’ve been using recording strings above whereas here we’ll
+        // store integers. Note the generic "[int]" directive below.
+        huh.NewSelect[int]().
+            Title("How much Charm Sauce do you want?").
+            Options(
+                huh.NewOption("None", 0),
+                huh.NewOption("A little", 1),
+                huh.NewOption("A lot", 2),
+            ).
+            Value(&sauceLevel),
     ),
 
     // Gather some final details about the order.
@@ -66,15 +81,22 @@ form := huh.NewForm(
         huh.NewInput().
             Title("What's your name?").
             Value(&name).
-            Validate(validateName),
+            // Validating fields is easy. The form will mark erroneous fields
+            // and display error messages accordingly.
+            Validate(func(s string) error {
+                if s == "Frank" {
+                    return errors.New("Sorry, we don’t serve customers named Frank.")
+                }
+                return nil
+            }),
 
         huh.NewText().
             Title("Special Instructions").
-            Value(&instructions).
-            CharLimit(400),
+            CharLimit(400).
+            Value(&instructions),
 
         huh.NewConfirm().
-            Title("Would you like 15% off").
+            Title("Would you like 15% off?").
             Value(&discount),
     ),
 )
@@ -87,19 +109,29 @@ err := form.Run()
 if err != nil {
     log.Fatal(err)
 }
+
+if !discount {
+    fmt.Println("What?? You didn’t take the discount?!"
+}
 ```
+
+And that’s it! For more info see [the full source][burgersource] for this
+example as well as [the docs][docs].
+
+[burgersource]: ./examples/burger/main.go
+[docs]: https://pkg.go.dev/github.com/charmbracelet/huh?tab=doc
 
 ## Field Reference
 
-* [`Input`](#input): single line text input
-* [`Text`](#text): multi-line text input
-* [`Select`](#select): select an option from a list
-* [`MultiSelect`](#multiple-select): select multiple options from a list
-* [`Confirm`](#confirm): confirm an action (yes or no)
+- [`Input`](#input): single line text input
+- [`Text`](#text): multi-line text input
+- [`Select`](#select): select an option from a list
+- [`MultiSelect`](#multiple-select): select multiple options from a list
+- [`Confirm`](#confirm): confirm an action (yes or no)
 
 > [!TIP]
-> Each field can also be run individually for quick input gathering.
-> Simply use the `Run` method.
+> Just want to prompt the user with a single field? Each field has a `Run`
+> method that can be used as a shorthand for gathering quick and easy input.
 
 ```go
 var name string
@@ -195,8 +227,8 @@ huh.NewConfirm().
 
 ## Accessibility
 
-Prevent redrawing the screen with the `WithAccessible` option. This is useful
-for screen readers to provide better dictation of the output.
+`huh?` has a special rendering option designed specifically for screen readers.
+You can enable it with `form.WithAccessible(true)`.
 
 > [!TIP]
 > We recommend setting this through an environment variable or configuration
@@ -214,14 +246,13 @@ better dictation of the information on screen for the visually impaired.
 
 ## Themes
 
-Forms can be themed.
+`huh?` contains a powerful theme abstraction. Supply your own custom theme or
+choose from one of the four predefined themes:
 
-Supply your own custom theme or choose from one of the four predefined themes:
-
-* `Charm`
-* `Dracula`
-* `Base 16`
-* `Default`
+- `Charm`
+- `Dracula`
+- `Base 16`
+- `Default`
 
 <br />
 <p>
@@ -231,13 +262,18 @@ Supply your own custom theme or choose from one of the four predefined themes:
     <img alt="Default-themed form" width="400" src="https://stuff.charm.sh/huh/themes/default-theme.png">
 </p>
 
-## Spinner
+Themes can take advantage of the full range of
+[Lip Gloss][lipgloss] style options. For a high level theme reference see
+[the docs](https://pkg.go.dev/github.com/charmbracelet/huh#Theme).
 
-Spinners come built in to `huh` for loading actions. It's useful to indicate
-loading while completing an action after a form is submitted.
+[lipgloss]: https://github.com/charmbracelet/lipgloss
+
+## Bonus: Spinner
+
+`huh?` ships with a standalone spinner package. It’s useful for indicating
+background activity after a form is submitted.
 
 <img alt="Spinner while making a burger" width="600" src="https://vhs.charm.sh/vhs-5uVCseHk9F5C4MdtZdwhIc.gif">
-
 
 Create a new spinner, set a title, set the action (or provide a `Context`), and run the spinner:
 
@@ -264,6 +300,7 @@ fmt.Println("Order up!")
 go makeBurger()
 
 err := spinner.New().
+    Type(spinner.Line).
     Title("Making your burger...").
     Context(ctx).
     Run()
@@ -275,21 +312,26 @@ fmt.Println("Order up!")
 </tr>
 </table>
 
-## What about [Bubble Tea][tea]?
+For more on Spinners see the [spinner examples](./spinner/examples) and
+[the spinner docs](https://pkg.go.dev/github.com/charmbracelet/huh@main/spinner).
 
-Huh is an abstraction built on Bubble Tea to make forms easier to code and
-implement. You can use `huh` to replace Bubble Tea if you only need to gather
-input from the user via a form.
-
-For more complex use cases, however, you can embed `huh` forms within Bubble Tea
-applications to add forms to your applications.
+## What about Bubble Tea?
 
 <img alt="Bubbletea + Huh?" width="174" src="https://stuff.charm.sh/huh/bubbletea-huh.png">
 
+In addition to its standalone mode, `huh?` has first-class support for
+[Bubble Tea][tea] and can be easily integrated into Bubble Tea applications.
+It’s incredibly useful in portions of your Bubble Tea application that need
+form-like input.
+
+<img alt="Bubble Tea embedded form example" width="800" src="https://vhs.charm.sh/vhs-3wGaB7EUKWmojeaHpARMUv.gif">
+
+A `huh.Form` is merely a `tea.Model`, so you can use it just as
+you would any other [Bubble](https://github.com/charmbracelet/bubbles).
+
 ```go
 type Model struct {
-    // embed form in parent model, use as bubble.
-    form *huh.Form
+    form *huh.Form // huh.Form is just a tea.Model
 }
 
 func NewModel() Model {
@@ -336,27 +378,24 @@ func (m Model) View() string {
 
 ```
 
-<img alt="Bubble Tea embedded form example" width="800" src="https://vhs.charm.sh/vhs-3wGaB7EUKWmojeaHpARMUv.gif">
-
-See [the Bubble Tea example][example] for how to embed `huh` forms in [Bubble
-Tea][tea] applications for more advanced use cases.
+For more info in using `huh?` in Bubble Tea applications see [the full Bubble
+Tea example][example].
 
 [tea]: https://github.com/charmbracelet/bubbletea
 [bubbles]: https://github.com/charmbracelet/bubbles
 [example]: https://github.com/charmbracelet/huh/blob/main/examples/bubbletea/main.go
 
-
 ## Feedback
 
 We'd love to hear your thoughts on this project. Feel free to drop us a note!
 
-* [Twitter](https://twitter.com/charmcli)
-* [The Fediverse](https://mastodon.social/@charmcli)
-* [Discord](https://charm.sh/chat)
+- [Twitter](https://twitter.com/charmcli)
+- [The Fediverse](https://mastodon.social/@charmcli)
+- [Discord](https://charm.sh/chat)
 
 ## Acknowledgments
 
-`huh` is inspired by the wonderful [Survey][survey] library by Alec Aivazis.
+`huh?` is inspired by the wonderful [Survey][survey] library by Alec Aivazis.
 
 [survey]: https://github.com/AlecAivazis/survey
 
@@ -364,7 +403,7 @@ We'd love to hear your thoughts on this project. Feel free to drop us a note!
 
 [MIT](https://github.com/charmbracelet/bubbletea/raw/master/LICENSE)
 
-***
+---
 
 Part of [Charm](https://charm.sh).
 

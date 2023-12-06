@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -146,7 +145,8 @@ func main() {
 	err := form.Run()
 
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("Uh oh:", err)
+		os.Exit(1)
 	}
 
 	prepareBurger := func() {
