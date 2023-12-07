@@ -48,8 +48,7 @@ form := huh.NewForm(
             ).
             Value(&burger), // store the chosen option in the "burger" variable
 
-        // Let the user select multiple toppings. We allow a maximum limit of
-        // 4 toppings.
+        // Let the user select multiple toppings.
         huh.NewMultiSelect[string]().
             Title("Toppings").
             Options(
@@ -60,12 +59,12 @@ form := huh.NewForm(
                 huh.NewOption("Vegan Cheese", "vegan cheese"),
                 huh.NewOption("Nutella", "nutella"),
             ).
-            Limit(4).
+            Limit(4). // there’s a 4 topping limit!
             Value(&toppings),
 
-        // Option values in selects and multi-selects can by any type you
-        // want. We’ve been using recording strings above whereas here we’ll
-        // store integers. Note the generic "[int]" directive below.
+        // Option values in selects and multi selects can be any type you
+        // want. We’ve been recording strings above, but here we’ll store
+        // answers as integers. Note the generic "[int]" directive below.
         huh.NewSelect[int]().
             Title("How much Charm Sauce do you want?").
             Options(
@@ -83,8 +82,8 @@ form := huh.NewForm(
             Value(&name).
             // Validating fields is easy. The form will mark erroneous fields
             // and display error messages accordingly.
-            Validate(func(s string) error {
-                if s == "Frank" {
+            Validate(func(str string) error {
+                if str == "Frank" {
                     return errors.New("Sorry, we don’t serve customers named Frank.")
                 }
                 return nil
@@ -111,7 +110,7 @@ if err != nil {
 }
 
 if !discount {
-    fmt.Println("What?? You didn’t take the discount?!"
+    fmt.Println("What? You didn’t take the discount?!"
 }
 ```
 
@@ -239,8 +238,8 @@ accessibleMode := os.Getenv("ACCESSIBLE") != ""
 form.WithAccessible(accessibleMode)
 ```
 
-Accessible forms will remove redrawing in favor of standard prompts, providing
-better dictation of the information on screen for the visually impaired.
+Accessible forms will drop TUIs in favor of standard prompts, providing better
+dictation and feedback of the information on screen for the visually impaired.
 
 <img alt="Accessible cuisine form" width="600" src="https://vhs.charm.sh/vhs-19xEBn4LgzPZDtgzXRRJYS.gif">
 
