@@ -40,6 +40,7 @@ type MultiSelect[T any] struct {
 // NewMultiSelect returns a new multi-select field.
 func NewMultiSelect[T any]() *MultiSelect[T] {
 	return &MultiSelect[T]{
+		options:  []Option[T]{},
 		value:    new([]T),
 		validate: func([]T) error { return nil },
 	}
@@ -72,6 +73,9 @@ func (m *MultiSelect[T]) Description(description string) *MultiSelect[T] {
 
 // Options sets the options of the multi-select field.
 func (m *MultiSelect[T]) Options(options ...Option[T]) *MultiSelect[T] {
+	if len(options) <= 0 {
+		return m
+	}
 	m.options = options
 	return m
 }

@@ -45,6 +45,7 @@ func NewSelect[T any]() *Select[T] {
 	filter.Prompt = "/"
 
 	return &Select[T]{
+		options:   []Option[T]{},
 		value:     new(T),
 		validate:  func(T) error { return nil },
 		filtering: false,
@@ -79,6 +80,9 @@ func (s *Select[T]) Description(description string) *Select[T] {
 
 // Options sets the options of the select field.
 func (s *Select[T]) Options(options ...Option[T]) *Select[T] {
+	if len(options) <= 0 {
+		return s
+	}
 	s.options = options
 	s.filteredOptions = options
 
