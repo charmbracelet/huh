@@ -1,7 +1,7 @@
 # Huh?
 
 <p>
-  <img alt="Hey there! I'm Glenn!" title="Hey there! I'm Glenn!" src="https://github.com/charmbracelet/huh/assets/42545625/e256073a-3806-4239-b1ef-38955d69ea88" width="400" />
+  <img alt="Hey there! I'm Glenn!" title="Hey there! I'm Glenn!" src="https://stuff.charm.sh/huh/glenn.png" width="400" />
   <br><br>
   <a href="https://github.com/charmbracelet/huh/releases"><img src="https://img.shields.io/github/release/charmbracelet/huh.svg" alt="Latest Release"></a>
   <a href="https://pkg.go.dev/github.com/charmbracelet/huh?tab=doc"><img src="https://godoc.org/github.com/golang/gddo?status.svg" alt="Go Docs"></a>
