@@ -146,7 +146,7 @@ func (m Model) View() string {
 		title = s.Highlight.Render(title)
 		var b strings.Builder
 		fmt.Fprintf(&b, "Congratulations, you’re Charm’s newest\n%s!\n\n", title)
-		fmt.Fprintf(&b, "Your job description is as follows:\n\n%s\n\nPlease proceed to HR immeidately.", role)
+		fmt.Fprintf(&b, "Your job description is as follows:\n\n%s\n\nPlease proceed to HR immediately.", role)
 		return s.Status.Copy().Margin(0, 1).Padding(1, 2).Width(48).Render(b.String()) + "\n\n"
 	default:
 
