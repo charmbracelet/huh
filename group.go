@@ -6,7 +6,6 @@ import (
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/paginator"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/x/exp/ordered"
 )
 
 // Group is a collection of fields that are displayed together with a page of
@@ -171,7 +170,7 @@ func (g *Group) setCurrent(current int) tea.Cmd {
 	cmd = g.fields[g.paginator.Page].Blur()
 	cmds = append(cmds, cmd)
 
-	g.paginator.Page = ordered.Clamp(current, 0, len(g.fields)-1)
+	g.paginator.Page = clamp(current, 0, len(g.fields)-1)
 
 	cmd = g.fields[g.paginator.Page].Focus()
 	cmds = append(cmds, cmd)
