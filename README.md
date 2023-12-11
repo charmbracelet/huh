@@ -118,7 +118,7 @@ if err != nil {
 }
 
 if !discount {
-    fmt.Println("What? You didn’t take the discount?!"
+    fmt.Println("What? You didn’t take the discount?!")
 }
 ```
 
