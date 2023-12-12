@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -124,6 +125,12 @@ func main() {
 				Value(&order.Name).
 				Title("What's your name?").
 				Placeholder("Margaret Thatcher").
+				Validate(func(s string) error {
+					if s == "Frank" {
+						return errors.New("no franks, sorry")
+					}
+					return nil
+				}).
 				Description("For when your order is ready."),
 
 			huh.NewText().

@@ -162,8 +162,18 @@ func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		switch {
 		case key.Matches(msg, i.keymap.Prev):
+			value := i.textinput.Value()
+			i.err = i.validate(value)
+			if i.err != nil {
+				return i, nil
+			}
 			cmds = append(cmds, prevField)
 		case key.Matches(msg, i.keymap.Next):
+			value := i.textinput.Value()
+			i.err = i.validate(value)
+			if i.err != nil {
+				return i, nil
+			}
 			cmds = append(cmds, nextField)
 		}
 	}
