@@ -13,6 +13,7 @@ type Theme struct {
 	FieldSeparator lipgloss.Style
 	Blurred        FieldStyles
 	Focused        FieldStyles
+	Help           help.Styles
 }
 
 // copy returns a copy of a theme with all children styles copied.
@@ -23,6 +24,15 @@ func (t Theme) copy() Theme {
 		FieldSeparator: t.FieldSeparator.Copy(),
 		Blurred:        t.Blurred.copy(),
 		Focused:        t.Focused.copy(),
+		Help: help.Styles{
+			Ellipsis:       t.Help.Ellipsis.Copy(),
+			ShortKey:       t.Help.ShortKey.Copy(),
+			ShortDesc:      t.Help.ShortDesc.Copy(),
+			ShortSeparator: t.Help.ShortSeparator.Copy(),
+			FullKey:        t.Help.FullKey.Copy(),
+			FullDesc:       t.Help.FullDesc.Copy(),
+			FullSeparator:  t.Help.FullSeparator.Copy(),
+		},
 	}
 }
 
@@ -33,7 +43,6 @@ type FieldStyles struct {
 	Description    lipgloss.Style
 	ErrorIndicator lipgloss.Style
 	ErrorMessage   lipgloss.Style
-	Help           help.Styles
 
 	// Select styles.
 	SelectSelector lipgloss.Style // Selection indicator
@@ -79,18 +88,9 @@ func (t TextInputStyles) copy() TextInputStyles {
 // copy returns a copy of a FieldStyles with all children styles copied.
 func (f FieldStyles) copy() FieldStyles {
 	return FieldStyles{
-		Base:        f.Base.Copy(),
-		Title:       f.Title.Copy(),
-		Description: f.Description.Copy(),
-		Help: help.Styles{
-			Ellipsis:       f.Help.Ellipsis.Copy(),
-			ShortKey:       f.Help.ShortKey.Copy(),
-			ShortDesc:      f.Help.ShortDesc.Copy(),
-			ShortSeparator: f.Help.ShortSeparator.Copy(),
-			FullKey:        f.Help.FullKey.Copy(),
-			FullDesc:       f.Help.FullDesc.Copy(),
-			FullSeparator:  f.Help.FullSeparator.Copy(),
-		},
+		Base:                f.Base.Copy(),
+		Title:               f.Title.Copy(),
+		Description:         f.Description.Copy(),
 		ErrorIndicator:      f.ErrorIndicator.Copy(),
 		ErrorMessage:        f.ErrorMessage.Copy(),
 		SelectSelector:      f.SelectSelector.Copy(),
@@ -108,8 +108,10 @@ func (f FieldStyles) copy() FieldStyles {
 	}
 }
 
-const buttonPaddingHorizontal = 2
-const buttonPaddingVertical = 0
+const (
+	buttonPaddingHorizontal = 2
+	buttonPaddingVertical   = 0
+)
 
 // ThemeBase returns a new base theme with general styles to be inherited by
 // other themes.
@@ -148,7 +150,7 @@ func ThemeBase() *Theme {
 		Background(lipgloss.Color("0"))
 	f.TextInput.Placeholder = lipgloss.NewStyle().Foreground(lipgloss.Color("8"))
 
-	f.Help = help.New().Styles
+	t.Help = help.New().Styles
 
 	// Blurred styles.
 	t.Blurred = f.copy()

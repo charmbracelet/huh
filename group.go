@@ -80,6 +80,7 @@ func (g *Group) WithShowErrors(show bool) *Group {
 // WithTheme sets the theme on a group.
 func (g *Group) WithTheme(t *Theme) *Group {
 	g.theme = t
+	g.help.Styles = t.Help
 	for _, field := range g.fields {
 		field.WithTheme(t)
 	}
