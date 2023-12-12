@@ -254,10 +254,11 @@ dictation and feedback of the information on screen for the visually impaired.
 ## Themes
 
 `huh?` contains a powerful theme abstraction. Supply your own custom theme or
-choose from one of the four predefined themes:
+choose from one of the five predefined themes:
 
 - `Charm`
 - `Dracula`
+- `Catppuccin`
 - `Base 16`
 - `Default`
 
@@ -265,6 +266,7 @@ choose from one of the four predefined themes:
 <p>
     <img alt="Charm-themed form" width="400" src="https://stuff.charm.sh/huh/themes/charm-theme.png">
     <img alt="Dracula-themed form" width="400" src="https://stuff.charm.sh/huh/themes/dracula-theme.png">
+    <img alt="Catppuccin-themed form" width="400" src="https://stuff.charm.sh/huh/themes/catppuccin-theme.png">
     <img alt="Base 16-themed form" width="400" src="https://stuff.charm.sh/huh/themes/basesixteen-theme.png">
     <img alt="Default-themed form" width="400" src="https://stuff.charm.sh/huh/themes/default-theme.png">
 </p>
