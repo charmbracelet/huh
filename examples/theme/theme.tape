@@ -36,6 +36,12 @@ Enter
 
 Screenshot charm-theme.png
 
+Tab 4
+Down 4
+Enter
+
+Screenshot catppuccin-theme.png
+
 Sleep 1s
 
 Hide

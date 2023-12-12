@@ -1,6 +1,7 @@
 package huh
 
 import (
+	catppuccin "github.com/catppuccin/go"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -269,6 +270,60 @@ func ThemeBase16() *Theme {
 	t.Blurred.Title.Foreground(lipgloss.Color("8"))
 	t.Blurred.TextInput.Prompt.Foreground(lipgloss.Color("8"))
 	t.Blurred.TextInput.Text.Foreground(lipgloss.Color("7"))
+
+	return &t
+}
+
+// ThemeCatppuccin returns a new theme based on the Catppuccin color scheme.
+func ThemeCatppuccin() *Theme {
+	t := ThemeBase().copy()
+
+	light := catppuccin.Latte
+	dark := catppuccin.Mocha
+	var (
+		base     = lipgloss.AdaptiveColor{Light: light.Base().Hex, Dark: dark.Base().Hex}
+		text     = lipgloss.AdaptiveColor{Light: light.Text().Hex, Dark: dark.Text().Hex}
+		subtext1 = lipgloss.AdaptiveColor{Light: light.Subtext1().Hex, Dark: dark.Subtext1().Hex}
+		subtext0 = lipgloss.AdaptiveColor{Light: light.Subtext0().Hex, Dark: dark.Subtext0().Hex}
+		overlay1 = lipgloss.AdaptiveColor{Light: light.Overlay1().Hex, Dark: dark.Overlay1().Hex}
+		overlay0 = lipgloss.AdaptiveColor{Light: light.Overlay0().Hex, Dark: dark.Overlay0().Hex}
+		green    = lipgloss.AdaptiveColor{Light: light.Green().Hex, Dark: dark.Green().Hex}
+		red      = lipgloss.AdaptiveColor{Light: light.Red().Hex, Dark: dark.Red().Hex}
+		pink     = lipgloss.AdaptiveColor{Light: light.Pink().Hex, Dark: dark.Pink().Hex}
+		mauve    = lipgloss.AdaptiveColor{Light: light.Mauve().Hex, Dark: dark.Mauve().Hex}
+		cursor   = lipgloss.AdaptiveColor{Light: light.Rosewater().Hex, Dark: dark.Rosewater().Hex}
+	)
+
+	f := &t.Focused
+	f.Base.BorderForeground(subtext1)
+	f.Title.Foreground(mauve)
+	f.Description.Foreground(subtext0)
+	f.ErrorIndicator.Foreground(red)
+	f.ErrorMessage.Foreground(red)
+	f.SelectSelector.Foreground(pink)
+	f.Option.Foreground(text)
+	f.MultiSelectSelector.Foreground(pink)
+	f.SelectedOption.Foreground(green)
+	f.SelectedPrefix.Foreground(green)
+	f.UnselectedPrefix.Foreground(text)
+	f.UnselectedOption.Foreground(text)
+	f.FocusedButton.Foreground(base).Background(pink)
+	f.BlurredButton.Foreground(text).Background(base)
+
+	f.TextInput.Cursor.Foreground(cursor)
+	f.TextInput.Placeholder.Foreground(overlay0)
+	f.TextInput.Prompt.Foreground(pink)
+
+	t.Blurred = f.copy()
+	t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
+
+	t.Help.Ellipsis.Foreground(subtext0)
+	t.Help.ShortKey.Foreground(subtext0)
+	t.Help.ShortDesc.Foreground(overlay1)
+	t.Help.ShortSeparator.Foreground(subtext0)
+	t.Help.FullKey.Foreground(subtext0)
+	t.Help.FullDesc.Foreground(overlay1)
+	t.Help.FullSeparator.Foreground(subtext0)
 
 	return &t
 }
