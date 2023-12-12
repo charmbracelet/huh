@@ -130,7 +130,9 @@ func (i *Input) Focus() tea.Cmd {
 // Blur blurs the input field.
 func (i *Input) Blur() tea.Cmd {
 	i.focused = false
+	*i.value = i.textinput.Value()
 	i.textinput.Blur()
+	i.err = i.validate(*i.value)
 	return nil
 }
 
@@ -142,7 +144,6 @@ func (i *Input) KeyBinds() []key.Binding {
 // Init initializes the input field.
 func (i *Input) Init() tea.Cmd {
 	i.textinput.Blur()
-	i.err = i.validate(*i.value)
 	return nil
 }
 
