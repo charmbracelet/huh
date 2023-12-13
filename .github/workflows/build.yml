@@ -32,6 +32,7 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
           cache: true
+          working-directory: ./spinner
       - run: go mod download
         working-directory: ./spinner
       - run: go build -v ./...
@@ -50,6 +51,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v4
         with:
+          working-directory: ./examples
           go-version: ${{ matrix.go-version }}
           cache: true
       - run: go mod download
