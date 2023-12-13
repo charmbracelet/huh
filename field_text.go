@@ -201,8 +201,18 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return updateValueMsg(content)
 			}))
 		case key.Matches(msg, t.keymap.Next):
+			value := t.textarea.Value()
+			t.err = t.validate(value)
+			if t.err != nil {
+				return t, nil
+			}
 			cmds = append(cmds, nextField)
 		case key.Matches(msg, t.keymap.Prev):
+			value := t.textarea.Value()
+			t.err = t.validate(value)
+			if t.err != nil {
+				return t, nil
+			}
 			cmds = append(cmds, prevField)
 		}
 	}
