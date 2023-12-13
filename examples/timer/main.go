@@ -11,14 +11,18 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-const focusColor = "#2EF8BB"
-const breakColor = "#FF5F87"
+const (
+	focusColor = "#2EF8BB"
+	breakColor = "#FF5F87"
+)
 
-var focusTitleStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(focusColor)).MarginRight(1).SetString("Focus Mode")
-var breakTitleStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(breakColor)).MarginRight(1).SetString("Break Mode")
-var pausedStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(breakColor)).MarginRight(1).SetString("Continue?")
-var helpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("240")).MarginTop(2)
-var sidebarStyle = lipgloss.NewStyle().MarginLeft(3).Padding(1, 3).Border(lipgloss.RoundedBorder()).BorderForeground(helpStyle.GetForeground())
+var (
+	focusTitleStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(focusColor)).MarginRight(1).SetString("Focus Mode")
+	breakTitleStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(breakColor)).MarginRight(1).SetString("Break Mode")
+	pausedStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color(breakColor)).MarginRight(1).SetString("Continue?")
+	helpStyle       = lipgloss.NewStyle().Foreground(lipgloss.Color("240")).MarginTop(2)
+	sidebarStyle    = lipgloss.NewStyle().MarginLeft(3).Padding(1, 3).Border(lipgloss.RoundedBorder()).BorderForeground(helpStyle.GetForeground())
+)
 
 var baseTimerStyle = lipgloss.NewStyle().Padding(1, 2)
 
@@ -192,7 +196,7 @@ func NewModel() Model {
 					huh.NewOption("20 minutes", 20*time.Minute),
 				),
 		),
-	).WithHelp(false).WithTheme(theme)
+	).WithShowHelp(false).WithTheme(theme)
 
 	progress := progress.New()
 	progress.FullColor = focusColor

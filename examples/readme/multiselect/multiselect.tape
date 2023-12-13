@@ -6,7 +6,7 @@ Set Height 480
 Set FontSize 28
 
 Hide
-  Type "go build -o multiselect multiselect.go"
+  Type "go build ."
   Sleep 500ms
   Enter
   Ctrl+L

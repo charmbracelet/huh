@@ -23,13 +23,12 @@ var highlight = lipgloss.NewStyle().Foreground(lipgloss.Color("#00D7D7"))
 
 func main() {
 	var action Action
-	var spinnerStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("4"))
+	spinnerStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("4"))
 
 	repo := "charmbracelet/huh"
 	theme := huh.ThemeBase16()
 	theme.FieldSeparator = lipgloss.NewStyle().SetString("\n")
-	theme.Blurred.Help.MarginTop(1)
-	theme.Focused.Help.MarginTop(1)
+	theme.Help.FullKey.MarginTop(1)
 
 	f := huh.NewForm(
 		huh.NewGroup(

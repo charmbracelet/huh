@@ -6,7 +6,7 @@ Set Height 375
 Set FontSize 36
 
 Hide
-  Type "go build -o confirm confirm.go"
+  Type "go build ."
   Sleep 500ms
   Enter
   Ctrl+L

@@ -6,7 +6,7 @@ Set Height 275
 Set FontSize 38
 
 Hide
-  Type "go build -o input input.go"
+  Type "go build ."
   Sleep 500ms
   Enter
   Ctrl+L

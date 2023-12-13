@@ -6,7 +6,7 @@ Set Height 450
 Set FontSize 28
 
 Hide
-  Type "go build -o text text.go" Enter
+  Type "go build ." Enter
   Ctrl+L
   Type "./text" Enter
   Sleep 500ms

@@ -109,6 +109,13 @@ func (m Model) Init() tea.Cmd {
 	return m.form.Init()
 }
 
+func min(x, y int) int {
+	if x > y {
+		return y
+	}
+	return x
+}
+
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
