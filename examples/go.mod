@@ -1,8 +1,6 @@
 module examples
 
-go 1.21.3
-
-toolchain go1.21.4
+go 1.19
 
 require (
 	github.com/charmbracelet/bubbles v0.16.1
@@ -43,3 +41,7 @@ require (
 	golang.org/x/term v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 )
+
+replace github.com/charmbracelet/huh => ../
+
+replace github.com/charmbracelet/huh/spinner => ../spinner

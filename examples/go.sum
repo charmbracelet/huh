@@ -17,10 +17,6 @@ github.com/charmbracelet/glamour v0.6.0 h1:wi8fse3Y7nfcabbbDuwolqTqMQPMnVPeZhDM2
 github.com/charmbracelet/glamour v0.6.0/go.mod h1:taqWV4swIMMbWALc0m7AfE9JkPSU8om2538k9ITBxOc=
 github.com/charmbracelet/harmonica v0.2.0 h1:8NxJWRWg/bzKqqEaaeFNipOu77YR5t8aSwG4pgaUBiQ=
 github.com/charmbracelet/harmonica v0.2.0/go.mod h1:KSri/1RMQOZLbw7AHqgcBycp8pgJnQMYYT8QZRqZ1Ao=
-github.com/charmbracelet/huh v0.2.1 h1:TBgKwVBg8sZSsJH5tLGoPxUddohv+KHRPOFAO1XA1fs=
-github.com/charmbracelet/huh v0.2.1/go.mod h1:+Jnrm/D08qEnnogItoQ63bqmqVF8t4nZWcN7WY0PYAs=
-github.com/charmbracelet/huh/spinner v0.0.0-20231212212800-6297f12524eb h1:pH08QGW8zN/YzAn1nvJbL8Gs23zAhumaznmd+9PuVBs=
-github.com/charmbracelet/huh/spinner v0.0.0-20231212212800-6297f12524eb/go.mod h1:8oThTkY972pvMcVAIEtWGT/u4NVV1PXHJ1rZErqNrdw=
 github.com/charmbracelet/lipgloss v0.9.1 h1:PNyd3jvaJbg4jRHKWXnCj1akQm4rh8dbEzN1p/u1KWg=
 github.com/charmbracelet/lipgloss v0.9.1/go.mod h1:1mPmG4cxScwUQALAAnacHaigiiHB9Pmr+v1VEawJl6I=
 github.com/charmbracelet/x/exp/strings v0.0.0-20231213132142-f5e65255b0b9 h1:f8cRObx8mtyNZTrZejybhp0eXCHdIcm1+e9orZ4V068=
@@ -100,4 +96,3 @@ golang.org/x/tools v0.0.0-20180917221912-90fa682c2a6e/go.mod h1:n7NCudcB/nEzxVGm
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
 gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
-gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
