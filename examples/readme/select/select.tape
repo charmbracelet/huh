@@ -6,7 +6,7 @@ Set Height 375
 Set FontSize 28
 
 Hide
-  Type "go build -o select select.go"
+  Type "go build ."
   Sleep 500ms
   Enter
   Ctrl+L
