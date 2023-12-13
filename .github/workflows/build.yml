@@ -4,25 +4,57 @@ jobs:
   test:
     strategy:
       matrix:
-        go-version: [1.18, stable]
+        go-version: [1.19, stable]
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     env:
       GO111MODULE: "on"
     steps:
-      - name: Install Go
-        uses: actions/setup-go@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
-
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download Go modules
-        run: go mod download
-
-      - name: Build
-        run: go build -v ./...
-
-      - name: Test
-        run: go test ./...
+          cache: true
+      - run: go mod download
+      - run: go build -v ./...
+      - run: go test -v -race ./...
+  spinner:
+    strategy:
+      matrix:
+        go-version: [1.19, stable]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      GO111MODULE: "on"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache: true
+      - run: go mod download
+        working-directory: ./spinner
+      - run: go build -v ./...
+        working-directory: ./spinner
+      - run: go test -v -race ./...
+        working-directory: ./spinner
+  examples:
+    strategy:
+      matrix:
+        go-version: [1.19, stable]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      GO111MODULE: "on"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache: true
+      - run: go mod download
+        working-directory: ./examples
+      - run: go build -v ./...
+        working-directory: ./examples
+      - run: go test -v -race ./...
+        working-directory: ./examples
