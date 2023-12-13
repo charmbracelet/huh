@@ -5,8 +5,8 @@ go 1.19
 require (
 	github.com/charmbracelet/bubbles v0.16.1
 	github.com/charmbracelet/bubbletea v0.25.0
-	github.com/charmbracelet/huh v0.2.1
-	github.com/charmbracelet/huh/spinner v0.0.0-20231212212800-6297f12524eb
+	github.com/charmbracelet/huh v0.0.0-00010101000000-000000000000
+	github.com/charmbracelet/huh/spinner v0.0.0-00010101000000-000000000000
 	github.com/charmbracelet/lipgloss v0.9.1
 	github.com/charmbracelet/x/exp/strings v0.0.0-20231213132142-f5e65255b0b9
 )
