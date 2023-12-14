@@ -226,7 +226,7 @@ Prompt the user to confirm (Yes or No).
 
 ```go
 huh.NewConfirm().
-    Title("You sure?").
+    Title("Are you sure?").
     Affirmative("Yes!").
     Negative("No.").
     Value(&confirm)
