@@ -26,6 +26,11 @@ func NewOption[T any](key string, value T) Option[T] {
 	return Option[T]{Key: key, Value: value}
 }
 
+// NewSimpleOption returns a new select option with the same key and value.
+func NewSimpleOption(key string) Option[string] {
+	return Option[string]{Key: key, Value: key}
+}
+
 // Selected sets whether the option is currently selected.
 func (o Option[T]) Selected(selected bool) Option[T] {
 	o.selected = selected

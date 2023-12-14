@@ -81,13 +81,13 @@ func main() {
 				Title("Toppings").
 				Description("Choose up to 4.").
 				Options(
-					huh.NewOption("Lettuce", "Lettuce").Selected(true),
-					huh.NewOption("Tomatoes", "Tomatoes").Selected(true),
-					huh.NewOption("Charm Sauce", "Charm Sauce"),
-					huh.NewOption("Jalapeños", "Jalapeños"),
-					huh.NewOption("Cheese", "Cheese"),
-					huh.NewOption("Vegan Cheese", "Vegan Cheese"),
-					huh.NewOption("Nutella", "Nutella"),
+					huh.NewSimpleOption("Lettuce").Selected(true),
+					huh.NewSimpleOption("Tomatoes").Selected(true),
+					huh.NewSimpleOption("Charm Sauce"),
+					huh.NewSimpleOption("Jalapeños"),
+					huh.NewSimpleOption("Cheese"),
+					huh.NewSimpleOption("Vegan Cheese"),
+					huh.NewSimpleOption("Nutella"),
 				).
 				Validate(func(t []string) error {
 					if len(t) <= 0 {
