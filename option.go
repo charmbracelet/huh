@@ -3,14 +3,14 @@ package huh
 import "fmt"
 
 // Option is an option for select fields.
-type Option[T any] struct {
+type Option[T comparable] struct {
 	Key      string
 	Value    T
 	selected bool
 }
 
 // NewOptions returns new options from a list of values.
-func NewOptions[T any](values ...T) []Option[T] {
+func NewOptions[T comparable](values ...T) []Option[T] {
 	options := make([]Option[T], len(values))
 	for i, o := range values {
 		options[i] = Option[T]{
@@ -22,7 +22,7 @@ func NewOptions[T any](values ...T) []Option[T] {
 }
 
 // NewOption returns a new select option.
-func NewOption[T any](key string, value T) Option[T] {
+func NewOption[T comparable](key string, value T) Option[T] {
 	return Option[T]{Key: key, Value: value}
 }
 

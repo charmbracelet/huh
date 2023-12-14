@@ -11,7 +11,7 @@ import (
 )
 
 // MultiSelect is a form multi-select field.
-type MultiSelect[T any] struct {
+type MultiSelect[T comparable] struct {
 	value *[]T
 	key   string
 
@@ -38,7 +38,7 @@ type MultiSelect[T any] struct {
 }
 
 // NewMultiSelect returns a new multi-select field.
-func NewMultiSelect[T any]() *MultiSelect[T] {
+func NewMultiSelect[T comparable]() *MultiSelect[T] {
 	return &MultiSelect[T]{
 		options:  []Option[T]{},
 		value:    new([]T),
@@ -49,6 +49,14 @@ func NewMultiSelect[T any]() *MultiSelect[T] {
 // Value sets the value of the multi-select field.
 func (m *MultiSelect[T]) Value(value *[]T) *MultiSelect[T] {
 	m.value = value
+	for i, o := range m.options {
+		for _, v := range *value {
+			if o.Value == v {
+				m.options[i].selected = true
+				break
+			}
+		}
+	}
 	return m
 }
 
