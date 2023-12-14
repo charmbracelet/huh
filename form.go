@@ -59,8 +59,6 @@ type Form struct {
 	keymap *KeyMap
 }
 
-const defaultWidth = 80
-
 // NewForm returns a form with the given groups and default themes and
 // keybindings.
 //
@@ -75,7 +73,7 @@ func NewForm(groups ...*Group) *Form {
 		paginator: p,
 		theme:     ThemeCharm(),
 		keymap:    NewDefaultKeyMap(),
-		width:     defaultWidth,
+		width:     0,
 		results:   make(map[string]any),
 	}
 
@@ -324,6 +322,13 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	group := f.groups[page]
 
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		if f.width > 0 {
+			break
+		}
+		for _, group := range f.groups {
+			group.WithWidth(msg.Width)
+		}
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, f.keymap.Quit):

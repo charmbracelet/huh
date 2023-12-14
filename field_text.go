@@ -299,6 +299,7 @@ func (t *Text) WithAccessible(accessible bool) Field {
 // WithWidth sets the width of the text field.
 func (t *Text) WithWidth(width int) Field {
 	t.width = width
+	t.textarea.SetWidth(width - t.theme.Blurred.Base.GetHorizontalFrameSize())
 	return t
 }
 
