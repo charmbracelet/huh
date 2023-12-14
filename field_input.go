@@ -8,6 +8,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh/accessibility"
+	"github.com/charmbracelet/lipgloss"
 )
 
 // Input is a form input field.
@@ -258,6 +259,13 @@ func (i *Input) WithTheme(theme *Theme) Field {
 // WithWidth sets the width of the input field.
 func (i *Input) WithWidth(width int) Field {
 	i.width = width
+	frameSize := i.theme.Blurred.Base.GetHorizontalFrameSize()
+	promptWidth := lipgloss.Width(i.textinput.PromptStyle.Render(i.textinput.Prompt))
+	titleWidth := lipgloss.Width(i.theme.Focused.Title.Render(i.title))
+	i.textinput.Width = width - frameSize - promptWidth - 1
+	if i.inline {
+		i.textinput.Width -= titleWidth
+	}
 	return i
 }
 
