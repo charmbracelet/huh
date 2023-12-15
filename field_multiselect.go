@@ -84,6 +84,15 @@ func (m *MultiSelect[T]) Options(options ...Option[T]) *MultiSelect[T] {
 	if len(options) <= 0 {
 		return m
 	}
+
+	for i, o := range options {
+		for _, v := range *m.value {
+			if o.Value == v {
+				options[i].selected = true
+				break
+			}
+		}
+	}
 	m.options = options
 	return m
 }

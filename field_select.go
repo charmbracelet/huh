@@ -92,9 +92,12 @@ func (s *Select[T]) Options(options ...Option[T]) *Select[T] {
 	s.options = options
 	s.filteredOptions = options
 
-	// Set the cursor to the last selected option.
+	// Set the cursor to the existing value or the last selected option.
 	for i, option := range options {
-		if option.selected {
+		if option.Value == *s.value {
+			s.selected = i
+			break
+		} else if option.selected {
 			s.selected = i
 		}
 	}
