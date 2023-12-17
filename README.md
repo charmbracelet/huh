@@ -282,7 +282,7 @@ Themes can take advantage of the full range of
 `huh?` ships with a standalone spinner package. It’s useful for indicating
 background activity after a form is submitted.
 
-<img alt="Spinner while making a burger" width="600" src="https://vhs.charm.sh/vhs-5uVCseHk9F5C4MdtZdwhIc.gif">
+<img alt="Spinner while making a burger" width="600" src="https://vhs.charm.sh/vhs-6HvYomAFP6H8mngOYWXvwJ.gif">
 
 Create a new spinner, set a title, set the action (or provide a `Context`), and run the spinner:
 
