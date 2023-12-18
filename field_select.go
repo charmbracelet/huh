@@ -12,7 +12,7 @@ import (
 )
 
 // Select is a form select field.
-type Select[T any] struct {
+type Select[T comparable] struct {
 	value *T
 	key   string
 
@@ -40,7 +40,7 @@ type Select[T any] struct {
 }
 
 // NewSelect returns a new select field.
-func NewSelect[T any]() *Select[T] {
+func NewSelect[T comparable]() *Select[T] {
 	filter := textinput.New()
 	filter.Prompt = "/"
 
@@ -56,6 +56,12 @@ func NewSelect[T any]() *Select[T] {
 // Value sets the value of the select field.
 func (s *Select[T]) Value(value *T) *Select[T] {
 	s.value = value
+	for i, o := range s.options {
+		if o.Value == *value {
+			s.selected = i
+			break
+		}
+	}
 	return s
 }
 
@@ -86,9 +92,12 @@ func (s *Select[T]) Options(options ...Option[T]) *Select[T] {
 	s.options = options
 	s.filteredOptions = options
 
-	// Set the cursor to the last selected option.
+	// Set the cursor to the existing value or the last selected option.
 	for i, option := range options {
-		if option.selected {
+		if option.Value == *s.value {
+			s.selected = i
+			break
+		} else if option.selected {
 			s.selected = i
 		}
 	}
