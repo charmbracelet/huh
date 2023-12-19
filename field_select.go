@@ -6,6 +6,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh/accessibility"
 	"github.com/charmbracelet/lipgloss"
@@ -13,14 +14,16 @@ import (
 
 // Select is a form select field.
 type Select[T comparable] struct {
-	value *T
-	key   string
+	value    *T
+	key      string
+	viewport viewport.Model
 
 	// customization
 	title           string
 	description     string
 	options         []Option[T]
 	filteredOptions []Option[T]
+	height          int
 
 	// error handling
 	validate func(T) error
@@ -102,6 +105,15 @@ func (s *Select[T]) Options(options ...Option[T]) *Select[T] {
 		}
 	}
 
+	s.updateViewportHeight()
+
+	return s
+}
+
+// Height sets the height of the select field. If the number of options
+// exceeds the height, the select field will become scrollable.
+func (s *Select[T]) Height(height int) *Select[T] {
+	s.height = height
 	return s
 }
 
@@ -141,9 +153,16 @@ func (s *Select[T]) Init() tea.Cmd {
 
 // Update updates the select field.
 func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	s.updateViewportHeight()
+
 	var cmd tea.Cmd
 	if s.filtering {
 		s.filter, cmd = s.filter.Update(msg)
+
+		// Keep the selected item in view.
+		if s.selected < s.viewport.YOffset || s.selected >= s.viewport.YOffset+s.viewport.Height {
+			s.viewport.SetYOffset(s.selected)
+		}
 	}
 
 	switch msg := msg.(type) {
@@ -165,16 +184,29 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			s.setFilter(false)
 		case key.Matches(msg, s.keymap.Up):
 			// When filtering we should ignore j/k keybindings
+			//
+			// XXX: Currently, the below check doesn't account for keymap
+			// changes. When making this fix it's worth considering ignoring
+			// whether to ignore all up/down keybindings as ignoring a-zA-Z0-9
+			// may not be enough when international keyboards are considered.
 			if s.filtering && msg.String() == "k" {
 				break
 			}
 			s.selected = max(s.selected-1, 0)
+			if s.selected < s.viewport.YOffset {
+				s.viewport.SetYOffset(s.selected)
+			}
 		case key.Matches(msg, s.keymap.Down):
 			// When filtering we should ignore j/k keybindings
+			//
+			// XXX: See note in the previous case match.
 			if s.filtering && msg.String() == "j" {
 				break
 			}
 			s.selected = min(s.selected+1, len(s.filteredOptions)-1)
+			if s.selected >= s.viewport.YOffset+s.viewport.Height {
+				s.viewport.LineDown(1)
+			}
 		case key.Matches(msg, s.keymap.Prev):
 			if s.selected >= len(s.filteredOptions) {
 				break
@@ -219,14 +251,41 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return s, cmd
 }
 
-// View renders the select field.
-func (s *Select[T]) View() string {
-	styles := s.theme.Blurred
-	if s.focused {
-		styles = s.theme.Focused
+// updateViewportHeight updates the viewport size according to the Height setting
+// on this multi-select field.
+func (s *Select[T]) updateViewportHeight() {
+	// If no height is set size the viewport to the number of options.
+	if s.height <= 0 {
+		s.viewport.Height = len(s.options)
+		return
 	}
 
-	var sb strings.Builder
+	// Wait until the theme has appied.
+	if s.theme == nil {
+		return
+	}
+
+	const minHeight = 1
+	s.viewport.Height = max(minHeight, s.height-
+		lipgloss.Height(s.titleView())-
+		lipgloss.Height(s.descriptionView()))
+}
+
+func (s *Select[T]) activeStyles() *FieldStyles {
+	if s.theme == nil {
+		return nil
+	}
+	if s.focused {
+		return &s.theme.Focused
+	}
+	return &s.theme.Blurred
+}
+
+func (s *Select[T]) titleView() string {
+	var (
+		styles = s.activeStyles()
+		sb     = strings.Builder{}
+	)
 	if s.filtering {
 		sb.WriteString(s.filter.View())
 	} else if s.filter.Value() != "" {
@@ -237,12 +296,22 @@ func (s *Select[T]) View() string {
 	if s.err != nil {
 		sb.WriteString(styles.ErrorIndicator.String())
 	}
-	sb.WriteString("\n")
-	if s.description != "" {
-		sb.WriteString(styles.Description.Render(s.description) + "\n")
-	}
+	return sb.String()
+}
 
-	c := styles.SelectSelector.String()
+func (s *Select[T]) descriptionView() string {
+	if s.description == "" {
+		return ""
+	}
+	return s.activeStyles().Description.Render(s.description) + "\n"
+}
+
+func (s *Select[T]) choicesView() string {
+	var (
+		styles = s.activeStyles()
+		sb     = strings.Builder{}
+		c      = styles.SelectSelector.String()
+	)
 	for i, option := range s.filteredOptions {
 		if s.selected == i {
 			sb.WriteString(c + styles.SelectedOption.Render(option.Key))
@@ -257,6 +326,22 @@ func (s *Select[T]) View() string {
 	for i := len(s.filteredOptions); i < len(s.options)-1; i++ {
 		sb.WriteString("\n")
 	}
+
+	return sb.String()
+}
+
+// View renders the select field.
+func (s *Select[T]) View() string {
+	var (
+		styles = s.activeStyles()
+		sb     = strings.Builder{}
+	)
+
+	sb.WriteString(s.titleView() + "\n")
+	sb.WriteString(s.descriptionView())
+
+	s.viewport.SetContent(s.choicesView())
+	sb.WriteString(s.viewport.View())
 
 	return styles.Base.Render(sb.String())
 }
