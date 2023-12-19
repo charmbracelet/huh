@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh/accessibility"
 	"github.com/charmbracelet/lipgloss"
@@ -21,14 +22,16 @@ type MultiSelect[T comparable] struct {
 	options     []Option[T]
 	filterable  bool
 	limit       int
+	height      int
 
 	// error handling
 	validate func([]T) error
 	err      error
 
 	// state
-	cursor  int
-	focused bool
+	cursor   int
+	focused  bool
+	viewport viewport.Model
 
 	// options
 	width      int
@@ -94,6 +97,7 @@ func (m *MultiSelect[T]) Options(options ...Option[T]) *MultiSelect[T] {
 		}
 	}
 	m.options = options
+	m.updateViewportHeight()
 	return m
 }
 
@@ -106,6 +110,14 @@ func (m *MultiSelect[T]) Filterable(filterable bool) *MultiSelect[T] {
 // Limit sets the limit of the multi-select field.
 func (m *MultiSelect[T]) Limit(limit int) *MultiSelect[T] {
 	m.limit = limit
+	return m
+}
+
+// Height sets the height of the multi-select field.
+func (m *MultiSelect[T]) Height(height int) *MultiSelect[T] {
+	// What we really want to do is set the height of the viewport, but we
+	// need a theme applied before we can calcualate its height.
+	m.height = height
 	return m
 }
 
@@ -144,6 +156,10 @@ func (m *MultiSelect[T]) Init() tea.Cmd {
 
 // Update updates the multi-select field.
 func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	// Enforce height on the viewport during update as we need themes to
+	// be applied before we can calculate the height.
+	m.updateViewportHeight()
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 
@@ -152,8 +168,14 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch {
 		case key.Matches(msg, m.keymap.Up):
 			m.cursor = max(m.cursor-1, 0)
+			if m.cursor < m.viewport.YOffset {
+				m.viewport.SetYOffset(m.cursor)
+			}
 		case key.Matches(msg, m.keymap.Down):
 			m.cursor = min(m.cursor+1, len(m.options)-1)
+			if m.cursor >= m.viewport.YOffset+m.viewport.Height {
+				m.viewport.LineDown(1)
+			}
 		case key.Matches(msg, m.keymap.Toggle):
 			if !m.options[m.cursor].selected && m.limit > 0 && m.numSelected() >= m.limit {
 				break
@@ -177,6 +199,26 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+// updateViewportHeight updates the viewport size according to the Height setting
+// on this multi-select field.
+func (m *MultiSelect[T]) updateViewportHeight() {
+	// If no height is set size the viewport to the number of options.
+	if m.height <= 0 {
+		m.viewport.Height = len(m.options)
+		return
+	}
+
+	// Wait until the theme has appied or things'll panic.
+	if m.theme == nil {
+		return
+	}
+
+	const minHeight = 1
+	m.viewport.Height = max(minHeight, m.height-
+		lipgloss.Height(m.titleView())-
+		lipgloss.Height(m.descriptionView()))
+}
+
 func (m *MultiSelect[T]) numSelected() int {
 	var count int
 	for _, o := range m.options {
@@ -197,23 +239,27 @@ func (m *MultiSelect[T]) finalize() {
 	m.err = m.validate(*m.value)
 }
 
-// View renders the multi-select field.
-func (m *MultiSelect[T]) View() string {
-	styles := m.theme.Blurred
+func (m *MultiSelect[T]) activeStyles() *FieldStyles {
 	if m.focused {
-		styles = m.theme.Focused
+		return &m.theme.Focused
 	}
+	return &m.theme.Blurred
+}
 
-	var sb strings.Builder
-	sb.WriteString(styles.Title.Render(m.title))
-	if m.err != nil {
-		sb.WriteString(styles.ErrorIndicator.String())
-	}
-	sb.WriteString("\n")
-	if m.description != "" {
-		sb.WriteString(styles.Description.Render(m.description) + "\n")
-	}
-	c := styles.MultiSelectSelector.String()
+func (m *MultiSelect[T]) titleView() string {
+	return m.activeStyles().Title.Render(m.title)
+}
+
+func (m *MultiSelect[T]) descriptionView() string {
+	return m.activeStyles().Description.Render(m.description)
+}
+
+func (m *MultiSelect[T]) choicesView() string {
+	var (
+		styles = m.activeStyles()
+		c      = styles.MultiSelectSelector.String()
+		sb     strings.Builder
+	)
 	for i, option := range m.options {
 		if m.cursor == i {
 			sb.WriteString(c)
@@ -232,6 +278,24 @@ func (m *MultiSelect[T]) View() string {
 			sb.WriteString("\n")
 		}
 	}
+	return sb.String()
+}
+
+// View renders the multi-select field.
+func (m *MultiSelect[T]) View() string {
+	styles := m.activeStyles()
+	m.viewport.SetContent(m.choicesView())
+
+	var sb strings.Builder
+	sb.WriteString(m.titleView())
+	if m.err != nil {
+		sb.WriteString(styles.ErrorIndicator.String())
+	}
+	sb.WriteString("\n")
+	if m.description != "" {
+		sb.WriteString(m.descriptionView() + "\n")
+	}
+	sb.WriteString(m.viewport.View())
 	return styles.Base.Render(sb.String())
 }
 
