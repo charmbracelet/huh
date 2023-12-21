@@ -118,6 +118,7 @@ func (m *MultiSelect[T]) Height(height int) *MultiSelect[T] {
 	// What we really want to do is set the height of the viewport, but we
 	// need a theme applied before we can calcualate its height.
 	m.height = height
+	m.updateViewportHeight()
 	return m
 }
 
@@ -371,6 +372,7 @@ func (m *MultiSelect[T]) runAccessible() error {
 // WithTheme sets the theme of the multi-select field.
 func (m *MultiSelect[T]) WithTheme(theme *Theme) Field {
 	m.theme = theme
+	m.updateViewportHeight()
 	return m
 }
 

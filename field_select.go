@@ -114,6 +114,7 @@ func (s *Select[T]) Options(options ...Option[T]) *Select[T] {
 // exceeds the height, the select field will become scrollable.
 func (s *Select[T]) Height(height int) *Select[T] {
 	s.height = height
+	s.updateViewportHeight()
 	return s
 }
 
@@ -252,7 +253,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 // updateViewportHeight updates the viewport size according to the Height setting
-// on this multi-select field.
+// on this select field.
 func (s *Select[T]) updateViewportHeight() {
 	// If no height is set size the viewport to the number of options.
 	if s.height <= 0 {
@@ -401,6 +402,7 @@ func (s *Select[T]) WithTheme(theme *Theme) Field {
 	s.theme = theme
 	s.filter.Cursor.Style = s.theme.Focused.TextInput.Cursor
 	s.filter.PromptStyle = s.theme.Focused.TextInput.Prompt
+	s.updateViewportHeight()
 	return s
 }
 
