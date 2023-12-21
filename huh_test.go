@@ -437,7 +437,7 @@ func TestMultiSelect(t *testing.T) {
 		t.Error("Expected cursor to be on Bar.")
 	}
 
-	if !strings.Contains(view, "x toggle • ↑ up • ↓ down • enter confirm • shift+tab back") {
+	if !strings.Contains(view, "x toggle • ↑ up • ↓ down • / filter • enter confirm • shift+tab back") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected field to contain help.")
 	}
