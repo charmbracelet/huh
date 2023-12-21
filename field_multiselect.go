@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh/accessibility"
@@ -17,21 +18,24 @@ type MultiSelect[T comparable] struct {
 	key   string
 
 	// customization
-	title       string
-	description string
-	options     []Option[T]
-	filterable  bool
-	limit       int
-	height      int
+	title           string
+	description     string
+	options         []Option[T]
+	filterable      bool
+	filteredOptions []Option[T]
+	limit           int
+	height          int
 
 	// error handling
 	validate func([]T) error
 	err      error
 
 	// state
-	cursor   int
-	focused  bool
-	viewport viewport.Model
+	cursor    int
+	focused   bool
+	filtering bool
+	filter    textinput.Model
+	viewport  viewport.Model
 
 	// options
 	width      int
@@ -42,10 +46,15 @@ type MultiSelect[T comparable] struct {
 
 // NewMultiSelect returns a new multi-select field.
 func NewMultiSelect[T comparable]() *MultiSelect[T] {
+	filter := textinput.New()
+	filter.Prompt = "/"
+
 	return &MultiSelect[T]{
-		options:  []Option[T]{},
-		value:    new([]T),
-		validate: func([]T) error { return nil },
+		options:   []Option[T]{},
+		value:     new([]T),
+		validate:  func([]T) error { return nil },
+		filtering: false,
+		filter:    filter,
 	}
 }
 
@@ -97,6 +106,7 @@ func (m *MultiSelect[T]) Options(options ...Option[T]) *MultiSelect[T] {
 		}
 	}
 	m.options = options
+	m.filteredOptions = options
 	m.updateViewportHeight()
 	return m
 }
@@ -147,7 +157,7 @@ func (m *MultiSelect[T]) Blur() tea.Cmd {
 
 // KeyBinds returns the help message for the multi-select field.
 func (m *MultiSelect[T]) KeyBinds() []key.Binding {
-	return []key.Binding{m.keymap.Toggle, m.keymap.Up, m.keymap.Down, m.keymap.Next, m.keymap.Prev}
+	return []key.Binding{m.keymap.Toggle, m.keymap.Up, m.keymap.Down, m.keymap.Filter, m.keymap.SetFilter, m.keymap.ClearFilter, m.keymap.Next, m.keymap.Prev}
 }
 
 // Init initializes the multi-select field.
@@ -161,27 +171,59 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// be applied before we can calculate the height.
 	m.updateViewportHeight()
 
+	var cmd tea.Cmd
+	if m.filtering {
+		m.filter, cmd = m.filter.Update(msg)
+	}
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 
 		m.err = nil
 
 		switch {
+		case key.Matches(msg, m.keymap.Filter):
+			m.setFilter(true)
+			return m, m.filter.Focus()
+		case key.Matches(msg, m.keymap.SetFilter):
+			if len(m.filteredOptions) <= 0 {
+				m.filter.SetValue("")
+				m.filteredOptions = m.options
+			}
+			m.setFilter(false)
+		case key.Matches(msg, m.keymap.ClearFilter):
+			m.filter.SetValue("")
+			m.filteredOptions = m.options
+			m.setFilter(false)
 		case key.Matches(msg, m.keymap.Up):
+			if m.filtering && msg.String() == "k" {
+				break
+			}
+
 			m.cursor = max(m.cursor-1, 0)
 			if m.cursor < m.viewport.YOffset {
 				m.viewport.SetYOffset(m.cursor)
 			}
 		case key.Matches(msg, m.keymap.Down):
-			m.cursor = min(m.cursor+1, len(m.options)-1)
+			if m.filtering && msg.String() == "j" {
+				break
+			}
+
+			m.cursor = min(m.cursor+1, len(m.filteredOptions)-1)
 			if m.cursor >= m.viewport.YOffset+m.viewport.Height {
 				m.viewport.LineDown(1)
 			}
 		case key.Matches(msg, m.keymap.Toggle):
-			if !m.options[m.cursor].selected && m.limit > 0 && m.numSelected() >= m.limit {
-				break
+			for i, option := range m.options {
+				if option.Key == m.filteredOptions[m.cursor].Key {
+					if !m.options[m.cursor].selected && m.limit > 0 && m.numSelected() >= m.limit {
+						break
+					}
+					selected := m.options[i].selected
+					m.options[i].selected = !selected
+					m.filteredOptions[m.cursor].selected = !selected
+				}
 			}
-			m.options[m.cursor].selected = !m.options[m.cursor].selected
 		case key.Matches(msg, m.keymap.Prev):
 			m.finalize()
 			if m.err != nil {
@@ -195,9 +237,25 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nextField
 		}
+
+		if m.filtering {
+			m.filteredOptions = m.options
+			if m.filter.Value() != "" {
+				m.filteredOptions = nil
+				for _, option := range m.options {
+					if m.filterFunc(option.Key) {
+						m.filteredOptions = append(m.filteredOptions, option)
+					}
+				}
+			}
+			if len(m.filteredOptions) > 0 {
+				m.cursor = min(m.cursor, len(m.filteredOptions)-1)
+				m.viewport.SetYOffset(clamp(m.cursor, 0, len(m.filteredOptions)-m.viewport.Height))
+			}
+		}
 	}
 
-	return m, nil
+	return m, cmd
 }
 
 // updateViewportHeight updates the viewport size according to the Height setting
@@ -248,7 +306,21 @@ func (m *MultiSelect[T]) activeStyles() *FieldStyles {
 }
 
 func (m *MultiSelect[T]) titleView() string {
-	return m.activeStyles().Title.Render(m.title)
+	var (
+		styles = m.activeStyles()
+		sb     = strings.Builder{}
+	)
+	if m.filtering {
+		sb.WriteString(m.filter.View())
+	} else if m.filter.Value() != "" {
+		sb.WriteString(styles.Title.Render(m.title) + styles.Description.Render("/"+m.filter.Value()))
+	} else {
+		sb.WriteString(styles.Title.Render(m.title))
+	}
+	if m.err != nil {
+		sb.WriteString(styles.ErrorIndicator.String())
+	}
+	return sb.String()
 }
 
 func (m *MultiSelect[T]) descriptionView() string {
@@ -261,14 +333,14 @@ func (m *MultiSelect[T]) choicesView() string {
 		c      = styles.MultiSelectSelector.String()
 		sb     strings.Builder
 	)
-	for i, option := range m.options {
+	for i, option := range m.filteredOptions {
 		if m.cursor == i {
 			sb.WriteString(c)
 		} else {
 			sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)))
 		}
 
-		if m.options[i].selected {
+		if m.filteredOptions[i].selected {
 			sb.WriteString(styles.SelectedPrefix.String())
 			sb.WriteString(styles.SelectedOption.Render(option.Key))
 		} else {
@@ -279,6 +351,11 @@ func (m *MultiSelect[T]) choicesView() string {
 			sb.WriteString("\n")
 		}
 	}
+
+	for i := len(m.filteredOptions); i < len(m.options)-1; i++ {
+		sb.WriteString("\n")
+	}
+
 	return sb.String()
 }
 
@@ -318,6 +395,20 @@ func (m *MultiSelect[T]) printOptions() {
 	}
 
 	fmt.Println(m.theme.Blurred.Base.Render(sb.String()))
+}
+
+// setFilter sets the filter of the select field.
+func (m *MultiSelect[T]) setFilter(filter bool) {
+	m.filtering = filter
+	m.keymap.SetFilter.SetEnabled(filter)
+	m.keymap.Filter.SetEnabled(!filter)
+	m.keymap.ClearFilter.SetEnabled(!filter && m.filter.Value() != "")
+}
+
+// filterFunc returns true if the option matches the filter.
+func (m *MultiSelect[T]) filterFunc(option string) bool {
+	// XXX: remove diacritics or allow customization of filter function.
+	return strings.Contains(strings.ToLower(option), strings.ToLower(m.filter.Value()))
 }
 
 // Run runs the multi-select field.
@@ -372,6 +463,8 @@ func (m *MultiSelect[T]) runAccessible() error {
 // WithTheme sets the theme of the multi-select field.
 func (m *MultiSelect[T]) WithTheme(theme *Theme) Field {
 	m.theme = theme
+	m.filter.Cursor.Style = m.theme.Focused.TextInput.Cursor
+	m.filter.PromptStyle = m.theme.Focused.TextInput.Prompt
 	m.updateViewportHeight()
 	return m
 }
