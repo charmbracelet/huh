@@ -20,7 +20,6 @@ type Input struct {
 	title       string
 	description string
 	inline      bool
-	charlimit   int
 
 	// error handling
 	validate func(string) error
@@ -85,7 +84,7 @@ func (i *Input) Prompt(prompt string) *Input {
 
 // CharLimit sets the character limit of the input field.
 func (i *Input) CharLimit(charlimit int) *Input {
-	i.charlimit = charlimit
+	i.textinput.CharLimit = charlimit
 	return i
 }
 
