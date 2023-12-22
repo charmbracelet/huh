@@ -245,6 +245,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			if len(s.filteredOptions) > 0 {
 				s.selected = min(s.selected, len(s.filteredOptions)-1)
+				s.viewport.SetYOffset(clamp(s.selected, 0, len(s.filteredOptions)-s.viewport.Height))
 			}
 		}
 	}
