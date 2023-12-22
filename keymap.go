@@ -41,11 +41,14 @@ type SelectKeyMap struct {
 
 // MultiSelectKeyMap is the keybindings for multi-select fields.
 type MultiSelectKeyMap struct {
-	Next   key.Binding
-	Prev   key.Binding
-	Up     key.Binding
-	Down   key.Binding
-	Toggle key.Binding
+	Next        key.Binding
+	Prev        key.Binding
+	Up          key.Binding
+	Down        key.Binding
+	Toggle      key.Binding
+	Filter      key.Binding
+	SetFilter   key.Binding
+	ClearFilter key.Binding
 }
 
 // NoteKeyMap is the keybindings for note fields.
@@ -85,11 +88,14 @@ func NewDefaultKeyMap() *KeyMap {
 			ClearFilter: key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "clear filter"), key.WithDisabled()),
 		},
 		MultiSelect: MultiSelectKeyMap{
-			Next:   key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "confirm")),
-			Prev:   key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),
-			Toggle: key.NewBinding(key.WithKeys(" ", "x"), key.WithHelp("x", "toggle")),
-			Up:     key.NewBinding(key.WithKeys("up", "k", "ctrl+p"), key.WithHelp("↑", "up")),
-			Down:   key.NewBinding(key.WithKeys("down", "j", "ctrl+n"), key.WithHelp("↓", "down")),
+			Next:        key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "confirm")),
+			Prev:        key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),
+			Toggle:      key.NewBinding(key.WithKeys(" ", "x"), key.WithHelp("x", "toggle")),
+			Up:          key.NewBinding(key.WithKeys("up", "k", "ctrl+p"), key.WithHelp("↑", "up")),
+			Down:        key.NewBinding(key.WithKeys("down", "j", "ctrl+n"), key.WithHelp("↓", "down")),
+			Filter:      key.NewBinding(key.WithKeys("/"), key.WithHelp("/", "filter")),
+			SetFilter:   key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "set filter"), key.WithDisabled()),
+			ClearFilter: key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "clear filter"), key.WithDisabled()),
 		},
 		Note: NoteKeyMap{
 			Next: key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "next")),

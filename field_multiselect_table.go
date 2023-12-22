@@ -10,24 +10,38 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh/accessibility"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/mattn/go-runewidth"
 )
 
-// MultiSelect is a form multi-select field.
-type MultiSelect[T comparable] struct {
-	value *[]T
+// Row is an option for select fields.
+type Row struct {
+	Key      string
+	Values   []string
+	selected bool
+}
+
+type StringSlice []string
+
+type FilterFunc func(filter string, option Row) bool
+
+// MultiSelectTable is a form multi-select field.
+type MultiSelectTable struct {
+	value *[]string
 	key   string
 
 	// customization
 	title           string
 	description     string
-	options         []Option[T]
+	options         []Row
 	filterable      bool
-	filteredOptions []Option[T]
+	filteredOptions []Row
+	filterFunc      FilterFunc
 	limit           int
 	height          int
+	cols            []Column
 
 	// error handling
-	validate func([]T) error
+	validate func([]string) error
 	err      error
 
 	// state
@@ -44,26 +58,32 @@ type MultiSelect[T comparable] struct {
 	keymap     *MultiSelectKeyMap
 }
 
-// NewMultiSelect returns a new multi-select field.
-func NewMultiSelect[T comparable]() *MultiSelect[T] {
+// Column defines the table structure.
+type Column struct {
+	Title string
+	Width int
+}
+
+// NewMultiSelectTable returns a new multi-select field.
+func NewMultiSelectTable() *MultiSelectTable {
 	filter := textinput.New()
 	filter.Prompt = "/"
 
-	return &MultiSelect[T]{
-		options:   []Option[T]{},
-		value:     new([]T),
-		validate:  func([]T) error { return nil },
+	return &MultiSelectTable{
+		options:   []Row{},
+		value:     new([]string),
+		validate:  func([]string) error { return nil },
 		filtering: false,
 		filter:    filter,
 	}
 }
 
 // Value sets the value of the multi-select field.
-func (m *MultiSelect[T]) Value(value *[]T) *MultiSelect[T] {
+func (m *MultiSelectTable) Value(value *[]string) *MultiSelectTable {
 	m.value = value
 	for i, o := range m.options {
 		for _, v := range *value {
-			if o.Value == v {
+			if o.Key == v {
 				m.options[i].selected = true
 				break
 			}
@@ -74,32 +94,42 @@ func (m *MultiSelect[T]) Value(value *[]T) *MultiSelect[T] {
 
 // Key sets the key of the select field which can be used to retrieve the value
 // after submission.
-func (m *MultiSelect[T]) Key(key string) *MultiSelect[T] {
+func (m *MultiSelectTable) Key(key string) *MultiSelectTable {
 	m.key = key
 	return m
 }
 
 // Title sets the title of the multi-select field.
-func (m *MultiSelect[T]) Title(title string) *MultiSelect[T] {
+func (m *MultiSelectTable) Title(title string) *MultiSelectTable {
 	m.title = title
 	return m
 }
 
 // Description sets the description of the multi-select field.
-func (m *MultiSelect[T]) Description(description string) *MultiSelect[T] {
+func (m *MultiSelectTable) Description(description string) *MultiSelectTable {
 	m.description = description
 	return m
 }
 
+// WithColumns sets the table columns (headers).
+func (m *MultiSelectTable) Columns(cols []Column) *MultiSelectTable {
+	if len(cols) <= 0 {
+		return m
+	}
+	m.cols = cols
+	m.updateViewportHeight()
+	return m
+}
+
 // Options sets the options of the multi-select field.
-func (m *MultiSelect[T]) Options(options ...Option[T]) *MultiSelect[T] {
+func (m *MultiSelectTable) Options(options ...Row) *MultiSelectTable {
 	if len(options) <= 0 {
 		return m
 	}
 
 	for i, o := range options {
 		for _, v := range *m.value {
-			if o.Value == v {
+			if o.Key == v {
 				options[i].selected = true
 				break
 			}
@@ -112,19 +142,19 @@ func (m *MultiSelect[T]) Options(options ...Option[T]) *MultiSelect[T] {
 }
 
 // Filterable sets the multi-select field as filterable.
-func (m *MultiSelect[T]) Filterable(filterable bool) *MultiSelect[T] {
+func (m *MultiSelectTable) Filterable(filterable bool) *MultiSelectTable {
 	m.filterable = filterable
 	return m
 }
 
 // Limit sets the limit of the multi-select field.
-func (m *MultiSelect[T]) Limit(limit int) *MultiSelect[T] {
+func (m *MultiSelectTable) Limit(limit int) *MultiSelectTable {
 	m.limit = limit
 	return m
 }
 
 // Height sets the height of the multi-select field.
-func (m *MultiSelect[T]) Height(height int) *MultiSelect[T] {
+func (m *MultiSelectTable) Height(height int) *MultiSelectTable {
 	// What we really want to do is set the height of the viewport, but we
 	// need a theme applied before we can calcualate its height.
 	m.height = height
@@ -133,40 +163,40 @@ func (m *MultiSelect[T]) Height(height int) *MultiSelect[T] {
 }
 
 // Validate sets the validation function of the multi-select field.
-func (m *MultiSelect[T]) Validate(validate func([]T) error) *MultiSelect[T] {
+func (m *MultiSelectTable) Validate(validate func([]string) error) *MultiSelectTable {
 	m.validate = validate
 	return m
 }
 
 // Error returns the error of the multi-select field.
-func (m *MultiSelect[T]) Error() error {
+func (m *MultiSelectTable) Error() error {
 	return m.err
 }
 
 // Focus focuses the multi-select field.
-func (m *MultiSelect[T]) Focus() tea.Cmd {
+func (m *MultiSelectTable) Focus() tea.Cmd {
 	m.focused = true
 	return nil
 }
 
 // Blur blurs the multi-select field.
-func (m *MultiSelect[T]) Blur() tea.Cmd {
+func (m *MultiSelectTable) Blur() tea.Cmd {
 	m.focused = false
 	return nil
 }
 
 // KeyBinds returns the help message for the multi-select field.
-func (m *MultiSelect[T]) KeyBinds() []key.Binding {
+func (m *MultiSelectTable) KeyBinds() []key.Binding {
 	return []key.Binding{m.keymap.Toggle, m.keymap.Up, m.keymap.Down, m.keymap.Filter, m.keymap.SetFilter, m.keymap.ClearFilter, m.keymap.Next, m.keymap.Prev}
 }
 
 // Init initializes the multi-select field.
-func (m *MultiSelect[T]) Init() tea.Cmd {
+func (m *MultiSelectTable) Init() tea.Cmd {
 	return nil
 }
 
 // Update updates the multi-select field.
-func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *MultiSelectTable) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// Enforce height on the viewport during update as we need themes to
 	// be applied before we can calculate the height.
 	m.updateViewportHeight()
@@ -243,7 +273,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.filter.Value() != "" {
 				m.filteredOptions = nil
 				for _, option := range m.options {
-					if m.filterFunc(option.Key) {
+					if m.filterRow(option) {
 						m.filteredOptions = append(m.filteredOptions, option)
 					}
 				}
@@ -260,8 +290,10 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // updateViewportHeight updates the viewport size according to the Height setting
 // on this multi-select field.
-func (m *MultiSelect[T]) updateViewportHeight() {
-	// If no height is set size the viewport to the number of options.
+func (m *MultiSelectTable) updateViewportHeight() {
+	// min accommodates the
+
+	// If no height is set size the viewport to the number of options plus the min height.
 	if m.height <= 0 {
 		m.viewport.Height = len(m.options)
 		return
@@ -271,14 +303,14 @@ func (m *MultiSelect[T]) updateViewportHeight() {
 	if m.theme == nil {
 		return
 	}
-
 	const minHeight = 1
 	m.viewport.Height = max(minHeight, m.height-
 		lipgloss.Height(m.titleView())-
-		lipgloss.Height(m.descriptionView()))
+		lipgloss.Height(m.descriptionView())-
+		lipgloss.Height(m.headersView()))
 }
 
-func (m *MultiSelect[T]) numSelected() int {
+func (m *MultiSelectTable) numSelected() int {
 	var count int
 	for _, o := range m.options {
 		if o.selected {
@@ -288,24 +320,27 @@ func (m *MultiSelect[T]) numSelected() int {
 	return count
 }
 
-func (m *MultiSelect[T]) finalize() {
-	*m.value = make([]T, 0)
+func (m *MultiSelectTable) finalize() {
+	*m.value = make([]string, 0)
 	for _, option := range m.options {
 		if option.selected {
-			*m.value = append(*m.value, option.Value)
+			*m.value = append(*m.value, option.Key)
 		}
 	}
 	m.err = m.validate(*m.value)
 }
 
-func (m *MultiSelect[T]) activeStyles() *FieldStyles {
+func (m *MultiSelectTable) activeStyles() *FieldStyles {
 	if m.focused {
 		return &m.theme.Focused
 	}
 	return &m.theme.Blurred
 }
 
-func (m *MultiSelect[T]) titleView() string {
+func (m *MultiSelectTable) titleString() string {
+	return m.title + fmt.Sprintf(" (selected: %v)", m.numSelected())
+}
+func (m *MultiSelectTable) titleView() string {
 	var (
 		styles = m.activeStyles()
 		sb     = strings.Builder{}
@@ -313,9 +348,9 @@ func (m *MultiSelect[T]) titleView() string {
 	if m.filtering {
 		sb.WriteString(m.filter.View())
 	} else if m.filter.Value() != "" {
-		sb.WriteString(styles.Title.Render(m.title) + styles.Description.Render("/"+m.filter.Value()))
+		sb.WriteString(styles.Title.Render(m.titleString()) + styles.Description.Render("/"+m.filter.Value()))
 	} else {
-		sb.WriteString(styles.Title.Render(m.title))
+		sb.WriteString(styles.Title.Render(m.titleString()))
 	}
 	if m.err != nil {
 		sb.WriteString(styles.ErrorIndicator.String())
@@ -323,11 +358,23 @@ func (m *MultiSelect[T]) titleView() string {
 	return sb.String()
 }
 
-func (m *MultiSelect[T]) descriptionView() string {
+func (m *MultiSelectTable) descriptionView() string {
 	return m.activeStyles().Description.Render(m.description)
 }
 
-func (m *MultiSelect[T]) choicesView() string {
+func (m *MultiSelectTable) renderRow(row Row) string {
+
+	var s = make([]string, 0, len(m.cols))
+	for i, value := range row.Values {
+		style := lipgloss.NewStyle().Width(m.cols[i].Width).MaxWidth(m.cols[i].Width).Inline(true)
+		renderedCell := m.activeStyles().Option.Render(style.Render(runewidth.Truncate(value, m.cols[i].Width, "…")))
+		s = append(s, renderedCell)
+	}
+
+	return lipgloss.JoinHorizontal(lipgloss.Left, s...)
+}
+
+func (m *MultiSelectTable) choicesView() string {
 	var (
 		styles = m.activeStyles()
 		c      = styles.MultiSelectSelector.String()
@@ -342,10 +389,10 @@ func (m *MultiSelect[T]) choicesView() string {
 
 		if m.filteredOptions[i].selected {
 			sb.WriteString(styles.SelectedPrefix.String())
-			sb.WriteString(styles.SelectedOption.Render(option.Key))
+			sb.WriteString(styles.SelectedOption.Render(m.renderRow(option)))
 		} else {
 			sb.WriteString(styles.UnselectedPrefix.String())
-			sb.WriteString(styles.UnselectedOption.Render(option.Key))
+			sb.WriteString(styles.UnselectedOption.Render(m.renderRow(option)))
 		}
 		if i < len(m.options)-1 {
 			sb.WriteString("\n")
@@ -359,30 +406,47 @@ func (m *MultiSelect[T]) choicesView() string {
 	return sb.String()
 }
 
+func (m *MultiSelectTable) headersView() string {
+	styles := m.activeStyles()
+	var s = make([]string, 0, len(m.cols))
+	for _, col := range m.cols {
+		style := lipgloss.NewStyle().Width(col.Width).MaxWidth(col.Width).Inline(true)
+		renderedCell := style.Render(runewidth.Truncate(col.Title, col.Width, "…"))
+		s = append(s, styles.Header.Render(renderedCell))
+	}
+
+	prefix := strings.Repeat(" ", lipgloss.Width(styles.MultiSelectSelector.String())+lipgloss.Width(styles.SelectedPrefix.String()))
+
+	return prefix + lipgloss.JoinHorizontal(lipgloss.Left, s...)
+}
+
 // View renders the multi-select field.
-func (m *MultiSelect[T]) View() string {
+func (m *MultiSelectTable) View() string {
 	styles := m.activeStyles()
 	m.viewport.SetContent(m.choicesView())
 
 	var sb strings.Builder
+
 	sb.WriteString(m.titleView())
 	if m.err != nil {
 		sb.WriteString(styles.ErrorIndicator.String())
 	}
 	sb.WriteString("\n")
 	if m.description != "" {
-		sb.WriteString(m.descriptionView() + "\n")
+		sb.WriteString(m.descriptionView() + "\n\n")
 	}
+
+	sb.WriteString(m.headersView() + "\n")
 	sb.WriteString(m.viewport.View())
 	return styles.Base.Render(sb.String())
 }
 
-func (m *MultiSelect[T]) printOptions() {
+func (m *MultiSelectTable) printOptions() {
 	var (
 		sb strings.Builder
 	)
 
-	sb.WriteString(m.theme.Focused.Title.Render(m.title))
+	sb.WriteString(m.theme.Focused.Title.Render(m.titleString()))
 	sb.WriteString("\n")
 
 	for i, option := range m.options {
@@ -398,7 +462,7 @@ func (m *MultiSelect[T]) printOptions() {
 }
 
 // setFilter sets the filter of the select field.
-func (m *MultiSelect[T]) setFilter(filter bool) {
+func (m *MultiSelectTable) setFilter(filter bool) {
 	m.filtering = filter
 	m.keymap.SetFilter.SetEnabled(filter)
 	m.keymap.Filter.SetEnabled(!filter)
@@ -406,13 +470,16 @@ func (m *MultiSelect[T]) setFilter(filter bool) {
 }
 
 // filterFunc returns true if the option matches the filter.
-func (m *MultiSelect[T]) filterFunc(option string) bool {
+func (m *MultiSelectTable) filterRow(option Row) bool {
+	if m.filterFunc != nil {
+		return m.filterFunc(m.filter.Value(), option)
+	}
 	// XXX: remove diacritics or allow customization of filter function.
-	return strings.Contains(strings.ToLower(option), strings.ToLower(m.filter.Value()))
+	return strings.Contains(strings.ToLower(option.Key), strings.ToLower(m.filter.Value()))
 }
 
 // Run runs the multi-select field.
-func (m *MultiSelect[T]) Run() error {
+func (m *MultiSelectTable) Run() error {
 	if m.accessible {
 		return m.runAccessible()
 	}
@@ -420,7 +487,7 @@ func (m *MultiSelect[T]) Run() error {
 }
 
 // runAccessible() runs the multi-select field in accessible mode.
-func (m *MultiSelect[T]) runAccessible() error {
+func (m *MultiSelectTable) runAccessible() error {
 	m.printOptions()
 
 	var choice int
@@ -451,7 +518,7 @@ func (m *MultiSelect[T]) runAccessible() error {
 
 	for _, option := range m.options {
 		if option.selected {
-			*m.value = append(*m.value, option.Value)
+			*m.value = append(*m.value, option.Key)
 			values = append(values, option.Key)
 		}
 	}
@@ -461,7 +528,7 @@ func (m *MultiSelect[T]) runAccessible() error {
 }
 
 // WithTheme sets the theme of the multi-select field.
-func (m *MultiSelect[T]) WithTheme(theme *Theme) Field {
+func (m *MultiSelectTable) WithTheme(theme *Theme) Field {
 	m.theme = theme
 	m.filter.Cursor.Style = m.theme.Focused.TextInput.Cursor
 	m.filter.PromptStyle = m.theme.Focused.TextInput.Prompt
@@ -470,29 +537,35 @@ func (m *MultiSelect[T]) WithTheme(theme *Theme) Field {
 }
 
 // WithKeyMap sets the keymap of the multi-select field.
-func (m *MultiSelect[T]) WithKeyMap(k *KeyMap) Field {
+func (m *MultiSelectTable) WithKeyMap(k *KeyMap) Field {
 	m.keymap = &k.MultiSelect
 	return m
 }
 
+// WithFilterFunc sets the filterFunc of the multi-select field.
+func (m *MultiSelectTable) WithFilterFunc(f FilterFunc) Field {
+	m.filterFunc = f
+	return m
+}
+
 // WithAccessible sets the accessible mode of the multi-select field.
-func (m *MultiSelect[T]) WithAccessible(accessible bool) Field {
+func (m *MultiSelectTable) WithAccessible(accessible bool) Field {
 	m.accessible = accessible
 	return m
 }
 
 // WithWidth sets the width of the multi-select field.
-func (m *MultiSelect[T]) WithWidth(width int) Field {
+func (m *MultiSelectTable) WithWidth(width int) Field {
 	m.width = width
 	return m
 }
 
 // GetKey returns the multi-select's key.
-func (m *MultiSelect[T]) GetKey() string {
+func (m *MultiSelectTable) GetKey() string {
 	return m.key
 }
 
 // GetValue returns the multi-select's value.
-func (m *MultiSelect[T]) GetValue() any {
+func (m *MultiSelectTable) GetValue() any {
 	return *m.value
 }

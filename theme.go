@@ -66,6 +66,9 @@ type FieldStyles struct {
 	// Card styles.
 	Card lipgloss.Style
 	Next lipgloss.Style
+
+	// Table styles
+	Header lipgloss.Style
 }
 
 // TextInputStyles are the styles for text inputs.
@@ -106,6 +109,7 @@ func (f FieldStyles) copy() FieldStyles {
 		TextInput:           f.TextInput.copy(),
 		Card:                f.Card.Copy(),
 		Next:                f.Next.Copy(),
+		Header:              f.Header.Copy(),
 	}
 }
 
@@ -150,6 +154,8 @@ func ThemeBase() *Theme {
 		Foreground(lipgloss.Color("7")).
 		Background(lipgloss.Color("0"))
 	f.TextInput.Placeholder = lipgloss.NewStyle().Foreground(lipgloss.Color("8"))
+
+	// f.Header = lipgloss.NewStyle().Bold(true).Padding(0, 1)
 
 	t.Help = help.New().Styles
 
