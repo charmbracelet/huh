@@ -94,7 +94,7 @@ func NewDefaultKeyMap() *KeyMap {
 			Up:          key.NewBinding(key.WithKeys("up", "k", "ctrl+p"), key.WithHelp("↑", "up")),
 			Down:        key.NewBinding(key.WithKeys("down", "j", "ctrl+n"), key.WithHelp("↓", "down")),
 			Filter:      key.NewBinding(key.WithKeys("/"), key.WithHelp("/", "filter")),
-			SetFilter:   key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "set filter"), key.WithDisabled()),
+			SetFilter:   key.NewBinding(key.WithKeys("enter", "esc"), key.WithHelp("esc", "set filter"), key.WithDisabled()),
 			ClearFilter: key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "clear filter"), key.WithDisabled()),
 		},
 		Note: NoteKeyMap{

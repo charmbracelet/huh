@@ -402,6 +402,8 @@ func (m *MultiSelect[T]) setFilter(filter bool) {
 	m.filtering = filter
 	m.keymap.SetFilter.SetEnabled(filter)
 	m.keymap.Filter.SetEnabled(!filter)
+	m.keymap.Next.SetEnabled(!filter)
+	m.keymap.Prev.SetEnabled(!filter)
 	m.keymap.ClearFilter.SetEnabled(!filter && m.filter.Value() != "")
 }
 
