@@ -38,6 +38,7 @@ type MultiSelect[T comparable] struct {
 	viewport  viewport.Model
 
 	// options
+	maxWidth   int
 	width      int
 	accessible bool
 	theme      *Theme
@@ -483,9 +484,15 @@ func (m *MultiSelect[T]) WithAccessible(accessible bool) Field {
 	return m
 }
 
+// Resize sets the width of the multi-select field.
+func (m *MultiSelect[T]) Resize(width int) Field {
+	m.width = width
+	return m
+}
+
 // WithWidth sets the width of the multi-select field.
 func (m *MultiSelect[T]) WithWidth(width int) Field {
-	m.width = width
+	m.maxWidth = width
 	return m
 }
 

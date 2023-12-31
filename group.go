@@ -33,10 +33,11 @@ type Group struct {
 	showErrors bool
 
 	// group options
-	width  int
-	theme  *Theme
-	keymap *KeyMap
-	hide   func() bool
+	maxWidth int
+	width    int
+	theme    *Theme
+	keymap   *KeyMap
+	hide     func() bool
 }
 
 // NewGroup returns a new group with the given fields.
@@ -96,12 +97,23 @@ func (g *Group) WithKeyMap(k *KeyMap) *Group {
 	return g
 }
 
-// WithWidth sets the width on a group.
-func (g *Group) WithWidth(width int) *Group {
-	g.width = width
-	for _, field := range g.fields {
-		field.WithWidth(width)
+// Resize sets the width on a group.
+func (g *Group) Resize(width int) *Group {
+	smallestWidth := width
+	if g.maxWidth > 0 && g.maxWidth < width {
+		smallestWidth = g.maxWidth
 	}
+	g.width = smallestWidth
+	for _, field := range g.fields {
+		field.Resize(smallestWidth)
+	}
+	return g
+}
+
+// WithWidth sets the maximum width on a group.
+func (g *Group) WithWidth(width int) *Group {
+	g.maxWidth = width
+	g.Resize(width)
 	return g
 }
 

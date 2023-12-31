@@ -120,8 +120,11 @@ type Field interface {
 	// WithKeyMap sets the keymap on a field.
 	WithKeyMap(*KeyMap) Field
 
-	// WithWidth sets the width of a field.
+	// WithWidth sets the maximum width of a field.
 	WithWidth(int) Field
+
+	// Resize sets the width of a field.
+	Resize(int) Field
 
 	// GetKey returns the field's key.
 	GetKey() string
@@ -220,7 +223,7 @@ func (f *Form) WithWidth(width int) *Form {
 	}
 	f.width = width
 	for _, group := range f.groups {
-		group.WithWidth(width)
+		group.Resize(width)
 	}
 	return f
 }
@@ -327,7 +330,7 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			break
 		}
 		for _, group := range f.groups {
-			group.WithWidth(msg.Width)
+			group.Resize(msg.Width)
 		}
 	case tea.KeyMsg:
 		switch {

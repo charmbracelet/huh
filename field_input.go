@@ -32,6 +32,7 @@ type Input struct {
 	focused bool
 
 	// options
+	maxWidth   int
 	width      int
 	accessible bool
 	theme      *Theme
@@ -252,19 +253,33 @@ func (i *Input) WithAccessible(accessible bool) Field {
 // WithTheme sets the theme of the input field.
 func (i *Input) WithTheme(theme *Theme) Field {
 	i.theme = theme
+	i.Resize(i.width)
 	return i
 }
 
-// WithWidth sets the width of the input field.
-func (i *Input) WithWidth(width int) Field {
-	i.width = width
+// Resize sets the width of the input field.
+func (i *Input) Resize(width int) Field {
+	if i.theme == nil {
+		return i
+	}
 	frameSize := i.theme.Blurred.Base.GetHorizontalFrameSize()
 	promptWidth := lipgloss.Width(i.textinput.PromptStyle.Render(i.textinput.Prompt))
 	titleWidth := lipgloss.Width(i.theme.Focused.Title.Render(i.title))
-	i.textinput.Width = width - frameSize - promptWidth - 1
+	smallestWidth := width
+	i.width = smallestWidth
+	if i.maxWidth > 0 && i.maxWidth < width {
+		smallestWidth = i.maxWidth
+	}
+	i.textinput.Width = smallestWidth - frameSize - promptWidth - 1
 	if i.inline {
 		i.textinput.Width -= titleWidth
 	}
+	return i
+}
+
+func (i *Input) WithWidth(width int) Field {
+	i.maxWidth = width
+	i.Resize(width)
 	return i
 }
 

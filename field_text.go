@@ -36,6 +36,7 @@ type Text struct {
 	focused bool
 
 	// form options
+	maxWidth   int
 	width      int
 	accessible bool
 	theme      *Theme
@@ -281,6 +282,7 @@ func (t *Text) runAccessible() error {
 // WithTheme sets the theme on a text field.
 func (t *Text) WithTheme(theme *Theme) Field {
 	t.theme = theme
+	t.Resize(t.width)
 	return t
 }
 
@@ -297,10 +299,24 @@ func (t *Text) WithAccessible(accessible bool) Field {
 	return t
 }
 
-// WithWidth sets the width of the text field.
+// Resize sets the width of the text field.
+func (t *Text) Resize(width int) Field {
+	if t.theme == nil {
+		return t
+	}
+	smallestWidth := width
+	t.width = smallestWidth
+	if t.maxWidth > 0 && t.maxWidth < width {
+		smallestWidth = t.maxWidth
+	}
+	t.textarea.SetWidth(smallestWidth - t.theme.Blurred.Base.GetHorizontalFrameSize())
+	return t
+}
+
+// WithWidth sets the maximum width of the text field.
 func (t *Text) WithWidth(width int) Field {
-	t.width = width
-	t.textarea.SetWidth(width - t.theme.Blurred.Base.GetHorizontalFrameSize())
+	t.maxWidth = width
+	t.Resize(width)
 	return t
 }
 

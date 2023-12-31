@@ -29,6 +29,7 @@ type Confirm struct {
 	focused bool
 
 	// options
+	maxWidth   int
 	width      int
 	accessible bool
 	theme      *Theme
@@ -215,9 +216,15 @@ func (c *Confirm) WithAccessible(accessible bool) Field {
 	return c
 }
 
-// WithWidth sets the accessible mode of the confirm field.
-func (c *Confirm) WithWidth(width int) Field {
+// Resize sets the accessible mode of the confirm field.
+func (c *Confirm) Resize(width int) Field {
 	c.width = width
+	return c
+}
+
+// WithWidth sets the width of the confirm field.
+func (c *Confirm) WithWidth(width int) Field {
+	c.maxWidth = width
 	return c
 }
 

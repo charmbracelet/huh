@@ -36,6 +36,7 @@ type Select[T comparable] struct {
 	filter    textinput.Model
 
 	// options
+	maxWidth   int
 	width      int
 	accessible bool
 	theme      *Theme
@@ -419,9 +420,15 @@ func (s *Select[T]) WithAccessible(accessible bool) Field {
 	return s
 }
 
-// WithWidth sets the width of the select field.
-func (s *Select[T]) WithWidth(width int) Field {
+// Resize sets the width of the select field.
+func (s *Select[T]) Resize(width int) Field {
 	s.width = width
+	return s
+}
+
+// WithWidth sets the maximum width of a select field.
+func (s *Select[T]) WithWidth(width int) Field {
+	s.maxWidth = width
 	return s
 }
 
