@@ -55,6 +55,7 @@ type Form struct {
 
 	// options
 	width  int
+	height int
 	theme  *Theme
 	keymap *KeyMap
 }
@@ -74,6 +75,7 @@ func NewForm(groups ...*Group) *Form {
 		theme:     ThemeCharm(),
 		keymap:    NewDefaultKeyMap(),
 		width:     0,
+		height:    0,
 		results:   make(map[string]any),
 	}
 
@@ -82,6 +84,7 @@ func NewForm(groups ...*Group) *Form {
 	f.WithTheme(f.theme)
 	f.WithKeyMap(f.keymap)
 	f.WithWidth(f.width)
+	f.WithHeight(f.height)
 
 	return f
 }
@@ -122,6 +125,9 @@ type Field interface {
 
 	// WithWidth sets the width of a field.
 	WithWidth(int) Field
+
+	// WithHeight sets the height of a field.
+	WithHeight(int) Field
 
 	// GetKey returns the field's key.
 	GetKey() string
@@ -221,6 +227,18 @@ func (f *Form) WithWidth(width int) *Form {
 	f.width = width
 	for _, group := range f.groups {
 		group.WithWidth(width)
+	}
+	return f
+}
+
+// WithHeight sets the height of a form.
+func (f *Form) WithHeight(height int) *Form {
+	if height <= 0 {
+		return f
+	}
+	f.height = height
+	for _, group := range f.groups {
+		group.WithHeight(height)
 	}
 	return f
 }

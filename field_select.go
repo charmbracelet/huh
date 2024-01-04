@@ -426,6 +426,11 @@ func (s *Select[T]) WithWidth(width int) Field {
 	return s
 }
 
+// WithHeight sets the height of the select field.
+func (s *Select[T]) WithHeight(height int) Field {
+	return s.Height(height)
+}
+
 // GetKey returns the key of the field.
 func (s *Select[T]) GetKey() string {
 	return s.key
