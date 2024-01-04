@@ -303,17 +303,14 @@ func (s *Select[T]) titleView() string {
 }
 
 func (s *Select[T]) descriptionView() string {
-	if s.description == "" {
-		return ""
-	}
-	return s.activeStyles().Description.Render(s.description) + "\n"
+	return s.activeStyles().Description.Render(s.description)
 }
 
 func (s *Select[T]) choicesView() string {
 	var (
 		styles = s.activeStyles()
-		sb     = strings.Builder{}
 		c      = styles.SelectSelector.String()
+		sb     strings.Builder
 	)
 	for i, option := range s.filteredOptions {
 		if s.selected == i {
@@ -335,17 +332,16 @@ func (s *Select[T]) choicesView() string {
 
 // View renders the select field.
 func (s *Select[T]) View() string {
-	var (
-		styles = s.activeStyles()
-		sb     = strings.Builder{}
-	)
-
-	sb.WriteString(s.titleView() + "\n")
-	sb.WriteString(s.descriptionView())
-
+	styles := s.activeStyles()
 	s.viewport.SetContent(s.choicesView())
-	sb.WriteString(s.viewport.View())
 
+	var sb strings.Builder
+	sb.WriteString(s.titleView())
+	sb.WriteString("\n")
+	if s.description != "" {
+		sb.WriteString(s.descriptionView() + "\n")
+	}
+	sb.WriteString(s.viewport.View())
 	return styles.Base.Render(sb.String())
 }
 

@@ -125,7 +125,7 @@ func (g *Group) WithHeight(height int) *Group {
 	g.viewport.Height = height - 1
 	for _, field := range g.fields {
 		// A field height must not exceed the form height.
-		if height < lipgloss.Height(field.View()) {
+		if height-1 <= lipgloss.Height(field.View()) {
 			field.WithHeight(height - 1)
 		}
 	}
