@@ -16,8 +16,9 @@ type KeyMap struct {
 
 // InputKeyMap is the keybindings for input fields.
 type InputKeyMap struct {
-	Next key.Binding
-	Prev key.Binding
+	AcceptSuggestion key.Binding
+	Next             key.Binding
+	Prev             key.Binding
 }
 
 // TextKeyMap is the keybindings for text fields.
@@ -69,8 +70,9 @@ func NewDefaultKeyMap() *KeyMap {
 	return &KeyMap{
 		Quit: key.NewBinding(key.WithKeys("ctrl+c")),
 		Input: InputKeyMap{
-			Next: key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "next")),
-			Prev: key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),
+			AcceptSuggestion: key.NewBinding(key.WithKeys("ctrl+e"), key.WithHelp("ctrl+e", "complete")),
+			Next:             key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "next")),
+			Prev:             key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),
 		},
 		Text: TextKeyMap{
 			Next:    key.NewBinding(key.WithKeys("tab", "enter"), key.WithHelp("enter", "next")),
