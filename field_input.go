@@ -46,6 +46,7 @@ func NewInput() *Input {
 		value:     new(string),
 		textinput: input,
 		validate:  func(string) error { return nil },
+		theme:     ThemeCharm(),
 	}
 
 	return i

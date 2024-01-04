@@ -50,6 +50,7 @@ func NewNote() *Note {
 	return &Note{
 		showNextButton: false,
 		renderer:       r,
+		theme:          ThemeCharm(),
 	}
 }
 
