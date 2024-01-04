@@ -19,6 +19,7 @@ type Note struct {
 	focused        bool
 
 	// options
+	maxWidth   int
 	width      int
 	accessible bool
 	theme      *Theme
@@ -159,9 +160,15 @@ func (n *Note) WithAccessible(accessible bool) Field {
 	return n
 }
 
+// Resize sets the width of the note field.
+func (n *Note) Resize(width int) Field {
+	n.width = width
+	return n
+}
+
 // WithWidth sets the width of the note field.
 func (n *Note) WithWidth(width int) Field {
-	n.width = width
+	n.maxWidth = width
 	return n
 }
 
