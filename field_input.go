@@ -89,6 +89,14 @@ func (i *Input) CharLimit(charlimit int) *Input {
 	return i
 }
 
+// Suggestions sets the suggestions to display for autocomplete in the input
+// field.
+func (i *Input) Suggestions(suggestions []string) *Input {
+	i.textinput.ShowSuggestions = len(suggestions) > 0
+	i.textinput.SetSuggestions(suggestions)
+	return i
+}
+
 // Password sets whether or not to hide the input while the user is typing.
 func (i *Input) Password(password bool) *Input {
 	if password {
@@ -139,6 +147,9 @@ func (i *Input) Blur() tea.Cmd {
 
 // KeyBinds returns the help message for the input field.
 func (i *Input) KeyBinds() []key.Binding {
+	if i.textinput.ShowSuggestions {
+		return []key.Binding{i.keymap.Next, i.keymap.Prev, i.keymap.AcceptSuggestion}
+	}
 	return []key.Binding{i.keymap.Next, i.keymap.Prev}
 }
 
@@ -241,6 +252,7 @@ func (i *Input) runAccessible() error {
 // WithKeyMap sets the keymap on an input field.
 func (i *Input) WithKeyMap(k *KeyMap) Field {
 	i.keymap = &k.Input
+	i.textinput.KeyMap.AcceptSuggestion = i.keymap.AcceptSuggestion
 	return i
 }
 
