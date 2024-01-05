@@ -347,6 +347,14 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		for _, group := range f.groups {
 			group.WithWidth(msg.Width)
 		}
+		if f.height > 0 {
+			break
+		}
+		for _, group := range f.groups {
+			if group.fullHeight() > msg.Height {
+				group.WithHeight(msg.Height)
+			}
+		}
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, f.keymap.Quit):

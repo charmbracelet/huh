@@ -48,22 +48,20 @@ func NewGroup(fields ...Field) *Group {
 	p := paginator.New()
 	p.SetTotalPages(len(fields))
 
-	var height int
-	for _, f := range fields {
-		height += lipgloss.Height(f.View()) + 1 // + gap
-	}
-
-	v := viewport.New(80, height)
-
-	return &Group{
+	group := &Group{
 		fields:     fields,
 		paginator:  p,
-		viewport:   v,
 		help:       help.New(),
-		height:     height,
 		showHelp:   true,
 		showErrors: true,
 	}
+
+	height := group.fullHeight()
+	v := viewport.New(80, height)
+	group.viewport = v
+	group.height = height
+
+	return group
 }
 
 // Title sets the group's title.
@@ -254,6 +252,15 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return g, tea.Batch(cmds...)
 }
 
+// height returns the full height of the group
+func (g *Group) fullHeight() int {
+	var height int
+	for _, f := range g.fields {
+		height += lipgloss.Height(f.View()) + 1 // + gap
+	}
+	return height
+}
+
 // View renders the group.
 func (g *Group) View() string {
 	var fields strings.Builder
@@ -284,7 +291,6 @@ func (g *Group) View() string {
 
 	for _, err := range errors {
 		view.WriteString(g.theme.Focused.ErrorMessage.Render(err.Error()))
-		view.WriteString("\n")
 	}
 
 	return g.viewport.View() + "\n" + view.String()

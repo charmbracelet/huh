@@ -367,9 +367,6 @@ func (m *MultiSelect[T]) View() string {
 
 	var sb strings.Builder
 	sb.WriteString(m.titleView())
-	if m.err != nil {
-		sb.WriteString(styles.ErrorIndicator.String())
-	}
 	sb.WriteString("\n")
 	if m.description != "" {
 		sb.WriteString(m.descriptionView() + "\n")
