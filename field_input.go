@@ -33,6 +33,7 @@ type Input struct {
 
 	// options
 	width      int
+	height     int
 	accessible bool
 	theme      *Theme
 	keymap     *InputKeyMap
@@ -278,6 +279,12 @@ func (i *Input) WithWidth(width int) Field {
 	if i.inline {
 		i.textinput.Width -= titleWidth
 	}
+	return i
+}
+
+// WithHeight sets the height of the input field.
+func (i *Input) WithHeight(height int) Field {
+	i.height = height
 	return i
 }
 

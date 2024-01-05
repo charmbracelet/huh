@@ -305,6 +305,19 @@ func (t *Text) WithWidth(width int) Field {
 	return t
 }
 
+// WithHeight sets the height of the text field.
+func (t *Text) WithHeight(height int) Field {
+	adjust := 0
+	if t.title != "" {
+		adjust++
+	}
+	if t.description != "" {
+		adjust++
+	}
+	t.textarea.SetHeight(height - t.theme.Blurred.Base.GetVerticalFrameSize() - adjust)
+	return t
+}
+
 // GetKey returns the key of the field.
 func (t *Text) GetKey() string {
 	return t.key
