@@ -367,9 +367,6 @@ func (m *MultiSelect[T]) View() string {
 
 	var sb strings.Builder
 	sb.WriteString(m.titleView())
-	if m.err != nil {
-		sb.WriteString(styles.ErrorIndicator.String())
-	}
 	sb.WriteString("\n")
 	if m.description != "" {
 		sb.WriteString(m.descriptionView() + "\n")
@@ -488,6 +485,11 @@ func (m *MultiSelect[T]) WithAccessible(accessible bool) Field {
 func (m *MultiSelect[T]) WithWidth(width int) Field {
 	m.width = width
 	return m
+}
+
+// WithHeight sets the height of the multi-select field.
+func (m *MultiSelect[T]) WithHeight(height int) Field {
+	return m.Height(height)
 }
 
 // GetKey returns the multi-select's key.

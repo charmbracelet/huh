@@ -6,7 +6,9 @@ import (
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/paginator"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 // Group is a collection of fields that are displayed together with a page of
@@ -25,6 +27,7 @@ type Group struct {
 
 	// navigation
 	paginator paginator.Model
+	viewport  viewport.Model
 
 	// help
 	showHelp bool
@@ -35,6 +38,7 @@ type Group struct {
 
 	// group options
 	width  int
+	height int
 	theme  *Theme
 	keymap *KeyMap
 	hide   func() bool
@@ -45,13 +49,20 @@ func NewGroup(fields ...Field) *Group {
 	p := paginator.New()
 	p.SetTotalPages(len(fields))
 
-	return &Group{
+	group := &Group{
 		fields:     fields,
 		paginator:  p,
 		help:       help.New(),
 		showHelp:   true,
 		showErrors: true,
 	}
+
+	height := group.fullHeight()
+	v := viewport.New(80, height)
+	group.viewport = v
+	group.height = height
+
+	return group
 }
 
 // Title sets the group's title.
@@ -100,8 +111,22 @@ func (g *Group) WithKeyMap(k *KeyMap) *Group {
 // WithWidth sets the width on a group.
 func (g *Group) WithWidth(width int) *Group {
 	g.width = width
+	g.viewport.Width = width
 	for _, field := range g.fields {
 		field.WithWidth(width)
+	}
+	return g
+}
+
+// WithHeight sets the height on a group.
+func (g *Group) WithHeight(height int) *Group {
+	g.height = height
+	g.viewport.Height = height - 1
+	for _, field := range g.fields {
+		// A field height must not exceed the form height.
+		if height-1 <= lipgloss.Height(field.View()) {
+			field.WithHeight(height - 1)
+		}
 	}
 	return g
 }
@@ -199,6 +224,12 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			break
 		}
 
+		offset := 0
+		for i := 0; i <= current; i++ {
+			offset += lipgloss.Height(g.fields[i].View()) + 1
+		}
+		g.viewport.SetYOffset(offset)
+
 		cmds = append(cmds, cmd)
 
 	case prevFieldMsg:
@@ -210,15 +241,31 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			break
 		}
 
+		offset := 0
+		for i := 0; i < current-1; i++ {
+			offset += lipgloss.Height(g.fields[i].View()) + 1
+		}
+		g.viewport.SetYOffset(offset)
+
 		cmds = append(cmds, cmd)
 	}
 
 	return g, tea.Batch(cmds...)
 }
 
+// height returns the full height of the group
+func (g *Group) fullHeight() int {
+	var height int
+	for _, f := range g.fields {
+		height += lipgloss.Height(f.View()) + 1 // + gap
+	}
+	return height
+}
+
 // View renders the group.
 func (g *Group) View() string {
-	var s strings.Builder
+	var fields strings.Builder
+	var view strings.Builder
 
 	gap := g.theme.FieldSeparator.String()
 	if gap == "" {
@@ -226,16 +273,16 @@ func (g *Group) View() string {
 	}
 
 	for i, field := range g.fields {
-		s.WriteString(field.View())
+		fields.WriteString(field.View())
 		if i < len(g.fields)-1 {
-			s.WriteString(gap)
+			fields.WriteString(gap)
 		}
 	}
 
 	errors := g.Errors()
+	g.viewport.SetContent(fields.String() + "\n")
 
 	if g.showHelp && len(errors) <= 0 {
-
 		// The short help view will be empty if (Field).KeyBinds() returns:
 		//
 		//   a. the nil or empty []key.Binding slice, or
@@ -251,19 +298,19 @@ func (g *Group) View() string {
 		// Verify the rendered help view contains something other than whitespace.
 		isNotSpace := func(r rune) bool { return !unicode.IsSpace(r) }
 		if strings.IndexFunc(keys, isNotSpace) > 0 {
-			s.WriteString(gap)
-			s.WriteString(keys)
+			view.WriteString(gap)
+			view.WriteString(keys)
 		}
 	}
 
 	if !g.showErrors {
-		return s.String()
+		return g.viewport.View() + "\n" + view.String()
 	}
 
 	for _, err := range errors {
-		s.WriteString(g.theme.Focused.ErrorMessage.Render(err.Error()))
-		s.WriteRune('\n')
+		view.WriteString(g.theme.Focused.ErrorMessage.Render(err.Error()))
+		view.WriteRune('\n')
 	}
 
-	return s.String()
+	return g.viewport.View() + "\n" + view.String()
 }
