@@ -59,6 +59,7 @@ func NewText() *Text {
 		editorCmd:       editorCmd,
 		editorArgs:      editorArgs,
 		editorExtension: "md",
+		theme:           ThemeCharm(),
 	}
 
 	return t

@@ -54,6 +54,7 @@ func NewSelect[T comparable]() *Select[T] {
 		validate:  func(T) error { return nil },
 		filtering: false,
 		filter:    filter,
+		theme:     ThemeCharm(),
 	}
 }
 
