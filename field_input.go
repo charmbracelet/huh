@@ -272,17 +272,17 @@ func (i *Input) WithTheme(theme *Theme) Field {
 
 // Resize sets the width of the input field.
 func (i *Input) Resize(width int) Field {
-	if i.theme == nil {
+	if i.theme == nil || width <= 0 {
 		return i
 	}
 	frameSize := i.theme.Blurred.Base.GetHorizontalFrameSize()
 	promptWidth := lipgloss.Width(i.textinput.PromptStyle.Render(i.textinput.Prompt))
 	titleWidth := lipgloss.Width(i.theme.Focused.Title.Render(i.title))
 	smallestWidth := width
-	i.width = smallestWidth
 	if i.maxWidth > 0 && i.maxWidth < width {
 		smallestWidth = i.maxWidth
 	}
+	i.width = smallestWidth
 	i.textinput.Width = smallestWidth - frameSize - promptWidth - 1
 	if i.inline {
 		i.textinput.Width -= titleWidth

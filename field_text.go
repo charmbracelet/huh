@@ -302,14 +302,14 @@ func (t *Text) WithAccessible(accessible bool) Field {
 
 // Resize sets the width of the text field.
 func (t *Text) Resize(width int) Field {
-	if t.theme == nil {
+	if t.theme == nil || width <= 0 {
 		return t
 	}
 	smallestWidth := width
-	t.width = smallestWidth
 	if t.maxWidth > 0 && t.maxWidth < width {
 		smallestWidth = t.maxWidth
 	}
+	t.width = smallestWidth
 	t.textarea.SetWidth(smallestWidth - t.theme.Blurred.Base.GetHorizontalFrameSize())
 	return t
 }
