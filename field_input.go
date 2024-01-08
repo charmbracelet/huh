@@ -290,6 +290,7 @@ func (i *Input) Resize(width int) Field {
 	return i
 }
 
+// WithWidth sets the maximum width of the input field.
 func (i *Input) WithWidth(width int) Field {
 	i.maxWidth = width
 	i.Resize(width)
