@@ -30,6 +30,7 @@ type Confirm struct {
 
 	// options
 	width      int
+	height     int
 	accessible bool
 	theme      *Theme
 	keymap     *ConfirmKeyMap
@@ -216,9 +217,15 @@ func (c *Confirm) WithAccessible(accessible bool) Field {
 	return c
 }
 
-// WithWidth sets the accessible mode of the confirm field.
+// WithWidth sets the width of the confirm field.
 func (c *Confirm) WithWidth(width int) Field {
 	c.width = width
+	return c
+}
+
+// WithHeight sets the height of the confirm field.
+func (c *Confirm) WithHeight(height int) Field {
+	c.height = height
 	return c
 }
 
