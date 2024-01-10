@@ -46,6 +46,18 @@ func (n *Note) Description(description string) *Note {
 	return n
 }
 
+// Titlef sets the title of the note field.
+func (n *Note) Titlef(format string, a ...any) *Note {
+	n.title = fmt.Sprintf(format, a...)
+	return n
+}
+
+// Descriptionf sets the description of the note field.
+func (n *Note) Descriptionf(format string, a ...any) *Note {
+	n.description = fmt.Sprintf(format, a...)
+	return n
+}
+
 // Next sets whether to show the next button.
 func (n *Note) Next(show bool) *Note {
 	n.showNextButton = show

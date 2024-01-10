@@ -88,6 +88,18 @@ func (s *Select[T]) Description(description string) *Select[T] {
 	return s
 }
 
+// Titlef sets the title of the select field.
+func (s *Select[T]) Titlef(format string, a ...any) *Select[T] {
+	s.title = fmt.Sprintf(format, a...)
+	return s
+}
+
+// Descriptionf sets the description of the select field.
+func (s *Select[T]) Descriptionf(format string, a ...any) *Select[T] {
+	s.description = fmt.Sprintf(format, a...)
+	return s
+}
+
 // Options sets the options of the select field.
 func (s *Select[T]) Options(options ...Option[T]) *Select[T] {
 	if len(options) <= 0 {

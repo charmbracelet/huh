@@ -92,6 +92,18 @@ func (m *MultiSelect[T]) Description(description string) *MultiSelect[T] {
 	return m
 }
 
+// Titlef sets the title of the multi-select field.
+func (m *MultiSelect[T]) Titlef(format string, a ...any) *MultiSelect[T] {
+	m.title = fmt.Sprintf(format, a...)
+	return m
+}
+
+// Descriptionf sets the description of the multi-select field.
+func (m *MultiSelect[T]) Descriptionf(format string, a ...any) *MultiSelect[T] {
+	m.description = fmt.Sprintf(format, a...)
+	return m
+}
+
 // Options sets the options of the multi-select field.
 func (m *MultiSelect[T]) Options(options ...Option[T]) *MultiSelect[T] {
 	if len(options) <= 0 {
@@ -376,9 +388,7 @@ func (m *MultiSelect[T]) View() string {
 }
 
 func (m *MultiSelect[T]) printOptions() {
-	var (
-		sb strings.Builder
-	)
+	var sb strings.Builder
 
 	sb.WriteString(m.theme.Focused.Title.Render(m.title))
 	sb.WriteString("\n")

@@ -58,6 +58,12 @@ func (s *Spinner) Title(title string) *Spinner {
 	return s
 }
 
+// Titlef sets the title of the spinner.
+func (n *Spinner) Titlef(format string, a ...any) *Spinner {
+	n.title = fmt.Sprintf(format, a...)
+	return n
+}
+
 // Action sets the action of the spinner.
 func (s *Spinner) Action(action func()) *Spinner {
 	s.action = action

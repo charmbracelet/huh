@@ -78,6 +78,18 @@ func (i *Input) Description(description string) *Input {
 	return i
 }
 
+// Titlef sets the title of the input field.
+func (i *Input) Titlef(format string, a ...any) *Input {
+	i.title = fmt.Sprintf(format, a...)
+	return i
+}
+
+// Descriptionf sets the description of the input field.
+func (i *Input) Descriptionf(format string, a ...any) *Input {
+	i.description = fmt.Sprintf(format, a...)
+	return i
+}
+
 // Prompt sets the prompt of the input field.
 func (i *Input) Prompt(prompt string) *Input {
 	i.textinput.Prompt = prompt

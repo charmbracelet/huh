@@ -83,15 +83,27 @@ func (t *Text) Title(title string) *Text {
 	return t
 }
 
-// Lines sets the number of lines to show of the text field.
-func (t *Text) Lines(lines int) *Text {
-	t.textarea.SetHeight(lines)
-	return t
-}
-
 // Description sets the description of the text field.
 func (t *Text) Description(description string) *Text {
 	t.description = description
+	return t
+}
+
+// Titlef sets the title of the text field.
+func (t *Text) Titlef(format string, a ...any) *Text {
+	t.title = fmt.Sprintf(format, a...)
+	return t
+}
+
+// Descriptionf sets the description of the text field.
+func (t *Text) Descriptionf(format string, a ...any) *Text {
+	t.description = fmt.Sprintf(format, a...)
+	return t
+}
+
+// Lines sets the number of lines to show of the text field.
+func (t *Text) Lines(lines int) *Text {
+	t.textarea.SetHeight(lines)
 	return t
 }
 

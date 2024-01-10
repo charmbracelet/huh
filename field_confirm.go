@@ -94,6 +94,18 @@ func (c *Confirm) Description(description string) *Confirm {
 	return c
 }
 
+// Titlef sets the title of the confirm field.
+func (c *Confirm) Titlef(format string, a ...any) *Confirm {
+	c.title = fmt.Sprintf(format, a...)
+	return c
+}
+
+// Descriptionf sets the description of the confirm field.
+func (c *Confirm) Descriptionf(format string, a ...any) *Confirm {
+	c.description = fmt.Sprintf(format, a...)
+	return c
+}
+
 // Focus focuses the confirm field.
 func (c *Confirm) Focus() tea.Cmd {
 	c.focused = true

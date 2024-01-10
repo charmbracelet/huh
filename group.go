@@ -1,6 +1,7 @@
 package huh
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/help"
@@ -73,6 +74,18 @@ func (g *Group) Title(title string) *Group {
 // Description sets the group's description.
 func (g *Group) Description(description string) *Group {
 	g.description = description
+	return g
+}
+
+// Titlef sets the title of the group field.
+func (g *Group) Titlef(format string, a ...any) *Group {
+	g.title = fmt.Sprintf(format, a...)
+	return g
+}
+
+// Descriptionf sets the description of the group field.
+func (g *Group) Descriptionf(format string, a ...any) *Group {
+	g.description = fmt.Sprintf(format, a...)
 	return g
 }
 
