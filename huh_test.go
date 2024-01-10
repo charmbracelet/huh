@@ -296,6 +296,26 @@ func TestInput(t *testing.T) {
 	}
 }
 
+func TestKeymaps(t *testing.T) {
+	k := NewDefaultKeyMap()
+	k.Input.Prev.SetEnabled(false)
+	k.Input.Next.SetEnabled(false)
+	field := NewText().WithKeyMap(k)
+	f := NewForm(NewGroup(field))
+	f.Update(f.Init())
+
+	view := f.View()
+
+	if strings.Contains(view, "shift+tab back") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to not contain prev key help.")
+	}
+	if strings.Contains(view, "enter next") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to not contain next key help.")
+	}
+}
+
 func TestText(t *testing.T) {
 	field := NewText()
 	f := NewForm(NewGroup(field))
