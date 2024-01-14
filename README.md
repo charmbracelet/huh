@@ -394,6 +394,11 @@ Tea example][example].
 [bubbles]: https://github.com/charmbracelet/bubbles
 [example]: https://github.com/charmbracelet/huh/blob/main/examples/bubbletea/main.go
 
+## `Huh?` in the Wild
+For some `Huh?` programs in production, see:
+
+* [meteor](https://github.com/stefanlogue/meteor): a highly customizable conventional commit message tool
+
 ## Feedback
 
 We'd love to hear your thoughts on this project. Feel free to drop us a note!
