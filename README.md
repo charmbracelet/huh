@@ -397,7 +397,7 @@ Tea example][example].
 ## `Huh?` in the Wild
 For some `Huh?` programs in production, see:
 
-* [meteor](https://github.com/stefanlogue/meteor): a highly customizable conventional commit message tool
+* [meteor](https://github.com/stefanlogue/meteor): a highly customisable conventional commit message tool
 
 ## Feedback
 
