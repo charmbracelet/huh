@@ -174,10 +174,10 @@ func (f *Form) WithShowHelp(v bool) *Form {
 	return f
 }
 
-// WithShowErrors sets whether or not the form should show help.
+// WithShowErrors sets whether or not the form should show errors.
 //
-// This allows the form groups and field to show what keybindings are available
-// to the user.
+// This allows the form groups and field to show the error when the Validate
+// function returns an error.
 func (f *Form) WithShowErrors(v bool) *Form {
 	for _, group := range f.groups {
 		group.WithShowErrors(v)
