@@ -23,6 +23,7 @@ func main() {
 		).WithHideFunc(func() bool {
 			return !isAllergic
 		}),
+		huh.NewGroup(huh.NewNote().Title("Invisible")).WithHide(true),
 	).Run()
 
 	if isAllergic {
