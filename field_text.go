@@ -318,6 +318,17 @@ func (t *Text) WithHeight(height int) Field {
 	return t
 }
 
+// WithPosition sets the position information of the text field.
+func (t *Text) WithPosition(p Position) Field {
+	t.keymap.Prev.SetEnabled(p.Field > 0 && p.Group > 0)
+	if p.Field == p.FieldTotal-1 && p.Group == p.GroupTotal-1 {
+		t.keymap.Next.SetHelp("enter", "submit")
+	} else {
+		t.keymap.Next.SetHelp("enter", "next")
+	}
+	return t
+}
+
 // GetKey returns the key of the field.
 func (t *Text) GetKey() string {
 	return t.key

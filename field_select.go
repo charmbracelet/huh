@@ -427,6 +427,17 @@ func (s *Select[T]) WithHeight(height int) Field {
 	return s.Height(height)
 }
 
+// WithPosition sets the position of the select field.
+func (s *Select[T]) WithPosition(p Position) Field {
+	s.keymap.Prev.SetEnabled(p.Field > 0 && p.Group > 0)
+	if p.Field == p.FieldTotal-1 && p.Group == p.GroupTotal-1 {
+		s.keymap.Next.SetHelp("enter", "submit")
+	} else {
+		s.keymap.Next.SetHelp("enter", "next")
+	}
+	return s
+}
+
 // GetKey returns the key of the field.
 func (s *Select[T]) GetKey() string {
 	return s.key

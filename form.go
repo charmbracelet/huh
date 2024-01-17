@@ -85,6 +85,7 @@ func NewForm(groups ...*Group) *Form {
 	f.WithKeyMap(f.keymap)
 	f.WithWidth(f.width)
 	f.WithHeight(f.height)
+	f.WithPosition()
 
 	return f
 }
@@ -129,11 +130,22 @@ type Field interface {
 	// WithHeight sets the height of a field.
 	WithHeight(int) Field
 
+	// WithPosition tells the field the index of the group and position it is in.
+	WithPosition(Position) Field
+
 	// GetKey returns the field's key.
 	GetKey() string
 
 	// GetValue returns the field's value.
 	GetValue() any
+}
+
+// Position is positional information about the given field and form.
+type Position struct {
+	Group      int
+	Field      int
+	FieldTotal int
+	GroupTotal int
 }
 
 // nextGroupMsg is a message to move to the next group.
@@ -239,6 +251,21 @@ func (f *Form) WithHeight(height int) *Form {
 	f.height = height
 	for _, group := range f.groups {
 		group.WithHeight(height)
+	}
+	return f
+}
+
+// WithPosition sets the position on all the fields.
+func (f *Form) WithPosition() *Form {
+	for g, group := range f.groups {
+		for i, field := range group.fields {
+			field.WithPosition(Position{
+				Group:      g,
+				Field:      i,
+				FieldTotal: len(group.fields),
+				GroupTotal: len(f.groups),
+			})
+		}
 	}
 	return f
 }

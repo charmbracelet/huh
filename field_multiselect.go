@@ -487,9 +487,21 @@ func (m *MultiSelect[T]) WithWidth(width int) Field {
 	return m
 }
 
-// WithHeight sets the height of the multi-select field.
-func (m *MultiSelect[T]) WithHeight(height int) Field {
-	return m.Height(height)
+// WithHeight sets the width of the multi-select field.
+func (m *MultiSelect[T]) WithHeight(width int) Field {
+	m.width = width
+	return m
+}
+
+// WithPosition sets the position of the multi-select field.
+func (m *MultiSelect[T]) WithPosition(p Position) Field {
+	m.keymap.Prev.SetEnabled(p.Field > 0 && p.Group > 0)
+	if p.Field == p.FieldTotal-1 && p.Group == p.GroupTotal-1 {
+		m.keymap.Next.SetHelp("enter", "submit")
+	} else {
+		m.keymap.Next.SetHelp("enter", "next")
+	}
+	return m
 }
 
 // GetKey returns the multi-select's key.

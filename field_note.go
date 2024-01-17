@@ -71,7 +71,7 @@ func (n *Note) Error() error {
 
 // KeyBinds returns the help message for the note field.
 func (n *Note) KeyBinds() []key.Binding {
-	return []key.Binding{n.keymap.Next}
+	return []key.Binding{n.keymap.Next, n.keymap.Prev}
 }
 
 // Init initializes the note field.
@@ -169,6 +169,17 @@ func (n *Note) WithWidth(width int) Field {
 // WithHeight sets the height of the note field.
 func (n *Note) WithHeight(height int) Field {
 	n.height = height
+	return n
+}
+
+// WithPosition sets the position information of the note field.
+func (n *Note) WithPosition(p Position) Field {
+	n.keymap.Prev.SetEnabled(p.Field > 0 && p.Group > 0)
+	if p.Field == p.FieldTotal-1 && p.Group == p.GroupTotal-1 {
+		n.keymap.Next.SetHelp("enter", "submit")
+	} else {
+		n.keymap.Next.SetHelp("enter", "next")
+	}
 	return n
 }
 

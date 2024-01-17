@@ -101,7 +101,7 @@ func NewDefaultKeyMap() *KeyMap {
 		},
 		Note: NoteKeyMap{
 			Next: key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "next")),
-			Prev: key.NewBinding(key.WithKeys("shift+tab")),
+			Prev: key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),
 		},
 		Confirm: ConfirmKeyMap{
 			Next:   key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "next")),

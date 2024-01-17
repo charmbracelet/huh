@@ -288,6 +288,17 @@ func (i *Input) WithHeight(height int) Field {
 	return i
 }
 
+// WithPosition sets the position of the input field.
+func (i *Input) WithPosition(p Position) Field {
+	i.keymap.Prev.SetEnabled(p.Field > 0 && p.Group > 0)
+	if p.Field == p.FieldTotal-1 && p.Group == p.GroupTotal-1 {
+		i.keymap.Next.SetHelp("enter", "submit")
+	} else {
+		i.keymap.Next.SetHelp("enter", "next")
+	}
+	return i
+}
+
 // GetKey returns the key of the field.
 func (i *Input) GetKey() string {
 	return i.key

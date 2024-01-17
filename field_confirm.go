@@ -229,6 +229,17 @@ func (c *Confirm) WithHeight(height int) Field {
 	return c
 }
 
+// WithPosition sets the position of the confirm field.
+func (c *Confirm) WithPosition(p Position) Field {
+	c.keymap.Prev.SetEnabled(p.Field > 0 && p.Group > 0)
+	if p.Field == p.FieldTotal-1 && p.Group == p.GroupTotal-1 {
+		c.keymap.Next.SetHelp("enter", "submit")
+	} else {
+		c.keymap.Next.SetHelp("enter", "next")
+	}
+	return c
+}
+
 // GetKey returns the key of the field.
 func (c *Confirm) GetKey() string {
 	return c.key
