@@ -445,13 +445,24 @@ func TestMultiSelect(t *testing.T) {
 
 func TestHideGroup(t *testing.T) {
 	f := NewForm(
-		NewGroup(NewNote().Description("Foo")).WithHide(true),
+		NewGroup(NewNote().Description("Foo")).
+			WithHide(true),
 		NewGroup(NewNote().Description("Bar")),
 		NewGroup(NewNote().Description("Baz")),
-		NewGroup(NewNote().Description("Qux")).WithHideFunc(func() bool { return false }).WithHide(true),
+		NewGroup(NewNote().Description("Qux")).
+			WithHideFunc(func() bool { return false }).
+			WithHide(true),
 	)
 
 	f = batchUpdate(f, f.Init()).(*Form)
+
+	if v := f.View(); !strings.Contains(v, "Bar") {
+		t.Log(pretty.Render(v))
+		t.Error("expected Bar to not be hidden")
+	}
+
+	// should have no effect as previous group is hidden
+	f.Update(prevGroup())
 
 	if v := f.View(); !strings.Contains(v, "Bar") {
 		t.Log(pretty.Render(v))
@@ -465,11 +476,71 @@ func TestHideGroup(t *testing.T) {
 		t.Error("expected Baz to not be hidden")
 	}
 
-	f = batchUpdate(f, nextGroup).(*Form)
+	f.Update(nextGroup())
 
 	if v := f.View(); strings.Contains(v, "Qux") {
 		t.Log(pretty.Render(v))
 		t.Error("expected Qux to be hidden")
+	}
+
+	if v := f.State; v != StateCompleted {
+		t.Error("should have been completed")
+	}
+}
+
+func TestHideGroupLastAndFirstGroupsNotHidden(t *testing.T) {
+	f := NewForm(
+		NewGroup(NewNote().Description("Bar")),
+		NewGroup(NewNote().Description("Foo")).
+			WithHide(true),
+		NewGroup(NewNote().Description("Baz")),
+	)
+
+	f = batchUpdate(f, f.Init()).(*Form)
+
+	if v := f.View(); !strings.Contains(v, "Bar") {
+		t.Log(pretty.Render(v))
+		t.Error("expected Bar to not be hidden")
+	}
+
+	// should have no effect as there isn't any
+	f.Update(prevGroup())
+
+	if v := f.View(); !strings.Contains(v, "Bar") {
+		t.Log(pretty.Render(v))
+		t.Error("expected Bar to not be hidden")
+	}
+
+	f.Update(nextGroup())
+
+	if v := f.View(); !strings.Contains(v, "Baz") {
+		t.Log(pretty.Render(v))
+		t.Error("expected Baz to not be hidden")
+	}
+
+	// should submit the form
+	f.Update(nextGroup())
+	if v := f.State; v != StateCompleted {
+		t.Error("should have been completed")
+	}
+}
+
+func TestPrevGroup(t *testing.T) {
+	f := NewForm(
+		NewGroup(NewNote().Description("Bar")),
+		NewGroup(NewNote().Description("Foo")),
+		NewGroup(NewNote().Description("Baz")),
+	)
+
+	f = batchUpdate(f, f.Init()).(*Form)
+	f.Update(nextGroup())
+	f.Update(nextGroup())
+	f.Update(prevGroup())
+	f.Update(prevGroup())
+
+	if v := f.View(); !strings.Contains(v, "Bar") {
+		t.Log(pretty.Render(v))
+		t.Error("expected Bar to not be hidden")
 	}
 }
 
