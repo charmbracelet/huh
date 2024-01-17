@@ -231,7 +231,7 @@ func (c *Confirm) WithHeight(height int) Field {
 
 // WithPosition sets the position of the confirm field.
 func (c *Confirm) WithPosition(p Position) Field {
-	c.keymap.Prev.SetEnabled(p.Field > 0 && p.Group > 0)
+	c.keymap.Prev.SetEnabled(p.Field != 0 || p.Group != 0)
 	if p.Field == p.FieldTotal-1 && p.Group == p.GroupTotal-1 {
 		c.keymap.Next.SetHelp("enter", "submit")
 	} else {
