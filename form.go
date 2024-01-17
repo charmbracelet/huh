@@ -322,7 +322,7 @@ func (f *Form) Init() tea.Cmd {
 		cmds[i] = group.Init()
 	}
 
-	if f.isGroupHidden() {
+	if f.isGroupHidden(f.paginator.Page) {
 		cmds = append(cmds, nextGroup)
 	}
 
@@ -374,25 +374,42 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return f, nil
 		}
 
-		if f.paginator.OnLastPage() {
+		submit := func() (tea.Model, tea.Cmd) {
 			f.quitting = true
 			f.State = StateCompleted
 			return f, f.submitCmd
 		}
-		f.paginator.NextPage()
 
-		if f.isGroupHidden() {
-			return f, nextGroup
+		if f.paginator.OnLastPage() {
+			return submit()
+		}
+
+		for i := f.paginator.Page + 1; i < f.paginator.TotalPages; i++ {
+			if !f.isGroupHidden(i) {
+				f.paginator.Page = i
+				break
+			}
+			// all subsequent groups are hidden, so we must act as
+			// if we were in the last one.
+			if i == f.paginator.TotalPages-1 {
+				return submit()
+			}
 		}
 
 	case prevGroupMsg:
 		if len(group.Errors()) > 0 {
 			return f, nil
 		}
-		f.paginator.PrevPage()
 
-		if f.isGroupHidden() {
-			return f, prevGroup
+		if f.paginator.Page == 0 {
+			return f, nil
+		}
+
+		for i := f.paginator.Page - 1; i >= 0; i-- {
+			if !f.isGroupHidden(i) {
+				f.paginator.Page = i
+				break
+			}
 		}
 	}
 
@@ -402,8 +419,8 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return f, cmd
 }
 
-func (f *Form) isGroupHidden() bool {
-	hide := f.groups[f.paginator.Page].hide
+func (f *Form) isGroupHidden(page int) bool {
+	hide := f.groups[page].hide
 	if hide == nil {
 		return false
 	}
