@@ -290,8 +290,8 @@ func (i *Input) WithHeight(height int) Field {
 
 // WithPosition sets the position of the input field.
 func (i *Input) WithPosition(p Position) Field {
-	i.keymap.Prev.SetEnabled(p.Field != 0 || p.Group != 0)
-	if p.Field == p.FieldTotal-1 && p.Group == p.GroupTotal-1 {
+	i.keymap.Prev.SetEnabled(p.field != 0 || p.group != p.firstGroup)
+	if p.field == p.fieldCount && p.group == p.lastGroup {
 		i.keymap.Next.SetHelp("enter", "submit")
 	} else {
 		i.keymap.Next.SetHelp("enter", "next")

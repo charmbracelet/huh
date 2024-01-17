@@ -320,8 +320,8 @@ func (t *Text) WithHeight(height int) Field {
 
 // WithPosition sets the position information of the text field.
 func (t *Text) WithPosition(p Position) Field {
-	t.keymap.Prev.SetEnabled(p.Field != 0 || p.Group != 0)
-	if p.Field == p.FieldTotal-1 && p.Group == p.GroupTotal-1 {
+	t.keymap.Prev.SetEnabled(p.field != 0 || p.group != p.firstGroup)
+	if p.field == p.fieldCount-1 && p.group == p.lastGroup {
 		t.keymap.Next.SetHelp("enter", "submit")
 	} else {
 		t.keymap.Next.SetHelp("enter", "next")

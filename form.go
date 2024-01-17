@@ -85,7 +85,7 @@ func NewForm(groups ...*Group) *Form {
 	f.WithKeyMap(f.keymap)
 	f.WithWidth(f.width)
 	f.WithHeight(f.height)
-	f.WithPosition()
+	f.UpdateFieldPositions()
 
 	return f
 }
@@ -142,10 +142,12 @@ type Field interface {
 
 // Position is positional information about the given field and form.
 type Position struct {
-	Group      int
-	Field      int
-	FieldTotal int
-	GroupTotal int
+	group      int
+	field      int
+	fieldCount int
+	groupCount int
+	firstGroup int
+	lastGroup  int
 }
 
 // nextGroupMsg is a message to move to the next group.
@@ -255,15 +257,32 @@ func (f *Form) WithHeight(height int) *Form {
 	return f
 }
 
-// WithPosition sets the position on all the fields.
-func (f *Form) WithPosition() *Form {
+// UpdateFieldPositions sets the position on all the fields.
+func (f *Form) UpdateFieldPositions() *Form {
+	lastGroup := 0
+	firstGroup := 0
+	firstGroupRevealed := false
+
+	for g := range f.groups {
+		if f.isGroupHidden(g) {
+			if !firstGroupRevealed {
+				firstGroup++
+			}
+		} else {
+			firstGroupRevealed = true
+			lastGroup = g
+		}
+	}
+
 	for g, group := range f.groups {
 		for i, field := range group.fields {
 			field.WithPosition(Position{
-				Group:      g,
-				Field:      i,
-				FieldTotal: len(group.fields),
-				GroupTotal: len(f.groups),
+				group:      g,
+				field:      i,
+				fieldCount: len(group.fields),
+				groupCount: len(f.groups),
+				firstGroup: firstGroup,
+				lastGroup:  lastGroup,
 			})
 		}
 	}
@@ -442,6 +461,13 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	m, cmd := group.Update(msg)
 	f.groups[page] = m.(*Group)
+
+	// A user input a key, this could hide or show other groups,
+	// let's update all of their positions.
+	switch msg.(type) {
+	case tea.KeyMsg:
+		f.UpdateFieldPositions()
+	}
 
 	return f, cmd
 }

@@ -495,8 +495,8 @@ func (m *MultiSelect[T]) WithHeight(width int) Field {
 
 // WithPosition sets the position of the multi-select field.
 func (m *MultiSelect[T]) WithPosition(p Position) Field {
-	m.keymap.Prev.SetEnabled(p.Field != 0 || p.Group != 0)
-	if p.Field == p.FieldTotal-1 && p.Group == p.GroupTotal-1 {
+	m.keymap.Prev.SetEnabled(p.field != 0 || p.group != p.firstGroup)
+	if p.field == p.fieldCount-1 && p.group == p.lastGroup {
 		m.keymap.Next.SetHelp("enter", "submit")
 	} else {
 		m.keymap.Next.SetHelp("enter", "next")
