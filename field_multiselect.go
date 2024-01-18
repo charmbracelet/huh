@@ -494,9 +494,9 @@ func (m *MultiSelect[T]) WithHeight(width int) Field {
 }
 
 // WithPosition sets the position of the multi-select field.
-func (m *MultiSelect[T]) WithPosition(p Position) Field {
-	m.keymap.Prev.SetEnabled(p.field != 0 || p.group != p.firstGroup)
-	lastField := p.field == p.fieldCount-1 && p.group == p.lastGroup
+func (m *MultiSelect[T]) WithPosition(p FieldPosition) Field {
+	m.keymap.Prev.SetEnabled(p.Field != 0 || p.Group != p.FirstGroup)
+	lastField := p.Field == p.FieldCount-1 && p.Group == p.LastGroup
 	m.keymap.Submit.SetEnabled(lastField)
 	m.keymap.Next.SetEnabled(!lastField)
 	return m

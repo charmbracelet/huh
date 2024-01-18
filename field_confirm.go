@@ -230,9 +230,9 @@ func (c *Confirm) WithHeight(height int) Field {
 }
 
 // WithPosition sets the position of the confirm field.
-func (c *Confirm) WithPosition(p Position) Field {
-	c.keymap.Prev.SetEnabled(p.field != 0 || p.group != p.firstGroup)
-	lastField := p.field == p.fieldCount-1 && p.group == p.lastGroup
+func (c *Confirm) WithPosition(p FieldPosition) Field {
+	c.keymap.Prev.SetEnabled(p.Field != 0 || p.Group != p.FirstGroup)
+	lastField := p.Field == p.FieldCount-1 && p.Group == p.LastGroup
 	c.keymap.Next.SetEnabled(!lastField)
 	c.keymap.Submit.SetEnabled(lastField)
 	return c

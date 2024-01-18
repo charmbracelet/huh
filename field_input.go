@@ -289,9 +289,9 @@ func (i *Input) WithHeight(height int) Field {
 }
 
 // WithPosition sets the position of the input field.
-func (i *Input) WithPosition(p Position) Field {
-	i.keymap.Prev.SetEnabled(p.field != 0 || p.group != p.firstGroup)
-	lastField := p.field == p.fieldCount-1 && p.group == p.lastGroup
+func (i *Input) WithPosition(p FieldPosition) Field {
+	i.keymap.Prev.SetEnabled(p.Field != 0 || p.Group != p.FirstGroup)
+	lastField := p.Field == p.FieldCount-1 && p.Group == p.LastGroup
 	i.keymap.Next.SetEnabled(!lastField)
 	i.keymap.Submit.SetEnabled(lastField)
 	return i

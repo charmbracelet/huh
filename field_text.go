@@ -319,9 +319,9 @@ func (t *Text) WithHeight(height int) Field {
 }
 
 // WithPosition sets the position information of the text field.
-func (t *Text) WithPosition(p Position) Field {
-	t.keymap.Prev.SetEnabled(p.field != 0 || p.group != p.firstGroup)
-	lastField := p.field == p.fieldCount-1 && p.group == p.lastGroup
+func (t *Text) WithPosition(p FieldPosition) Field {
+	t.keymap.Prev.SetEnabled(p.Field != 0 || p.Group != p.FirstGroup)
+	lastField := p.Field == p.FieldCount-1 && p.Group == p.LastGroup
 	t.keymap.Next.SetEnabled(!lastField)
 	t.keymap.Submit.SetEnabled(lastField)
 	return t

@@ -131,7 +131,7 @@ type Field interface {
 	WithHeight(int) Field
 
 	// WithPosition tells the field the index of the group and position it is in.
-	WithPosition(Position) Field
+	WithPosition(FieldPosition) Field
 
 	// GetKey returns the field's key.
 	GetKey() string
@@ -140,14 +140,14 @@ type Field interface {
 	GetValue() any
 }
 
-// Position is positional information about the given field and form.
-type Position struct {
-	group      int
-	field      int
-	fieldCount int
-	groupCount int
-	firstGroup int
-	lastGroup  int
+// FieldPosition is positional information about the given field and form.
+type FieldPosition struct {
+	Group      int
+	Field      int
+	FieldCount int
+	GroupCount int
+	FirstGroup int
+	LastGroup  int
 }
 
 // nextGroupMsg is a message to move to the next group.
@@ -276,13 +276,13 @@ func (f *Form) UpdateFieldPositions() *Form {
 
 	for g, group := range f.groups {
 		for i, field := range group.fields {
-			field.WithPosition(Position{
-				group:      g,
-				field:      i,
-				fieldCount: len(group.fields),
-				groupCount: len(f.groups),
-				firstGroup: firstGroup,
-				lastGroup:  lastGroup,
+			field.WithPosition(FieldPosition{
+				Group:      g,
+				Field:      i,
+				FieldCount: len(group.fields),
+				GroupCount: len(f.groups),
+				FirstGroup: firstGroup,
+				LastGroup:  lastGroup,
 			})
 		}
 	}

@@ -173,9 +173,9 @@ func (n *Note) WithHeight(height int) Field {
 }
 
 // WithPosition sets the position information of the note field.
-func (n *Note) WithPosition(p Position) Field {
-	n.keymap.Prev.SetEnabled(p.field != 0 || p.group != p.firstGroup)
-	lastField := p.field == p.fieldCount-1 && p.group == p.lastGroup
+func (n *Note) WithPosition(p FieldPosition) Field {
+	n.keymap.Prev.SetEnabled(p.Field != 0 || p.Group != p.FirstGroup)
+	lastField := p.Field == p.FieldCount-1 && p.Group == p.LastGroup
 	n.keymap.Next.SetEnabled(!lastField)
 	n.keymap.Submit.SetEnabled(lastField)
 	return n
