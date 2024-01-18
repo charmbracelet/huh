@@ -166,7 +166,7 @@ func (t *Text) Blur() tea.Cmd {
 
 // KeyBinds returns the help message for the text field.
 func (t *Text) KeyBinds() []key.Binding {
-	return []key.Binding{t.keymap.NewLine, t.keymap.Editor, t.keymap.Submit, t.keymap.Next, t.keymap.Prev}
+	return []key.Binding{t.keymap.NewLine, t.keymap.Editor, t.keymap.Prev, t.keymap.Submit, t.keymap.Next}
 }
 
 type updateValueMsg []byte

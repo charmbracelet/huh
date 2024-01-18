@@ -71,7 +71,7 @@ func (n *Note) Error() error {
 
 // KeyBinds returns the help message for the note field.
 func (n *Note) KeyBinds() []key.Binding {
-	return []key.Binding{n.keymap.Submit, n.keymap.Next, n.keymap.Prev}
+	return []key.Binding{n.keymap.Prev, n.keymap.Submit, n.keymap.Next}
 }
 
 // Init initializes the note field.

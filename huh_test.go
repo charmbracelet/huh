@@ -115,7 +115,7 @@ func TestForm(t *testing.T) {
 	//      Fish
 	//      Beans
 	//
-	//   ↑ up • ↓ down • / filter • enter select • shift+tab back
+	//   ↑ up • ↓ down • / filter • enter select
 	//
 
 	if !strings.Contains(view, "Shell?") {
@@ -311,7 +311,7 @@ func TestText(t *testing.T) {
 		t.Error("Expected field to contain Huh.")
 	}
 
-	if !strings.Contains(view, "enter submit • alt+enter / ctrl+j new line • ctrl+e open editor") {
+	if !strings.Contains(view, "alt+enter / ctrl+j new line • ctrl+e open editor • enter submit") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected field to contain help.")
 	}

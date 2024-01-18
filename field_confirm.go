@@ -109,7 +109,7 @@ func (c *Confirm) Blur() tea.Cmd {
 
 // KeyBinds returns the help message for the confirm field.
 func (c *Confirm) KeyBinds() []key.Binding {
-	return []key.Binding{c.keymap.Submit, c.keymap.Next, c.keymap.Prev, c.keymap.Toggle}
+	return []key.Binding{c.keymap.Toggle, c.keymap.Prev, c.keymap.Submit, c.keymap.Next}
 }
 
 // Init initializes the confirm field.
