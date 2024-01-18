@@ -115,7 +115,7 @@ func TestForm(t *testing.T) {
 	//      Fish
 	//      Beans
 	//
-	//   ↑ up • ↓ down • / filter • enter select • shift+tab back
+	//   ↑ up • ↓ down • / filter • enter select
 	//
 
 	if !strings.Contains(view, "Shell?") {
@@ -290,7 +290,7 @@ func TestInput(t *testing.T) {
 		t.Error("Expected field to contain Huh.")
 	}
 
-	if !strings.Contains(view, "enter next • shift+tab back") {
+	if !strings.Contains(view, "enter submit") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected field to contain help.")
 	}
@@ -311,7 +311,7 @@ func TestText(t *testing.T) {
 		t.Error("Expected field to contain Huh.")
 	}
 
-	if !strings.Contains(view, "enter next • alt+enter / ctrl+j new line • ctrl+e open editor • shift+tab back") {
+	if !strings.Contains(view, "alt+enter / ctrl+j new line • ctrl+e open editor • enter submit") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected field to contain help.")
 	}
@@ -342,7 +342,7 @@ func TestConfirm(t *testing.T) {
 		t.Error("Expected field to contain Are you sure?.")
 	}
 
-	if !strings.Contains(view, "←/→ toggle • enter next • shift+tab back") {
+	if !strings.Contains(view, "←/→ toggle • enter submit") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected field to contain help.")
 	}
@@ -386,7 +386,7 @@ func TestSelect(t *testing.T) {
 		t.Error("Expected cursor to be on Bar.")
 	}
 
-	if !strings.Contains(view, "↑ up • ↓ down • / filter • enter select • shift+tab back") {
+	if !strings.Contains(view, "↑ up • ↓ down • / filter • enter submit") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected field to contain help.")
 	}
@@ -437,7 +437,7 @@ func TestMultiSelect(t *testing.T) {
 		t.Error("Expected cursor to be on Bar.")
 	}
 
-	if !strings.Contains(view, "x toggle • ↑ up • ↓ down • / filter • enter confirm • shift+tab back") {
+	if !strings.Contains(view, "x toggle • ↑ up • ↓ down • / filter • enter submit") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected field to contain help.")
 	}
@@ -567,7 +567,7 @@ func TestNote(t *testing.T) {
 		t.Error("Expected field to contain next button")
 	}
 
-	if !strings.Contains(view, "enter next") {
+	if !strings.Contains(view, "enter submit") {
 		t.Log(view)
 		t.Error("Expected field to contain help.")
 	}
