@@ -429,6 +429,9 @@ func (s *Select[T]) WithHeight(height int) Field {
 
 // WithPosition sets the position of the select field.
 func (s *Select[T]) WithPosition(p FieldPosition) Field {
+	if s.filtering {
+		return s
+	}
 	s.keymap.Prev.SetEnabled(!p.IsFirst())
 	s.keymap.Next.SetEnabled(!p.IsLast())
 	s.keymap.Submit.SetEnabled(p.IsLast())

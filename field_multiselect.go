@@ -401,6 +401,7 @@ func (m *MultiSelect[T]) setFilter(filter bool) {
 	m.keymap.SetFilter.SetEnabled(filter)
 	m.keymap.Filter.SetEnabled(!filter)
 	m.keymap.Next.SetEnabled(!filter)
+	m.keymap.Submit.SetEnabled(!filter)
 	m.keymap.Prev.SetEnabled(!filter)
 	m.keymap.ClearFilter.SetEnabled(!filter && m.filter.Value() != "")
 }
@@ -495,6 +496,9 @@ func (m *MultiSelect[T]) WithHeight(width int) Field {
 
 // WithPosition sets the position of the multi-select field.
 func (m *MultiSelect[T]) WithPosition(p FieldPosition) Field {
+	if m.filtering {
+		return m
+	}
 	m.keymap.Prev.SetEnabled(!p.IsFirst())
 	m.keymap.Next.SetEnabled(!p.IsLast())
 	m.keymap.Submit.SetEnabled(p.IsLast())
