@@ -166,7 +166,7 @@ func (t *Text) Blur() tea.Cmd {
 
 // KeyBinds returns the help message for the text field.
 func (t *Text) KeyBinds() []key.Binding {
-	return []key.Binding{t.keymap.Next, t.keymap.NewLine, t.keymap.Editor, t.keymap.Prev}
+	return []key.Binding{t.keymap.NewLine, t.keymap.Editor, t.keymap.Submit, t.keymap.Next, t.keymap.Prev}
 }
 
 type updateValueMsg []byte
@@ -202,7 +202,7 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				content, _ := os.ReadFile(tmpFile.Name())
 				return updateValueMsg(content)
 			}))
-		case key.Matches(msg, t.keymap.Next):
+		case key.Matches(msg, t.keymap.Next, t.keymap.Submit):
 			value := t.textarea.Value()
 			t.err = t.validate(value)
 			if t.err != nil {
@@ -321,11 +321,9 @@ func (t *Text) WithHeight(height int) Field {
 // WithPosition sets the position information of the text field.
 func (t *Text) WithPosition(p Position) Field {
 	t.keymap.Prev.SetEnabled(p.field != 0 || p.group != p.firstGroup)
-	if p.field == p.fieldCount-1 && p.group == p.lastGroup {
-		t.keymap.Next.SetHelp("enter", "submit")
-	} else {
-		t.keymap.Next.SetHelp("enter", "next")
-	}
+	lastField := p.field == p.fieldCount-1 && p.group == p.lastGroup
+	t.keymap.Next.SetEnabled(!lastField)
+	t.keymap.Submit.SetEnabled(lastField)
 	return t
 }
 

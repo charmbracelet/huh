@@ -145,7 +145,7 @@ func (s *Select[T]) Blur() tea.Cmd {
 
 // KeyBinds returns the help keybindings for the select field.
 func (s *Select[T]) KeyBinds() []key.Binding {
-	return []key.Binding{s.keymap.Up, s.keymap.Down, s.keymap.Filter, s.keymap.SetFilter, s.keymap.ClearFilter, s.keymap.Next, s.keymap.Prev}
+	return []key.Binding{s.keymap.Submit, s.keymap.Up, s.keymap.Down, s.keymap.Filter, s.keymap.SetFilter, s.keymap.ClearFilter, s.keymap.Next, s.keymap.Prev}
 }
 
 // Init initializes the select field.
@@ -220,7 +220,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			*s.value = value
 			return s, prevField
-		case key.Matches(msg, s.keymap.Next):
+		case key.Matches(msg, s.keymap.Next, s.keymap.Submit):
 			if s.selected >= len(s.filteredOptions) {
 				break
 			}
@@ -430,11 +430,9 @@ func (s *Select[T]) WithHeight(height int) Field {
 // WithPosition sets the position of the select field.
 func (s *Select[T]) WithPosition(p Position) Field {
 	s.keymap.Prev.SetEnabled(p.field != 0 || p.group != 0)
-	if p.field == p.fieldCount-1 && p.group == p.lastGroup {
-		s.keymap.Next.SetHelp("enter", "submit")
-	} else {
-		s.keymap.Next.SetHelp("enter", "next")
-	}
+	lastField := p.field == p.fieldCount-1 && p.group == p.lastGroup
+	s.keymap.Next.SetEnabled(!lastField)
+	s.keymap.Submit.SetEnabled(lastField)
 	return s
 }
 

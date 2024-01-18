@@ -149,9 +149,9 @@ func (i *Input) Blur() tea.Cmd {
 // KeyBinds returns the help message for the input field.
 func (i *Input) KeyBinds() []key.Binding {
 	if i.textinput.ShowSuggestions {
-		return []key.Binding{i.keymap.Next, i.keymap.Prev, i.keymap.AcceptSuggestion}
+		return []key.Binding{i.keymap.Submit, i.keymap.Next, i.keymap.Prev, i.keymap.AcceptSuggestion}
 	}
-	return []key.Binding{i.keymap.Next, i.keymap.Prev}
+	return []key.Binding{i.keymap.Submit, i.keymap.Next, i.keymap.Prev}
 }
 
 // Init initializes the input field.
@@ -181,7 +181,7 @@ func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return i, nil
 			}
 			cmds = append(cmds, prevField)
-		case key.Matches(msg, i.keymap.Next):
+		case key.Matches(msg, i.keymap.Next, i.keymap.Submit):
 			value := i.textinput.Value()
 			i.err = i.validate(value)
 			if i.err != nil {
@@ -291,11 +291,9 @@ func (i *Input) WithHeight(height int) Field {
 // WithPosition sets the position of the input field.
 func (i *Input) WithPosition(p Position) Field {
 	i.keymap.Prev.SetEnabled(p.field != 0 || p.group != p.firstGroup)
-	if p.field == p.fieldCount-1 && p.group == p.lastGroup {
-		i.keymap.Next.SetHelp("enter", "submit")
-	} else {
-		i.keymap.Next.SetHelp("enter", "next")
-	}
+	lastField := p.field == p.fieldCount-1 && p.group == p.lastGroup
+	i.keymap.Next.SetEnabled(!lastField)
+	i.keymap.Submit.SetEnabled(lastField)
 	return i
 }
 

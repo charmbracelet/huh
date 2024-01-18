@@ -231,7 +231,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			}
 			return m, prevField
-		case key.Matches(msg, m.keymap.Next):
+		case key.Matches(msg, m.keymap.Next, m.keymap.Submit):
 			m.finalize()
 			if m.err != nil {
 				return m, nil
@@ -496,11 +496,9 @@ func (m *MultiSelect[T]) WithHeight(width int) Field {
 // WithPosition sets the position of the multi-select field.
 func (m *MultiSelect[T]) WithPosition(p Position) Field {
 	m.keymap.Prev.SetEnabled(p.field != 0 || p.group != p.firstGroup)
-	if p.field == p.fieldCount-1 && p.group == p.lastGroup {
-		m.keymap.Next.SetHelp("enter", "submit")
-	} else {
-		m.keymap.Next.SetHelp("enter", "next")
-	}
+	lastField := p.field == p.fieldCount-1 && p.group == p.lastGroup
+	m.keymap.Submit.SetEnabled(lastField)
+	m.keymap.Next.SetEnabled(!lastField)
 	return m
 }
 

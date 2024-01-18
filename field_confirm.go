@@ -109,7 +109,7 @@ func (c *Confirm) Blur() tea.Cmd {
 
 // KeyBinds returns the help message for the confirm field.
 func (c *Confirm) KeyBinds() []key.Binding {
-	return []key.Binding{c.keymap.Toggle, c.keymap.Next, c.keymap.Prev}
+	return []key.Binding{c.keymap.Submit, c.keymap.Next, c.keymap.Prev, c.keymap.Toggle}
 }
 
 // Init initializes the confirm field.
@@ -132,7 +132,7 @@ func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			*c.value = v
 		case key.Matches(msg, c.keymap.Prev):
 			cmds = append(cmds, prevField)
-		case key.Matches(msg, c.keymap.Next):
+		case key.Matches(msg, c.keymap.Next, c.keymap.Submit):
 			cmds = append(cmds, nextField)
 		}
 	}
@@ -232,11 +232,9 @@ func (c *Confirm) WithHeight(height int) Field {
 // WithPosition sets the position of the confirm field.
 func (c *Confirm) WithPosition(p Position) Field {
 	c.keymap.Prev.SetEnabled(p.field != 0 || p.group != p.firstGroup)
-	if p.field == p.fieldCount-1 && p.group == p.lastGroup {
-		c.keymap.Next.SetHelp("enter", "submit")
-	} else {
-		c.keymap.Next.SetHelp("enter", "next")
-	}
+	lastField := p.field == p.fieldCount-1 && p.group == p.lastGroup
+	c.keymap.Next.SetEnabled(!lastField)
+	c.keymap.Submit.SetEnabled(lastField)
 	return c
 }
 

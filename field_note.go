@@ -71,7 +71,7 @@ func (n *Note) Error() error {
 
 // KeyBinds returns the help message for the note field.
 func (n *Note) KeyBinds() []key.Binding {
-	return []key.Binding{n.keymap.Next, n.keymap.Prev}
+	return []key.Binding{n.keymap.Submit, n.keymap.Next, n.keymap.Prev}
 }
 
 // Init initializes the note field.
@@ -86,7 +86,7 @@ func (n *Note) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch {
 		case key.Matches(msg, n.keymap.Prev):
 			return n, prevField
-		case key.Matches(msg, n.keymap.Next):
+		case key.Matches(msg, n.keymap.Next, n.keymap.Submit):
 			return n, nextField
 		}
 		return n, nextField
@@ -175,11 +175,9 @@ func (n *Note) WithHeight(height int) Field {
 // WithPosition sets the position information of the note field.
 func (n *Note) WithPosition(p Position) Field {
 	n.keymap.Prev.SetEnabled(p.field != 0 || p.group != p.firstGroup)
-	if p.field == p.fieldCount-1 && p.group == p.lastGroup {
-		n.keymap.Next.SetHelp("enter", "submit")
-	} else {
-		n.keymap.Next.SetHelp("enter", "next")
-	}
+	lastField := p.field == p.fieldCount-1 && p.group == p.lastGroup
+	n.keymap.Next.SetEnabled(!lastField)
+	n.keymap.Submit.SetEnabled(lastField)
 	return n
 }
 
