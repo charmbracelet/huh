@@ -429,10 +429,9 @@ func (s *Select[T]) WithHeight(height int) Field {
 
 // WithPosition sets the position of the select field.
 func (s *Select[T]) WithPosition(p FieldPosition) Field {
-	s.keymap.Prev.SetEnabled(p.Field != 0 || p.Group != 0)
-	lastField := p.Field == p.FieldCount-1 && p.Group == p.LastGroup
-	s.keymap.Next.SetEnabled(!lastField)
-	s.keymap.Submit.SetEnabled(lastField)
+	s.keymap.Prev.SetEnabled(!p.IsFirst())
+	s.keymap.Next.SetEnabled(!p.IsLast())
+	s.keymap.Submit.SetEnabled(p.IsLast())
 	return s
 }
 

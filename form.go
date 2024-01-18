@@ -150,6 +150,16 @@ type FieldPosition struct {
 	LastGroup  int
 }
 
+// IsFirst returns whether a field is the form's first field.
+func (p FieldPosition) IsFirst() bool {
+	return p.Field == 0 && p.Group == p.FirstGroup
+}
+
+// IsLast returns whether a field is the form's last field.
+func (p FieldPosition) IsLast() bool {
+	return p.Field == p.FieldCount-1 && p.Group == p.LastGroup
+}
+
 // nextGroupMsg is a message to move to the next group.
 type nextGroupMsg struct{}
 

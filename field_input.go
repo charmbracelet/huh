@@ -290,10 +290,9 @@ func (i *Input) WithHeight(height int) Field {
 
 // WithPosition sets the position of the input field.
 func (i *Input) WithPosition(p FieldPosition) Field {
-	i.keymap.Prev.SetEnabled(p.Field != 0 || p.Group != p.FirstGroup)
-	lastField := p.Field == p.FieldCount-1 && p.Group == p.LastGroup
-	i.keymap.Next.SetEnabled(!lastField)
-	i.keymap.Submit.SetEnabled(lastField)
+	i.keymap.Prev.SetEnabled(!p.IsFirst())
+	i.keymap.Next.SetEnabled(!p.IsLast())
+	i.keymap.Submit.SetEnabled(p.IsLast())
 	return i
 }
 
