@@ -158,7 +158,7 @@ func (m *MultiSelect[T]) Blur() tea.Cmd {
 
 // KeyBinds returns the help message for the multi-select field.
 func (m *MultiSelect[T]) KeyBinds() []key.Binding {
-	return []key.Binding{m.keymap.Toggle, m.keymap.Up, m.keymap.Down, m.keymap.Filter, m.keymap.SetFilter, m.keymap.ClearFilter, m.keymap.Next, m.keymap.Prev}
+	return []key.Binding{m.keymap.Toggle, m.keymap.Up, m.keymap.Down, m.keymap.Filter, m.keymap.SetFilter, m.keymap.ClearFilter, m.keymap.Prev, m.keymap.Submit, m.keymap.Next}
 }
 
 // Init initializes the multi-select field.
@@ -231,7 +231,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			}
 			return m, prevField
-		case key.Matches(msg, m.keymap.Next):
+		case key.Matches(msg, m.keymap.Next, m.keymap.Submit):
 			m.finalize()
 			if m.err != nil {
 				return m, nil
@@ -401,6 +401,7 @@ func (m *MultiSelect[T]) setFilter(filter bool) {
 	m.keymap.SetFilter.SetEnabled(filter)
 	m.keymap.Filter.SetEnabled(!filter)
 	m.keymap.Next.SetEnabled(!filter)
+	m.keymap.Submit.SetEnabled(!filter)
 	m.keymap.Prev.SetEnabled(!filter)
 	m.keymap.ClearFilter.SetEnabled(!filter && m.filter.Value() != "")
 }
@@ -487,9 +488,21 @@ func (m *MultiSelect[T]) WithWidth(width int) Field {
 	return m
 }
 
-// WithHeight sets the height of the multi-select field.
-func (m *MultiSelect[T]) WithHeight(height int) Field {
-	return m.Height(height)
+// WithHeight sets the width of the multi-select field.
+func (m *MultiSelect[T]) WithHeight(width int) Field {
+	m.width = width
+	return m
+}
+
+// WithPosition sets the position of the multi-select field.
+func (m *MultiSelect[T]) WithPosition(p FieldPosition) Field {
+	if m.filtering {
+		return m
+	}
+	m.keymap.Prev.SetEnabled(!p.IsFirst())
+	m.keymap.Next.SetEnabled(!p.IsLast())
+	m.keymap.Submit.SetEnabled(p.IsLast())
+	return m
 }
 
 // GetKey returns the multi-select's key.

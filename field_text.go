@@ -166,7 +166,7 @@ func (t *Text) Blur() tea.Cmd {
 
 // KeyBinds returns the help message for the text field.
 func (t *Text) KeyBinds() []key.Binding {
-	return []key.Binding{t.keymap.Next, t.keymap.NewLine, t.keymap.Editor, t.keymap.Prev}
+	return []key.Binding{t.keymap.NewLine, t.keymap.Editor, t.keymap.Prev, t.keymap.Submit, t.keymap.Next}
 }
 
 type updateValueMsg []byte
@@ -202,7 +202,7 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				content, _ := os.ReadFile(tmpFile.Name())
 				return updateValueMsg(content)
 			}))
-		case key.Matches(msg, t.keymap.Next):
+		case key.Matches(msg, t.keymap.Next, t.keymap.Submit):
 			value := t.textarea.Value()
 			t.err = t.validate(value)
 			if t.err != nil {
@@ -315,6 +315,14 @@ func (t *Text) WithHeight(height int) Field {
 		adjust++
 	}
 	t.textarea.SetHeight(height - t.theme.Blurred.Base.GetVerticalFrameSize() - adjust)
+	return t
+}
+
+// WithPosition sets the position information of the text field.
+func (t *Text) WithPosition(p FieldPosition) Field {
+	t.keymap.Prev.SetEnabled(!p.IsFirst())
+	t.keymap.Next.SetEnabled(!p.IsLast())
+	t.keymap.Submit.SetEnabled(p.IsLast())
 	return t
 }
 

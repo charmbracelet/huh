@@ -85,6 +85,7 @@ func NewForm(groups ...*Group) *Form {
 	f.WithKeyMap(f.keymap)
 	f.WithWidth(f.width)
 	f.WithHeight(f.height)
+	f.UpdateFieldPositions()
 
 	return f
 }
@@ -129,11 +130,34 @@ type Field interface {
 	// WithHeight sets the height of a field.
 	WithHeight(int) Field
 
+	// WithPosition tells the field the index of the group and position it is in.
+	WithPosition(FieldPosition) Field
+
 	// GetKey returns the field's key.
 	GetKey() string
 
 	// GetValue returns the field's value.
 	GetValue() any
+}
+
+// FieldPosition is positional information about the given field and form.
+type FieldPosition struct {
+	Group      int
+	Field      int
+	FieldCount int
+	GroupCount int
+	FirstGroup int
+	LastGroup  int
+}
+
+// IsFirst returns whether a field is the form's first field.
+func (p FieldPosition) IsFirst() bool {
+	return p.Field == 0 && p.Group == p.FirstGroup
+}
+
+// IsLast returns whether a field is the form's last field.
+func (p FieldPosition) IsLast() bool {
+	return p.Field == p.FieldCount-1 && p.Group == p.LastGroup
 }
 
 // nextGroupMsg is a message to move to the next group.
@@ -239,6 +263,38 @@ func (f *Form) WithHeight(height int) *Form {
 	f.height = height
 	for _, group := range f.groups {
 		group.WithHeight(height)
+	}
+	return f
+}
+
+// UpdateFieldPositions sets the position on all the fields.
+func (f *Form) UpdateFieldPositions() *Form {
+	lastGroup := 0
+	firstGroup := 0
+	firstGroupRevealed := false
+
+	for g := range f.groups {
+		if f.isGroupHidden(g) {
+			if !firstGroupRevealed {
+				firstGroup++
+			}
+		} else {
+			firstGroupRevealed = true
+			lastGroup = g
+		}
+	}
+
+	for g, group := range f.groups {
+		for i, field := range group.fields {
+			field.WithPosition(FieldPosition{
+				Group:      g,
+				Field:      i,
+				FieldCount: len(group.fields),
+				GroupCount: len(f.groups),
+				FirstGroup: firstGroup,
+				LastGroup:  lastGroup,
+			})
+		}
 	}
 	return f
 }
@@ -415,6 +471,13 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	m, cmd := group.Update(msg)
 	f.groups[page] = m.(*Group)
+
+	// A user input a key, this could hide or show other groups,
+	// let's update all of their positions.
+	switch msg.(type) {
+	case tea.KeyMsg:
+		f.UpdateFieldPositions()
+	}
 
 	return f, cmd
 }
