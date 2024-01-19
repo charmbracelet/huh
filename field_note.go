@@ -110,8 +110,10 @@ func (n *Note) View() string {
 		title = n.title
 	}
 	sb.WriteString(styles.NoteTitle.Render(title))
-	sb.WriteString("\n")
-	sb.WriteString(render(n.description))
+	if n.description != "" {
+		sb.WriteString("\n")
+		sb.WriteString(render(n.description))
+	}
 	if n.showNextButton {
 		sb.WriteString(styles.Next.Render("Next"))
 	}
