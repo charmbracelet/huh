@@ -217,18 +217,13 @@ func (i *Input) View() string {
 			sb.WriteString("\n")
 		}
 	}
-	if i.inline {
-		sb.WriteString(i.textinput.View())
-	}
 	if i.description != "" {
 		sb.WriteString(styles.Description.Render(i.description))
 		if !i.inline {
 			sb.WriteString("\n")
 		}
 	}
-	if !i.inline {
-		sb.WriteString(i.textinput.View())
-	}
+	sb.WriteString(i.textinput.View())
 
 	return styles.Base.Render(sb.String())
 }

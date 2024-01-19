@@ -64,8 +64,9 @@ type FieldStyles struct {
 	BlurredButton lipgloss.Style
 
 	// Card styles.
-	Card lipgloss.Style
-	Next lipgloss.Style
+	Card      lipgloss.Style
+	NoteTitle lipgloss.Style
+	Next      lipgloss.Style
 }
 
 // TextInputStyles are the styles for text inputs.
@@ -105,6 +106,7 @@ func (f FieldStyles) copy() FieldStyles {
 		BlurredButton:       f.BlurredButton.Copy(),
 		TextInput:           f.TextInput.copy(),
 		Card:                f.Card.Copy(),
+		NoteTitle:           f.NoteTitle.Copy(),
 		Next:                f.Next.Copy(),
 	}
 }
@@ -131,6 +133,8 @@ func ThemeBase() *Theme {
 		PaddingLeft(1).
 		BorderStyle(lipgloss.ThickBorder()).
 		BorderLeft(true)
+	f.Card = lipgloss.NewStyle().
+		PaddingLeft(1)
 	f.ErrorIndicator = lipgloss.NewStyle().
 		SetString(" *")
 	f.ErrorMessage = lipgloss.NewStyle().
@@ -177,6 +181,7 @@ func ThemeCharm() *Theme {
 	f := &t.Focused
 	f.Base = f.Base.BorderForeground(lipgloss.Color("238"))
 	f.Title.Foreground(indigo).Bold(true)
+	f.NoteTitle.Foreground(indigo).Bold(true).MarginBottom(1)
 	f.Description.Foreground(lipgloss.AdaptiveColor{Light: "", Dark: "243"})
 	f.ErrorIndicator.Foreground(red)
 	f.ErrorMessage.Foreground(red)
@@ -219,6 +224,7 @@ func ThemeDracula() *Theme {
 	f := &t.Focused
 	f.Base.BorderForeground(selection)
 	f.Title.Foreground(purple)
+	f.NoteTitle.Foreground(purple)
 	f.Description.Foreground(comment)
 	f.ErrorIndicator.Foreground(red)
 	f.ErrorMessage.Foreground(red)
@@ -249,6 +255,7 @@ func ThemeBase16() *Theme {
 	f := &t.Focused
 	f.Base.BorderForeground(lipgloss.Color("8"))
 	f.Title.Foreground(lipgloss.Color("6"))
+	f.NoteTitle.Foreground(lipgloss.Color("6"))
 	f.Description.Foreground(lipgloss.Color("8"))
 	f.ErrorIndicator.Foreground(lipgloss.Color("9"))
 	f.ErrorMessage.Foreground(lipgloss.Color("9"))
@@ -268,6 +275,7 @@ func ThemeBase16() *Theme {
 	t.Blurred = f.copy()
 	t.Blurred.Base = t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
 	t.Blurred.Title.Foreground(lipgloss.Color("8"))
+	t.Blurred.NoteTitle.Foreground(lipgloss.Color("8"))
 	t.Blurred.TextInput.Prompt.Foreground(lipgloss.Color("8"))
 	t.Blurred.TextInput.Text.Foreground(lipgloss.Color("7"))
 
@@ -297,6 +305,7 @@ func ThemeCatppuccin() *Theme {
 	f := &t.Focused
 	f.Base.BorderForeground(subtext1)
 	f.Title.Foreground(mauve)
+	f.NoteTitle.Foreground(mauve)
 	f.Description.Foreground(subtext0)
 	f.ErrorIndicator.Foreground(red)
 	f.ErrorMessage.Foreground(red)
