@@ -217,10 +217,10 @@ func (i *Input) View() string {
 			sb.WriteString("\n")
 		}
 	}
+	if i.inline {
+		sb.WriteString(i.textinput.View())
+	}
 	if i.description != "" {
-		if i.inline {
-			sb.WriteString(i.textinput.View())
-		}
 		sb.WriteString(styles.Description.Render(i.description))
 		if !i.inline {
 			sb.WriteString("\n")
@@ -280,9 +280,11 @@ func (i *Input) WithWidth(width int) Field {
 	frameSize := i.theme.Blurred.Base.GetHorizontalFrameSize()
 	promptWidth := lipgloss.Width(i.textinput.PromptStyle.Render(i.textinput.Prompt))
 	titleWidth := lipgloss.Width(i.theme.Focused.Title.Render(i.title))
+	descriptionWidth := lipgloss.Width(i.theme.Focused.Description.Render(i.description))
 	i.textinput.Width = width - frameSize - promptWidth - 1
 	if i.inline {
 		i.textinput.Width -= titleWidth
+		i.textinput.Width -= descriptionWidth
 	}
 	return i
 }
