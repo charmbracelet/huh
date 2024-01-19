@@ -176,11 +176,11 @@ func (c *Confirm) View() string {
 }
 
 // Run runs the confirm field in accessible mode.
-func (c *Confirm) Run() error {
+func (c *Confirm) Run(opts ...tea.ProgramOption) error {
 	if c.accessible {
 		return c.runAccessible()
 	}
-	return Run(c)
+	return Run(c, opts...)
 }
 
 // runAccessible runs the confirm field in accessible mode.

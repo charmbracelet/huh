@@ -360,11 +360,11 @@ func (s *Select[T]) filterFunc(option string) bool {
 }
 
 // Run runs the select field.
-func (s *Select[T]) Run() error {
+func (s *Select[T]) Run(opts ...tea.ProgramOption) error {
 	if s.accessible {
 		return s.runAccessible()
 	}
-	return Run(s)
+	return Run(s, opts...)
 }
 
 // runAccessible runs an accessible select field.

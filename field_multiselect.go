@@ -376,9 +376,7 @@ func (m *MultiSelect[T]) View() string {
 }
 
 func (m *MultiSelect[T]) printOptions() {
-	var (
-		sb strings.Builder
-	)
+	var sb strings.Builder
 
 	sb.WriteString(m.theme.Focused.Title.Render(m.title))
 	sb.WriteString("\n")
@@ -413,11 +411,11 @@ func (m *MultiSelect[T]) filterFunc(option string) bool {
 }
 
 // Run runs the multi-select field.
-func (m *MultiSelect[T]) Run() error {
+func (m *MultiSelect[T]) Run(opts ...tea.ProgramOption) error {
 	if m.accessible {
 		return m.runAccessible()
 	}
-	return Run(m)
+	return Run(m, opts...)
 }
 
 // runAccessible() runs the multi-select field in accessible mode.

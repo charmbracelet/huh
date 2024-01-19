@@ -120,11 +120,11 @@ func (n *Note) View() string {
 }
 
 // Run runs the note field.
-func (n *Note) Run() error {
+func (n *Note) Run(opts ...tea.ProgramOption) error {
 	if n.accessible {
 		return n.runAccessible()
 	}
-	return Run(n)
+	return Run(n, opts...)
 }
 
 // runAccessible runs an accessible note field.

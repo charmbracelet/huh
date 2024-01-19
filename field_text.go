@@ -263,11 +263,11 @@ func (t *Text) View() string {
 }
 
 // Run runs the text field.
-func (t *Text) Run() error {
+func (t *Text) Run(opts ...tea.ProgramOption) error {
 	if t.accessible {
 		return t.runAccessible()
 	}
-	return Run(t)
+	return Run(t, opts...)
 }
 
 // runAccessible runs an accessible text field.

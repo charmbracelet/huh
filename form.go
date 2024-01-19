@@ -110,7 +110,7 @@ type Field interface {
 	Error() error
 
 	// Run runs the field individually.
-	Run() error
+	Run(opts ...tea.ProgramOption) error
 
 	// KeyBinds returns help keybindings.
 	KeyBinds() []key.Binding
@@ -503,7 +503,7 @@ func (f *Form) View() string {
 }
 
 // Run runs the form.
-func (f *Form) Run() error {
+func (f *Form) Run(opts ...tea.ProgramOption) error {
 	f.submitCmd = tea.Quit
 	f.cancelCmd = tea.Quit
 
@@ -515,14 +515,9 @@ func (f *Form) Run() error {
 		return f.runAccessible()
 	}
 
-	return f.run()
-}
-
-// run runs the form in normal mode.
-func (f *Form) run() error {
-	m, err := tea.NewProgram(f).Run()
+	m, err := tea.NewProgram(f, opts...).Run()
 	if m.(*Form).aborted {
-		err = ErrUserAborted
+		return ErrUserAborted
 	}
 	return err
 }

@@ -136,12 +136,12 @@ func (s *Spinner) View() string {
 }
 
 // Run runs the spinner.
-func (s *Spinner) Run() error {
+func (s *Spinner) Run(opts ...tea.ProgramOption) error {
 	if s.accessible {
 		return s.runAccessible()
 	}
 
-	p := tea.NewProgram(s, tea.WithContext(s.ctx))
+	p := tea.NewProgram(s, append(opts, tea.WithContext(s.ctx))...)
 
 	if s.ctx == nil {
 		go func() {

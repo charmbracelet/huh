@@ -234,16 +234,11 @@ func (i *Input) View() string {
 }
 
 // Run runs the input field in accessible mode.
-func (i *Input) Run() error {
+func (i *Input) Run(opts ...tea.ProgramOption) error {
 	if i.accessible {
 		return i.runAccessible()
 	}
-	return i.run()
-}
-
-// run runs the input field.
-func (i *Input) run() error {
-	return Run(i)
+	return Run(i, opts...)
 }
 
 // runAccessible runs the input field in accessible mode.
