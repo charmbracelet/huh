@@ -39,7 +39,7 @@ type Select[T comparable] struct {
 	width      int
 	accessible bool
 	theme      *Theme
-	keymap     *SelectKeyMap
+	keymap     SelectKeyMap
 }
 
 // NewSelect returns a new select field.
@@ -406,7 +406,7 @@ func (s *Select[T]) WithTheme(theme *Theme) Field {
 
 // WithKeyMap sets the keymap on a select field.
 func (s *Select[T]) WithKeyMap(k *KeyMap) Field {
-	s.keymap = &k.Select
+	s.keymap = k.Select
 	return s
 }
 

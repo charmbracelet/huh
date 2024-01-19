@@ -573,6 +573,29 @@ func TestNote(t *testing.T) {
 	}
 }
 
+func TestDynamicHelp(t *testing.T) {
+	f := NewForm(
+		NewGroup(
+			NewInput().Title("Dynamic Help"),
+			NewInput().Title("Dynamic Help"),
+			NewInput().Title("Dynamic Help"),
+		),
+	)
+	f.Update(f.Init())
+
+	view := f.View()
+
+	if !strings.Contains(view, "Dynamic Help") {
+		t.Log(pretty.Render(view))
+		t.Fatal("Expected help to contain title.")
+	}
+
+	if strings.Contains(view, "shift+tab") || strings.Contains(view, "submit") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected help not to contain shift+tab or submit.")
+	}
+}
+
 func batchUpdate(m tea.Model, cmd tea.Cmd) tea.Model {
 	if cmd == nil {
 		return m

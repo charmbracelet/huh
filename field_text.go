@@ -39,7 +39,7 @@ type Text struct {
 	width      int
 	accessible bool
 	theme      *Theme
-	keymap     *TextKeyMap
+	keymap     TextKeyMap
 }
 
 // NewText returns a new text field.
@@ -287,7 +287,7 @@ func (t *Text) WithTheme(theme *Theme) Field {
 
 // WithKeyMap sets the keymap on a text field.
 func (t *Text) WithKeyMap(k *KeyMap) Field {
-	t.keymap = &k.Text
+	t.keymap = k.Text
 	t.textarea.KeyMap.InsertNewline.SetKeys(t.keymap.NewLine.Keys()...)
 	return t
 }

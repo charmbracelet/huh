@@ -33,7 +33,7 @@ type Confirm struct {
 	height     int
 	accessible bool
 	theme      *Theme
-	keymap     *ConfirmKeyMap
+	keymap     ConfirmKeyMap
 }
 
 // NewConfirm returns a new confirm field.
@@ -207,7 +207,7 @@ func (c *Confirm) WithTheme(theme *Theme) Field {
 
 // WithKeyMap sets the keymap of the confirm field.
 func (c *Confirm) WithKeyMap(k *KeyMap) Field {
-	c.keymap = &k.Confirm
+	c.keymap = k.Confirm
 	return c
 }
 

@@ -76,7 +76,7 @@ func NewDefaultKeyMap() *KeyMap {
 	return &KeyMap{
 		Quit: key.NewBinding(key.WithKeys("ctrl+c")),
 		Input: InputKeyMap{
-			AcceptSuggestion: key.NewBinding(key.WithKeys("ctrl+e"), key.WithHelp("ctrl+e", "complete")),
+			AcceptSuggestion: key.NewBinding(key.WithKeys("ctrl+e"), key.WithHelp("ctrl+e", "complete"), key.WithDisabled()),
 			Prev:             key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),
 			Next:             key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "next")),
 			Submit:           key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "submit")),
