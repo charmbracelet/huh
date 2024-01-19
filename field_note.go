@@ -107,16 +107,15 @@ func (n *Note) View() string {
 	)
 
 	if n.title != "" {
-		title = n.theme.Focused.Title.Render(n.title) + "\n\n"
+		title = n.title
 	}
-
-	sb.WriteString(title)
+	sb.WriteString(styles.NoteTitle.Render(title))
+	sb.WriteString("\n")
 	sb.WriteString(render(n.description))
 	if n.showNextButton {
-		sb.WriteString("\n\n")
 		sb.WriteString(styles.Next.Render("Next"))
 	}
-	return styles.Base.Render(sb.String())
+	return styles.Card.Render(sb.String())
 }
 
 // Run runs the note field.
@@ -132,7 +131,7 @@ func (n *Note) runAccessible() error {
 	var body string
 
 	if n.title != "" {
-		body = n.theme.Focused.Title.Render(n.title) + "\n\n"
+		body = n.title + "\n\n"
 	}
 
 	body += n.description

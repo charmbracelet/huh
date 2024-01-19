@@ -31,6 +31,7 @@ type Confirm struct {
 	// options
 	width      int
 	height     int
+	inline     bool
 	accessible bool
 	theme      *Theme
 	keymap     ConfirmKeyMap
@@ -94,6 +95,12 @@ func (c *Confirm) Description(description string) *Confirm {
 	return c
 }
 
+// Inline sets whether the field should be inline.
+func (c *Confirm) Inline(inline bool) *Confirm {
+	c.inline = inline
+	return c
+}
+
 // Focus focuses the confirm field.
 func (c *Confirm) Focus() tea.Cmd {
 	c.focused = true
@@ -152,12 +159,18 @@ func (c *Confirm) View() string {
 	if c.err != nil {
 		sb.WriteString(styles.ErrorIndicator.String())
 	}
-	if c.description != "" {
+
+	description := styles.Description.Render(c.description)
+
+	if !c.inline {
 		sb.WriteString("\n")
-		sb.WriteString(styles.Description.Render(c.description))
 	}
-	sb.WriteString("\n")
-	sb.WriteString("\n")
+	sb.WriteString(description)
+
+	if !c.inline {
+		sb.WriteString("\n")
+		sb.WriteString("\n")
+	}
 
 	if *c.value {
 		sb.WriteString(lipgloss.JoinHorizontal(
