@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 )
 
@@ -12,7 +13,7 @@ func main() {
 		huh.NewGroup(
 			huh.NewInput().Description("What is your name?").Value(&name),
 		),
-	).Run(); err != nil {
+	).Run(tea.WithAltScreen()); err != nil {
 		fmt.Println("error:", err)
 	}
 	fmt.Println("Hello, " + name + "!")
