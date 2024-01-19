@@ -298,25 +298,19 @@ func TestInput(t *testing.T) {
 
 func TestInlineInput(t *testing.T) {
 	field := NewInput().
-		Title("Inline Input").
+		Title("Input").
 		Prompt(": ").
-		Description("Inline Description").
-		Inline(true).
-		WithWidth(30)
+		Description("Description").
+		Inline(true)
 
-	f := NewForm(NewGroup(field))
+	f := NewForm(NewGroup(field)).WithWidth(40)
 	f.Update(f.Init())
 
 	view := f.View()
 
-	if !strings.Contains(view, ": ") {
+	if !strings.Contains(view, "┃ Input:                     Description") {
 		t.Log(pretty.Render(view))
-		t.Error("Expected field to contain prompt.")
-	}
-
-	if !strings.Contains(view, "┃ Inline Input:               Inline Description") {
-		t.Log(pretty.Render(view))
-		t.Error("Expected field to contain help.")
+		t.Error("Expected field to contain inline input.")
 	}
 
 	// Type Huh in the form.
@@ -334,7 +328,7 @@ func TestInlineInput(t *testing.T) {
 		t.Error("Expected field to contain help.")
 	}
 
-	if !strings.Contains(view, "┃ Inline Input: Huh           Inline Description") {
+	if !strings.Contains(view, "┃ Input: Huh                 Description") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected field to contain help.")
 	}
