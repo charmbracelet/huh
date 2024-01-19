@@ -23,7 +23,7 @@ type Note struct {
 	height     int
 	accessible bool
 	theme      *Theme
-	keymap     *NoteKeyMap
+	keymap     NoteKeyMap
 }
 
 // NewNote creates a new note field.
@@ -150,7 +150,7 @@ func (n *Note) WithTheme(theme *Theme) Field {
 
 // WithKeyMap sets the keymap on a note field.
 func (n *Note) WithKeyMap(k *KeyMap) Field {
-	n.keymap = &k.Note
+	n.keymap = k.Note
 	return n
 }
 

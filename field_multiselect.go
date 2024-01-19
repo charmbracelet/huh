@@ -41,7 +41,7 @@ type MultiSelect[T comparable] struct {
 	width      int
 	accessible bool
 	theme      *Theme
-	keymap     *MultiSelectKeyMap
+	keymap     MultiSelectKeyMap
 }
 
 // NewMultiSelect returns a new multi-select field.
@@ -472,7 +472,7 @@ func (m *MultiSelect[T]) WithTheme(theme *Theme) Field {
 
 // WithKeyMap sets the keymap of the multi-select field.
 func (m *MultiSelect[T]) WithKeyMap(k *KeyMap) Field {
-	m.keymap = &k.MultiSelect
+	m.keymap = k.MultiSelect
 	return m
 }
 

@@ -36,7 +36,7 @@ type Input struct {
 	height     int
 	accessible bool
 	theme      *Theme
-	keymap     *InputKeyMap
+	keymap     InputKeyMap
 }
 
 // NewInput returns a new input field.
@@ -94,6 +94,7 @@ func (i *Input) CharLimit(charlimit int) *Input {
 // field.
 func (i *Input) Suggestions(suggestions []string) *Input {
 	i.textinput.ShowSuggestions = len(suggestions) > 0
+	i.textinput.KeyMap.AcceptSuggestion.SetEnabled(len(suggestions) > 0)
 	i.textinput.SetSuggestions(suggestions)
 	return i
 }
@@ -148,10 +149,7 @@ func (i *Input) Blur() tea.Cmd {
 
 // KeyBinds returns the help message for the input field.
 func (i *Input) KeyBinds() []key.Binding {
-	if i.textinput.ShowSuggestions {
-		return []key.Binding{i.keymap.AcceptSuggestion, i.keymap.Prev, i.keymap.Submit, i.keymap.Next}
-	}
-	return []key.Binding{i.keymap.Prev, i.keymap.Submit, i.keymap.Next}
+	return []key.Binding{i.keymap.AcceptSuggestion, i.keymap.Prev, i.keymap.Submit, i.keymap.Next}
 }
 
 // Init initializes the input field.
@@ -252,7 +250,7 @@ func (i *Input) runAccessible() error {
 
 // WithKeyMap sets the keymap on an input field.
 func (i *Input) WithKeyMap(k *KeyMap) Field {
-	i.keymap = &k.Input
+	i.keymap = k.Input
 	i.textinput.KeyMap.AcceptSuggestion = i.keymap.AcceptSuggestion
 	return i
 }

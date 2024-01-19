@@ -269,19 +269,23 @@ func (f *Form) WithHeight(height int) *Form {
 
 // UpdateFieldPositions sets the position on all the fields.
 func (f *Form) UpdateFieldPositions() *Form {
-	lastGroup := 0
 	firstGroup := 0
-	firstGroupRevealed := false
+	lastGroup := len(f.groups) - 1
 
+	// determine the first non-hidden group.
 	for g := range f.groups {
-		if f.isGroupHidden(g) {
-			if !firstGroupRevealed {
-				firstGroup++
-			}
-		} else {
-			firstGroupRevealed = true
-			lastGroup = g
+		if !f.isGroupHidden(g) {
+			break
 		}
+		firstGroup++
+	}
+
+	// determine the last non-hidden group.
+	for g := len(f.groups) - 1; g > 0; g-- {
+		if !f.isGroupHidden(g) {
+			break
+		}
+		lastGroup--
 	}
 
 	for g, group := range f.groups {
@@ -290,7 +294,6 @@ func (f *Form) UpdateFieldPositions() *Form {
 				Group:      g,
 				Field:      i,
 				FieldCount: len(group.fields),
-				GroupCount: len(f.groups),
 				FirstGroup: firstGroup,
 				LastGroup:  lastGroup,
 			})
