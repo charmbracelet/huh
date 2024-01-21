@@ -202,7 +202,7 @@ func render(input string) string {
 				result.WriteString("\033[3m")
 				italic = true
 			} else {
-				result.WriteString("\033[0m")
+				result.WriteString("\033[23m")
 				italic = false
 			}
 		case '*':
@@ -210,7 +210,7 @@ func render(input string) string {
 				result.WriteString("\033[1m")
 				bold = true
 			} else {
-				result.WriteString("\033[0m")
+				result.WriteString("\033[22m")
 				bold = false
 			}
 		case '`':
@@ -222,6 +222,13 @@ func render(input string) string {
 				result.WriteString(" ")
 				result.WriteString("\033[0m")
 				codeblock = false
+
+				if bold {
+					result.WriteString("\033[1m")
+				}
+				if italic {
+					result.WriteString("\033[3m")
+				}
 			}
 		default:
 			result.WriteRune(char)
