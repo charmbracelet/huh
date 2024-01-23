@@ -112,6 +112,9 @@ type Field interface {
 	// Run runs the field individually.
 	Run() error
 
+	// Skip returns whether this input should be skipped or not.
+	Skip() bool
+
 	// KeyBinds returns help keybindings.
 	KeyBinds() []key.Binding
 
@@ -454,6 +457,7 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return submit()
 			}
 		}
+		return f, f.groups[f.paginator.Page].Init()
 
 	case prevGroupMsg:
 		if len(group.Errors()) > 0 {
@@ -470,6 +474,8 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				break
 			}
 		}
+
+		return f, f.groups[f.paginator.Page].Init()
 	}
 
 	m, cmd := group.Update(msg)

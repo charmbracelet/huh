@@ -132,6 +132,11 @@ func (i *Input) Error() error {
 	return i.err
 }
 
+// Skip returns whether the input should be skipped or should be blocking.
+func (*Input) Skip() bool {
+	return false
+}
+
 // Focus focuses the input field.
 func (i *Input) Focus() tea.Cmd {
 	i.focused = true
