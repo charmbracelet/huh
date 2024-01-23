@@ -2,6 +2,7 @@ package huh
 
 import (
 	"strings"
+	"unicode"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/paginator"
@@ -232,10 +233,27 @@ func (g *Group) View() string {
 	}
 
 	errors := g.Errors()
-	s.WriteString(gap)
 
 	if g.showHelp && len(errors) <= 0 {
-		s.WriteString(g.help.ShortHelpView(g.fields[g.paginator.Page].KeyBinds()))
+
+		// The short help view will be empty if (Field).KeyBinds() returns:
+		//
+		//   a. the nil or empty []key.Binding slice, or
+		//   b. a []key.Binding slice with all elements disabled
+		//
+		// We don't want to render a spurious FieldSeparator gap in either case, but
+		// case b. can only be determined by actually rendering the short help view.
+		keys := g.help.ShortHelpView(g.fields[g.paginator.Page].KeyBinds())
+
+		// (help.Model).ShortHelpView _will_ render an enabled key.Binding even when
+		// its Key or Desc are undefined. If both are undefined, the binding is
+		// rendered as a single space (" ").
+		// Verify the rendered help view contains something other than whitespace.
+		isNotSpace := func(r rune) bool { return !unicode.IsSpace(r) }
+		if strings.IndexFunc(keys, isNotSpace) > 0 {
+			s.WriteString(gap)
+			s.WriteString(keys)
+		}
 	}
 
 	if !g.showErrors {
@@ -244,7 +262,7 @@ func (g *Group) View() string {
 
 	for _, err := range errors {
 		s.WriteString(g.theme.Focused.ErrorMessage.Render(err.Error()))
-		s.WriteString("\n")
+		s.WriteRune('\n')
 	}
 
 	return s.String()
