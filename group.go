@@ -178,31 +178,54 @@ func prevField() tea.Msg {
 
 // Init initializes the group.
 func (g *Group) Init() tea.Cmd {
-	cmds := make([]tea.Cmd, len(g.fields)+1)
-	for i, field := range g.fields {
-		cmds[i] = field.Init()
+	var cmds []tea.Cmd
+
+	if g.fields[g.paginator.Page].Skip() {
+		if g.paginator.OnLastPage() {
+			cmds = append(cmds, g.prevField()...)
+		} else if g.paginator.Page == 0 {
+			cmds = append(cmds, g.nextField()...)
+		}
+		return tea.Batch(cmds...)
 	}
+
 	cmd := g.fields[g.paginator.Page].Focus()
 	cmds = append(cmds, cmd)
 	return tea.Batch(cmds...)
 }
 
-// setCurrent sets the current field.
-func (g *Group) setCurrent(current int) tea.Cmd {
-	var (
-		cmds []tea.Cmd
-		cmd  tea.Cmd
-	)
+// nextField moves to the next field.
+func (g *Group) nextField() []tea.Cmd {
+	blurCmd := g.fields[g.paginator.Page].Blur()
+	if g.paginator.OnLastPage() {
+		return []tea.Cmd{blurCmd, nextGroup}
+	}
+	g.paginator.NextPage()
+	for g.fields[g.paginator.Page].Skip() {
+		if g.paginator.OnLastPage() {
+			return []tea.Cmd{blurCmd, nextGroup}
+		}
+		g.paginator.NextPage()
+	}
+	focusCmd := g.fields[g.paginator.Page].Focus()
+	return []tea.Cmd{blurCmd, focusCmd}
+}
 
-	cmd = g.fields[g.paginator.Page].Blur()
-	cmds = append(cmds, cmd)
-
-	g.paginator.Page = clamp(current, 0, len(g.fields)-1)
-
-	cmd = g.fields[g.paginator.Page].Focus()
-	cmds = append(cmds, cmd)
-
-	return tea.Batch(cmds...)
+// prevField moves to the previous field.
+func (g *Group) prevField() []tea.Cmd {
+	blurCmd := g.fields[g.paginator.Page].Blur()
+	if g.paginator.Page <= 0 {
+		return []tea.Cmd{blurCmd, prevGroup}
+	}
+	g.paginator.PrevPage()
+	for g.fields[g.paginator.Page].Skip() {
+		if g.paginator.Page <= 0 {
+			return []tea.Cmd{blurCmd, prevGroup}
+		}
+		g.paginator.PrevPage()
+	}
+	focusCmd := g.fields[g.paginator.Page].Focus()
+	return []tea.Cmd{blurCmd, focusCmd}
 }
 
 // Update updates the group.
@@ -216,38 +239,20 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg.(type) {
 	case nextFieldMsg:
-		current := g.paginator.Page
-		cmd = g.setCurrent(current + 1)
-
-		if current >= g.paginator.TotalPages-1 {
-			cmds = append(cmds, nextGroup)
-			break
-		}
-
+		cmds = append(cmds, g.nextField()...)
 		offset := 0
-		for i := 0; i <= current; i++ {
+		for i := 0; i <= g.paginator.Page; i++ {
 			offset += lipgloss.Height(g.fields[i].View()) + 1
 		}
 		g.viewport.SetYOffset(offset)
-
-		cmds = append(cmds, cmd)
 
 	case prevFieldMsg:
-		current := g.paginator.Page
-		cmd = g.setCurrent(current - 1)
-
-		if current == 0 {
-			cmds = append(cmds, prevGroup)
-			break
-		}
-
+		cmds = append(cmds, g.prevField()...)
 		offset := 0
-		for i := 0; i < current-1; i++ {
+		for i := 0; i < g.paginator.Page; i++ {
 			offset += lipgloss.Height(g.fields[i].View()) + 1
 		}
 		g.viewport.SetYOffset(offset)
-
-		cmds = append(cmds, cmd)
 	}
 
 	return g, tea.Batch(cmds...)
