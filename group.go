@@ -241,7 +241,7 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case nextFieldMsg:
 		cmds = append(cmds, g.nextField()...)
 		offset := 0
-		for i := 0; i <= g.paginator.Page; i++ {
+		for i := 0; i < g.paginator.Page; i++ {
 			offset += lipgloss.Height(g.fields[i].View()) + 1
 		}
 		g.viewport.SetYOffset(offset)
