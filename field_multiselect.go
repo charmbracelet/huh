@@ -493,7 +493,7 @@ func (m *MultiSelect[T]) WithWidth(width int) Field {
 	return m
 }
 
-// WithHeight sets the width of the multi-select field.
+// WithHeight sets the height of the multi-select field.
 func (m *MultiSelect[T]) WithHeight(height int) Field {
 	m.height = height
 	return m
