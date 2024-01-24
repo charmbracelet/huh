@@ -200,7 +200,10 @@ func (g *Group) nextField() []tea.Cmd {
 		return []tea.Cmd{blurCmd, nextGroup}
 	}
 	g.paginator.NextPage()
-	if g.fields[g.paginator.Page].Skip() {
+	for g.fields[g.paginator.Page].Skip() {
+		if g.paginator.OnLastPage() {
+			return []tea.Cmd{blurCmd, nextGroup}
+		}
 		g.paginator.NextPage()
 	}
 	focusCmd := g.fields[g.paginator.Page].Focus()
@@ -214,7 +217,7 @@ func (g *Group) prevField() []tea.Cmd {
 		return []tea.Cmd{blurCmd, prevGroup}
 	}
 	g.paginator.PrevPage()
-	if g.fields[g.paginator.Page].Skip() {
+	for g.fields[g.paginator.Page].Skip() {
 		if g.paginator.Page <= 0 {
 			return []tea.Cmd{blurCmd, prevGroup}
 		}
