@@ -464,10 +464,6 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return f, nil
 		}
 
-		if f.paginator.Page == 0 {
-			return f, nil
-		}
-
 		for i := f.paginator.Page - 1; i >= 0; i-- {
 			if !f.isGroupHidden(i) {
 				f.paginator.Page = i
