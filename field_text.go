@@ -307,6 +307,9 @@ func (t *Text) runAccessible() error {
 
 // WithTheme sets the theme on a text field.
 func (t *Text) WithTheme(theme *Theme) Field {
+	if t.theme != nil {
+		return t
+	}
 	t.theme = theme
 	return t
 }

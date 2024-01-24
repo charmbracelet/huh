@@ -300,6 +300,9 @@ func (i *Input) WithAccessible(accessible bool) Field {
 
 // WithTheme sets the theme of the input field.
 func (i *Input) WithTheme(theme *Theme) Field {
+	if i.theme != nil {
+		return i
+	}
 	i.theme = theme
 	return i
 }

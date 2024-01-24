@@ -155,6 +155,9 @@ func (n *Note) runAccessible() error {
 
 // WithTheme sets the theme on a note field.
 func (n *Note) WithTheme(theme *Theme) Field {
+	if n.theme != nil {
+		return n
+	}
 	n.theme = theme
 	return n
 }
