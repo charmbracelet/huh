@@ -204,7 +204,7 @@ func (f *Form) WithShowHelp(v bool) *Form {
 
 // WithShowErrors sets whether or not the form should show errors.
 //
-// This allows the form groups and fields to show errors when the Validate 
+// This allows the form groups and fields to show errors when the Validate
 // function returns an error.
 func (f *Form) WithShowErrors(v bool) *Form {
 	for _, group := range f.groups {
