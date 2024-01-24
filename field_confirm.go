@@ -167,7 +167,7 @@ func (c *Confirm) View() string {
 
 	description := styles.Description.Render(c.description)
 
-	if !c.inline {
+	if !c.inline && c.description != "" {
 		sb.WriteString("\n")
 	}
 	sb.WriteString(description)
