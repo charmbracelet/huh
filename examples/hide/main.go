@@ -14,7 +14,10 @@ func main() {
 		huh.NewGroup(huh.NewNote().Title("Just for fun!")).WithHideFunc(func() bool { return true }),
 		huh.NewGroup(huh.NewNote().Title("Just for fun!")).WithHide(true),
 
-		huh.NewGroup(huh.NewConfirm().Title("Are you allergic to anything?").Value(&isAllergic)),
+		huh.NewGroup(huh.NewConfirm().
+			Title("Do you have any allergies?").
+			Description("If so, please list them.").
+			Value(&isAllergic)),
 		huh.NewGroup(
 			huh.NewText().
 				Title("Allergies").

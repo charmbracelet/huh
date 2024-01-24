@@ -130,6 +130,11 @@ func (s *Select[T]) Error() error {
 	return s.err
 }
 
+// Skip returns whether the select should be skipped or should be blocking.
+func (*Select[T]) Skip() bool {
+	return false
+}
+
 // Focus focuses the select field.
 func (s *Select[T]) Focus() tea.Cmd {
 	s.focused = true

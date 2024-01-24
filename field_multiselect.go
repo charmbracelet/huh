@@ -144,6 +144,11 @@ func (m *MultiSelect[T]) Error() error {
 	return m.err
 }
 
+// Skip returns whether the multiselect should be skipped or should be blocking.
+func (*MultiSelect[T]) Skip() bool {
+	return false
+}
+
 // Focus focuses the multi-select field.
 func (m *MultiSelect[T]) Focus() tea.Cmd {
 	m.focused = true
