@@ -634,6 +634,54 @@ func TestDynamicHelp(t *testing.T) {
 	}
 }
 
+func TestSkip(t *testing.T) {
+	f := NewForm(
+		NewGroup(
+			NewInput().Title("First"),
+			NewNote().Title("Skipped"),
+			NewNote().Title("Skipped"),
+			NewInput().Title("Second"),
+		),
+	).WithWidth(25)
+
+	f = batchUpdate(f, f.Init()).(*Form)
+	view := f.View()
+
+	if !strings.Contains(view, "┃ First") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected first field to be focused")
+	}
+
+	// next field should skip both of the notes and proceed to the last input.
+	f.Update(nextField())
+	view = f.View()
+
+	if strings.Contains(view, "┃ First") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected first field to be blurred")
+	}
+
+	if !strings.Contains(view, "┃ Second") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected second field to be focused")
+	}
+
+	// previous field should skip both of the notes and focus the first input.
+	f.Update(prevField())
+	view = f.View()
+
+	if strings.Contains(view, "┃ Second") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected second field to be blurred")
+	}
+
+	if !strings.Contains(view, "┃ First") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected first field to be focused")
+	}
+
+}
+
 func batchUpdate(m tea.Model, cmd tea.Cmd) tea.Model {
 	if cmd == nil {
 		return m
