@@ -100,6 +100,7 @@ func NewModel() Model {
 				Negative("Wait, no"),
 		),
 	).
+		WithWidth(45).
 		WithShowHelp(false).
 		WithShowErrors(false)
 	return m
