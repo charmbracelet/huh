@@ -19,6 +19,7 @@ type Note struct {
 	focused        bool
 
 	// options
+	skip       bool
 	width      int
 	height     int
 	accessible bool
@@ -31,6 +32,7 @@ func NewNote() *Note {
 	return &Note{
 		showNextButton: false,
 		theme:          ThemeCharm(),
+		skip:           true,
 	}
 }
 
@@ -67,6 +69,11 @@ func (n *Note) Blur() tea.Cmd {
 // Error returns the error of the note field.
 func (n *Note) Error() error {
 	return nil
+}
+
+// Skip returns whether the note should be skipped or should be blocking.
+func (n *Note) Skip() bool {
+	return n.skip
 }
 
 // KeyBinds returns the help message for the note field.
@@ -175,6 +182,9 @@ func (n *Note) WithHeight(height int) Field {
 
 // WithPosition sets the position information of the note field.
 func (n *Note) WithPosition(p FieldPosition) Field {
+	if p.FieldCount == 1 {
+		n.skip = false
+	}
 	n.keymap.Prev.SetEnabled(!p.IsFirst())
 	n.keymap.Next.SetEnabled(!p.IsLast())
 	n.keymap.Submit.SetEnabled(p.IsLast())

@@ -59,6 +59,11 @@ func (c *Confirm) Error() error {
 	return c.err
 }
 
+// Skip returns whether the confirm should be skipped or should be blocking.
+func (*Confirm) Skip() bool {
+	return false
+}
+
 // Affirmative sets the affirmative value of the confirm field.
 func (c *Confirm) Affirmative(affirmative string) *Confirm {
 	c.affirmative = affirmative

@@ -149,6 +149,11 @@ func (t *Text) Error() error {
 	return t.err
 }
 
+// Skip returns whether the textarea should be skipped or should be blocking.
+func (*Text) Skip() bool {
+	return false
+}
+
 // Focus focuses the text field.
 func (t *Text) Focus() tea.Cmd {
 	t.focused = true
