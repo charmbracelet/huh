@@ -147,7 +147,8 @@ type Field interface {
 type FieldPosition struct {
 	Group      int
 	Field      int
-	FieldCount int
+	FirstField int
+	LastField  int
 	GroupCount int
 	FirstGroup int
 	LastGroup  int
@@ -155,12 +156,12 @@ type FieldPosition struct {
 
 // IsFirst returns whether a field is the form's first field.
 func (p FieldPosition) IsFirst() bool {
-	return p.Field == 0 && p.Group == p.FirstGroup
+	return p.Field == p.FirstField && p.Group == p.FirstGroup
 }
 
 // IsLast returns whether a field is the form's last field.
 func (p FieldPosition) IsLast() bool {
-	return p.Field == p.FieldCount-1 && p.Group == p.LastGroup
+	return p.Field == p.LastField && p.Group == p.LastGroup
 }
 
 // nextGroupMsg is a message to move to the next group.
@@ -296,7 +297,8 @@ func (f *Form) UpdateFieldPositions() *Form {
 			field.WithPosition(FieldPosition{
 				Group:      g,
 				Field:      i,
-				FieldCount: len(group.fields),
+				FirstField: 0,
+				LastField:  len(group.fields) - 1,
 				FirstGroup: firstGroup,
 				LastGroup:  lastGroup,
 			})

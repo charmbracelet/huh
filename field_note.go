@@ -182,7 +182,9 @@ func (n *Note) WithHeight(height int) Field {
 
 // WithPosition sets the position information of the note field.
 func (n *Note) WithPosition(p FieldPosition) Field {
-	if p.FieldCount == 1 {
+	// if the note is the only field on the screen,
+	// we shouldn't skip the entire group.
+	if p.Field == p.FirstField && p.Field == p.LastField {
 		n.skip = false
 	}
 	n.keymap.Prev.SetEnabled(!p.IsFirst())
