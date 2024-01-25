@@ -141,7 +141,7 @@ func (s *Spinner) Run() error {
 		return s.runAccessible()
 	}
 
-	p := tea.NewProgram(s, tea.WithContext(s.ctx))
+	p := tea.NewProgram(s, tea.WithContext(s.ctx), tea.WithOutput(os.Stderr))
 
 	if s.ctx == nil {
 		go func() {
