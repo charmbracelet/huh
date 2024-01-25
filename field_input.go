@@ -33,9 +33,10 @@ type Input struct {
 
 	// options
 	width      int
+	height     int
 	accessible bool
 	theme      *Theme
-	keymap     *InputKeyMap
+	keymap     InputKeyMap
 }
 
 // NewInput returns a new input field.
@@ -46,6 +47,7 @@ func NewInput() *Input {
 		value:     new(string),
 		textinput: input,
 		validate:  func(string) error { return nil },
+		theme:     ThemeCharm(),
 	}
 
 	return i
@@ -88,6 +90,15 @@ func (i *Input) CharLimit(charlimit int) *Input {
 	return i
 }
 
+// Suggestions sets the suggestions to display for autocomplete in the input
+// field.
+func (i *Input) Suggestions(suggestions []string) *Input {
+	i.textinput.ShowSuggestions = len(suggestions) > 0
+	i.textinput.KeyMap.AcceptSuggestion.SetEnabled(len(suggestions) > 0)
+	i.textinput.SetSuggestions(suggestions)
+	return i
+}
+
 // Password sets whether or not to hide the input while the user is typing.
 func (i *Input) Password(password bool) *Input {
 	if password {
@@ -121,6 +132,11 @@ func (i *Input) Error() error {
 	return i.err
 }
 
+// Skip returns whether the input should be skipped or should be blocking.
+func (*Input) Skip() bool {
+	return false
+}
+
 // Focus focuses the input field.
 func (i *Input) Focus() tea.Cmd {
 	i.focused = true
@@ -138,7 +154,10 @@ func (i *Input) Blur() tea.Cmd {
 
 // KeyBinds returns the help message for the input field.
 func (i *Input) KeyBinds() []key.Binding {
-	return []key.Binding{i.keymap.Next, i.keymap.Prev}
+	if i.textinput.ShowSuggestions {
+		return []key.Binding{i.keymap.AcceptSuggestion, i.keymap.Prev, i.keymap.Submit, i.keymap.Next}
+	}
+	return []key.Binding{i.keymap.Prev, i.keymap.Submit, i.keymap.Next}
 }
 
 // Init initializes the input field.
@@ -168,7 +187,7 @@ func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return i, nil
 			}
 			cmds = append(cmds, prevField)
-		case key.Matches(msg, i.keymap.Next):
+		case key.Matches(msg, i.keymap.Next, i.keymap.Submit):
 			value := i.textinput.Value()
 			i.err = i.validate(value)
 			if i.err != nil {
@@ -209,7 +228,6 @@ func (i *Input) View() string {
 			sb.WriteString("\n")
 		}
 	}
-
 	sb.WriteString(i.textinput.View())
 
 	return styles.Base.Render(sb.String())
@@ -239,7 +257,8 @@ func (i *Input) runAccessible() error {
 
 // WithKeyMap sets the keymap on an input field.
 func (i *Input) WithKeyMap(k *KeyMap) Field {
-	i.keymap = &k.Input
+	i.keymap = k.Input
+	i.textinput.KeyMap.AcceptSuggestion = i.keymap.AcceptSuggestion
 	return i
 }
 
@@ -261,10 +280,26 @@ func (i *Input) WithWidth(width int) Field {
 	frameSize := i.theme.Blurred.Base.GetHorizontalFrameSize()
 	promptWidth := lipgloss.Width(i.textinput.PromptStyle.Render(i.textinput.Prompt))
 	titleWidth := lipgloss.Width(i.theme.Focused.Title.Render(i.title))
+	descriptionWidth := lipgloss.Width(i.theme.Focused.Description.Render(i.description))
 	i.textinput.Width = width - frameSize - promptWidth - 1
 	if i.inline {
 		i.textinput.Width -= titleWidth
+		i.textinput.Width -= descriptionWidth
 	}
+	return i
+}
+
+// WithHeight sets the height of the input field.
+func (i *Input) WithHeight(height int) Field {
+	i.height = height
+	return i
+}
+
+// WithPosition sets the position of the input field.
+func (i *Input) WithPosition(p FieldPosition) Field {
+	i.keymap.Prev.SetEnabled(!p.IsFirst())
+	i.keymap.Next.SetEnabled(!p.IsLast())
+	i.keymap.Submit.SetEnabled(p.IsLast())
 	return i
 }
 

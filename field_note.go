@@ -6,16 +6,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/glamour"
 )
-
-func init() {
-	// XXX: For now, unset padding on default glamour styles.
-	glamour.DarkStyleConfig.Document.BlockPrefix = ""
-	glamour.DarkStyleConfig.Document.Margin = pointerTo[uint](0)
-	glamour.LightStyleConfig.Document.BlockPrefix = ""
-	glamour.LightStyleConfig.Document.Margin = pointerTo[uint](0)
-}
 
 // Note is a form note field.
 type Note struct {
@@ -26,30 +17,22 @@ type Note struct {
 	// state
 	showNextButton bool
 	focused        bool
-	renderer       *glamour.TermRenderer
 
 	// options
+	skip       bool
 	width      int
+	height     int
 	accessible bool
 	theme      *Theme
-	keymap     *NoteKeyMap
+	keymap     NoteKeyMap
 }
 
 // NewNote creates a new note field.
 func NewNote() *Note {
-	r, err := glamour.NewTermRenderer(
-		glamour.WithAutoStyle(),
-		glamour.WithEmoji(),
-		glamour.WithWordWrap(0),
-	)
-
-	if err != nil {
-		r, _ = glamour.NewTermRenderer()
-	}
-
 	return &Note{
 		showNextButton: false,
-		renderer:       r,
+		theme:          ThemeCharm(),
+		skip:           true,
 	}
 }
 
@@ -88,9 +71,14 @@ func (n *Note) Error() error {
 	return nil
 }
 
+// Skip returns whether the note should be skipped or should be blocking.
+func (n *Note) Skip() bool {
+	return n.skip
+}
+
 // KeyBinds returns the help message for the note field.
 func (n *Note) KeyBinds() []key.Binding {
-	return []key.Binding{n.keymap.Next}
+	return []key.Binding{n.keymap.Prev, n.keymap.Submit, n.keymap.Next}
 }
 
 // Init initializes the note field.
@@ -105,7 +93,7 @@ func (n *Note) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch {
 		case key.Matches(msg, n.keymap.Prev):
 			return n, prevField
-		case key.Matches(msg, n.keymap.Next):
+		case key.Matches(msg, n.keymap.Next, n.keymap.Submit):
 			return n, nextField
 		}
 		return n, nextField
@@ -121,22 +109,22 @@ func (n *Note) View() string {
 	}
 
 	var (
-		sb   strings.Builder
-		body string
+		sb    strings.Builder
+		title string
 	)
 
 	if n.title != "" {
-		body = fmt.Sprintf("# %s\n", n.title)
+		title = n.title
 	}
-
-	body += n.description
-
-	md, _ := n.renderer.Render(body)
-	sb.WriteString(md)
+	sb.WriteString(styles.NoteTitle.Render(title))
+	if n.description != "" {
+		sb.WriteString("\n")
+		sb.WriteString(render(n.description))
+	}
 	if n.showNextButton {
 		sb.WriteString(styles.Next.Render("Next"))
 	}
-	return styles.Base.Render(sb.String())
+	return styles.Card.Render(sb.String())
 }
 
 // Run runs the note field.
@@ -152,13 +140,12 @@ func (n *Note) runAccessible() error {
 	var body string
 
 	if n.title != "" {
-		body = fmt.Sprintf("# %s\n", n.title)
+		body = n.title + "\n\n"
 	}
 
 	body += n.description
 
-	md, _ := n.renderer.Render(body)
-	fmt.Println(n.theme.Blurred.Base.Render(strings.TrimSpace(md)))
+	fmt.Println(n.theme.Blurred.Base.Render(body))
 	fmt.Println()
 	return nil
 }
@@ -171,7 +158,7 @@ func (n *Note) WithTheme(theme *Theme) Field {
 
 // WithKeyMap sets the keymap on a note field.
 func (n *Note) WithKeyMap(k *KeyMap) Field {
-	n.keymap = &k.Note
+	n.keymap = k.Note
 	return n
 }
 
@@ -187,6 +174,25 @@ func (n *Note) WithWidth(width int) Field {
 	return n
 }
 
+// WithHeight sets the height of the note field.
+func (n *Note) WithHeight(height int) Field {
+	n.height = height
+	return n
+}
+
+// WithPosition sets the position information of the note field.
+func (n *Note) WithPosition(p FieldPosition) Field {
+	// if the note is the only field on the screen,
+	// we shouldn't skip the entire group.
+	if p.Field == p.FirstField && p.Field == p.LastField {
+		n.skip = false
+	}
+	n.keymap.Prev.SetEnabled(!p.IsFirst())
+	n.keymap.Next.SetEnabled(!p.IsLast())
+	n.keymap.Submit.SetEnabled(p.IsLast())
+	return n
+}
+
 // GetValue satisfies the Field interface, notes do not have values.
 func (n *Note) GetValue() any {
 	return nil
@@ -197,7 +203,52 @@ func (n *Note) GetKey() string {
 	return ""
 }
 
-// pointerTo returns a pointer to a value.
-func pointerTo[T any](v T) *T {
-	return &v
+func render(input string) string {
+	var result strings.Builder
+	var italic, bold, codeblock bool
+
+	for _, char := range input {
+		switch char {
+		case '_':
+			if !italic {
+				result.WriteString("\033[3m")
+				italic = true
+			} else {
+				result.WriteString("\033[23m")
+				italic = false
+			}
+		case '*':
+			if !bold {
+				result.WriteString("\033[1m")
+				bold = true
+			} else {
+				result.WriteString("\033[22m")
+				bold = false
+			}
+		case '`':
+			if !codeblock {
+				result.WriteString("\033[0;37;40m")
+				result.WriteString(" ")
+				codeblock = true
+			} else {
+				result.WriteString(" ")
+				result.WriteString("\033[0m")
+				codeblock = false
+
+				if bold {
+					result.WriteString("\033[1m")
+				}
+				if italic {
+					result.WriteString("\033[3m")
+				}
+			}
+		default:
+			result.WriteRune(char)
+		}
+	}
+
+	// Reset any open formatting
+	result.WriteString("\033[0m")
+
+	return result.String()
 }

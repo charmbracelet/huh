@@ -115,7 +115,7 @@ func TestForm(t *testing.T) {
 	//      Fish
 	//      Beans
 	//
-	//   ↑ up • ↓ down • / filter • enter select • shift+tab back
+	//   ↑ up • ↓ down • / filter • enter select
 	//
 
 	if !strings.Contains(view, "Shell?") {
@@ -290,7 +290,45 @@ func TestInput(t *testing.T) {
 		t.Error("Expected field to contain Huh.")
 	}
 
-	if !strings.Contains(view, "enter next • shift+tab back") {
+	if !strings.Contains(view, "enter submit") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to contain help.")
+	}
+}
+
+func TestInlineInput(t *testing.T) {
+	field := NewInput().
+		Title("Input ").
+		Prompt(": ").
+		Description("Description").
+		Inline(true)
+
+	f := NewForm(NewGroup(field)).WithWidth(40)
+	f.Update(f.Init())
+
+	view := f.View()
+
+	if !strings.Contains(view, "┃ Input Description:") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to contain inline input.")
+	}
+
+	// Type Huh in the form.
+	m, _ := f.Update(keys('H', 'u', 'h'))
+	f = m.(*Form)
+	view = f.View()
+
+	if !strings.Contains(view, "Huh") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to contain Huh.")
+	}
+
+	if !strings.Contains(view, "enter submit") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to contain help.")
+	}
+
+	if !strings.Contains(view, "┃ Input Description: Huh") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected field to contain help.")
 	}
@@ -311,7 +349,7 @@ func TestText(t *testing.T) {
 		t.Error("Expected field to contain Huh.")
 	}
 
-	if !strings.Contains(view, "enter next • alt+enter / ctrl+j new line • ctrl+e open editor • shift+tab back") {
+	if !strings.Contains(view, "alt+enter / ctrl+j new line • ctrl+e open editor • enter submit") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected field to contain help.")
 	}
@@ -342,7 +380,7 @@ func TestConfirm(t *testing.T) {
 		t.Error("Expected field to contain Are you sure?.")
 	}
 
-	if !strings.Contains(view, "←/→ toggle • enter next • shift+tab back") {
+	if !strings.Contains(view, "←/→ toggle • enter submit") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected field to contain help.")
 	}
@@ -386,7 +424,7 @@ func TestSelect(t *testing.T) {
 		t.Error("Expected cursor to be on Bar.")
 	}
 
-	if !strings.Contains(view, "↑ up • ↓ down • / filter • enter select • shift+tab back") {
+	if !strings.Contains(view, "↑ up • ↓ down • / filter • enter submit") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected field to contain help.")
 	}
@@ -437,7 +475,7 @@ func TestMultiSelect(t *testing.T) {
 		t.Error("Expected cursor to be on Bar.")
 	}
 
-	if !strings.Contains(view, "x toggle • ↑ up • ↓ down • / filter • enter confirm • shift+tab back") {
+	if !strings.Contains(view, "x toggle • ↑ up • ↓ down • / filter • enter submit") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected field to contain help.")
 	}
@@ -445,13 +483,24 @@ func TestMultiSelect(t *testing.T) {
 
 func TestHideGroup(t *testing.T) {
 	f := NewForm(
-		NewGroup(NewNote().Description("Foo")).WithHide(true),
+		NewGroup(NewNote().Description("Foo")).
+			WithHide(true),
 		NewGroup(NewNote().Description("Bar")),
 		NewGroup(NewNote().Description("Baz")),
-		NewGroup(NewNote().Description("Qux")).WithHideFunc(func() bool { return false }).WithHide(true),
+		NewGroup(NewNote().Description("Qux")).
+			WithHideFunc(func() bool { return false }).
+			WithHide(true),
 	)
 
 	f = batchUpdate(f, f.Init()).(*Form)
+
+	if v := f.View(); !strings.Contains(v, "Bar") {
+		t.Log(pretty.Render(v))
+		t.Error("expected Bar to not be hidden")
+	}
+
+	// should have no effect as previous group is hidden
+	f.Update(prevGroup())
 
 	if v := f.View(); !strings.Contains(v, "Bar") {
 		t.Log(pretty.Render(v))
@@ -465,11 +514,71 @@ func TestHideGroup(t *testing.T) {
 		t.Error("expected Baz to not be hidden")
 	}
 
-	f = batchUpdate(f, nextGroup).(*Form)
+	f.Update(nextGroup())
 
 	if v := f.View(); strings.Contains(v, "Qux") {
 		t.Log(pretty.Render(v))
 		t.Error("expected Qux to be hidden")
+	}
+
+	if v := f.State; v != StateCompleted {
+		t.Error("should have been completed")
+	}
+}
+
+func TestHideGroupLastAndFirstGroupsNotHidden(t *testing.T) {
+	f := NewForm(
+		NewGroup(NewNote().Description("Bar")),
+		NewGroup(NewNote().Description("Foo")).
+			WithHide(true),
+		NewGroup(NewNote().Description("Baz")),
+	)
+
+	f = batchUpdate(f, f.Init()).(*Form)
+
+	if v := f.View(); !strings.Contains(v, "Bar") {
+		t.Log(pretty.Render(v))
+		t.Error("expected Bar to not be hidden")
+	}
+
+	// should have no effect as there isn't any
+	f.Update(prevGroup())
+
+	if v := f.View(); !strings.Contains(v, "Bar") {
+		t.Log(pretty.Render(v))
+		t.Error("expected Bar to not be hidden")
+	}
+
+	f.Update(nextGroup())
+
+	if v := f.View(); !strings.Contains(v, "Baz") {
+		t.Log(pretty.Render(v))
+		t.Error("expected Baz to not be hidden")
+	}
+
+	// should submit the form
+	f.Update(nextGroup())
+	if v := f.State; v != StateCompleted {
+		t.Error("should have been completed")
+	}
+}
+
+func TestPrevGroup(t *testing.T) {
+	f := NewForm(
+		NewGroup(NewNote().Description("Bar")),
+		NewGroup(NewNote().Description("Foo")),
+		NewGroup(NewNote().Description("Baz")),
+	)
+
+	f = batchUpdate(f, f.Init()).(*Form)
+	f.Update(nextGroup())
+	f.Update(nextGroup())
+	f.Update(prevGroup())
+	f.Update(prevGroup())
+
+	if v := f.View(); !strings.Contains(v, "Bar") {
+		t.Log(pretty.Render(v))
+		t.Error("expected Bar to not be hidden")
 	}
 }
 
@@ -496,10 +605,81 @@ func TestNote(t *testing.T) {
 		t.Error("Expected field to contain next button")
 	}
 
-	if !strings.Contains(view, "enter next") {
+	if !strings.Contains(view, "enter submit") {
 		t.Log(view)
 		t.Error("Expected field to contain help.")
 	}
+}
+
+func TestDynamicHelp(t *testing.T) {
+	f := NewForm(
+		NewGroup(
+			NewInput().Title("Dynamic Help"),
+			NewInput().Title("Dynamic Help"),
+			NewInput().Title("Dynamic Help"),
+		),
+	)
+	f.Update(f.Init())
+
+	view := f.View()
+
+	if !strings.Contains(view, "Dynamic Help") {
+		t.Log(pretty.Render(view))
+		t.Fatal("Expected help to contain title.")
+	}
+
+	if strings.Contains(view, "shift+tab") || strings.Contains(view, "submit") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected help not to contain shift+tab or submit.")
+	}
+}
+
+func TestSkip(t *testing.T) {
+	f := NewForm(
+		NewGroup(
+			NewInput().Title("First"),
+			NewNote().Title("Skipped"),
+			NewNote().Title("Skipped"),
+			NewInput().Title("Second"),
+		),
+	).WithWidth(25)
+
+	f = batchUpdate(f, f.Init()).(*Form)
+	view := f.View()
+
+	if !strings.Contains(view, "┃ First") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected first field to be focused")
+	}
+
+	// next field should skip both of the notes and proceed to the last input.
+	f.Update(nextField())
+	view = f.View()
+
+	if strings.Contains(view, "┃ First") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected first field to be blurred")
+	}
+
+	if !strings.Contains(view, "┃ Second") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected second field to be focused")
+	}
+
+	// previous field should skip both of the notes and focus the first input.
+	f.Update(prevField())
+	view = f.View()
+
+	if strings.Contains(view, "┃ Second") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected second field to be blurred")
+	}
+
+	if !strings.Contains(view, "┃ First") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected first field to be focused")
+	}
+
 }
 
 func batchUpdate(m tea.Model, cmd tea.Cmd) tea.Model {

@@ -41,7 +41,7 @@ type MultiSelect[T comparable] struct {
 	width      int
 	accessible bool
 	theme      *Theme
-	keymap     *MultiSelectKeyMap
+	keymap     MultiSelectKeyMap
 }
 
 // NewMultiSelect returns a new multi-select field.
@@ -55,6 +55,7 @@ func NewMultiSelect[T comparable]() *MultiSelect[T] {
 		validate:  func([]T) error { return nil },
 		filtering: false,
 		filter:    filter,
+		theme:     ThemeCharm(),
 	}
 }
 
@@ -143,6 +144,11 @@ func (m *MultiSelect[T]) Error() error {
 	return m.err
 }
 
+// Skip returns whether the multiselect should be skipped or should be blocking.
+func (*MultiSelect[T]) Skip() bool {
+	return false
+}
+
 // Focus focuses the multi-select field.
 func (m *MultiSelect[T]) Focus() tea.Cmd {
 	m.focused = true
@@ -157,7 +163,7 @@ func (m *MultiSelect[T]) Blur() tea.Cmd {
 
 // KeyBinds returns the help message for the multi-select field.
 func (m *MultiSelect[T]) KeyBinds() []key.Binding {
-	return []key.Binding{m.keymap.Toggle, m.keymap.Up, m.keymap.Down, m.keymap.Filter, m.keymap.SetFilter, m.keymap.ClearFilter, m.keymap.Next, m.keymap.Prev}
+	return []key.Binding{m.keymap.Toggle, m.keymap.Up, m.keymap.Down, m.keymap.Filter, m.keymap.SetFilter, m.keymap.ClearFilter, m.keymap.Prev, m.keymap.Submit, m.keymap.Next}
 }
 
 // Init initializes the multi-select field.
@@ -230,7 +236,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			}
 			return m, prevField
-		case key.Matches(msg, m.keymap.Next):
+		case key.Matches(msg, m.keymap.Next, m.keymap.Submit):
 			m.finalize()
 			if m.err != nil {
 				return m, nil
@@ -366,9 +372,6 @@ func (m *MultiSelect[T]) View() string {
 
 	var sb strings.Builder
 	sb.WriteString(m.titleView())
-	if m.err != nil {
-		sb.WriteString(styles.ErrorIndicator.String())
-	}
 	sb.WriteString("\n")
 	if m.description != "" {
 		sb.WriteString(m.descriptionView() + "\n")
@@ -403,6 +406,7 @@ func (m *MultiSelect[T]) setFilter(filter bool) {
 	m.keymap.SetFilter.SetEnabled(filter)
 	m.keymap.Filter.SetEnabled(!filter)
 	m.keymap.Next.SetEnabled(!filter)
+	m.keymap.Submit.SetEnabled(!filter)
 	m.keymap.Prev.SetEnabled(!filter)
 	m.keymap.ClearFilter.SetEnabled(!filter && m.filter.Value() != "")
 }
@@ -473,7 +477,7 @@ func (m *MultiSelect[T]) WithTheme(theme *Theme) Field {
 
 // WithKeyMap sets the keymap of the multi-select field.
 func (m *MultiSelect[T]) WithKeyMap(k *KeyMap) Field {
-	m.keymap = &k.MultiSelect
+	m.keymap = k.MultiSelect
 	return m
 }
 
@@ -486,6 +490,23 @@ func (m *MultiSelect[T]) WithAccessible(accessible bool) Field {
 // WithWidth sets the width of the multi-select field.
 func (m *MultiSelect[T]) WithWidth(width int) Field {
 	m.width = width
+	return m
+}
+
+// WithHeight sets the height of the multi-select field.
+func (m *MultiSelect[T]) WithHeight(height int) Field {
+	m.height = height
+	return m
+}
+
+// WithPosition sets the position of the multi-select field.
+func (m *MultiSelect[T]) WithPosition(p FieldPosition) Field {
+	if m.filtering {
+		return m
+	}
+	m.keymap.Prev.SetEnabled(!p.IsFirst())
+	m.keymap.Next.SetEnabled(!p.IsLast())
+	m.keymap.Submit.SetEnabled(p.IsLast())
 	return m
 }
 

@@ -8,9 +8,11 @@ func main() {
 	var happy bool
 
 	confirm := huh.NewConfirm().
-		Title("Are you sure?").
+		Title("Are you sure? ").
+		Description("Please confirm. ").
 		Affirmative("Yes!").
 		Negative("No.").
+		Inline(true).
 		Value(&happy)
 
 	huh.NewForm(huh.NewGroup(confirm)).Run()

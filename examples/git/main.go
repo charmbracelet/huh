@@ -18,7 +18,7 @@ func main() {
 
 	huh.NewForm(
 		huh.NewGroup(
-			huh.NewSelect[string]().Title("Type").Value(&commit).Options(huh.NewOptions(types...)...),
+			huh.NewInput().Title("Type").Value(&commit).Placeholder("feat").Suggestions(types),
 			huh.NewInput().Title("Scope").Value(&scope).Placeholder("scope"),
 		),
 		huh.NewGroup(

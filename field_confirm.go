@@ -30,9 +30,11 @@ type Confirm struct {
 
 	// options
 	width      int
+	height     int
+	inline     bool
 	accessible bool
 	theme      *Theme
-	keymap     *ConfirmKeyMap
+	keymap     ConfirmKeyMap
 }
 
 // NewConfirm returns a new confirm field.
@@ -42,6 +44,7 @@ func NewConfirm() *Confirm {
 		affirmative: "Yes",
 		negative:    "No",
 		validate:    func(bool) error { return nil },
+		theme:       ThemeCharm(),
 	}
 }
 
@@ -54,6 +57,11 @@ func (c *Confirm) Validate(validate func(bool) error) *Confirm {
 // Error returns the error of the confirm field.
 func (c *Confirm) Error() error {
 	return c.err
+}
+
+// Skip returns whether the confirm should be skipped or should be blocking.
+func (*Confirm) Skip() bool {
+	return false
 }
 
 // Affirmative sets the affirmative value of the confirm field.
@@ -92,6 +100,12 @@ func (c *Confirm) Description(description string) *Confirm {
 	return c
 }
 
+// Inline sets whether the field should be inline.
+func (c *Confirm) Inline(inline bool) *Confirm {
+	c.inline = inline
+	return c
+}
+
 // Focus focuses the confirm field.
 func (c *Confirm) Focus() tea.Cmd {
 	c.focused = true
@@ -107,7 +121,7 @@ func (c *Confirm) Blur() tea.Cmd {
 
 // KeyBinds returns the help message for the confirm field.
 func (c *Confirm) KeyBinds() []key.Binding {
-	return []key.Binding{c.keymap.Toggle, c.keymap.Next, c.keymap.Prev}
+	return []key.Binding{c.keymap.Toggle, c.keymap.Prev, c.keymap.Submit, c.keymap.Next}
 }
 
 // Init initializes the confirm field.
@@ -130,7 +144,7 @@ func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			*c.value = v
 		case key.Matches(msg, c.keymap.Prev):
 			cmds = append(cmds, prevField)
-		case key.Matches(msg, c.keymap.Next):
+		case key.Matches(msg, c.keymap.Next, c.keymap.Submit):
 			cmds = append(cmds, nextField)
 		}
 	}
@@ -150,12 +164,18 @@ func (c *Confirm) View() string {
 	if c.err != nil {
 		sb.WriteString(styles.ErrorIndicator.String())
 	}
-	if c.description != "" {
+
+	description := styles.Description.Render(c.description)
+
+	if !c.inline && c.description != "" {
 		sb.WriteString("\n")
-		sb.WriteString(styles.Description.Render(c.description))
 	}
-	sb.WriteString("\n")
-	sb.WriteString("\n")
+	sb.WriteString(description)
+
+	if !c.inline {
+		sb.WriteString("\n")
+		sb.WriteString("\n")
+	}
 
 	if *c.value {
 		sb.WriteString(lipgloss.JoinHorizontal(
@@ -205,7 +225,7 @@ func (c *Confirm) WithTheme(theme *Theme) Field {
 
 // WithKeyMap sets the keymap of the confirm field.
 func (c *Confirm) WithKeyMap(k *KeyMap) Field {
-	c.keymap = &k.Confirm
+	c.keymap = k.Confirm
 	return c
 }
 
@@ -215,9 +235,23 @@ func (c *Confirm) WithAccessible(accessible bool) Field {
 	return c
 }
 
-// WithWidth sets the accessible mode of the confirm field.
+// WithWidth sets the width of the confirm field.
 func (c *Confirm) WithWidth(width int) Field {
 	c.width = width
+	return c
+}
+
+// WithHeight sets the height of the confirm field.
+func (c *Confirm) WithHeight(height int) Field {
+	c.height = height
+	return c
+}
+
+// WithPosition sets the position of the confirm field.
+func (c *Confirm) WithPosition(p FieldPosition) Field {
+	c.keymap.Prev.SetEnabled(!p.IsFirst())
+	c.keymap.Next.SetEnabled(!p.IsLast())
+	c.keymap.Submit.SetEnabled(p.IsLast())
 	return c
 }
 

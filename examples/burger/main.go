@@ -59,8 +59,7 @@ func main() {
 	form := huh.NewForm(
 		huh.NewGroup(huh.NewNote().
 			Title("Charmburger").
-			Description("Welcome to _Charmburger™_.\n\nHow may we take your order?").
-			Next(true)),
+			Description("Welcome to _Charmburger™_.\n\nHow may we take your order?")),
 
 		// Choose a burger.
 		// We'll need to know what topping to add too.

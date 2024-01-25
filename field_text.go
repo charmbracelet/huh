@@ -39,7 +39,7 @@ type Text struct {
 	width      int
 	accessible bool
 	theme      *Theme
-	keymap     *TextKeyMap
+	keymap     TextKeyMap
 }
 
 // NewText returns a new text field.
@@ -58,6 +58,7 @@ func NewText() *Text {
 		editorCmd:       editorCmd,
 		editorArgs:      editorArgs,
 		editorExtension: "md",
+		theme:           ThemeCharm(),
 	}
 
 	return t
@@ -148,6 +149,11 @@ func (t *Text) Error() error {
 	return t.err
 }
 
+// Skip returns whether the textarea should be skipped or should be blocking.
+func (*Text) Skip() bool {
+	return false
+}
+
 // Focus focuses the text field.
 func (t *Text) Focus() tea.Cmd {
 	t.focused = true
@@ -165,7 +171,7 @@ func (t *Text) Blur() tea.Cmd {
 
 // KeyBinds returns the help message for the text field.
 func (t *Text) KeyBinds() []key.Binding {
-	return []key.Binding{t.keymap.Next, t.keymap.NewLine, t.keymap.Editor, t.keymap.Prev}
+	return []key.Binding{t.keymap.NewLine, t.keymap.Editor, t.keymap.Prev, t.keymap.Submit, t.keymap.Next}
 }
 
 type updateValueMsg []byte
@@ -201,7 +207,7 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				content, _ := os.ReadFile(tmpFile.Name())
 				return updateValueMsg(content)
 			}))
-		case key.Matches(msg, t.keymap.Next):
+		case key.Matches(msg, t.keymap.Next, t.keymap.Submit):
 			value := t.textarea.Value()
 			t.err = t.validate(value)
 			if t.err != nil {
@@ -286,7 +292,7 @@ func (t *Text) WithTheme(theme *Theme) Field {
 
 // WithKeyMap sets the keymap on a text field.
 func (t *Text) WithKeyMap(k *KeyMap) Field {
-	t.keymap = &k.Text
+	t.keymap = k.Text
 	t.textarea.KeyMap.InsertNewline.SetKeys(t.keymap.NewLine.Keys()...)
 	return t
 }
@@ -301,6 +307,27 @@ func (t *Text) WithAccessible(accessible bool) Field {
 func (t *Text) WithWidth(width int) Field {
 	t.width = width
 	t.textarea.SetWidth(width - t.theme.Blurred.Base.GetHorizontalFrameSize())
+	return t
+}
+
+// WithHeight sets the height of the text field.
+func (t *Text) WithHeight(height int) Field {
+	adjust := 0
+	if t.title != "" {
+		adjust++
+	}
+	if t.description != "" {
+		adjust++
+	}
+	t.textarea.SetHeight(height - t.theme.Blurred.Base.GetVerticalFrameSize() - adjust)
+	return t
+}
+
+// WithPosition sets the position information of the text field.
+func (t *Text) WithPosition(p FieldPosition) Field {
+	t.keymap.Prev.SetEnabled(!p.IsFirst())
+	t.keymap.Next.SetEnabled(!p.IsLast())
+	t.keymap.Submit.SetEnabled(p.IsLast())
 	return t
 }
 

@@ -39,7 +39,7 @@ type Select[T comparable] struct {
 	width      int
 	accessible bool
 	theme      *Theme
-	keymap     *SelectKeyMap
+	keymap     SelectKeyMap
 }
 
 // NewSelect returns a new select field.
@@ -53,6 +53,7 @@ func NewSelect[T comparable]() *Select[T] {
 		validate:  func(T) error { return nil },
 		filtering: false,
 		filter:    filter,
+		theme:     ThemeCharm(),
 	}
 }
 
@@ -129,6 +130,11 @@ func (s *Select[T]) Error() error {
 	return s.err
 }
 
+// Skip returns whether the select should be skipped or should be blocking.
+func (*Select[T]) Skip() bool {
+	return false
+}
+
 // Focus focuses the select field.
 func (s *Select[T]) Focus() tea.Cmd {
 	s.focused = true
@@ -144,7 +150,7 @@ func (s *Select[T]) Blur() tea.Cmd {
 
 // KeyBinds returns the help keybindings for the select field.
 func (s *Select[T]) KeyBinds() []key.Binding {
-	return []key.Binding{s.keymap.Up, s.keymap.Down, s.keymap.Filter, s.keymap.SetFilter, s.keymap.ClearFilter, s.keymap.Next, s.keymap.Prev}
+	return []key.Binding{s.keymap.Up, s.keymap.Down, s.keymap.Filter, s.keymap.SetFilter, s.keymap.ClearFilter, s.keymap.Prev, s.keymap.Next, s.keymap.Submit}
 }
 
 // Init initializes the select field.
@@ -219,7 +225,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			*s.value = value
 			return s, prevField
-		case key.Matches(msg, s.keymap.Next):
+		case key.Matches(msg, s.keymap.Next, s.keymap.Submit):
 			if s.selected >= len(s.filteredOptions) {
 				break
 			}
@@ -302,17 +308,14 @@ func (s *Select[T]) titleView() string {
 }
 
 func (s *Select[T]) descriptionView() string {
-	if s.description == "" {
-		return ""
-	}
-	return s.activeStyles().Description.Render(s.description) + "\n"
+	return s.activeStyles().Description.Render(s.description)
 }
 
 func (s *Select[T]) choicesView() string {
 	var (
 		styles = s.activeStyles()
-		sb     = strings.Builder{}
 		c      = styles.SelectSelector.String()
+		sb     strings.Builder
 	)
 	for i, option := range s.filteredOptions {
 		if s.selected == i {
@@ -334,17 +337,16 @@ func (s *Select[T]) choicesView() string {
 
 // View renders the select field.
 func (s *Select[T]) View() string {
-	var (
-		styles = s.activeStyles()
-		sb     = strings.Builder{}
-	)
-
-	sb.WriteString(s.titleView() + "\n")
-	sb.WriteString(s.descriptionView())
-
+	styles := s.activeStyles()
 	s.viewport.SetContent(s.choicesView())
-	sb.WriteString(s.viewport.View())
 
+	var sb strings.Builder
+	sb.WriteString(s.titleView())
+	sb.WriteString("\n")
+	if s.description != "" {
+		sb.WriteString(s.descriptionView() + "\n")
+	}
+	sb.WriteString(s.viewport.View())
 	return styles.Base.Render(sb.String())
 }
 
@@ -409,7 +411,7 @@ func (s *Select[T]) WithTheme(theme *Theme) Field {
 
 // WithKeyMap sets the keymap on a select field.
 func (s *Select[T]) WithKeyMap(k *KeyMap) Field {
-	s.keymap = &k.Select
+	s.keymap = k.Select
 	return s
 }
 
@@ -422,6 +424,22 @@ func (s *Select[T]) WithAccessible(accessible bool) Field {
 // WithWidth sets the width of the select field.
 func (s *Select[T]) WithWidth(width int) Field {
 	s.width = width
+	return s
+}
+
+// WithHeight sets the height of the select field.
+func (s *Select[T]) WithHeight(height int) Field {
+	return s.Height(height)
+}
+
+// WithPosition sets the position of the select field.
+func (s *Select[T]) WithPosition(p FieldPosition) Field {
+	if s.filtering {
+		return s
+	}
+	s.keymap.Prev.SetEnabled(!p.IsFirst())
+	s.keymap.Next.SetEnabled(!p.IsLast())
+	s.keymap.Submit.SetEnabled(p.IsLast())
 	return s
 }
 

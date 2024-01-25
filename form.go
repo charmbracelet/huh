@@ -55,6 +55,7 @@ type Form struct {
 
 	// options
 	width  int
+	height int
 	theme  *Theme
 	keymap *KeyMap
 }
@@ -74,6 +75,7 @@ func NewForm(groups ...*Group) *Form {
 		theme:     ThemeCharm(),
 		keymap:    NewDefaultKeyMap(),
 		width:     0,
+		height:    0,
 		results:   make(map[string]any),
 	}
 
@@ -82,6 +84,8 @@ func NewForm(groups ...*Group) *Form {
 	f.WithTheme(f.theme)
 	f.WithKeyMap(f.keymap)
 	f.WithWidth(f.width)
+	f.WithHeight(f.height)
+	f.UpdateFieldPositions()
 
 	return f
 }
@@ -108,6 +112,9 @@ type Field interface {
 	// Run runs the field individually.
 	Run() error
 
+	// Skip returns whether this input should be skipped or not.
+	Skip() bool
+
 	// KeyBinds returns help keybindings.
 	KeyBinds() []key.Binding
 
@@ -123,11 +130,38 @@ type Field interface {
 	// WithWidth sets the width of a field.
 	WithWidth(int) Field
 
+	// WithHeight sets the height of a field.
+	WithHeight(int) Field
+
+	// WithPosition tells the field the index of the group and position it is in.
+	WithPosition(FieldPosition) Field
+
 	// GetKey returns the field's key.
 	GetKey() string
 
 	// GetValue returns the field's value.
 	GetValue() any
+}
+
+// FieldPosition is positional information about the given field and form.
+type FieldPosition struct {
+	Group      int
+	Field      int
+	FirstField int
+	LastField  int
+	GroupCount int
+	FirstGroup int
+	LastGroup  int
+}
+
+// IsFirst returns whether a field is the form's first field.
+func (p FieldPosition) IsFirst() bool {
+	return p.Field == p.FirstField && p.Group == p.FirstGroup
+}
+
+// IsLast returns whether a field is the form's last field.
+func (p FieldPosition) IsLast() bool {
+	return p.Field == p.LastField && p.Group == p.LastGroup
 }
 
 // nextGroupMsg is a message to move to the next group.
@@ -168,10 +202,10 @@ func (f *Form) WithShowHelp(v bool) *Form {
 	return f
 }
 
-// WithShowErrors sets whether or not the form should show help.
+// WithShowErrors sets whether or not the form should show errors.
 //
-// This allows the form groups and field to show what keybindings are available
-// to the user.
+// This allows the form groups and fields to show errors when the Validate
+// function returns an error.
 func (f *Form) WithShowErrors(v bool) *Form {
 	for _, group := range f.groups {
 		group.WithShowErrors(v)
@@ -221,6 +255,54 @@ func (f *Form) WithWidth(width int) *Form {
 	f.width = width
 	for _, group := range f.groups {
 		group.WithWidth(width)
+	}
+	return f
+}
+
+// WithHeight sets the height of a form.
+func (f *Form) WithHeight(height int) *Form {
+	if height <= 0 {
+		return f
+	}
+	f.height = height
+	for _, group := range f.groups {
+		group.WithHeight(height)
+	}
+	return f
+}
+
+// UpdateFieldPositions sets the position on all the fields.
+func (f *Form) UpdateFieldPositions() *Form {
+	firstGroup := 0
+	lastGroup := len(f.groups) - 1
+
+	// determine the first non-hidden group.
+	for g := range f.groups {
+		if !f.isGroupHidden(g) {
+			break
+		}
+		firstGroup++
+	}
+
+	// determine the last non-hidden group.
+	for g := len(f.groups) - 1; g > 0; g-- {
+		if !f.isGroupHidden(g) {
+			break
+		}
+		lastGroup--
+	}
+
+	for g, group := range f.groups {
+		for i, field := range group.fields {
+			field.WithPosition(FieldPosition{
+				Group:      g,
+				Field:      i,
+				FirstField: 0,
+				LastField:  len(group.fields) - 1,
+				FirstGroup: firstGroup,
+				LastGroup:  lastGroup,
+			})
+		}
 	}
 	return f
 }
@@ -304,7 +386,7 @@ func (f *Form) Init() tea.Cmd {
 		cmds[i] = group.Init()
 	}
 
-	if f.isGroupHidden() {
+	if f.isGroupHidden(f.paginator.Page) {
 		cmds = append(cmds, nextGroup)
 	}
 
@@ -329,6 +411,14 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		for _, group := range f.groups {
 			group.WithWidth(msg.Width)
 		}
+		if f.height > 0 {
+			break
+		}
+		for _, group := range f.groups {
+			if group.fullHeight() > msg.Height {
+				group.WithHeight(msg.Height)
+			}
+		}
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, f.keymap.Quit):
@@ -348,36 +438,59 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return f, nil
 		}
 
-		if f.paginator.OnLastPage() {
+		submit := func() (tea.Model, tea.Cmd) {
 			f.quitting = true
 			f.State = StateCompleted
 			return f, f.submitCmd
 		}
-		f.paginator.NextPage()
 
-		if f.isGroupHidden() {
-			return f, nextGroup
+		if f.paginator.OnLastPage() {
+			return submit()
 		}
+
+		for i := f.paginator.Page + 1; i < f.paginator.TotalPages; i++ {
+			if !f.isGroupHidden(i) {
+				f.paginator.Page = i
+				break
+			}
+			// all subsequent groups are hidden, so we must act as
+			// if we were in the last one.
+			if i == f.paginator.TotalPages-1 {
+				return submit()
+			}
+		}
+		return f, f.groups[f.paginator.Page].Init()
 
 	case prevGroupMsg:
 		if len(group.Errors()) > 0 {
 			return f, nil
 		}
-		f.paginator.PrevPage()
 
-		if f.isGroupHidden() {
-			return f, prevGroup
+		for i := f.paginator.Page - 1; i >= 0; i-- {
+			if !f.isGroupHidden(i) {
+				f.paginator.Page = i
+				break
+			}
 		}
+
+		return f, f.groups[f.paginator.Page].Init()
 	}
 
 	m, cmd := group.Update(msg)
 	f.groups[page] = m.(*Group)
 
+	// A user input a key, this could hide or show other groups,
+	// let's update all of their positions.
+	switch msg.(type) {
+	case tea.KeyMsg:
+		f.UpdateFieldPositions()
+	}
+
 	return f, cmd
 }
 
-func (f *Form) isGroupHidden() bool {
-	hide := f.groups[f.paginator.Page].hide
+func (f *Form) isGroupHidden(page int) bool {
+	hide := f.groups[page].hide
 	if hide == nil {
 		return false
 	}

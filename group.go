@@ -6,7 +6,9 @@ import (
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/paginator"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 // Group is a collection of fields that are displayed together with a page of
@@ -25,6 +27,7 @@ type Group struct {
 
 	// navigation
 	paginator paginator.Model
+	viewport  viewport.Model
 
 	// help
 	showHelp bool
@@ -35,6 +38,7 @@ type Group struct {
 
 	// group options
 	width  int
+	height int
 	theme  *Theme
 	keymap *KeyMap
 	hide   func() bool
@@ -45,13 +49,20 @@ func NewGroup(fields ...Field) *Group {
 	p := paginator.New()
 	p.SetTotalPages(len(fields))
 
-	return &Group{
+	group := &Group{
 		fields:     fields,
 		paginator:  p,
 		help:       help.New(),
 		showHelp:   true,
 		showErrors: true,
 	}
+
+	height := group.fullHeight()
+	v := viewport.New(80, height)
+	group.viewport = v
+	group.height = height
+
+	return group
 }
 
 // Title sets the group's title.
@@ -100,8 +111,22 @@ func (g *Group) WithKeyMap(k *KeyMap) *Group {
 // WithWidth sets the width on a group.
 func (g *Group) WithWidth(width int) *Group {
 	g.width = width
+	g.viewport.Width = width
 	for _, field := range g.fields {
 		field.WithWidth(width)
+	}
+	return g
+}
+
+// WithHeight sets the height on a group.
+func (g *Group) WithHeight(height int) *Group {
+	g.height = height
+	g.viewport.Height = height - 1
+	for _, field := range g.fields {
+		// A field height must not exceed the form height.
+		if height-1 <= lipgloss.Height(field.View()) {
+			field.WithHeight(height - 1)
+		}
 	}
 	return g
 }
@@ -153,31 +178,54 @@ func prevField() tea.Msg {
 
 // Init initializes the group.
 func (g *Group) Init() tea.Cmd {
-	cmds := make([]tea.Cmd, len(g.fields)+1)
-	for i, field := range g.fields {
-		cmds[i] = field.Init()
+	var cmds []tea.Cmd
+
+	if g.fields[g.paginator.Page].Skip() {
+		if g.paginator.OnLastPage() {
+			cmds = append(cmds, g.prevField()...)
+		} else if g.paginator.Page == 0 {
+			cmds = append(cmds, g.nextField()...)
+		}
+		return tea.Batch(cmds...)
 	}
+
 	cmd := g.fields[g.paginator.Page].Focus()
 	cmds = append(cmds, cmd)
 	return tea.Batch(cmds...)
 }
 
-// setCurrent sets the current field.
-func (g *Group) setCurrent(current int) tea.Cmd {
-	var (
-		cmds []tea.Cmd
-		cmd  tea.Cmd
-	)
+// nextField moves to the next field.
+func (g *Group) nextField() []tea.Cmd {
+	blurCmd := g.fields[g.paginator.Page].Blur()
+	if g.paginator.OnLastPage() {
+		return []tea.Cmd{blurCmd, nextGroup}
+	}
+	g.paginator.NextPage()
+	for g.fields[g.paginator.Page].Skip() {
+		if g.paginator.OnLastPage() {
+			return []tea.Cmd{blurCmd, nextGroup}
+		}
+		g.paginator.NextPage()
+	}
+	focusCmd := g.fields[g.paginator.Page].Focus()
+	return []tea.Cmd{blurCmd, focusCmd}
+}
 
-	cmd = g.fields[g.paginator.Page].Blur()
-	cmds = append(cmds, cmd)
-
-	g.paginator.Page = clamp(current, 0, len(g.fields)-1)
-
-	cmd = g.fields[g.paginator.Page].Focus()
-	cmds = append(cmds, cmd)
-
-	return tea.Batch(cmds...)
+// prevField moves to the previous field.
+func (g *Group) prevField() []tea.Cmd {
+	blurCmd := g.fields[g.paginator.Page].Blur()
+	if g.paginator.Page <= 0 {
+		return []tea.Cmd{blurCmd, prevGroup}
+	}
+	g.paginator.PrevPage()
+	for g.fields[g.paginator.Page].Skip() {
+		if g.paginator.Page <= 0 {
+			return []tea.Cmd{blurCmd, prevGroup}
+		}
+		g.paginator.PrevPage()
+	}
+	focusCmd := g.fields[g.paginator.Page].Focus()
+	return []tea.Cmd{blurCmd, focusCmd}
 }
 
 // Update updates the group.
@@ -191,34 +239,47 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg.(type) {
 	case nextFieldMsg:
-		current := g.paginator.Page
-		cmd = g.setCurrent(current + 1)
-
-		if current >= g.paginator.TotalPages-1 {
-			cmds = append(cmds, nextGroup)
-			break
+		cmds = append(cmds, g.nextField()...)
+		offset := 0
+		for i := 0; i < g.paginator.Page; i++ {
+			offset += lipgloss.Height(g.fields[i].View()) + 1
 		}
-
-		cmds = append(cmds, cmd)
+		g.viewport.SetYOffset(offset)
 
 	case prevFieldMsg:
-		current := g.paginator.Page
-		cmd = g.setCurrent(current - 1)
-
-		if current == 0 {
-			cmds = append(cmds, prevGroup)
-			break
+		cmds = append(cmds, g.prevField()...)
+		offset := 0
+		for i := 0; i < g.paginator.Page; i++ {
+			offset += lipgloss.Height(g.fields[i].View()) + 1
 		}
-
-		cmds = append(cmds, cmd)
+		g.viewport.SetYOffset(offset)
 	}
 
 	return g, tea.Batch(cmds...)
 }
 
+// height returns the full height of the group
+func (g *Group) fullHeight() int {
+	var height int
+	for i, f := range g.fields {
+		height += lipgloss.Height(f.View())
+		if i < len(g.fields)-1 {
+			height++ // FieldSeparator gap if there are more fields
+		}
+	}
+	// Add another FieldSeparator gap is there is an errors/help view.
+	keys := g.help.ShortHelpView(g.fields[g.paginator.Page].KeyBinds())
+	if (g.showErrors && len(g.Errors()) > 0) ||
+		strings.IndexFunc(keys, isNotSpace) > 0 {
+		height++
+	}
+	return height
+}
+
 // View renders the group.
 func (g *Group) View() string {
-	var s strings.Builder
+	var fields strings.Builder
+	var view strings.Builder
 
 	gap := g.theme.FieldSeparator.String()
 	if gap == "" {
@@ -226,44 +287,48 @@ func (g *Group) View() string {
 	}
 
 	for i, field := range g.fields {
-		s.WriteString(field.View())
+		fields.WriteString(field.View())
 		if i < len(g.fields)-1 {
-			s.WriteString(gap)
+			fields.WriteString(gap)
 		}
 	}
 
 	errors := g.Errors()
 
-	if g.showHelp && len(errors) <= 0 {
+	// The group view is always shown. The FieldSeparator gap is shown only if the
+	// errors view or short help view appears with content below it.
+	g.viewport.SetContent(fields.String())
+	view.WriteString(g.viewport.View())
 
+	// Choose to show either the short help view or the errors view, with errors
+	// taking precedence.
+	switch {
+	case g.showErrors && len(errors) > 0:
+		view.WriteString(gap)
+		for _, err := range errors {
+			view.WriteString(g.theme.Focused.ErrorMessage.Render(err.Error()))
+		}
+
+	case g.showHelp:
 		// The short help view will be empty if (Field).KeyBinds() returns:
 		//
 		//   a. the nil or empty []key.Binding slice, or
 		//   b. a []key.Binding slice with all elements disabled
 		//
-		// We don't want to render a spurious FieldSeparator gap in either case, but
-		// case b. can only be determined by actually rendering the short help view.
+		// We don't want to render a FieldSeparator gap in either case, but case b
+		// can only be determined by actually rendering the short help view.
 		keys := g.help.ShortHelpView(g.fields[g.paginator.Page].KeyBinds())
 
 		// (help.Model).ShortHelpView _will_ render an enabled key.Binding even when
 		// its Key or Desc are undefined. If both are undefined, the binding is
 		// rendered as a single space (" ").
 		// Verify the rendered help view contains something other than whitespace.
-		isNotSpace := func(r rune) bool { return !unicode.IsSpace(r) }
 		if strings.IndexFunc(keys, isNotSpace) > 0 {
-			s.WriteString(gap)
-			s.WriteString(keys)
+			view.WriteString(gap)
+			view.WriteString(keys)
 		}
 	}
-
-	if !g.showErrors {
-		return s.String()
-	}
-
-	for _, err := range errors {
-		s.WriteString(g.theme.Focused.ErrorMessage.Render(err.Error()))
-		s.WriteRune('\n')
-	}
-
-	return s.String()
+	return view.String()
 }
+
+func isNotSpace(r rune) bool { return !unicode.IsSpace(r) }
