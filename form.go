@@ -2,6 +2,7 @@ package huh
 
 import (
 	"errors"
+	"os"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -524,7 +525,7 @@ func (f *Form) Run() error {
 
 // run runs the form in normal mode.
 func (f *Form) run() error {
-	m, err := tea.NewProgram(f).Run()
+	m, err := tea.NewProgram(f, tea.WithOutput(os.Stderr)).Run()
 	if m.(*Form).aborted {
 		err = ErrUserAborted
 	}
