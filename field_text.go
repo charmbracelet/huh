@@ -101,6 +101,12 @@ func (t *Text) CharLimit(charlimit int) *Text {
 	return t
 }
 
+// ShowLineNumbers sets whether or not to show line numbers
+func (t *Text) ShowLineNumbers(show bool) *Text {
+	t.textarea.ShowLineNumbers = show
+	return t
+}
+
 // Placeholder sets the placeholder of the text field.
 func (t *Text) Placeholder(str string) *Text {
 	t.textarea.Placeholder = str
