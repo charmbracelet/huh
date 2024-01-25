@@ -17,8 +17,8 @@ type Theme struct {
 	Help           help.Styles
 }
 
-// copy returns a copy of a theme with all children styles copied.
-func (t Theme) copy() Theme {
+// Copy returns a copy of a theme with all children styles copied.
+func (t Theme) Copy() Theme {
 	return Theme{
 		Form:           t.Form.Copy(),
 		Group:          t.Group.Copy(),
@@ -167,7 +167,7 @@ func ThemeBase() *Theme {
 
 // ThemeCharm returns a new theme based on the Charm color scheme.
 func ThemeCharm() *Theme {
-	t := ThemeBase().copy()
+	t := ThemeBase().Copy()
 
 	var (
 		normalFg = lipgloss.AdaptiveColor{Light: "235", Dark: "252"}
@@ -208,7 +208,7 @@ func ThemeCharm() *Theme {
 
 // ThemeDracula returns a new theme based on the Dracula color scheme.
 func ThemeDracula() *Theme {
-	t := ThemeBase().copy()
+	t := ThemeBase().Copy()
 
 	var (
 		background = lipgloss.AdaptiveColor{Dark: "#282a36"}
@@ -250,7 +250,7 @@ func ThemeDracula() *Theme {
 
 // ThemeBase16 returns a new theme based on the base16 color scheme.
 func ThemeBase16() *Theme {
-	t := ThemeBase().copy()
+	t := ThemeBase().Copy()
 
 	f := &t.Focused
 	f.Base.BorderForeground(lipgloss.Color("8"))
@@ -284,7 +284,7 @@ func ThemeBase16() *Theme {
 
 // ThemeCatppuccin returns a new theme based on the Catppuccin color scheme.
 func ThemeCatppuccin() *Theme {
-	t := ThemeBase().copy()
+	t := ThemeBase().Copy()
 
 	light := catppuccin.Latte
 	dark := catppuccin.Mocha
