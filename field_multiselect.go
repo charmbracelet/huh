@@ -312,6 +312,9 @@ func (m *MultiSelect[T]) activeStyles() *FieldStyles {
 }
 
 func (m *MultiSelect[T]) titleView() string {
+	if m.title == "" {
+		return ""
+	}
 	var (
 		styles = m.activeStyles()
 		sb     = strings.Builder{}
@@ -371,8 +374,10 @@ func (m *MultiSelect[T]) View() string {
 	m.viewport.SetContent(m.choicesView())
 
 	var sb strings.Builder
-	sb.WriteString(m.titleView())
-	sb.WriteString("\n")
+	if m.title != "" {
+		sb.WriteString(m.titleView())
+		sb.WriteString("\n")
+	}
 	if m.description != "" {
 		sb.WriteString(m.descriptionView() + "\n")
 	}

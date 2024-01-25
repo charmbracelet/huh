@@ -290,6 +290,9 @@ func (s *Select[T]) activeStyles() *FieldStyles {
 }
 
 func (s *Select[T]) titleView() string {
+	if s.title == "" {
+		return ""
+	}
 	var (
 		styles = s.activeStyles()
 		sb     = strings.Builder{}
@@ -341,8 +344,10 @@ func (s *Select[T]) View() string {
 	s.viewport.SetContent(s.choicesView())
 
 	var sb strings.Builder
-	sb.WriteString(s.titleView())
-	sb.WriteString("\n")
+	if s.title != "" {
+		sb.WriteString(s.titleView())
+		sb.WriteString("\n")
+	}
 	if s.description != "" {
 		sb.WriteString(s.descriptionView() + "\n")
 	}
