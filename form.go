@@ -151,11 +151,11 @@ type Field interface {
 type HelpFormat int
 
 const (
-	// FullHelp is the full-size help format.
-	FullHelp HelpFormat = iota
+	// FormatLong is the full-size default help format.
+	FormatLong HelpFormat = iota
 
-	// ShortHelp is the one-line summary help format.
-	ShortHelp
+	// FormatShort is the one-line summary help format.
+	FormatShort
 )
 
 // FieldPosition is positional information about the given field and form.
