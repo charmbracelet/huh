@@ -116,8 +116,11 @@ type Field interface {
 	// Skip returns whether this input should be skipped or not.
 	Skip() bool
 
-	// KeyBinds returns help keybindings.
+	// KeyBinds returns all keybindings.
 	KeyBinds() []key.Binding
+
+	// KeyBindsHelp returns the help keybindings.
+	KeyBindsHelp(HelpFormat) []key.Binding
 
 	// WithTheme sets the theme on a field.
 	WithTheme(*Theme) Field
@@ -143,6 +146,17 @@ type Field interface {
 	// GetValue returns the field's value.
 	GetValue() any
 }
+
+// HelpFormat is the way in which help is presented.
+type HelpFormat int
+
+const (
+	// FullHelp is the full-size help format.
+	FullHelp HelpFormat = iota
+
+	// ShortHelp is the one-line summary help format.
+	ShortHelp
+)
 
 // FieldPosition is positional information about the given field and form.
 type FieldPosition struct {
@@ -322,6 +336,12 @@ func (f *Form) Help() help.Model {
 func (f *Form) KeyBinds() []key.Binding {
 	group := f.groups[f.paginator.Page]
 	return group.fields[group.paginator.Page].KeyBinds()
+}
+
+// KeyBindsHelp returns the current fields' help keybinds.
+func (f *Form) KeyBindsHelp(format HelpFormat) []key.Binding {
+	group := f.groups[f.paginator.Page]
+	return group.fields[group.paginator.Page].KeyBindsHelp(format)
 }
 
 // Get returns a result from the form.

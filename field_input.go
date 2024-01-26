@@ -152,12 +152,17 @@ func (i *Input) Blur() tea.Cmd {
 	return nil
 }
 
-// KeyBinds returns the help message for the input field.
+// KeyBinds returns all keybindings for the input field.
 func (i *Input) KeyBinds() []key.Binding {
 	if i.textinput.ShowSuggestions {
 		return []key.Binding{i.keymap.AcceptSuggestion, i.keymap.Prev, i.keymap.Submit, i.keymap.Next}
 	}
 	return []key.Binding{i.keymap.Prev, i.keymap.Submit, i.keymap.Next}
+}
+
+// KeyBindsHelp returns the help keybindings for the input field.
+func (i *Input) KeyBindsHelp(HelpFormat) []key.Binding {
+	return i.KeyBinds()
 }
 
 // Init initializes the input field.

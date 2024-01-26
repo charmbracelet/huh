@@ -148,9 +148,14 @@ func (s *Select[T]) Blur() tea.Cmd {
 	return nil
 }
 
-// KeyBinds returns the help keybindings for the select field.
+// KeyBinds returns all keybindings for the select field.
 func (s *Select[T]) KeyBinds() []key.Binding {
 	return []key.Binding{s.keymap.Up, s.keymap.Down, s.keymap.Filter, s.keymap.SetFilter, s.keymap.ClearFilter, s.keymap.Prev, s.keymap.Next, s.keymap.Submit}
+}
+
+// KeyBindsHelp returns the help keybindings for the select field.
+func (s *Select[T]) KeyBindsHelp(HelpFormat) []key.Binding {
+	return s.KeyBinds()
 }
 
 // Init initializes the select field.
