@@ -292,7 +292,7 @@ func (t *Text) runAccessible() error {
 		}
 
 		if len(input) > t.textarea.CharLimit {
-			return fmt.Errorf("the input text length should not exceed %d characters", t.textarea.CharLimit)
+			return fmt.Errorf("Input cannot exceed %d characters", t.textarea.CharLimit)
 		}
 		return nil
 	})
