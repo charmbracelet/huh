@@ -285,7 +285,13 @@ func (t *Text) Run() error {
 func (t *Text) runAccessible() error {
 	fmt.Println(t.theme.Blurred.Base.Render(t.theme.Focused.Title.Render(t.title)))
 	fmt.Println()
-	*t.value = accessibility.PromptString("Input: ", t.validate)
+	*t.value = accessibility.PromptString("Input: ", func(input string) error {
+		t.validate(input)
+		if len(input) > t.textarea.CharLimit {
+			return fmt.Errorf("\n The input text length should not exceed %d characters. \n", t.textarea.CharLimit)
+		}
+		return nil
+	})
 	fmt.Println()
 	return nil
 }
