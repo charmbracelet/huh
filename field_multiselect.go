@@ -451,6 +451,11 @@ func (m *MultiSelect[T]) runAccessible() error {
 			}
 			break
 		}
+
+		if !m.options[choice-1].selected && m.limit > 0 && m.numSelected() >= m.limit {
+			fmt.Printf("You can't select more than %d options.\n", m.limit)
+			continue
+		}
 		m.options[choice-1].selected = !m.options[choice-1].selected
 		if m.options[choice-1].selected {
 			fmt.Printf("Selected: %s\n\n", m.options[choice-1].Key)
