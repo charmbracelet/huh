@@ -288,7 +288,7 @@ func (t *Text) runAccessible() error {
 	*t.value = accessibility.PromptString("Input: ", func(input string) error {
 		t.validate(input)
 		if len(input) > t.textarea.CharLimit {
-			return fmt.Errorf("\n The input text length should not exceed %d characters. \n", t.textarea.CharLimit)
+			return fmt.Errorf("the input text length should not exceed %d characters", t.textarea.CharLimit)
 		}
 		return nil
 	})
