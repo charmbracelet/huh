@@ -17,6 +17,6 @@ func main() {
 				AllowedTypes([]string{".png", ".jpeg", ".webp", ".gif"}).
 				Value(&file),
 		),
-	).WithShowHelp(true).WithAccessible(true).Run()
+	).WithShowHelp(true).Run()
 	fmt.Println(file)
 }
