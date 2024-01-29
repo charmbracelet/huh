@@ -14,8 +14,8 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-// File is a form file file field.
-type File struct {
+// FilePicker is a form file file field.
+type FilePicker struct {
 	value  *string
 	key    string
 	picker filepicker.Model
@@ -40,8 +40,8 @@ type File struct {
 
 const defaultHeight = 5
 
-// NewFile returns a new file field.
-func NewFile() *File {
+// NewFilePicker returns a new file field.
+func NewFilePicker() *FilePicker {
 	fp := filepicker.New()
 	fp.ShowPermissions = false
 	fp.ShowSize = false
@@ -53,7 +53,7 @@ func NewFile() *File {
 		fp, _ = fp.Update(cmd())
 	}
 
-	return &File{
+	return &FilePicker{
 		value:    new(string),
 		validate: func(string) error { return nil },
 		picker:   fp,
@@ -62,98 +62,98 @@ func NewFile() *File {
 }
 
 // CurrentDirectory sets the directory of the file field.
-func (f *File) CurrentDirectory(directory string) *File {
+func (f *FilePicker) CurrentDirectory(directory string) *FilePicker {
 	f.picker.CurrentDirectory = directory
 	return f
 }
 
 // ShowHidden sets whether to show hidden files.
-func (f *File) ShowHidden(v bool) *File {
+func (f *FilePicker) ShowHidden(v bool) *FilePicker {
 	f.picker.ShowHidden = v
 	return f
 }
 
 // Value sets the value of the file field.
-func (f *File) Value(value *string) *File {
+func (f *FilePicker) Value(value *string) *FilePicker {
 	f.value = value
 	return f
 }
 
 // Key sets the key of the file field which can be used to retrieve the value
 // after submission.
-func (f *File) Key(key string) *File {
+func (f *FilePicker) Key(key string) *FilePicker {
 	f.key = key
 	return f
 }
 
 // Title sets the title of the file field.
-func (f *File) Title(title string) *File {
+func (f *FilePicker) Title(title string) *FilePicker {
 	f.title = title
 	return f
 }
 
 // Description sets the description of the file field.
-func (f *File) Description(description string) *File {
+func (f *FilePicker) Description(description string) *FilePicker {
 	f.description = description
 	return f
 }
 
 // Height sets the height of the file field. If the number of options
 // exceeds the height, the file field will become scrollable.
-func (f *File) AllowedTypes(types []string) *File {
+func (f *FilePicker) AllowedTypes(types []string) *FilePicker {
 	f.picker.AllowedTypes = types
 	return f
 }
 
 // Height sets the height of the file field. If the number of options
 // exceeds the height, the file field will become scrollable.
-func (f *File) Height(height int) *File {
+func (f *FilePicker) Height(height int) *FilePicker {
 	f.picker.Height = height
 	f.picker.AutoHeight = false
 	return f
 }
 
 // Validate sets the validation function of the file field.
-func (f *File) Validate(validate func(string) error) *File {
+func (f *FilePicker) Validate(validate func(string) error) *FilePicker {
 	f.validate = validate
 	return f
 }
 
 // Error returns the error of the file field.
-func (f *File) Error() error {
+func (f *FilePicker) Error() error {
 	return f.err
 }
 
 // Skip returns whether the file should be skipped or should be blocking.
-func (*File) Skip() bool {
+func (*FilePicker) Skip() bool {
 	return false
 }
 
 // Focus focuses the file field.
-func (f *File) Focus() tea.Cmd {
+func (f *FilePicker) Focus() tea.Cmd {
 	f.focused = true
 	return f.picker.Init()
 }
 
 // Blur blurs the file field.
-func (f *File) Blur() tea.Cmd {
+func (f *FilePicker) Blur() tea.Cmd {
 	f.focused = false
 	f.err = f.validate(*f.value)
 	return nil
 }
 
 // KeyBinds returns the help keybindings for the file field.
-func (f *File) KeyBinds() []key.Binding {
+func (f *FilePicker) KeyBinds() []key.Binding {
 	return []key.Binding{f.keymap.Up, f.keymap.Down, f.keymap.Prev, f.keymap.Next, f.keymap.Submit}
 }
 
 // Init initializes the file field.
-func (f *File) Init() tea.Cmd {
+func (f *FilePicker) Init() tea.Cmd {
 	return f.picker.Init()
 }
 
 // Update updates the file field.
-func (f *File) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (f *FilePicker) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	f.err = nil
 
 	var cmd tea.Cmd
@@ -183,7 +183,7 @@ func (f *File) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 // View renders the file field.
-func (f *File) View() string {
+func (f *FilePicker) View() string {
 	styles := f.theme.Blurred
 	if f.focused {
 		styles = f.theme.Focused
@@ -200,7 +200,7 @@ func (f *File) View() string {
 }
 
 // Run runs the file field.
-func (f *File) Run() error {
+func (f *FilePicker) Run() error {
 	if f.accessible {
 		return f.runAccessible()
 	}
@@ -208,7 +208,7 @@ func (f *File) Run() error {
 }
 
 // runAccessible runs an accessible file field.
-func (f *File) runAccessible() error {
+func (f *FilePicker) runAccessible() error {
 	fmt.Println(f.theme.Blurred.Base.Render(f.theme.Focused.Title.Render(f.title)))
 	fmt.Println()
 
@@ -240,7 +240,7 @@ func (f *File) runAccessible() error {
 }
 
 // WithTheme sets the theme of the file field.
-func (f *File) WithTheme(theme *Theme) Field {
+func (f *FilePicker) WithTheme(theme *Theme) Field {
 	f.theme = theme
 
 	// TODO: add specific themes
@@ -262,7 +262,7 @@ func (f *File) WithTheme(theme *Theme) Field {
 }
 
 // WithKeyMap sets the keymap on a file field.
-func (f *File) WithKeyMap(k *KeyMap) Field {
+func (f *FilePicker) WithKeyMap(k *KeyMap) Field {
 	f.keymap = k.File
 	f.picker.KeyMap = filepicker.KeyMap{
 		GoToTop:  k.File.GoToTop,
@@ -279,24 +279,24 @@ func (f *File) WithKeyMap(k *KeyMap) Field {
 }
 
 // WithAccessible sets the accessible mode of the file field.
-func (f *File) WithAccessible(accessible bool) Field {
+func (f *FilePicker) WithAccessible(accessible bool) Field {
 	f.accessible = accessible
 	return f
 }
 
 // WithWidth sets the width of the file field.
-func (f *File) WithWidth(width int) Field {
+func (f *FilePicker) WithWidth(width int) Field {
 	f.width = width
 	return f
 }
 
 // WithHeight sets the height of the file field.
-func (f *File) WithHeight(height int) Field {
+func (f *FilePicker) WithHeight(height int) Field {
 	return f.Height(height)
 }
 
 // WithPosition sets the position of the file field.
-func (f *File) WithPosition(p FieldPosition) Field {
+func (f *FilePicker) WithPosition(p FieldPosition) Field {
 	f.keymap.Prev.SetEnabled(!p.IsFirst())
 	f.keymap.Next.SetEnabled(!p.IsLast())
 	f.keymap.Submit.SetEnabled(p.IsLast())
@@ -304,11 +304,11 @@ func (f *File) WithPosition(p FieldPosition) Field {
 }
 
 // GetKey returns the key of the field.
-func (f *File) GetKey() string {
+func (f *FilePicker) GetKey() string {
 	return f.key
 }
 
 // GetValue returns the value of the field.
-func (f *File) GetValue() any {
+func (f *FilePicker) GetValue() any {
 	return *f.value
 }
