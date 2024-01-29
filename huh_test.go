@@ -481,7 +481,7 @@ func TestMultiSelect(t *testing.T) {
 	}
 }
 func TestFile(t *testing.T) {
-	field := NewFile().Title("Which file?")
+	field := NewFilePicker().Title("Which file?")
 	cmd := field.Init()
 	field.Update(cmd())
 
