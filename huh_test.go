@@ -480,6 +480,23 @@ func TestMultiSelect(t *testing.T) {
 		t.Error("Expected field to contain help.")
 	}
 }
+func TestFile(t *testing.T) {
+	field := NewFile().Title("Which file?")
+	cmd := field.Init()
+	field.Update(cmd())
+
+	view := field.View()
+
+	if !strings.Contains(view, "accessibility") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected file picker to show accessibility.")
+	}
+
+	if !strings.Contains(view, "Which file?") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected file picker to show title.")
+	}
+}
 
 func TestHideGroup(t *testing.T) {
 	f := NewForm(
