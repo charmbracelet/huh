@@ -6,12 +6,13 @@ import "github.com/charmbracelet/bubbles/key"
 type KeyMap struct {
 	Quit key.Binding
 
+	Confirm     ConfirmKeyMap
+	File        FileKeyMap
 	Input       InputKeyMap
-	Text        TextKeyMap
-	Select      SelectKeyMap
 	MultiSelect MultiSelectKeyMap
 	Note        NoteKeyMap
-	Confirm     ConfirmKeyMap
+	Select      SelectKeyMap
+	Text        TextKeyMap
 }
 
 // InputKeyMap is the keybindings for input fields.
@@ -56,6 +57,22 @@ type MultiSelectKeyMap struct {
 	Submit      key.Binding
 }
 
+// FilePicker is the keybindings for filepicker fields.
+type FileKeyMap struct {
+	GoToTop  key.Binding
+	GoToLast key.Binding
+	PageUp   key.Binding
+	PageDown key.Binding
+	Back     key.Binding
+	Open     key.Binding
+	Select   key.Binding
+	Up       key.Binding
+	Down     key.Binding
+	Prev     key.Binding
+	Next     key.Binding
+	Submit   key.Binding
+}
+
 // NoteKeyMap is the keybindings for note fields.
 type NoteKeyMap struct {
 	Next   key.Binding
@@ -80,6 +97,20 @@ func NewDefaultKeyMap() *KeyMap {
 			Prev:             key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),
 			Next:             key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "next")),
 			Submit:           key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "submit")),
+		},
+		File: FileKeyMap{
+			GoToTop:  key.NewBinding(key.WithKeys("g"), key.WithHelp("g", "first")),
+			GoToLast: key.NewBinding(key.WithKeys("G"), key.WithHelp("G", "last")),
+			PageUp:   key.NewBinding(key.WithKeys("K", "pgup"), key.WithHelp("pgup", "page up"), key.WithDisabled()),
+			PageDown: key.NewBinding(key.WithKeys("J", "pgdown"), key.WithHelp("pgdown", "page down"), key.WithDisabled()),
+			Back:     key.NewBinding(key.WithKeys("h", "backspace", "left", "esc"), key.WithHelp("h", "back")),
+			Open:     key.NewBinding(key.WithKeys("l", "right", "enter"), key.WithHelp("enter", "open")),
+			Select:   key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "select")),
+			Up:       key.NewBinding(key.WithKeys("up", "k", "ctrl+k", "ctrl+p"), key.WithHelp("↑", "up")),
+			Down:     key.NewBinding(key.WithKeys("down", "j", "ctrl+j", "ctrl+n"), key.WithHelp("↓", "down")),
+			Prev:     key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),
+			Next:     key.NewBinding(key.WithKeys("tab"), key.WithHelp("tab", "next")),
+			Submit:   key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "submit")),
 		},
 		Text: TextKeyMap{
 			Prev:    key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),

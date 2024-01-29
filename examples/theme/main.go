@@ -48,6 +48,7 @@ func main() {
 			huh.NewGroup(
 				huh.NewInput().Title("Thoughts").Placeholder("What's on your mind?"),
 				huh.NewSelect[string]().Options(huh.NewOptions("A", "B", "C")...).Title("Colors"),
+				huh.NewFile().Title("File"),
 				huh.NewMultiSelect[string]().Options(huh.NewOptions("Red", "Green", "Yellow")...).Title("Letters"),
 				huh.NewConfirm().Title("Again?").Description("Try another theme").Value(&repeat),
 			),
