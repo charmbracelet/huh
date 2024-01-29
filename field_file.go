@@ -189,7 +189,9 @@ func (f *File) View() string {
 		styles = f.theme.Focused
 	}
 	var sb strings.Builder
-	sb.WriteString(styles.Title.Render(f.title) + "\n")
+	if f.title != "" {
+		sb.WriteString(styles.Title.Render(f.title) + "\n")
+	}
 	if f.description != "" {
 		sb.WriteString(styles.Description.Render(f.description) + "\n")
 	}
