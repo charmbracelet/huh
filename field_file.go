@@ -3,12 +3,14 @@ package huh
 import (
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/filepicker"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/huh/accessibility"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -205,9 +207,33 @@ func (f *File) Run() error {
 
 // runAccessible runs an accessible file field.
 func (f *File) runAccessible() error {
-	var sb strings.Builder
-	sb.WriteString(f.theme.Focused.Title.Render(f.title) + "\n")
-	fmt.Println(f.theme.Blurred.Base.Render(sb.String()))
+	fmt.Println(f.theme.Blurred.Base.Render(f.theme.Focused.Title.Render(f.title)))
+	fmt.Println()
+
+	validateFile := func(s string) error {
+		// is the string a file?
+		if _, err := os.Open(s); err != nil {
+			return errors.New("not a file")
+		}
+
+		// is it one of the allowed types?
+		valid := false
+		for _, ext := range f.picker.AllowedTypes {
+			if strings.HasSuffix(s, ext) {
+				valid = true
+				break
+			}
+		}
+		if !valid {
+			return errors.New("cannot select: " + s)
+		}
+
+		// does it pass user validation?
+		return f.validate(s)
+	}
+
+	*f.value = accessibility.PromptString("File: ", validateFile)
+	fmt.Println(f.theme.Focused.SelectedOption.Render("File: " + *f.value + "\n"))
 	return nil
 }
 
