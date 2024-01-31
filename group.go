@@ -2,6 +2,7 @@ package huh
 
 import (
 	"strings"
+	"unicode"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/paginator"
@@ -260,8 +261,17 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // height returns the full height of the group
 func (g *Group) fullHeight() int {
 	var height int
-	for _, f := range g.fields {
-		height += lipgloss.Height(f.View()) + 1 // + gap
+	for i, f := range g.fields {
+		height += lipgloss.Height(f.View())
+		if i < len(g.fields)-1 {
+			height++ // FieldSeparator gap if there are more fields
+		}
+	}
+	// Add another FieldSeparator gap is there is an errors/help view.
+	keys := g.help.ShortHelpView(g.fields[g.paginator.Page].KeyBinds())
+	if (g.showErrors && len(g.Errors()) > 0) ||
+		strings.IndexFunc(keys, isNotSpace) > 0 {
+		height++
 	}
 	return height
 }
@@ -284,19 +294,41 @@ func (g *Group) View() string {
 	}
 
 	errors := g.Errors()
-	g.viewport.SetContent(fields.String() + "\n")
 
-	if g.showHelp && len(errors) <= 0 {
-		view.WriteString(g.help.ShortHelpView(g.fields[g.paginator.Page].KeyBinds()))
+	// The group view is always shown. The FieldSeparator gap is shown only if the
+	// errors view or short help view appears with content below it.
+	g.viewport.SetContent(fields.String())
+	view.WriteString(g.viewport.View())
+
+	// Choose to show either the short help view or the errors view, with errors
+	// taking precedence.
+	switch {
+	case g.showErrors && len(errors) > 0:
+		view.WriteString(gap)
+		for _, err := range errors {
+			view.WriteString(g.theme.Focused.ErrorMessage.Render(err.Error()))
+		}
+
+	case g.showHelp:
+		// The short help view will be empty if (Field).KeyBinds() returns:
+		//
+		//   a. the nil or empty []key.Binding slice, or
+		//   b. a []key.Binding slice with all elements disabled
+		//
+		// We don't want to render a FieldSeparator gap in either case, but case b
+		// can only be determined by actually rendering the short help view.
+		keys := g.help.ShortHelpView(g.fields[g.paginator.Page].KeyBinds())
+
+		// (help.Model).ShortHelpView _will_ render an enabled key.Binding even when
+		// its Key or Desc are undefined. If both are undefined, the binding is
+		// rendered as a single space (" ").
+		// Verify the rendered help view contains something other than whitespace.
+		if strings.IndexFunc(keys, isNotSpace) > 0 {
+			view.WriteString(gap)
+			view.WriteString(keys)
+		}
 	}
-
-	if !g.showErrors {
-		return g.viewport.View() + "\n" + view.String()
-	}
-
-	for _, err := range errors {
-		view.WriteString(g.theme.Focused.ErrorMessage.Render(err.Error()))
-	}
-
-	return g.viewport.View() + "\n" + view.String()
+	return view.String()
 }
+
+func isNotSpace(r rune) bool { return !unicode.IsSpace(r) }
