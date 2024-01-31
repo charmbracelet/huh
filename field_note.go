@@ -76,9 +76,14 @@ func (n *Note) Skip() bool {
 	return n.skip
 }
 
-// KeyBinds returns the help message for the note field.
+// KeyBinds returns all keybindings for the note field.
 func (n *Note) KeyBinds() []key.Binding {
 	return []key.Binding{n.keymap.Prev, n.keymap.Submit, n.keymap.Next}
+}
+
+// KeyBindsHelp returns the help keybindings for the note field.
+func (n *Note) KeyBindsHelp(HelpFormat) []key.Binding {
+	return n.KeyBinds()
 }
 
 // Init initializes the note field.
