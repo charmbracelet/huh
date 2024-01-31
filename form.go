@@ -116,6 +116,10 @@ type Field interface {
 	// Skip returns whether this input should be skipped or not.
 	Skip() bool
 
+	// Zoom returns whether this input should be zoomed or not.
+	// Zoom allows the field to take focus of the group / form height.
+	Zoom() bool
+
 	// KeyBinds returns help keybindings.
 	KeyBinds() []key.Binding
 

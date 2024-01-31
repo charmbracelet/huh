@@ -76,6 +76,11 @@ func (n *Note) Skip() bool {
 	return n.skip
 }
 
+// Zoom returns whether the note should be zoomed.
+func (n *Note) Zoom() bool {
+	return false
+}
+
 // KeyBinds returns the help message for the note field.
 func (n *Note) KeyBinds() []key.Binding {
 	return []key.Binding{n.keymap.Prev, n.keymap.Submit, n.keymap.Next}

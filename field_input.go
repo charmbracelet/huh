@@ -162,6 +162,11 @@ func (*Input) Skip() bool {
 	return false
 }
 
+// Zoom returns whether the input should be zoomed.
+func (*Input) Zoom() bool {
+	return false
+}
+
 // Focus focuses the input field.
 func (i *Input) Focus() tea.Cmd {
 	i.focused = true
