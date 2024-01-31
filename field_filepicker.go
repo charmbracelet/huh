@@ -4,8 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
+
+	xstrings "github.com/charmbracelet/x/exp/strings"
 
 	"github.com/charmbracelet/bubbles/filepicker"
 	"github.com/charmbracelet/bubbles/key"
@@ -22,6 +23,7 @@ type FilePicker struct {
 
 	// state
 	focused bool
+	picking bool
 
 	// customization
 	title       string
@@ -35,7 +37,7 @@ type FilePicker struct {
 	width      int
 	accessible bool
 	theme      *Theme
-	keymap     FileKeyMap
+	keymap     FilePickerKeyMap
 }
 
 const defaultHeight = 5
@@ -43,7 +45,6 @@ const defaultHeight = 5
 // NewFilePicker returns a new file field.
 func NewFilePicker() *FilePicker {
 	fp := filepicker.New()
-	fp.ShowPermissions = false
 	fp.ShowSize = false
 	fp.Height = defaultHeight
 	fp.AutoHeight = false
@@ -138,13 +139,14 @@ func (f *FilePicker) Focus() tea.Cmd {
 // Blur blurs the file field.
 func (f *FilePicker) Blur() tea.Cmd {
 	f.focused = false
+	f.setPicking(false)
 	f.err = f.validate(*f.value)
 	return nil
 }
 
 // KeyBinds returns the help keybindings for the file field.
 func (f *FilePicker) KeyBinds() []key.Binding {
-	return []key.Binding{f.keymap.Up, f.keymap.Down, f.keymap.Prev, f.keymap.Next, f.keymap.Submit}
+	return []key.Binding{f.keymap.Up, f.keymap.Down, f.keymap.Close, f.keymap.Open, f.keymap.Prev, f.keymap.Next, f.keymap.Submit}
 }
 
 // Init initializes the file field.
@@ -156,27 +158,40 @@ func (f *FilePicker) Init() tea.Cmd {
 func (f *FilePicker) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	f.err = nil
 
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch {
+		case key.Matches(msg, f.keymap.Open):
+			if f.picking {
+				break
+			}
+
+			f.setPicking(true)
+			return f, nil
+		case key.Matches(msg, f.keymap.Close):
+			f.setPicking(false)
+			return f, nil
+		case key.Matches(msg, f.keymap.Next):
+			f.setPicking(false)
+			return f, nextField
+		case key.Matches(msg, f.keymap.Prev):
+			f.setPicking(false)
+			return f, prevField
+		}
+	}
+
 	var cmd tea.Cmd
 	f.picker, cmd = f.picker.Update(msg)
 	didSelect, file := f.picker.DidSelectFile(msg)
 	if didSelect {
 		*f.value = file
+		f.setPicking(false)
 		return f, nextField
 	}
 	didSelect, file = f.picker.DidSelectDisabledFile(msg)
 	if didSelect {
-		f.err = errors.New("cannot select " + filepath.Base(file))
+		f.err = errors.New(xstrings.EnglishJoin(f.picker.AllowedTypes, true) + " files only")
 		return f, nil
-	}
-
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch {
-		case key.Matches(msg, f.keymap.Next):
-			return f, nextField
-		case key.Matches(msg, f.keymap.Prev):
-			return f, prevField
-		}
 	}
 
 	return f, cmd
@@ -195,8 +210,33 @@ func (f *FilePicker) View() string {
 	if f.description != "" {
 		sb.WriteString(styles.Description.Render(f.description) + "\n")
 	}
-	sb.WriteString(strings.TrimSuffix(f.picker.View(), "\n"))
+	if f.picking {
+		sb.WriteString(strings.TrimSuffix(f.picker.View(), "\n"))
+	} else {
+		if *f.value != "" {
+			sb.WriteString(styles.SelectedOption.Render(*f.value))
+		} else {
+			sb.WriteString(styles.TextInput.Placeholder.Render("No file selected."))
+		}
+
+	}
 	return styles.Base.Render(sb.String())
+}
+
+func (f *FilePicker) setPicking(v bool) {
+	f.picking = v
+
+	f.keymap.Close.SetEnabled(v)
+	f.keymap.Up.SetEnabled(v)
+	f.keymap.Down.SetEnabled(v)
+	f.keymap.Select.SetEnabled(v)
+	f.keymap.Back.SetEnabled(v)
+
+	f.picker.KeyMap.Up.SetEnabled(v)
+	f.picker.KeyMap.Down.SetEnabled(v)
+	f.picker.KeyMap.Select.SetEnabled(v)
+	f.picker.KeyMap.Open.SetEnabled(v)
+	f.picker.KeyMap.Back.SetEnabled(v)
 }
 
 // Run runs the file field.
@@ -235,7 +275,7 @@ func (f *FilePicker) runAccessible() error {
 	}
 
 	*f.value = accessibility.PromptString("File: ", validateFile)
-	fmt.Println(f.theme.Focused.SelectedOption.Render("File: " + *f.value + "\n"))
+	fmt.Println(f.theme.Focused.SelectedOption.Render(*f.value + "\n"))
 	return nil
 }
 
@@ -263,17 +303,17 @@ func (f *FilePicker) WithTheme(theme *Theme) Field {
 
 // WithKeyMap sets the keymap on a file field.
 func (f *FilePicker) WithKeyMap(k *KeyMap) Field {
-	f.keymap = k.File
+	f.keymap = k.FilePicker
 	f.picker.KeyMap = filepicker.KeyMap{
-		GoToTop:  k.File.GoToTop,
-		GoToLast: k.File.GoToLast,
-		Down:     k.File.Down,
-		Up:       k.File.Up,
-		PageUp:   k.File.PageUp,
-		PageDown: k.File.PageDown,
-		Back:     k.File.Back,
-		Open:     k.File.Open,
-		Select:   k.File.Select,
+		GoToTop:  k.FilePicker.GoToTop,
+		GoToLast: k.FilePicker.GoToLast,
+		Down:     k.FilePicker.Down,
+		Up:       k.FilePicker.Up,
+		PageUp:   k.FilePicker.PageUp,
+		PageDown: k.FilePicker.PageDown,
+		Back:     k.FilePicker.Back,
+		Open:     k.FilePicker.Open,
+		Select:   k.FilePicker.Select,
 	}
 	return f
 }
