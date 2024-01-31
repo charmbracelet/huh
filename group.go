@@ -191,6 +191,7 @@ func (g *Group) Init() tea.Cmd {
 
 	cmd := g.fields[g.paginator.Page].Focus()
 	cmds = append(cmds, cmd)
+	g.buildView()
 	return tea.Batch(cmds...)
 }
 
@@ -234,26 +235,16 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	m, cmd := g.fields[g.paginator.Page].Update(msg)
 	g.fields[g.paginator.Page] = m.(Field)
-
 	cmds = append(cmds, cmd)
 
 	switch msg.(type) {
 	case nextFieldMsg:
 		cmds = append(cmds, g.nextField()...)
-		offset := 0
-		for i := 0; i < g.paginator.Page; i++ {
-			offset += lipgloss.Height(g.fields[i].View()) + 1
-		}
-		g.viewport.SetYOffset(offset)
-
 	case prevFieldMsg:
 		cmds = append(cmds, g.prevField()...)
-		offset := 0
-		for i := 0; i < g.paginator.Page; i++ {
-			offset += lipgloss.Height(g.fields[i].View()) + 1
-		}
-		g.viewport.SetYOffset(offset)
 	}
+
+	g.buildView()
 
 	return g, tea.Batch(cmds...)
 }
@@ -267,26 +258,47 @@ func (g *Group) fullHeight() int {
 	return height
 }
 
-// View renders the group.
-func (g *Group) View() string {
+func (g *Group) buildView() {
 	var fields strings.Builder
-	var view strings.Builder
 
 	gap := g.theme.FieldSeparator.String()
 	if gap == "" {
 		gap = "\n"
 	}
 
-	for i, field := range g.fields {
-		fields.WriteString(field.View())
-		if i < len(g.fields)-1 {
-			fields.WriteString(gap)
+	// if the focused field is requesting it be zoomed, only show that field.
+	if g.fields[g.paginator.Page].Zoom() {
+		g.fields[g.paginator.Page].WithHeight(g.height - 1)
+		fields.WriteString(g.fields[g.paginator.Page].View())
+	} else {
+		for i, field := range g.fields {
+			fields.WriteString(field.View())
+			if i < len(g.fields)-1 {
+				fields.WriteString(gap)
+			}
 		}
 	}
 
-	errors := g.Errors()
 	g.viewport.SetContent(fields.String() + "\n")
 
+	if g.fields[g.paginator.Page].Zoom() {
+		g.fields[g.paginator.Page].WithHeight(g.height - 1)
+		g.viewport.SetYOffset(0)
+	} else {
+		offset := 0
+		for i := 0; i < g.paginator.Page; i++ {
+			offset += lipgloss.Height(g.fields[i].View()) + 1
+		}
+		g.viewport.SetYOffset(offset)
+	}
+}
+
+// View renders the group.
+func (g *Group) View() string {
+	var view strings.Builder
+	view.WriteString(g.viewport.View())
+	view.WriteRune('\n')
+	errors := g.Errors()
 	if g.showHelp && len(errors) <= 0 {
 		// The short help view will be empty if (Field).KeyBinds() returns:
 		//
@@ -307,15 +319,12 @@ func (g *Group) View() string {
 			view.WriteString(keys)
 		}
 	}
-
 	if !g.showErrors {
 		return g.viewport.View() + "\n" + view.String()
 	}
-
 	for _, err := range errors {
 		view.WriteString(g.theme.Focused.ErrorMessage.Render(err.Error()))
 		view.WriteRune('\n')
 	}
-
-	return g.viewport.View() + "\n" + view.String()
+	return view.String()
 }

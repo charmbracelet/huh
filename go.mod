@@ -7,6 +7,7 @@ require (
 	github.com/charmbracelet/bubbles v0.17.2-0.20240130154418-a2e290966a19
 	github.com/charmbracelet/bubbletea v0.25.0
 	github.com/charmbracelet/lipgloss v0.9.1
+	github.com/charmbracelet/x/exp/strings v0.0.0-20240130180102-bafe6fbaee60
 )
 
 require (
