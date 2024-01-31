@@ -99,7 +99,32 @@ func (i *Input) Suggestions(suggestions []string) *Input {
 	return i
 }
 
+// EchoMode sets the input behavior of the text Input field.
+type EchoMode textinput.EchoMode
+
+const (
+	// EchoNormal displays text as is.
+	// This is the default behavior.
+	EchoModeNormal EchoMode = EchoMode(textinput.EchoNormal)
+
+	// EchoPassword displays the EchoCharacter mask instead of actual characters.
+	// This is commonly used for password fields.
+	EchoModePassword EchoMode = EchoMode(textinput.EchoPassword)
+
+	// EchoNone displays nothing as characters are entered.
+	// This is commonly seen for password fields on the command line.
+	EchoModeNone EchoMode = EchoMode(textinput.EchoNone)
+)
+
+// EchoMode sets the echo mode of the input.
+func (i *Input) EchoMode(mode EchoMode) *Input {
+	i.textinput.EchoMode = textinput.EchoMode(mode)
+	return i
+}
+
 // Password sets whether or not to hide the input while the user is typing.
+//
+// Deprecated: use EchoMode(EchoPassword) instead.
 func (i *Input) Password(password bool) *Input {
 	if password {
 		i.textinput.EchoMode = textinput.EchoPassword
