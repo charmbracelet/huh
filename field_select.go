@@ -135,6 +135,11 @@ func (*Select[T]) Skip() bool {
 	return false
 }
 
+// Zoom returns whether the input should be zoomed.
+func (*Select[T]) Zoom() bool {
+	return false
+}
+
 // Focus focuses the select field.
 func (s *Select[T]) Focus() tea.Cmd {
 	s.focused = true
