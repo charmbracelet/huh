@@ -36,5 +36,3 @@ require (
 replace github.com/charmbracelet/huh => ../
 
 replace github.com/charmbracelet/huh/spinner => ../spinner
-
-replace github.com/charmbracelet/bubbles => ../../bubbles
