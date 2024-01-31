@@ -109,6 +109,17 @@ func (i *Input) Password(password bool) *Input {
 	return i
 }
 
+// ExtraHiddenPassword sets whether or not to hide the input while the user is typing.
+// Like Password but in this case without displaying mark on each character.
+func (i *Input) ExtraHiddenPassword(password bool) *Input {
+	if password {
+		i.textinput.EchoMode = textinput.EchoNone
+	} else {
+		i.textinput.EchoMode = textinput.EchoNormal
+	}
+	return i
+}
+
 // Placeholder sets the placeholder of the text input.
 func (i *Input) Placeholder(str string) *Input {
 	i.textinput.Placeholder = str
