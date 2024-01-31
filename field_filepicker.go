@@ -35,19 +35,16 @@ type FilePicker struct {
 
 	// options
 	width      int
+	height     int
 	accessible bool
 	theme      *Theme
 	keymap     FilePickerKeyMap
 }
 
-const defaultHeight = 5
-
 // NewFilePicker returns a new file field.
 func NewFilePicker() *FilePicker {
 	fp := filepicker.New()
 	fp.ShowSize = false
-	fp.Height = defaultHeight
-	fp.AutoHeight = false
 
 	cmd := fp.Init()
 	if cmd != nil {
@@ -99,8 +96,8 @@ func (f *FilePicker) Description(description string) *FilePicker {
 	return f
 }
 
-// Height sets the height of the file field. If the number of options
-// exceeds the height, the file field will become scrollable.
+// AllowedTypes sets the allowed types of the file field. These will be the only
+// valid file types accepted, other files will show as disabled.
 func (f *FilePicker) AllowedTypes(types []string) *FilePicker {
 	f.picker.AllowedTypes = types
 	return f
@@ -109,7 +106,14 @@ func (f *FilePicker) AllowedTypes(types []string) *FilePicker {
 // Height sets the height of the file field. If the number of options
 // exceeds the height, the file field will become scrollable.
 func (f *FilePicker) Height(height int) *FilePicker {
-	f.picker.Height = height
+	adjust := 0
+	if f.title != "" {
+		adjust++
+	}
+	if f.description != "" {
+		adjust++
+	}
+	f.picker.Height = height - adjust
 	f.picker.AutoHeight = false
 	return f
 }
@@ -128,6 +132,11 @@ func (f *FilePicker) Error() error {
 // Skip returns whether the file should be skipped or should be blocking.
 func (*FilePicker) Skip() bool {
 	return false
+}
+
+// Zoom returns whether the input should be zoomed.
+func (f *FilePicker) Zoom() bool {
+	return f.picking
 }
 
 // Focus focuses the file field.
@@ -165,9 +174,8 @@ func (f *FilePicker) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if f.picking {
 				break
 			}
-
 			f.setPicking(true)
-			return f, nil
+			return f, f.picker.Init()
 		case key.Matches(msg, f.keymap.Close):
 			f.setPicking(false)
 			return f, nil
@@ -332,7 +340,10 @@ func (f *FilePicker) WithWidth(width int) Field {
 
 // WithHeight sets the height of the file field.
 func (f *FilePicker) WithHeight(height int) Field {
-	return f.Height(height)
+	f.height = height
+	f.Height(height)
+	f.picker, _ = f.picker.Update(nil)
+	return f
 }
 
 // WithPosition sets the position of the file field.

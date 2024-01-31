@@ -64,6 +64,11 @@ func (*Confirm) Skip() bool {
 	return false
 }
 
+// Zoom returns whether the input should be zoomed.
+func (*Confirm) Zoom() bool {
+	return false
+}
+
 // Affirmative sets the affirmative value of the confirm field.
 func (c *Confirm) Affirmative(affirmative string) *Confirm {
 	c.affirmative = affirmative

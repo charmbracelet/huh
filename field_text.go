@@ -160,6 +160,11 @@ func (*Text) Skip() bool {
 	return false
 }
 
+// Zoom returns whether the note should be zoomed.
+func (*Text) Zoom() bool {
+	return false
+}
+
 // Focus focuses the text field.
 func (t *Text) Focus() tea.Cmd {
 	t.focused = true

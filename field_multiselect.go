@@ -149,6 +149,11 @@ func (*MultiSelect[T]) Skip() bool {
 	return false
 }
 
+// Zoom returns whether the multiselect should be zoomed.
+func (*MultiSelect[T]) Zoom() bool {
+	return false
+}
+
 // Focus focuses the multi-select field.
 func (m *MultiSelect[T]) Focus() tea.Cmd {
 	m.focused = true
