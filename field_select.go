@@ -211,7 +211,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// changes. When making this fix it's worth considering ignoring
 			// whether to ignore all up/down keybindings as ignoring a-zA-Z0-9
 			// may not be enough when international keyboards are considered.
-			if s.filtering && msg.String() == "k" {
+			if s.filtering && (msg.String() == "k" || msg.String() == "h") {
 				break
 			}
 			s.selected = max(s.selected-1, 0)
@@ -222,7 +222,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// When filtering we should ignore j/k keybindings
 			//
 			// XXX: See note in the previous case match.
-			if s.filtering && msg.String() == "j" {
+			if s.filtering && (msg.String() == "j" || msg.String() == "l") {
 				break
 			}
 			s.selected = min(s.selected+1, len(s.filteredOptions)-1)
@@ -389,6 +389,9 @@ func (s *Select[T]) View() string {
 
 // setFilter sets the filter of the select field.
 func (s *Select[T]) setFilter(filter bool) {
+	if s.inline && filter {
+		s.filter.Width = lipgloss.Width(s.titleView()) - 1 - 1
+	}
 	s.filtering = filter
 	s.keymap.SetFilter.SetEnabled(filter)
 	s.keymap.Filter.SetEnabled(!filter)

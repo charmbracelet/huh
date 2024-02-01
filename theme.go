@@ -171,6 +171,8 @@ func ThemeBase() *Theme {
 	t.Blurred = f.copy()
 	t.Blurred.Base = t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
 	t.Blurred.MultiSelectSelector = lipgloss.NewStyle().SetString("  ")
+	t.Blurred.NextIndicator = lipgloss.NewStyle()
+	t.Blurred.PrevIndicator = lipgloss.NewStyle()
 
 	return &t
 }
@@ -214,6 +216,8 @@ func ThemeCharm() *Theme {
 
 	t.Blurred = f.copy()
 	t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
+	t.Blurred.NextIndicator = lipgloss.NewStyle()
+	t.Blurred.PrevIndicator = lipgloss.NewStyle()
 
 	return &t
 }
@@ -258,6 +262,8 @@ func ThemeDracula() *Theme {
 
 	t.Blurred = f.copy()
 	t.Blurred.Base = t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
+	t.Blurred.NextIndicator = lipgloss.NewStyle()
+	t.Blurred.PrevIndicator = lipgloss.NewStyle()
 
 	return &t
 }
@@ -294,6 +300,8 @@ func ThemeBase16() *Theme {
 	t.Blurred.NoteTitle.Foreground(lipgloss.Color("8"))
 	t.Blurred.TextInput.Prompt.Foreground(lipgloss.Color("8"))
 	t.Blurred.TextInput.Text.Foreground(lipgloss.Color("7"))
+	t.Blurred.NextIndicator = lipgloss.NewStyle()
+	t.Blurred.PrevIndicator = lipgloss.NewStyle()
 
 	return &t
 }
