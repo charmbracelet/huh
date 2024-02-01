@@ -197,7 +197,7 @@ func (f *FilePicker) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		f.setPicking(false)
 		return f, nextField
 	}
-	didSelect, file = f.picker.DidSelectDisabledFile(msg)
+	didSelect, _ = f.picker.DidSelectDisabledFile(msg)
 	if didSelect {
 		f.err = errors.New(xstrings.EnglishJoin(f.picker.AllowedTypes, true) + " files only")
 		return f, nil
@@ -227,7 +227,6 @@ func (f *FilePicker) View() string {
 		} else {
 			sb.WriteString(styles.TextInput.Placeholder.Render("No file selected."))
 		}
-
 	}
 	return styles.Base.Render(sb.String())
 }
