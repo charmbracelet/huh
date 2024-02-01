@@ -36,6 +36,7 @@ type Select[T comparable] struct {
 	filter    textinput.Model
 
 	// options
+	inline     bool
 	width      int
 	accessible bool
 	theme      *Theme
@@ -108,6 +109,15 @@ func (s *Select[T]) Options(options ...Option[T]) *Select[T] {
 
 	s.updateViewportHeight()
 
+	return s
+}
+
+// Inline sets whether the select input should be inline.
+func (s *Select[T]) Inline(v bool) *Select[T] {
+	s.inline = v
+	if v {
+		s.Height(1)
+	}
 	return s
 }
 
@@ -206,7 +216,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// changes. When making this fix it's worth considering ignoring
 			// whether to ignore all up/down keybindings as ignoring a-zA-Z0-9
 			// may not be enough when international keyboards are considered.
-			if s.filtering && msg.String() == "k" {
+			if s.filtering && (msg.String() == "k" || msg.String() == "h") {
 				break
 			}
 			s.selected = max(s.selected-1, 0)
@@ -217,7 +227,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// When filtering we should ignore j/k keybindings
 			//
 			// XXX: See note in the previous case match.
-			if s.filtering && msg.String() == "j" {
+			if s.filtering && (msg.String() == "j" || msg.String() == "l") {
 				break
 			}
 			s.selected = min(s.selected+1, len(s.filteredOptions)-1)
@@ -308,8 +318,8 @@ func (s *Select[T]) titleView() string {
 		sb     = strings.Builder{}
 	)
 	if s.filtering {
-		sb.WriteString(s.filter.View())
-	} else if s.filter.Value() != "" {
+		sb.WriteString(styles.Title.Render(s.filter.View()))
+	} else if s.filter.Value() != "" && !s.inline {
 		sb.WriteString(styles.Title.Render(s.title) + styles.Description.Render("/"+s.filter.Value()))
 	} else {
 		sb.WriteString(styles.Title.Render(s.title))
@@ -330,6 +340,18 @@ func (s *Select[T]) choicesView() string {
 		c      = styles.SelectSelector.String()
 		sb     strings.Builder
 	)
+
+	if s.inline {
+		sb.WriteString(styles.PrevIndicator.Faint(s.selected <= 0).String())
+		if len(s.filteredOptions) > 0 {
+			sb.WriteString(styles.SelectedOption.Render(s.filteredOptions[s.selected].Key))
+		} else {
+			sb.WriteString(styles.TextInput.Placeholder.Render("No matches"))
+		}
+		sb.WriteString(styles.NextIndicator.Faint(s.selected == len(s.filteredOptions)-1).String())
+		return sb.String()
+	}
+
 	for i, option := range s.filteredOptions {
 		if s.selected == i {
 			sb.WriteString(c + styles.SelectedOption.Render(option.Key))
@@ -356,10 +378,15 @@ func (s *Select[T]) View() string {
 	var sb strings.Builder
 	if s.title != "" {
 		sb.WriteString(s.titleView())
-		sb.WriteString("\n")
+		if !s.inline {
+			sb.WriteString("\n")
+		}
 	}
 	if s.description != "" {
-		sb.WriteString(s.descriptionView() + "\n")
+		sb.WriteString(s.descriptionView())
+		if !s.inline {
+			sb.WriteString("\n")
+		}
 	}
 	sb.WriteString(s.viewport.View())
 	return styles.Base.Render(sb.String())
@@ -367,6 +394,9 @@ func (s *Select[T]) View() string {
 
 // setFilter sets the filter of the select field.
 func (s *Select[T]) setFilter(filter bool) {
+	if s.inline && filter {
+		s.filter.Width = lipgloss.Width(s.titleView()) - 1 - 1
+	}
 	s.filtering = filter
 	s.keymap.SetFilter.SetEnabled(filter)
 	s.keymap.Filter.SetEnabled(!filter)

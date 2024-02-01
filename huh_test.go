@@ -487,9 +487,9 @@ func TestFile(t *testing.T) {
 
 	view := field.View()
 
-	if !strings.Contains(view, "accessibility") {
+	if !strings.Contains(view, "No file selected") {
 		t.Log(pretty.Render(view))
-		t.Error("Expected file picker to show accessibility.")
+		t.Error("Expected file picker to show no file selected.")
 	}
 
 	if !strings.Contains(view, "Which file?") {

@@ -48,6 +48,8 @@ type FieldStyles struct {
 	// Select styles.
 	SelectSelector lipgloss.Style // Selection indicator
 	Option         lipgloss.Style // Select options
+	NextIndicator  lipgloss.Style
+	PrevIndicator  lipgloss.Style
 
 	// Multi-select styles.
 	MultiSelectSelector lipgloss.Style
@@ -96,6 +98,8 @@ func (f FieldStyles) copy() FieldStyles {
 		ErrorIndicator:      f.ErrorIndicator.Copy(),
 		ErrorMessage:        f.ErrorMessage.Copy(),
 		SelectSelector:      f.SelectSelector.Copy(),
+		NextIndicator:       f.NextIndicator.Copy(),
+		PrevIndicator:       f.PrevIndicator.Copy(),
 		Option:              f.Option.Copy(),
 		MultiSelectSelector: f.MultiSelectSelector.Copy(),
 		SelectedOption:      f.SelectedOption.Copy(),
@@ -141,6 +145,12 @@ func ThemeBase() *Theme {
 		SetString(" *")
 	f.SelectSelector = lipgloss.NewStyle().
 		SetString("> ")
+	f.NextIndicator = lipgloss.NewStyle().
+		MarginLeft(1).
+		SetString("→")
+	f.PrevIndicator = lipgloss.NewStyle().
+		MarginRight(1).
+		SetString("←")
 	f.MultiSelectSelector = lipgloss.NewStyle().
 		SetString("> ")
 	f.SelectedPrefix = lipgloss.NewStyle().
@@ -161,6 +171,8 @@ func ThemeBase() *Theme {
 	t.Blurred = f.copy()
 	t.Blurred.Base = t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
 	t.Blurred.MultiSelectSelector = lipgloss.NewStyle().SetString("  ")
+	t.Blurred.NextIndicator = lipgloss.NewStyle()
+	t.Blurred.PrevIndicator = lipgloss.NewStyle()
 
 	return &t
 }
@@ -186,6 +198,8 @@ func ThemeCharm() *Theme {
 	f.ErrorIndicator.Foreground(red)
 	f.ErrorMessage.Foreground(red)
 	f.SelectSelector.Foreground(fuchsia)
+	f.NextIndicator.Foreground(fuchsia)
+	f.PrevIndicator.Foreground(fuchsia)
 	f.Option.Foreground(normalFg)
 	f.MultiSelectSelector.Foreground(fuchsia)
 	f.SelectedOption.Foreground(green)
@@ -202,6 +216,8 @@ func ThemeCharm() *Theme {
 
 	t.Blurred = f.copy()
 	t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
+	t.Blurred.NextIndicator = lipgloss.NewStyle()
+	t.Blurred.PrevIndicator = lipgloss.NewStyle()
 
 	return &t
 }
@@ -229,6 +245,8 @@ func ThemeDracula() *Theme {
 	f.ErrorIndicator.Foreground(red)
 	f.ErrorMessage.Foreground(red)
 	f.SelectSelector.Foreground(yellow)
+	f.NextIndicator.Foreground(yellow)
+	f.PrevIndicator.Foreground(yellow)
 	f.Option.Foreground(foreground)
 	f.MultiSelectSelector.Foreground(yellow)
 	f.SelectedOption.Foreground(green)
@@ -244,6 +262,8 @@ func ThemeDracula() *Theme {
 
 	t.Blurred = f.copy()
 	t.Blurred.Base = t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
+	t.Blurred.NextIndicator = lipgloss.NewStyle()
+	t.Blurred.PrevIndicator = lipgloss.NewStyle()
 
 	return &t
 }
@@ -260,6 +280,8 @@ func ThemeBase16() *Theme {
 	f.ErrorIndicator.Foreground(lipgloss.Color("9"))
 	f.ErrorMessage.Foreground(lipgloss.Color("9"))
 	f.SelectSelector.Foreground(lipgloss.Color("3"))
+	f.NextIndicator.Foreground(lipgloss.Color("3"))
+	f.PrevIndicator.Foreground(lipgloss.Color("3"))
 	f.Option.Foreground(lipgloss.Color("7"))
 	f.MultiSelectSelector.Foreground(lipgloss.Color("3"))
 	f.SelectedOption.Foreground(lipgloss.Color("2"))
@@ -278,6 +300,8 @@ func ThemeBase16() *Theme {
 	t.Blurred.NoteTitle.Foreground(lipgloss.Color("8"))
 	t.Blurred.TextInput.Prompt.Foreground(lipgloss.Color("8"))
 	t.Blurred.TextInput.Text.Foreground(lipgloss.Color("7"))
+	t.Blurred.NextIndicator = lipgloss.NewStyle()
+	t.Blurred.PrevIndicator = lipgloss.NewStyle()
 
 	return &t
 }
@@ -310,6 +334,8 @@ func ThemeCatppuccin() *Theme {
 	f.ErrorIndicator.Foreground(red)
 	f.ErrorMessage.Foreground(red)
 	f.SelectSelector.Foreground(pink)
+	f.NextIndicator.Foreground(pink)
+	f.PrevIndicator.Foreground(pink)
 	f.Option.Foreground(text)
 	f.MultiSelectSelector.Foreground(pink)
 	f.SelectedOption.Foreground(green)
