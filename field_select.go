@@ -112,6 +112,7 @@ func (s *Select[T]) Options(options ...Option[T]) *Select[T] {
 	return s
 }
 
+// Inline sets whether the select input should be inline.
 func (s *Select[T]) Inline(v bool) *Select[T] {
 	s.inline = v
 	if v {
