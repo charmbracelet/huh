@@ -337,13 +337,13 @@ func (s *Select[T]) choicesView() string {
 	)
 
 	if s.inline {
-		sb.WriteString(styles.SelectPrev.Faint(s.selected <= 0).String())
+		sb.WriteString(styles.PrevIndicator.Faint(s.selected <= 0).String())
 		if len(s.filteredOptions) > 0 {
 			sb.WriteString(styles.SelectedOption.Render(s.filteredOptions[s.selected].Key))
 		} else {
 			sb.WriteString(styles.TextInput.Placeholder.Render("No matches"))
 		}
-		sb.WriteString(styles.SelectNext.Faint(s.selected == len(s.filteredOptions)-1).String())
+		sb.WriteString(styles.NextIndicator.Faint(s.selected == len(s.filteredOptions)-1).String())
 		return sb.String()
 	}
 

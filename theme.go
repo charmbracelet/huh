@@ -48,8 +48,8 @@ type FieldStyles struct {
 	// Select styles.
 	SelectSelector lipgloss.Style // Selection indicator
 	Option         lipgloss.Style // Select options
-	SelectNext     lipgloss.Style
-	SelectPrev     lipgloss.Style
+	NextIndicator  lipgloss.Style
+	PrevIndicator  lipgloss.Style
 
 	// Multi-select styles.
 	MultiSelectSelector lipgloss.Style
@@ -98,8 +98,8 @@ func (f FieldStyles) copy() FieldStyles {
 		ErrorIndicator:      f.ErrorIndicator.Copy(),
 		ErrorMessage:        f.ErrorMessage.Copy(),
 		SelectSelector:      f.SelectSelector.Copy(),
-		SelectNext:          f.SelectNext.Copy(),
-		SelectPrev:          f.SelectPrev.Copy(),
+		NextIndicator:       f.NextIndicator.Copy(),
+		PrevIndicator:       f.PrevIndicator.Copy(),
 		Option:              f.Option.Copy(),
 		MultiSelectSelector: f.MultiSelectSelector.Copy(),
 		SelectedOption:      f.SelectedOption.Copy(),
@@ -145,10 +145,10 @@ func ThemeBase() *Theme {
 		SetString(" *")
 	f.SelectSelector = lipgloss.NewStyle().
 		SetString("> ")
-	f.SelectNext = lipgloss.NewStyle().
+	f.NextIndicator = lipgloss.NewStyle().
 		MarginLeft(1).
 		SetString("→")
-	f.SelectPrev = lipgloss.NewStyle().
+	f.PrevIndicator = lipgloss.NewStyle().
 		MarginRight(1).
 		SetString("←")
 	f.MultiSelectSelector = lipgloss.NewStyle().
@@ -196,8 +196,8 @@ func ThemeCharm() *Theme {
 	f.ErrorIndicator.Foreground(red)
 	f.ErrorMessage.Foreground(red)
 	f.SelectSelector.Foreground(fuchsia)
-	f.SelectNext.Foreground(fuchsia)
-	f.SelectPrev.Foreground(fuchsia)
+	f.NextIndicator.Foreground(fuchsia)
+	f.PrevIndicator.Foreground(fuchsia)
 	f.Option.Foreground(normalFg)
 	f.MultiSelectSelector.Foreground(fuchsia)
 	f.SelectedOption.Foreground(green)
@@ -241,8 +241,8 @@ func ThemeDracula() *Theme {
 	f.ErrorIndicator.Foreground(red)
 	f.ErrorMessage.Foreground(red)
 	f.SelectSelector.Foreground(yellow)
-	f.SelectNext.Foreground(yellow)
-	f.SelectPrev.Foreground(yellow)
+	f.NextIndicator.Foreground(yellow)
+	f.PrevIndicator.Foreground(yellow)
 	f.Option.Foreground(foreground)
 	f.MultiSelectSelector.Foreground(yellow)
 	f.SelectedOption.Foreground(green)
@@ -274,8 +274,8 @@ func ThemeBase16() *Theme {
 	f.ErrorIndicator.Foreground(lipgloss.Color("9"))
 	f.ErrorMessage.Foreground(lipgloss.Color("9"))
 	f.SelectSelector.Foreground(lipgloss.Color("3"))
-	f.SelectNext.Foreground(lipgloss.Color("3"))
-	f.SelectPrev.Foreground(lipgloss.Color("3"))
+	f.NextIndicator.Foreground(lipgloss.Color("3"))
+	f.PrevIndicator.Foreground(lipgloss.Color("3"))
 	f.Option.Foreground(lipgloss.Color("7"))
 	f.MultiSelectSelector.Foreground(lipgloss.Color("3"))
 	f.SelectedOption.Foreground(lipgloss.Color("2"))
@@ -326,8 +326,8 @@ func ThemeCatppuccin() *Theme {
 	f.ErrorIndicator.Foreground(red)
 	f.ErrorMessage.Foreground(red)
 	f.SelectSelector.Foreground(pink)
-	f.SelectNext.Foreground(pink)
-	f.SelectPrev.Foreground(pink)
+	f.NextIndicator.Foreground(pink)
+	f.PrevIndicator.Foreground(pink)
 	f.Option.Foreground(text)
 	f.MultiSelectSelector.Foreground(pink)
 	f.SelectedOption.Foreground(green)
