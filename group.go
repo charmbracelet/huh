@@ -95,6 +95,7 @@ func (g *Group) WithTheme(t *Theme) *Group {
 	for _, field := range g.fields {
 		field.WithTheme(t)
 	}
+	g.WithHeight(g.fullHeight())
 	return g
 }
 
@@ -251,8 +252,16 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // height returns the full height of the group
 func (g *Group) fullHeight() int {
 	var height int
+
+	if g.theme != nil {
+		gap := g.theme.FieldSeparator.String()
+		if gap != "" {
+			height += len(g.fields)
+		}
+	}
+
 	for _, f := range g.fields {
-		height += lipgloss.Height(f.View()) + 1 // + gap
+		height += lipgloss.Height(f.View())
 	}
 	return height
 }
