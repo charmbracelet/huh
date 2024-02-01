@@ -278,34 +278,32 @@ func (g *Group) buildView() {
 		gap = "\n"
 	}
 
+	offset := 0
+
 	// if the focused field is requesting it be zoomed, only show that field.
 	if g.fields[g.paginator.Page].Zoom() {
 		g.fields[g.paginator.Page].WithHeight(g.height - 1)
 		fields.WriteString(g.fields[g.paginator.Page].View())
+		offset = 0
 	} else {
 		for i, field := range g.fields {
-			fields.WriteString(field.View())
+			view := field.View()
+			fields.WriteString(view)
 			if i < len(g.fields)-1 {
 				fields.WriteString(gap)
+			}
+			if i >= g.paginator.Page {
+				continue
+			}
+			offset += lipgloss.Height(view)
+			if gap != "" {
+				offset++
 			}
 		}
 	}
 
 	g.viewport.SetContent(fields.String() + "\n")
-
-	if g.fields[g.paginator.Page].Zoom() {
-		g.fields[g.paginator.Page].WithHeight(g.height - 1)
-		g.viewport.SetYOffset(0)
-	} else {
-		offset := 0
-		for i := 0; i < g.paginator.Page; i++ {
-			offset += lipgloss.Height(g.fields[i].View())
-			if gap := g.theme.FieldSeparator.String(); gap != "" {
-				offset++
-			}
-		}
-		g.viewport.SetYOffset(offset)
-	}
+	g.viewport.SetYOffset(offset)
 }
 
 // View renders the group.
