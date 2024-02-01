@@ -36,6 +36,7 @@ type Select[T comparable] struct {
 	filter    textinput.Model
 
 	// options
+	inline     bool
 	width      int
 	accessible bool
 	theme      *Theme
@@ -108,6 +109,14 @@ func (s *Select[T]) Options(options ...Option[T]) *Select[T] {
 
 	s.updateViewportHeight()
 
+	return s
+}
+
+func (s *Select[T]) Inline(v bool) *Select[T] {
+	s.inline = v
+	if v {
+		s.Height(1)
+	}
 	return s
 }
 
@@ -303,8 +312,8 @@ func (s *Select[T]) titleView() string {
 		sb     = strings.Builder{}
 	)
 	if s.filtering {
-		sb.WriteString(s.filter.View())
-	} else if s.filter.Value() != "" {
+		sb.WriteString(styles.Title.Render(s.filter.View()))
+	} else if s.filter.Value() != "" && !s.inline {
 		sb.WriteString(styles.Title.Render(s.title) + styles.Description.Render("/"+s.filter.Value()))
 	} else {
 		sb.WriteString(styles.Title.Render(s.title))
@@ -325,6 +334,18 @@ func (s *Select[T]) choicesView() string {
 		c      = styles.SelectSelector.String()
 		sb     strings.Builder
 	)
+
+	if s.inline {
+		sb.WriteString(styles.SelectPrev.Faint(s.selected <= 0).String())
+		if len(s.filteredOptions) > 0 {
+			sb.WriteString(styles.SelectedOption.Render(s.filteredOptions[s.selected].Key))
+		} else {
+			sb.WriteString(styles.TextInput.Placeholder.Render("No matches"))
+		}
+		sb.WriteString(styles.SelectNext.Faint(s.selected == len(s.filteredOptions)-1).String())
+		return sb.String()
+	}
+
 	for i, option := range s.filteredOptions {
 		if s.selected == i {
 			sb.WriteString(c + styles.SelectedOption.Render(option.Key))
@@ -351,10 +372,15 @@ func (s *Select[T]) View() string {
 	var sb strings.Builder
 	if s.title != "" {
 		sb.WriteString(s.titleView())
-		sb.WriteString("\n")
+		if !s.inline {
+			sb.WriteString("\n")
+		}
 	}
 	if s.description != "" {
-		sb.WriteString(s.descriptionView() + "\n")
+		sb.WriteString(s.descriptionView())
+		if !s.inline {
+			sb.WriteString("\n")
+		}
 	}
 	sb.WriteString(s.viewport.View())
 	return styles.Base.Render(sb.String())
