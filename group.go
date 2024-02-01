@@ -286,7 +286,10 @@ func (g *Group) buildView() {
 	} else {
 		offset := 0
 		for i := 0; i < g.paginator.Page; i++ {
-			offset += lipgloss.Height(g.fields[i].View()) + 1
+			offset += lipgloss.Height(g.fields[i].View())
+			if gap := g.theme.FieldSeparator.String(); gap != "" {
+				offset += 1
+			}
 		}
 		g.viewport.SetYOffset(offset)
 	}

@@ -119,14 +119,12 @@ func (n *Note) View() string {
 	}
 
 	var (
-		sb    strings.Builder
-		title string
+		sb strings.Builder
 	)
 
 	if n.title != "" {
-		title = n.title
+		sb.WriteString(styles.NoteTitle.Render(n.title))
 	}
-	sb.WriteString(styles.NoteTitle.Render(title))
 	if n.description != "" {
 		sb.WriteString("\n")
 		sb.WriteString(render(n.description))
