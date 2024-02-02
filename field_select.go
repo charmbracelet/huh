@@ -122,6 +122,10 @@ func (s *Select[T]) Inline(v bool) *Select[T] {
 	if v {
 		s.Height(1)
 	}
+	s.keymap.Left.SetEnabled(v)
+	s.keymap.Right.SetEnabled(v)
+	s.keymap.Up.SetEnabled(!v)
+	s.keymap.Down.SetEnabled(!v)
 	return s
 }
 
@@ -174,7 +178,11 @@ func (s *Select[T]) Blur() tea.Cmd {
 
 // KeyBinds returns the help keybindings for the select field.
 func (s *Select[T]) KeyBinds() []key.Binding {
-	return []key.Binding{s.keymap.Up, s.keymap.Down, s.keymap.Filter, s.keymap.SetFilter, s.keymap.ClearFilter, s.keymap.Prev, s.keymap.Next, s.keymap.Submit}
+	return []key.Binding{
+		s.keymap.Up, s.keymap.Down, s.keymap.Left, s.keymap.Right,
+		s.keymap.Filter, s.keymap.SetFilter, s.keymap.ClearFilter, s.keymap.Prev,
+		s.keymap.Next, s.keymap.Submit,
+	}
 }
 
 // Init initializes the select field.
@@ -211,7 +219,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			s.setFiltering(false)
 		case key.Matches(msg, s.keymap.ClearFilter):
 			s.clearFilter()
-		case key.Matches(msg, s.keymap.Up):
+		case key.Matches(msg, s.keymap.Up, s.keymap.Left):
 			// When filtering we should ignore j/k keybindings
 			//
 			// XXX: Currently, the below check doesn't account for keymap
@@ -225,7 +233,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if s.selected < s.viewport.YOffset {
 				s.viewport.SetYOffset(s.selected)
 			}
-		case key.Matches(msg, s.keymap.Down):
+		case key.Matches(msg, s.keymap.Down, s.keymap.Right):
 			// When filtering we should ignore j/k keybindings
 			//
 			// XXX: See note in the previous case match.
@@ -466,6 +474,10 @@ func (s *Select[T]) WithTheme(theme *Theme) Field {
 // WithKeyMap sets the keymap on a select field.
 func (s *Select[T]) WithKeyMap(k *KeyMap) Field {
 	s.keymap = k.Select
+	s.keymap.Left.SetEnabled(s.inline)
+	s.keymap.Right.SetEnabled(s.inline)
+	s.keymap.Up.SetEnabled(!s.inline)
+	s.keymap.Down.SetEnabled(!s.inline)
 	return s
 }
 
