@@ -2,20 +2,23 @@ package huh
 
 import (
 	"fmt"
+	"unicode/utf8"
 )
 
 // ValidateNotEmpty checks if the input is not empty.
-func ValidateNotEmpty(s string) error {
-	if s == "" {
-		return fmt.Errorf("input cannot be empty")
+func ValidateNotEmpty() func(s string) error {
+	return func(s string) error{
+		if s == "" {
+			return fmt.Errorf("input cannot be empty")
+		}
+		return nil
 	}
-	return nil
 }
 
-// ValidateLength checks if the input has a length within the specified range.
-func ValidateLength(min, max int) func([]string) error {
-	return func(input []string) error {
-		length := len(input)
+// ValidateLength checks if the length of the input is within the specified range.
+func ValidateLength(min, max int) func(s string) error {
+	return func(s string) error {
+		length := utf8.RuneCountInString(s)
 		if length < min || length > max {
 			return fmt.Errorf("input must be between %d and %d", min, max)
 		}
