@@ -240,7 +240,9 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	g.fields[g.paginator.Page] = m.(Field)
 	cmds = append(cmds, cmd)
 
-	switch msg.(type) {
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		g.WithHeight(min(g.fullHeight(), msg.Height-1))
 	case nextFieldMsg:
 		cmds = append(cmds, g.nextField()...)
 	case prevFieldMsg:
@@ -273,32 +275,24 @@ func (g *Group) fullHeight() int {
 
 func (g *Group) buildView() {
 	var fields strings.Builder
-
+	offset := 0
 	gap := g.theme.FieldSeparator.String()
 	if gap == "" {
 		gap = "\n"
 	}
 
-	offset := 0
-
 	// if the focused field is requesting it be zoomed, only show that field.
 	if g.fields[g.paginator.Page].Zoom() {
 		g.fields[g.paginator.Page].WithHeight(g.height - 1)
 		fields.WriteString(g.fields[g.paginator.Page].View())
-		offset = 0
 	} else {
 		for i, field := range g.fields {
-			view := field.View()
-			fields.WriteString(view)
+			fields.WriteString(field.View())
+			if i == g.paginator.Page {
+				offset = lipgloss.Height(fields.String()) - lipgloss.Height(field.View())
+			}
 			if i < len(g.fields)-1 {
 				fields.WriteString(gap)
-			}
-			if i >= g.paginator.Page {
-				continue
-			}
-			offset += lipgloss.Height(view)
-			if gap != "" {
-				offset++
 			}
 		}
 	}
