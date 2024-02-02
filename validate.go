@@ -5,6 +5,7 @@ import (
 	"unicode/utf8"
 )
 
+// ErrInputEmpty is an error indicating that the input cannot be empty.
 var ErrInputEmpty = fmt.Errorf("input cannot be empty")
 
 // ValidateNotEmpty checks if the input is not empty.
