@@ -7,7 +7,7 @@ import (
 
 // ValidateNotEmpty checks if the input is not empty.
 func ValidateNotEmpty() func(s string) error {
-	return func(s string) error{
+	return func(s string) error {
 		if s == "" {
 			return fmt.Errorf("input cannot be empty")
 		}
