@@ -38,6 +38,8 @@ type SelectKeyMap struct {
 	Prev        key.Binding
 	Up          key.Binding
 	Down        key.Binding
+	Left        key.Binding
+	Right       key.Binding
 	Filter      key.Binding
 	SetFilter   key.Binding
 	ClearFilter key.Binding
@@ -126,8 +128,10 @@ func NewDefaultKeyMap() *KeyMap {
 			Prev:        key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),
 			Next:        key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "select")),
 			Submit:      key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "submit")),
-			Up:          key.NewBinding(key.WithKeys("up", "k", "ctrl+k", "ctrl+p", "h", "left"), key.WithHelp("↑", "up")),
-			Down:        key.NewBinding(key.WithKeys("down", "j", "ctrl+j", "ctrl+n", "l", "right"), key.WithHelp("↓", "down")),
+			Up:          key.NewBinding(key.WithKeys("up", "k", "ctrl+k", "ctrl+p"), key.WithHelp("↑", "up")),
+			Down:        key.NewBinding(key.WithKeys("down", "j", "ctrl+j", "ctrl+n"), key.WithHelp("↓", "down")),
+			Left:        key.NewBinding(key.WithKeys("h", "left"), key.WithHelp("←", "left"), key.WithDisabled()),
+			Right:       key.NewBinding(key.WithKeys("l", "right"), key.WithHelp("→", "right"), key.WithDisabled()),
 			Filter:      key.NewBinding(key.WithKeys("/"), key.WithHelp("/", "filter")),
 			SetFilter:   key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "set filter"), key.WithDisabled()),
 			ClearFilter: key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "clear filter"), key.WithDisabled()),
