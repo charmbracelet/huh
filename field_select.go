@@ -61,13 +61,17 @@ func NewSelect[T comparable]() *Select[T] {
 // Value sets the value of the select field.
 func (s *Select[T]) Value(value *T) *Select[T] {
 	s.value = value
+	s.selectValue(*value)
+	return s
+}
+
+func (s *Select[T]) selectValue(value T) {
 	for i, o := range s.options {
-		if o.Value == *value {
+		if o.Value == value {
 			s.selected = i
 			break
 		}
 	}
-	return s
 }
 
 // Key sets the key of the select field which can be used to retrieve the value
@@ -158,8 +162,13 @@ func (s *Select[T]) Focus() tea.Cmd {
 
 // Blur blurs the select field.
 func (s *Select[T]) Blur() tea.Cmd {
+	value := *s.value
+	if s.inline {
+		s.clearFilter()
+		s.selectValue(value)
+	}
 	s.focused = false
-	s.err = s.validate(*s.value)
+	s.err = s.validate(value)
 	return nil
 }
 
@@ -192,18 +201,16 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		s.err = nil
 		switch {
 		case key.Matches(msg, s.keymap.Filter):
-			s.setFilter(true)
+			s.setFiltering(true)
 			return s, s.filter.Focus()
 		case key.Matches(msg, s.keymap.SetFilter):
 			if len(s.filteredOptions) <= 0 {
 				s.filter.SetValue("")
 				s.filteredOptions = s.options
 			}
-			s.setFilter(false)
+			s.setFiltering(false)
 		case key.Matches(msg, s.keymap.ClearFilter):
-			s.filter.SetValue("")
-			s.filteredOptions = s.options
-			s.setFilter(false)
+			s.clearFilter()
 		case key.Matches(msg, s.keymap.Up):
 			// When filtering we should ignore j/k keybindings
 			//
@@ -245,7 +252,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				break
 			}
 			value := s.filteredOptions[s.selected].Value
-			s.setFilter(false)
+			s.setFiltering(false)
 			s.err = s.validate(value)
 			if s.err != nil {
 				return s, nil
@@ -387,15 +394,22 @@ func (s *Select[T]) View() string {
 	return styles.Base.Render(sb.String())
 }
 
-// setFilter sets the filter of the select field.
-func (s *Select[T]) setFilter(filter bool) {
-	if s.inline && filter {
+// clearFilter clears the value of the filter.
+func (s *Select[T]) clearFilter() {
+	s.filter.SetValue("")
+	s.filteredOptions = s.options
+	s.setFiltering(false)
+}
+
+// setFiltering sets the filter of the select field.
+func (s *Select[T]) setFiltering(filtering bool) {
+	if s.inline && filtering {
 		s.filter.Width = lipgloss.Width(s.titleView()) - 1 - 1
 	}
-	s.filtering = filter
-	s.keymap.SetFilter.SetEnabled(filter)
-	s.keymap.Filter.SetEnabled(!filter)
-	s.keymap.ClearFilter.SetEnabled(!filter && s.filter.Value() != "")
+	s.filtering = filtering
+	s.keymap.SetFilter.SetEnabled(filtering)
+	s.keymap.Filter.SetEnabled(!filtering)
+	s.keymap.ClearFilter.SetEnabled(!filtering && s.filter.Value() != "")
 }
 
 // filterFunc returns true if the option matches the filter.
