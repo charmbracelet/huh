@@ -5,11 +5,13 @@ import (
 	"unicode/utf8"
 )
 
+var ErrInputEmpty = fmt.Errorf("input cannot be empty")
+
 // ValidateNotEmpty checks if the input is not empty.
 func ValidateNotEmpty() func(s string) error {
 	return func(s string) error {
 		if s == "" {
-			return fmt.Errorf("input cannot be empty")
+			return ErrInputEmpty
 		}
 		return nil
 	}
@@ -35,7 +37,7 @@ func ValidateOneOf(options ...string) func(string) error {
 
 	return func(value string) error {
 		if _, ok := validOptions[value]; !ok {
-			return fmt.Errorf("invalid option")
+			return fmt.Errorf("invalid option: %s", value)
 		}
 		return nil
 	}
