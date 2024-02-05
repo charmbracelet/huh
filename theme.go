@@ -51,6 +51,10 @@ type FieldStyles struct {
 	NextIndicator  lipgloss.Style
 	PrevIndicator  lipgloss.Style
 
+	// FilePicker styles.
+	Directory lipgloss.Style
+	File      lipgloss.Style
+
 	// Multi-select styles.
 	MultiSelectSelector lipgloss.Style
 	SelectedOption      lipgloss.Style
@@ -101,6 +105,8 @@ func (f FieldStyles) copy() FieldStyles {
 		NextIndicator:       f.NextIndicator.Copy(),
 		PrevIndicator:       f.PrevIndicator.Copy(),
 		Option:              f.Option.Copy(),
+		Directory:           f.Directory.Copy(),
+		File:                f.File.Copy(),
 		MultiSelectSelector: f.MultiSelectSelector.Copy(),
 		SelectedOption:      f.SelectedOption.Copy(),
 		SelectedPrefix:      f.SelectedPrefix.Copy(),
@@ -194,6 +200,7 @@ func ThemeCharm() *Theme {
 	f.Base = f.Base.BorderForeground(lipgloss.Color("238"))
 	f.Title.Foreground(indigo).Bold(true)
 	f.NoteTitle.Foreground(indigo).Bold(true).MarginBottom(1)
+	f.Directory.Foreground(indigo)
 	f.Description.Foreground(lipgloss.AdaptiveColor{Light: "", Dark: "243"})
 	f.ErrorIndicator.Foreground(red)
 	f.ErrorMessage.Foreground(red)
@@ -243,6 +250,8 @@ func ThemeDracula() *Theme {
 	f.NoteTitle.Foreground(purple)
 	f.Description.Foreground(comment)
 	f.ErrorIndicator.Foreground(red)
+	f.Directory.Foreground(purple)
+	f.File.Foreground(foreground)
 	f.ErrorMessage.Foreground(red)
 	f.SelectSelector.Foreground(yellow)
 	f.NextIndicator.Foreground(yellow)
@@ -276,6 +285,7 @@ func ThemeBase16() *Theme {
 	f.Base.BorderForeground(lipgloss.Color("8"))
 	f.Title.Foreground(lipgloss.Color("6"))
 	f.NoteTitle.Foreground(lipgloss.Color("6"))
+	f.Directory.Foreground(lipgloss.Color("6"))
 	f.Description.Foreground(lipgloss.Color("8"))
 	f.ErrorIndicator.Foreground(lipgloss.Color("9"))
 	f.ErrorMessage.Foreground(lipgloss.Color("9"))
@@ -330,6 +340,7 @@ func ThemeCatppuccin() *Theme {
 	f.Base.BorderForeground(subtext1)
 	f.Title.Foreground(mauve)
 	f.NoteTitle.Foreground(mauve)
+	f.Directory.Foreground(mauve)
 	f.Description.Foreground(subtext0)
 	f.ErrorIndicator.Foreground(red)
 	f.ErrorMessage.Foreground(red)
