@@ -42,7 +42,7 @@ type FilePicker struct {
 }
 
 // NewFilePicker returns a new file field.
-func NewFilePicker() *FilePicker {
+func NewFilePicker(opts ...ThemeOption) *FilePicker {
 	fp := filepicker.New()
 	fp.ShowSize = false
 	fp.AutoHeight = false
@@ -56,7 +56,7 @@ func NewFilePicker() *FilePicker {
 		value:    new(string),
 		validate: func(string) error { return nil },
 		picker:   fp,
-		theme:    ThemeCharm(),
+		theme:    ThemeCharm(opts...),
 	}
 }
 
@@ -295,9 +295,9 @@ func (f *FilePicker) WithTheme(theme *Theme) Field {
 	f.picker.Styles = filepicker.Styles{
 		DisabledCursor:   lipgloss.Style{},
 		Cursor:           theme.Focused.TextInput.Prompt,
-		Symlink:          lipgloss.NewStyle(),
+		Symlink:          theme.Renderer.NewStyle(),
 		Directory:        theme.Focused.Title,
-		File:             lipgloss.NewStyle(),
+		File:             theme.Renderer.NewStyle(),
 		DisabledFile:     theme.Focused.Description,
 		Permission:       theme.Focused.Description,
 		Selected:         theme.Focused.SelectedOption,

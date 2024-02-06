@@ -28,10 +28,10 @@ type Note struct {
 }
 
 // NewNote creates a new note field.
-func NewNote() *Note {
+func NewNote(opts ...ThemeOption) *Note {
 	return &Note{
 		showNextButton: false,
-		theme:          ThemeCharm(),
+		theme:          ThemeCharm(opts...),
 		skip:           true,
 	}
 }
@@ -113,9 +113,7 @@ func (n *Note) View() string {
 		styles = n.theme.Focused
 	}
 
-	var (
-		sb strings.Builder
-	)
+	var sb strings.Builder
 
 	if n.title != "" {
 		sb.WriteString(styles.NoteTitle.Render(n.title))

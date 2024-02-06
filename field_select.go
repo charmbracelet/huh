@@ -44,7 +44,7 @@ type Select[T comparable] struct {
 }
 
 // NewSelect returns a new select field.
-func NewSelect[T comparable]() *Select[T] {
+func NewSelect[T comparable](opts ...ThemeOption) *Select[T] {
 	filter := textinput.New()
 	filter.Prompt = "/"
 
@@ -54,7 +54,7 @@ func NewSelect[T comparable]() *Select[T] {
 		validate:  func(T) error { return nil },
 		filtering: false,
 		filter:    filter,
-		theme:     ThemeCharm(),
+		theme:     ThemeCharm(opts...),
 	}
 }
 

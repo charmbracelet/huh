@@ -10,7 +10,6 @@ import (
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh/accessibility"
-	"github.com/charmbracelet/lipgloss"
 )
 
 // Text is a form text field. It allows for a multi-line string input.
@@ -43,11 +42,12 @@ type Text struct {
 }
 
 // NewText returns a new text field.
-func NewText() *Text {
+func NewText(opts ...ThemeOption) *Text {
+	theme := ThemeCharm(opts...)
 	text := textarea.New()
 	text.ShowLineNumbers = false
 	text.Prompt = ""
-	text.FocusedStyle.CursorLine = lipgloss.NewStyle()
+	text.FocusedStyle.CursorLine = theme.Renderer.NewStyle()
 
 	editorCmd, editorArgs := getEditor()
 
@@ -58,7 +58,7 @@ func NewText() *Text {
 		editorCmd:       editorCmd,
 		editorArgs:      editorArgs,
 		editorExtension: "md",
-		theme:           ThemeCharm(),
+		theme:           theme,
 	}
 
 	return t

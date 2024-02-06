@@ -3,6 +3,7 @@ package spinner
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"time"
 
@@ -88,19 +89,47 @@ func (s *Spinner) Accessible(accessible bool) *Spinner {
 	return s
 }
 
+type options struct {
+	renderer *lipgloss.Renderer
+	out      io.Writer
+}
+
+type Option func(*options)
+
+func WithOutput(tty io.Writer) Option {
+	return func(o *options) {
+		o.out = tty
+	}
+}
+
+func WithRenderer(r *lipgloss.Renderer) Option {
+	return func(o *options) {
+		o.renderer = r
+	}
+}
+
 // New creates a new spinner.
-func New() *Spinner {
+func New(opts ...Option) *Spinner {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
 
-	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("#F780E2"))
+	options := &options{
+		out:      os.Stdout,
+		renderer: lipgloss.DefaultRenderer(),
+	}
+	for _, opt := range opts {
+		opt(options)
+	}
+
+	r := options.renderer
+	s.Style = r.NewStyle().Foreground(lipgloss.Color("#F780E2"))
 
 	return &Spinner{
 		action:     func() { time.Sleep(time.Second) },
 		spinner:    s,
 		title:      "Loading...",
-		titleStyle: lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#FFFDF5", Dark: "#FFFDF5"}),
-		output:     termenv.NewOutput(os.Stdout),
+		titleStyle: r.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#FFFDF5", Dark: "#FFFDF5"}),
+		output:     termenv.NewOutput(options.out),
 		ctx:        nil,
 	}
 }

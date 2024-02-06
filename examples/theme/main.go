@@ -31,7 +31,6 @@ func main() {
 				huh.NewOption("Catppuccin", catppuccin),
 				huh.NewOption("Exit", exit),
 			).Run()
-
 		if err != nil {
 			if err == huh.ErrUserAborted {
 				os.Exit(130)

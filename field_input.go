@@ -40,14 +40,14 @@ type Input struct {
 }
 
 // NewInput returns a new input field.
-func NewInput() *Input {
+func NewInput(opts ...ThemeOption) *Input {
 	input := textinput.New()
 
 	i := &Input{
 		value:     new(string),
 		textinput: input,
 		validate:  func(string) error { return nil },
-		theme:     ThemeCharm(),
+		theme:     ThemeCharm(opts...),
 	}
 
 	return i
