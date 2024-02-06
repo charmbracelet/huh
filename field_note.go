@@ -28,10 +28,10 @@ type Note struct {
 }
 
 // NewNote creates a new note field.
-func NewNote(opts ...ThemeOption) *Note {
+func NewNote() *Note {
 	return &Note{
 		showNextButton: false,
-		theme:          ThemeCharm(opts...),
+		theme:          ThemeCharm(),
 		skip:           true,
 	}
 }
