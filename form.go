@@ -298,12 +298,30 @@ func (f *Form) UpdateFieldPositions() *Form {
 	}
 
 	for g, group := range f.groups {
+		// determine the first non-skippable field.
+		var firstField int
+		for _, field := range group.fields {
+			if !field.Skip() || len(group.fields) == 1 {
+				break
+			}
+			firstField++
+		}
+
+		// determine the last non-skippable field.
+		var lastField int
+		for i := len(group.fields) - 1; i > 0; i-- {
+			lastField = i
+			if !group.fields[i].Skip() || len(group.fields) == 1 {
+				break
+			}
+		}
+
 		for i, field := range group.fields {
 			field.WithPosition(FieldPosition{
 				Group:      g,
 				Field:      i,
-				FirstField: 0,
-				LastField:  len(group.fields) - 1,
+				FirstField: firstField,
+				LastField:  lastField,
 				FirstGroup: firstGroup,
 				LastGroup:  lastGroup,
 			})
