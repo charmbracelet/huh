@@ -296,14 +296,14 @@ func (f *FilePicker) WithTheme(theme *Theme) Field {
 		DisabledCursor:   lipgloss.Style{},
 		Cursor:           theme.Focused.TextInput.Prompt,
 		Symlink:          theme.Renderer.NewStyle(),
-		Directory:        theme.Focused.Title,
-		File:             theme.Renderer.NewStyle(),
-		DisabledFile:     theme.Focused.Description,
-		Permission:       theme.Focused.Description,
+		Directory:        theme.Focused.Directory,
+		File:             theme.Focused.File,
+		DisabledFile:     theme.Focused.TextInput.Placeholder,
+		Permission:       theme.Focused.TextInput.Placeholder,
 		Selected:         theme.Focused.SelectedOption,
-		DisabledSelected: theme.Focused.Description,
-		FileSize:         theme.Focused.Description.Copy().Width(7).Align(lipgloss.Right).Inline(true),
-		EmptyDirectory:   theme.Focused.Description.Copy().SetString("No files found."),
+		DisabledSelected: theme.Focused.TextInput.Placeholder,
+		FileSize:         theme.Focused.TextInput.Placeholder,
+		EmptyDirectory:   theme.Focused.TextInput.Placeholder.Copy().SetString("No files found."),
 	}
 
 	return f
