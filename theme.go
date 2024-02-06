@@ -1,14 +1,34 @@
 package huh
 
 import (
-	"os"
-
 	catppuccin "github.com/catppuccin/go"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/lipgloss"
 )
 
-var defaultRenderer = lipgloss.NewRenderer(os.Stderr)
+type options struct {
+	renderer *lipgloss.Renderer
+}
+
+func getOptions(opts []ThemeOption) *options {
+	options := &options{
+		renderer: lipgloss.DefaultRenderer(),
+	}
+	for _, opt := range opts {
+		opt(options)
+	}
+	return options
+}
+
+// ThemeOption can define some theme option.
+type ThemeOption func(*options)
+
+// WithRenderer changes the lipgloss.Renderer to be used.
+func WithRenderer(r *lipgloss.Renderer) ThemeOption {
+	return func(o *options) {
+		o.renderer = r
+	}
+}
 
 // Theme is a collection of styles for components of the form.
 // Themes can be applied to a form using the WithTheme option.
@@ -25,6 +45,7 @@ type Theme struct {
 // copy returns a copy of a theme with all children styles copied.
 func (t Theme) copy() Theme {
 	return Theme{
+		Renderer:       t.Renderer,
 		Form:           t.Form.Copy(),
 		Group:          t.Group.Copy(),
 		FieldSeparator: t.FieldSeparator.Copy(),
@@ -131,6 +152,7 @@ func ThemeBase(opts ...ThemeOption) *Theme {
 	r := getOptions(opts).renderer
 
 	var t Theme
+	t.Renderer = r
 
 	t.FieldSeparator = r.NewStyle().SetString("\n\n")
 

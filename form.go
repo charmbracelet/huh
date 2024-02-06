@@ -67,7 +67,6 @@ type Form struct {
 // Use With* methods to customize the form with options, such as setting
 // different themes and keybindings.
 func NewForm(groups ...*Group) *Form {
-	// TODO: how to set a theme option here?
 	p := paginator.New()
 	p.SetTotalPages(len(groups))
 

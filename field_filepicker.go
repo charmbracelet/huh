@@ -42,7 +42,7 @@ type FilePicker struct {
 }
 
 // NewFilePicker returns a new file field.
-func NewFilePicker(opts ...ThemeOption) *FilePicker {
+func NewFilePicker() *FilePicker {
 	fp := filepicker.New()
 	fp.ShowSize = false
 	fp.AutoHeight = false
@@ -56,7 +56,7 @@ func NewFilePicker(opts ...ThemeOption) *FilePicker {
 		value:    new(string),
 		validate: func(string) error { return nil },
 		picker:   fp,
-		theme:    ThemeCharm(opts...),
+		theme:    ThemeCharm(),
 	}
 }
 

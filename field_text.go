@@ -42,12 +42,10 @@ type Text struct {
 }
 
 // NewText returns a new text field.
-func NewText(opts ...ThemeOption) *Text {
-	theme := ThemeCharm(opts...)
+func NewText() *Text {
 	text := textarea.New()
 	text.ShowLineNumbers = false
 	text.Prompt = ""
-	text.FocusedStyle.CursorLine = theme.Renderer.NewStyle()
 
 	editorCmd, editorArgs := getEditor()
 
@@ -58,7 +56,7 @@ func NewText(opts ...ThemeOption) *Text {
 		editorCmd:       editorCmd,
 		editorArgs:      editorArgs,
 		editorExtension: "md",
-		theme:           theme,
+		theme:           ThemeCharm(),
 	}
 
 	return t
@@ -260,6 +258,7 @@ func (t *Text) View() string {
 	textareaStyles.Prompt = styles.TextInput.Prompt
 	textareaStyles.CursorLine = styles.TextInput.Text
 	t.textarea.Cursor.Style = styles.TextInput.Cursor
+	t.textarea.FocusedStyle.CursorLine = t.theme.Renderer.NewStyle()
 
 	var sb strings.Builder
 	if t.title != "" {

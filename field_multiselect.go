@@ -45,7 +45,7 @@ type MultiSelect[T comparable] struct {
 }
 
 // NewMultiSelect returns a new multi-select field.
-func NewMultiSelect[T comparable](opts ...ThemeOption) *MultiSelect[T] {
+func NewMultiSelect[T comparable]() *MultiSelect[T] {
 	filter := textinput.New()
 	filter.Prompt = "/"
 
@@ -55,7 +55,7 @@ func NewMultiSelect[T comparable](opts ...ThemeOption) *MultiSelect[T] {
 		validate:  func([]T) error { return nil },
 		filtering: false,
 		filter:    filter,
-		theme:     ThemeCharm(opts...),
+		theme:     ThemeCharm(),
 	}
 }
 
