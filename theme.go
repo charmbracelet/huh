@@ -10,7 +10,7 @@ type options struct {
 	renderer *lipgloss.Renderer
 }
 
-func getOptions(opts []ThemeOption) *options {
+func compileOptions(opts []ThemeOption) *options {
 	options := &options{
 		renderer: lipgloss.DefaultRenderer(),
 	}
@@ -155,10 +155,9 @@ const (
 // ThemeBase returns a new base theme with general styles to be inherited by
 // other themes.
 func ThemeBase(opts ...ThemeOption) *Theme {
-	r := getOptions(opts).renderer
-
 	var t Theme
-	t.Renderer = r
+	t.Renderer = compileOptions(opts).renderer
+	r := t.Renderer
 
 	t.FieldSeparator = r.NewStyle().SetString("\n\n")
 
@@ -214,9 +213,8 @@ func ThemeBase(opts ...ThemeOption) *Theme {
 
 // ThemeCharm returns a new theme based on the Charm color scheme.
 func ThemeCharm(opts ...ThemeOption) *Theme {
-	r := getOptions(opts).renderer
-
 	t := ThemeBase(opts...).copy()
+	r := t.Renderer
 
 	var (
 		normalFg = lipgloss.AdaptiveColor{Light: "235", Dark: "252"}
@@ -262,8 +260,8 @@ func ThemeCharm(opts ...ThemeOption) *Theme {
 
 // ThemeDracula returns a new theme based on the Dracula color scheme.
 func ThemeDracula(opts ...ThemeOption) *Theme {
-	r := getOptions(opts).renderer
 	t := ThemeBase(opts...).copy()
+	r := t.Renderer
 
 	var (
 		background = lipgloss.AdaptiveColor{Dark: "#282a36"}
@@ -311,8 +309,8 @@ func ThemeDracula(opts ...ThemeOption) *Theme {
 
 // ThemeBase16 returns a new theme based on the base16 color scheme.
 func ThemeBase16(opts ...ThemeOption) *Theme {
-	r := getOptions(opts).renderer
 	t := ThemeBase(opts...).copy()
+	r := t.Renderer
 
 	f := &t.Focused
 	f.Base.BorderForeground(lipgloss.Color("8"))
