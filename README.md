@@ -5,7 +5,7 @@
   <br><br>
   <a href="https://github.com/charmbracelet/huh/releases"><img src="https://img.shields.io/github/release/charmbracelet/huh.svg" alt="Latest Release"></a>
   <a href="https://pkg.go.dev/github.com/charmbracelet/huh?tab=doc"><img src="https://godoc.org/github.com/golang/gddo?status.svg" alt="Go Docs"></a>
-  <a href="https://github.com/charmbracelet/huh/actions"><img src="https://github.com/charmbracelet/huh/workflows/build/badge.svg" alt="Build Status"></a>
+  <a href="https://github.com/charmbracelet/huh/actions"><img src="https://github.com/charmbracelet/huh/actions/workflows/build.yml/badge.svg?branch=main" alt="Build Status"></a>
 </p>
 
 A simple, powerful library for building interactive forms and prompts in the terminal.
