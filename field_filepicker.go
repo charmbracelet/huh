@@ -47,8 +47,7 @@ func NewFilePicker() *FilePicker {
 	fp.ShowSize = false
 	fp.AutoHeight = false
 
-	cmd := fp.Init()
-	if cmd != nil {
+	if cmd := fp.Init(); cmd != nil {
 		fp, _ = fp.Update(cmd())
 	}
 

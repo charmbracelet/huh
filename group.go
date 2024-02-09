@@ -57,6 +57,7 @@ func NewGroup(fields ...Field) *Group {
 	}
 
 	height := group.fullHeight()
+	//nolint:gomnd
 	v := viewport.New(80, height)
 	group.viewport = v
 	group.height = height
@@ -253,7 +254,7 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return g, tea.Batch(cmds...)
 }
 
-// height returns the full height of the group
+// height returns the full height of the group.
 func (g *Group) fullHeight() int {
 	var height int
 
