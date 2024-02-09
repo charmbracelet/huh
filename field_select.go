@@ -95,6 +95,13 @@ func (s *Select[T]) Description(description string) *Select[T] {
 	return s
 }
 
+// SetOptions allows to change the available options of a select at runtime.
+// This will also reset the selected item.
+func (s *Select[T]) SetOptions(options ...Option[T]) {
+	s.Options(options...)
+	s.selected = 0
+}
+
 // Options sets the options of the select field.
 func (s *Select[T]) Options(options ...Option[T]) *Select[T] {
 	if len(options) <= 0 {
