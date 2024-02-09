@@ -24,6 +24,7 @@ type Select[T comparable] struct {
 	options         []Option[T]
 	filteredOptions []Option[T]
 	height          int
+	onChange        func(value T)
 
 	// error handling
 	validate func(T) error
@@ -52,6 +53,7 @@ func NewSelect[T comparable]() *Select[T] {
 		options:   []Option[T]{},
 		value:     new(T),
 		validate:  func(T) error { return nil },
+		onChange:  func(value T) {},
 		filtering: false,
 		filter:    filter,
 		theme:     ThemeCharm(),
@@ -230,6 +232,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				break
 			}
 			s.selected = max(s.selected-1, 0)
+			s.onChange(s.filteredOptions[s.selected].Value)
 			if s.selected < s.viewport.YOffset {
 				s.viewport.SetYOffset(s.selected)
 			}
@@ -241,6 +244,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				break
 			}
 			s.selected = min(s.selected+1, len(s.filteredOptions)-1)
+			s.onChange(s.filteredOptions[s.selected].Value)
 			if s.selected >= s.viewport.YOffset+s.viewport.Height {
 				s.viewport.LineDown(1)
 			}
@@ -517,4 +521,13 @@ func (s *Select[T]) GetKey() string {
 // GetValue returns the value of the field.
 func (s *Select[T]) GetValue() any {
 	return *s.value
+}
+
+// OnChange allows to act when the user selects another item.
+func (s *Select[T]) OnChange(fn func(t T)) *Select[T] {
+	if fn == nil {
+		return s
+	}
+	s.onChange = fn
+	return s
 }
