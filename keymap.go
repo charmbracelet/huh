@@ -34,29 +34,37 @@ type TextKeyMap struct {
 
 // SelectKeyMap is the keybindings for select fields.
 type SelectKeyMap struct {
-	Next        key.Binding
-	Prev        key.Binding
-	Up          key.Binding
-	Down        key.Binding
-	Left        key.Binding
-	Right       key.Binding
-	Filter      key.Binding
-	SetFilter   key.Binding
-	ClearFilter key.Binding
-	Submit      key.Binding
+	Next         key.Binding
+	Prev         key.Binding
+	Up           key.Binding
+	Down         key.Binding
+	HalfPageUp   key.Binding
+	HalfPageDown key.Binding
+	GotoTop      key.Binding
+	GotoBottom   key.Binding
+	Left         key.Binding
+	Right        key.Binding
+	Filter       key.Binding
+	SetFilter    key.Binding
+	ClearFilter  key.Binding
+	Submit       key.Binding
 }
 
 // MultiSelectKeyMap is the keybindings for multi-select fields.
 type MultiSelectKeyMap struct {
-	Next        key.Binding
-	Prev        key.Binding
-	Up          key.Binding
-	Down        key.Binding
-	Toggle      key.Binding
-	Filter      key.Binding
-	SetFilter   key.Binding
-	ClearFilter key.Binding
-	Submit      key.Binding
+	Next         key.Binding
+	Prev         key.Binding
+	Up           key.Binding
+	Down         key.Binding
+	HalfPageUp   key.Binding
+	HalfPageDown key.Binding
+	GotoTop      key.Binding
+	GotoBottom   key.Binding
+	Toggle       key.Binding
+	Filter       key.Binding
+	SetFilter    key.Binding
+	ClearFilter  key.Binding
+	Submit       key.Binding
 }
 
 // FilePickerKey is the keybindings for filepicker fields.
@@ -125,27 +133,35 @@ func NewDefaultKeyMap() *KeyMap {
 			Editor:  key.NewBinding(key.WithKeys("ctrl+e"), key.WithHelp("ctrl+e", "open editor")),
 		},
 		Select: SelectKeyMap{
-			Prev:        key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),
-			Next:        key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "select")),
-			Submit:      key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "submit")),
-			Up:          key.NewBinding(key.WithKeys("up", "k", "ctrl+k", "ctrl+p"), key.WithHelp("↑", "up")),
-			Down:        key.NewBinding(key.WithKeys("down", "j", "ctrl+j", "ctrl+n"), key.WithHelp("↓", "down")),
-			Left:        key.NewBinding(key.WithKeys("h", "left"), key.WithHelp("←", "left"), key.WithDisabled()),
-			Right:       key.NewBinding(key.WithKeys("l", "right"), key.WithHelp("→", "right"), key.WithDisabled()),
-			Filter:      key.NewBinding(key.WithKeys("/"), key.WithHelp("/", "filter")),
-			SetFilter:   key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "set filter"), key.WithDisabled()),
-			ClearFilter: key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "clear filter"), key.WithDisabled()),
+			Prev:         key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),
+			Next:         key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "select")),
+			Submit:       key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "submit")),
+			Up:           key.NewBinding(key.WithKeys("up", "k", "ctrl+k", "ctrl+p"), key.WithHelp("↑", "up")),
+			Down:         key.NewBinding(key.WithKeys("down", "j", "ctrl+j", "ctrl+n"), key.WithHelp("↓", "down")),
+			Left:         key.NewBinding(key.WithKeys("h", "left"), key.WithHelp("←", "left"), key.WithDisabled()),
+			Right:        key.NewBinding(key.WithKeys("l", "right"), key.WithHelp("→", "right"), key.WithDisabled()),
+			Filter:       key.NewBinding(key.WithKeys("/"), key.WithHelp("/", "filter")),
+			SetFilter:    key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "set filter"), key.WithDisabled()),
+			ClearFilter:  key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "clear filter"), key.WithDisabled()),
+			HalfPageUp:   key.NewBinding(key.WithKeys("ctrl+u"), key.WithHelp("ctrl+u", "½ page up")),
+			HalfPageDown: key.NewBinding(key.WithKeys("ctrl+d"), key.WithHelp("ctrl+d", "½ page down")),
+			GotoTop:      key.NewBinding(key.WithKeys("home", "g"), key.WithHelp("g/home", "go to start")),
+			GotoBottom:   key.NewBinding(key.WithKeys("end", "G"), key.WithHelp("G/end", "go to end")),
 		},
 		MultiSelect: MultiSelectKeyMap{
-			Prev:        key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),
-			Next:        key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "confirm")),
-			Submit:      key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "submit")),
-			Toggle:      key.NewBinding(key.WithKeys(" ", "x"), key.WithHelp("x", "toggle")),
-			Up:          key.NewBinding(key.WithKeys("up", "k", "ctrl+p"), key.WithHelp("↑", "up")),
-			Down:        key.NewBinding(key.WithKeys("down", "j", "ctrl+n"), key.WithHelp("↓", "down")),
-			Filter:      key.NewBinding(key.WithKeys("/"), key.WithHelp("/", "filter")),
-			SetFilter:   key.NewBinding(key.WithKeys("enter", "esc"), key.WithHelp("esc", "set filter"), key.WithDisabled()),
-			ClearFilter: key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "clear filter"), key.WithDisabled()),
+			Prev:         key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),
+			Next:         key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "confirm")),
+			Submit:       key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "submit")),
+			Toggle:       key.NewBinding(key.WithKeys(" ", "x"), key.WithHelp("x", "toggle")),
+			Up:           key.NewBinding(key.WithKeys("up", "k", "ctrl+p"), key.WithHelp("↑", "up")),
+			Down:         key.NewBinding(key.WithKeys("down", "j", "ctrl+n"), key.WithHelp("↓", "down")),
+			Filter:       key.NewBinding(key.WithKeys("/"), key.WithHelp("/", "filter")),
+			SetFilter:    key.NewBinding(key.WithKeys("enter", "esc"), key.WithHelp("esc", "set filter"), key.WithDisabled()),
+			ClearFilter:  key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "clear filter"), key.WithDisabled()),
+			HalfPageUp:   key.NewBinding(key.WithKeys("ctrl+u"), key.WithHelp("ctrl+u", "½ page up")),
+			HalfPageDown: key.NewBinding(key.WithKeys("ctrl+d"), key.WithHelp("ctrl+d", "½ page down")),
+			GotoTop:      key.NewBinding(key.WithKeys("home", "g"), key.WithHelp("g/home", "go to start")),
+			GotoBottom:   key.NewBinding(key.WithKeys("end", "G"), key.WithHelp("G/end", "go to end")),
 		},
 		Note: NoteKeyMap{
 			Prev:   key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),

@@ -168,7 +168,17 @@ func (m *MultiSelect[T]) Blur() tea.Cmd {
 
 // KeyBinds returns all keybindings for the multi-select field.
 func (m *MultiSelect[T]) KeyBinds() []key.Binding {
-	return []key.Binding{m.keymap.Toggle, m.keymap.Up, m.keymap.Down, m.keymap.Filter, m.keymap.SetFilter, m.keymap.ClearFilter, m.keymap.Prev, m.keymap.Submit, m.keymap.Next}
+	return []key.Binding{
+		m.keymap.Toggle,
+		m.keymap.Up,
+		m.keymap.Down,
+		m.keymap.Filter,
+		m.keymap.SetFilter,
+		m.keymap.ClearFilter,
+		m.keymap.Prev,
+		m.keymap.Submit,
+		m.keymap.Next,
+	}
 }
 
 // HelpKeyBinds returns the help keybindings for the multi-select field.
@@ -229,6 +239,24 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.cursor >= m.viewport.YOffset+m.viewport.Height {
 				m.viewport.LineDown(1)
 			}
+		case key.Matches(msg, m.keymap.GotoTop):
+			if m.filtering {
+				break
+			}
+			m.cursor = 0
+			m.viewport.GotoTop()
+		case key.Matches(msg, m.keymap.GotoBottom):
+			if m.filtering {
+				break
+			}
+			m.cursor = len(m.filteredOptions) - 1
+			m.viewport.GotoBottom()
+		case key.Matches(msg, m.keymap.HalfPageUp):
+			m.cursor = max(m.cursor-m.viewport.Height/2, 0)
+			m.viewport.HalfViewUp()
+		case key.Matches(msg, m.keymap.HalfPageDown):
+			m.cursor = min(m.cursor+m.viewport.Height/2, len(m.filteredOptions)-1)
+			m.viewport.HalfViewDown()
 		case key.Matches(msg, m.keymap.Toggle):
 			for i, option := range m.options {
 				if option.Key == m.filteredOptions[m.cursor].Key {

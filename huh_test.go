@@ -2,6 +2,7 @@ package huh
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -480,6 +481,114 @@ func TestMultiSelect(t *testing.T) {
 		t.Error("Expected field to contain help.")
 	}
 }
+
+func TestSelectPageNavigation(t *testing.T) {
+	opts := NewOptions(
+		"Qux",
+		"Quux",
+		"Foo",
+		"Bar",
+		"Baz",
+		"Corge",
+		"Grault",
+		"Garply",
+		"Waldo",
+		"Fred",
+		"Plugh",
+		"Xyzzy",
+		"Thud",
+		"Norf",
+		"Blip",
+		"Flob",
+		"Zorp",
+		"Smurf",
+		"Bloop",
+		"Ping",
+	)
+
+	reFirst := regexp.MustCompile(`>( •)? Qux`)
+	reLast := regexp.MustCompile(`>( •)? Ping`)
+	reHalfDown := regexp.MustCompile(`>( •)? Baz`)
+
+	for _, field := range []Field{
+		NewMultiSelect[string]().Options(opts...).Title("Choose"),
+		NewSelect[string]().Options(opts...).Title("Choose"),
+	} {
+		f := NewForm(NewGroup(field.WithHeight(10)))
+		f.Update(f.Init())
+
+		view := f.View()
+		if !reFirst.MatchString(view) {
+			t.Log(pretty.Render(view))
+			t.Error("Wrong item selected")
+		}
+
+		m, _ := f.Update(keys('G'))
+		view = m.View()
+		if !reLast.MatchString(view) {
+			t.Log(pretty.Render(view))
+			t.Error("Wrong item selected")
+		}
+
+		m, _ = f.Update(keys('g'))
+		view = m.View()
+		if !reFirst.MatchString(view) {
+			t.Log(pretty.Render(view))
+			t.Error("Wrong item selected")
+		}
+
+		m, _ = f.Update(tea.KeyMsg{
+			Type: tea.KeyCtrlD,
+		})
+		view = m.View()
+		if !reHalfDown.MatchString(view) {
+			t.Log(pretty.Render(view))
+			t.Error("Wrong item selected")
+		}
+
+		// sends multiple to verify it stays within boundaries
+		f.Update(tea.KeyMsg{
+			Type: tea.KeyCtrlU,
+		})
+		f.Update(tea.KeyMsg{
+			Type: tea.KeyCtrlU,
+		})
+		m, _ = f.Update(tea.KeyMsg{
+			Type: tea.KeyCtrlU,
+		})
+		view = m.View()
+		if !reFirst.MatchString(view) {
+			t.Log(pretty.Render(view))
+			t.Error("Wrong item selected")
+		}
+
+		// verify it stays within boundaries
+		f.Update(tea.KeyMsg{
+			Type: tea.KeyCtrlD,
+		})
+		f.Update(tea.KeyMsg{
+			Type: tea.KeyCtrlD,
+		})
+		f.Update(tea.KeyMsg{
+			Type: tea.KeyCtrlD,
+		})
+		f.Update(tea.KeyMsg{
+			Type: tea.KeyCtrlD,
+		})
+		f.Update(tea.KeyMsg{
+			Type: tea.KeyCtrlD,
+		})
+		m, _ = f.Update(tea.KeyMsg{
+			Type: tea.KeyCtrlD,
+		})
+		view = m.View()
+		if !reLast.MatchString(view) {
+			t.Log(pretty.Render(view))
+			t.Error("Wrong item selected")
+		}
+	}
+}
+
 func TestFile(t *testing.T) {
 	field := NewFilePicker().Title("Which file?")
 	cmd := field.Init()
@@ -696,7 +805,6 @@ func TestSkip(t *testing.T) {
 		t.Log(pretty.Render(view))
 		t.Error("Expected first field to be focused")
 	}
-
 }
 
 func batchUpdate(m tea.Model, cmd tea.Cmd) tea.Model {
