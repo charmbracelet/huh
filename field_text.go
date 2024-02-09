@@ -101,7 +101,7 @@ func (t *Text) CharLimit(charlimit int) *Text {
 	return t
 }
 
-// ShowLineNumbers sets whether or not to show line numbers
+// ShowLineNumbers sets whether or not to show line numbers.
 func (t *Text) ShowLineNumbers(show bool) *Text {
 	t.textarea.ShowLineNumbers = show
 	return t
