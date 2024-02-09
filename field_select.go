@@ -179,9 +179,16 @@ func (s *Select[T]) Blur() tea.Cmd {
 // KeyBinds returns the help keybindings for the select field.
 func (s *Select[T]) KeyBinds() []key.Binding {
 	return []key.Binding{
-		s.keymap.Up, s.keymap.Down, s.keymap.Left, s.keymap.Right,
-		s.keymap.Filter, s.keymap.SetFilter, s.keymap.ClearFilter, s.keymap.Prev,
-		s.keymap.Next, s.keymap.Submit,
+		s.keymap.Up,
+		s.keymap.Down,
+		s.keymap.Left,
+		s.keymap.Right,
+		s.keymap.Filter,
+		s.keymap.SetFilter,
+		s.keymap.ClearFilter,
+		s.keymap.Prev,
+		s.keymap.Next,
+		s.keymap.Submit,
 	}
 }
 
@@ -233,6 +240,24 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if s.selected < s.viewport.YOffset {
 				s.viewport.SetYOffset(s.selected)
 			}
+		case key.Matches(msg, s.keymap.GotoTop):
+			if s.filtering {
+				break
+			}
+			s.selected = 0
+			s.viewport.GotoTop()
+		case key.Matches(msg, s.keymap.GotoBottom):
+			if s.filtering {
+				break
+			}
+			s.selected = len(s.filteredOptions) - 1
+			s.viewport.GotoBottom()
+		case key.Matches(msg, s.keymap.HalfPageUp):
+			s.selected = max(s.selected-s.viewport.Height/2, 0)
+			s.viewport.HalfViewUp()
+		case key.Matches(msg, s.keymap.HalfPageDown):
+			s.selected = min(s.selected+s.viewport.Height/2, len(s.filteredOptions)-1)
+			s.viewport.HalfViewDown()
 		case key.Matches(msg, s.keymap.Down, s.keymap.Right):
 			// When filtering we should ignore j/k keybindings
 			//
