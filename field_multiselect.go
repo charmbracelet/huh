@@ -425,6 +425,9 @@ func (m *MultiSelect[T]) printOptions() {
 	sb.WriteString("\n")
 
 	for i, option := range m.options {
+		if option.skip {
+			continue
+		}
 		if option.selected {
 			sb.WriteString(m.theme.Focused.SelectedOption.Render(fmt.Sprintf("%d. %s %s", i+1, "✓", option.Key)))
 		} else {

@@ -103,6 +103,9 @@ func (s *Select[T]) Options(options ...Option[T]) *Select[T] {
 
 	// Set the cursor to the existing value or the last selected option.
 	for i, option := range options {
+		if option.skip {
+			continue
+		}
 		if option.Value == *s.value {
 			s.selected = i
 			break
@@ -388,6 +391,9 @@ func (s *Select[T]) choicesView() string {
 	}
 
 	for i, option := range s.filteredOptions {
+		if option.skip {
+			continue
+		}
 		if s.selected == i {
 			sb.WriteString(c + styles.SelectedOption.Render(option.Key))
 		} else {

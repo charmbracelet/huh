@@ -4,9 +4,12 @@ import "fmt"
 
 // Option is an option for select fields.
 type Option[T comparable] struct {
-	Key      string
-	Value    T
+	Key   string
+	Value T
+
+	// state
 	selected bool
+	skip     bool
 }
 
 // NewOptions returns new options from a list of values.
@@ -35,4 +38,16 @@ func (o Option[T]) Selected(selected bool) Option[T] {
 // String returns the key of the option.
 func (o Option[T]) String() string {
 	return o.Key
+}
+
+// WithHide sets whether this option should be hidden.
+func (o Option[T]) WithHide(hide bool) Option[T] {
+	o.WithHideFunc(func() bool { return hide })
+	return o
+}
+
+// WithHideFunc sets a function that determines whether or not the option should be hidden.
+func (o Option[T]) WithHideFunc(hideFunc func() bool) Option[T] {
+	o.skip = hideFunc()
+	return o
 }
