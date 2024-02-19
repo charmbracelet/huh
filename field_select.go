@@ -103,9 +103,6 @@ func (s *Select[T]) Options(options ...Option[T]) *Select[T] {
 
 	// Set the cursor to the existing value or the last selected option.
 	for i, option := range options {
-		if option.skip {
-			continue
-		}
 		if option.Value == *s.value {
 			s.selected = i
 			break
@@ -117,6 +114,17 @@ func (s *Select[T]) Options(options ...Option[T]) *Select[T] {
 	s.updateViewportHeight()
 
 	return s
+}
+
+// Filter options based on a hide function.
+func (s *Select[T]) hideOptions() []Option[T] {
+	var hideOptions []Option[T]
+	for _, option := range s.filteredOptions {
+		if option.hide == nil || !option.hide() {
+			hideOptions = append(hideOptions, option)
+		}
+	}
+	return hideOptions
 }
 
 // Inline sets whether the select input should be inline.
@@ -379,6 +387,10 @@ func (s *Select[T]) choicesView() string {
 		sb     strings.Builder
 	)
 
+	filterOptions := s.hideOptions()
+	s.options = filterOptions
+	s.filteredOptions = filterOptions
+
 	if s.inline {
 		sb.WriteString(styles.PrevIndicator.Faint(s.selected <= 0).String())
 		if len(s.filteredOptions) > 0 {
@@ -391,9 +403,6 @@ func (s *Select[T]) choicesView() string {
 	}
 
 	for i, option := range s.filteredOptions {
-		if option.skip {
-			continue
-		}
 		if s.selected == i {
 			sb.WriteString(c + styles.SelectedOption.Render(option.Key))
 		} else {

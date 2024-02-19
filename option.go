@@ -9,7 +9,7 @@ type Option[T comparable] struct {
 
 	// state
 	selected bool
-	skip     bool
+	hide     func() bool
 }
 
 // NewOptions returns new options from a list of values.
@@ -48,6 +48,6 @@ func (o Option[T]) WithHide(hide bool) Option[T] {
 
 // WithHideFunc sets a function that determines whether or not the option should be hidden.
 func (o Option[T]) WithHideFunc(hideFunc func() bool) Option[T] {
-	o.skip = hideFunc()
+	o.hide = hideFunc
 	return o
 }
