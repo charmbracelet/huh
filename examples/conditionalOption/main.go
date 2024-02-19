@@ -21,6 +21,15 @@ const (
 	Cherry     Fruit = "cherry"
 )
 
+func FruitWasSelectedBefore(fruit Fruit, fruits []Fruit) bool {
+	for _, f := range fruits {
+		if f == fruit {
+			return true
+		}
+	}
+	return false
+}
+
 type FormState struct {
 	Ana []Fruit
 	Bob []Fruit
@@ -62,76 +71,28 @@ func main() {
 					Value(&formState.Bob).
 					Options(
 						huh.NewOption(string(Apple), Apple).WithHideFunc(func() bool {
-							for _, f := range formState.Ana {
-								if f == Apple {
-									return true
-								}
-							}
-
-							return false
+							return FruitWasSelectedBefore(Apple, formState.Ana)
 						}),
 						huh.NewOption(string(Banana), Banana).WithHideFunc(func() bool {
-							for _, f := range formState.Ana {
-								if f == Banana {
-									return true
-								}
-							}
-
-							return false
+							return FruitWasSelectedBefore(Banana, formState.Ana)
 						}),
 						huh.NewOption(string(Canteloupe), Canteloupe).WithHideFunc(func() bool {
-							for _, f := range formState.Ana {
-								if f == Canteloupe {
-									return true
-								}
-							}
-
-							return false
+							return FruitWasSelectedBefore(Canteloupe, formState.Ana)
 						}),
 						huh.NewOption(string(Cherry), Cherry).WithHideFunc(func() bool {
-							for _, f := range formState.Ana {
-								if f == Cherry {
-									return true
-								}
-							}
-
-							return false
+							return FruitWasSelectedBefore(Cherry, formState.Ana)
 						}),
 						huh.NewOption(string(Grapefruit), Grapefruit).WithHideFunc(func() bool {
-							for _, f := range formState.Ana {
-								if f == Grapefruit {
-									return true
-								}
-							}
-
-							return false
+							return FruitWasSelectedBefore(Grapefruit, formState.Ana)
 						}),
 						huh.NewOption(string(Orange), Orange).WithHideFunc(func() bool {
-							for _, f := range formState.Ana {
-								if f == Orange {
-									return true
-								}
-							}
-
-							return false
+							return FruitWasSelectedBefore(Orange, formState.Ana)
 						}),
 						huh.NewOption(string(Pomelo), Pomelo).WithHideFunc(func() bool {
-							for _, f := range formState.Ana {
-								if f == Pomelo {
-									return true
-								}
-							}
-
-							return false
+							return FruitWasSelectedBefore(Pomelo, formState.Ana)
 						}),
 						huh.NewOption(string(Tangerine), Tangerine).WithHideFunc(func() bool {
-							for _, f := range formState.Ana {
-								if f == Tangerine {
-									return true
-								}
-							}
-
-							return false
+							return FruitWasSelectedBefore(Tangerine, formState.Ana)
 						}),
 					),
 			),
@@ -141,108 +102,28 @@ func main() {
 					Value(&formState.Tom).
 					Options(
 						huh.NewOption(string(Apple), Apple).WithHideFunc(func() bool {
-							for _, f := range formState.Ana {
-								if f == Apple {
-									return true
-								}
-							}
-							for _, f := range formState.Bob {
-								if f == Apple {
-									return true
-								}
-							}
-							return false
+							return FruitWasSelectedBefore(Apple, formState.Ana) || FruitWasSelectedBefore(Apple, formState.Bob)
 						}),
 						huh.NewOption(string(Banana), Banana).WithHideFunc(func() bool {
-							for _, f := range formState.Ana {
-								if f == Banana {
-									return true
-								}
-							}
-							for _, f := range formState.Bob {
-								if f == Banana {
-									return true
-								}
-							}
-							return false
+							return FruitWasSelectedBefore(Banana, formState.Ana) || FruitWasSelectedBefore(Banana, formState.Bob)
 						}),
 						huh.NewOption(string(Canteloupe), Canteloupe).WithHideFunc(func() bool {
-							for _, f := range formState.Ana {
-								if f == Canteloupe {
-									return true
-								}
-							}
-							for _, f := range formState.Bob {
-								if f == Canteloupe {
-									return true
-								}
-							}
-							return false
+							return FruitWasSelectedBefore(Canteloupe, formState.Ana) || FruitWasSelectedBefore(Canteloupe, formState.Bob)
 						}),
 						huh.NewOption(string(Cherry), Cherry).WithHideFunc(func() bool {
-							for _, f := range formState.Ana {
-								if f == Cherry {
-									return true
-								}
-							}
-							for _, f := range formState.Bob {
-								if f == Cherry {
-									return true
-								}
-							}
-							return false
+							return FruitWasSelectedBefore(Cherry, formState.Ana) || FruitWasSelectedBefore(Cherry, formState.Bob)
 						}),
 						huh.NewOption(string(Grapefruit), Grapefruit).WithHideFunc(func() bool {
-							for _, f := range formState.Ana {
-								if f == Grapefruit {
-									return true
-								}
-							}
-							for _, f := range formState.Bob {
-								if f == Grapefruit {
-									return true
-								}
-							}
-							return false
+							return FruitWasSelectedBefore(Grapefruit, formState.Ana) || FruitWasSelectedBefore(Grapefruit, formState.Bob)
 						}),
 						huh.NewOption(string(Orange), Orange).WithHideFunc(func() bool {
-							for _, f := range formState.Ana {
-								if f == Orange {
-									return true
-								}
-							}
-							for _, f := range formState.Bob {
-								if f == Orange {
-									return true
-								}
-							}
-							return false
+							return FruitWasSelectedBefore(Orange, formState.Ana) || FruitWasSelectedBefore(Orange, formState.Bob)
 						}),
 						huh.NewOption(string(Pomelo), Pomelo).WithHideFunc(func() bool {
-							for _, f := range formState.Ana {
-								if f == Pomelo {
-									return true
-								}
-							}
-							for _, f := range formState.Bob {
-								if f == Pomelo {
-									return true
-								}
-							}
-							return false
+							return FruitWasSelectedBefore(Pomelo, formState.Ana) || FruitWasSelectedBefore(Pomelo, formState.Bob)
 						}),
 						huh.NewOption(string(Tangerine), Tangerine).WithHideFunc(func() bool {
-							for _, f := range formState.Ana {
-								if f == Tangerine {
-									return true
-								}
-							}
-							for _, f := range formState.Bob {
-								if f == Tangerine {
-									return true
-								}
-							}
-							return false
+							return FruitWasSelectedBefore(Tangerine, formState.Ana) || FruitWasSelectedBefore(Tangerine, formState.Bob)
 						}),
 					),
 			),
