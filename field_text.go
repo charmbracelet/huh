@@ -216,6 +216,7 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			_ = os.WriteFile(tmpFile.Name(), []byte(t.textarea.Value()), os.ModePerm)
 			cmds = append(cmds, tea.ExecProcess(cmd, func(error) tea.Msg {
 				content, _ := os.ReadFile(tmpFile.Name())
+				_ = os.Remove(tmpFile.Name())
 				return updateValueMsg(content)
 			}))
 		case key.Matches(msg, t.keymap.Next, t.keymap.Submit):
