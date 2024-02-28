@@ -55,10 +55,11 @@ type Form struct {
 	aborted  bool
 
 	// options
-	width  int
-	height int
-	theme  *Theme
-	keymap *KeyMap
+	width      int
+	height     int
+	theme      *Theme
+	keymap     *KeyMap
+	teaOptions []tea.ProgramOption
 }
 
 // NewForm returns a form with the given groups and default themes and
@@ -78,6 +79,9 @@ func NewForm(groups ...*Group) *Form {
 		width:     0,
 		height:    0,
 		results:   make(map[string]any),
+		teaOptions: []tea.ProgramOption{
+			tea.WithOutput(os.Stderr),
+		},
 	}
 
 	// NB: If dynamic forms come into play this will need to be applied when
@@ -287,6 +291,12 @@ func (f *Form) WithHeight(height int) *Form {
 	for _, group := range f.groups {
 		group.WithHeight(height)
 	}
+	return f
+}
+
+// WithProgramOptions sets the tea options of thea form.
+func (f *Form) WithProgramOptions(opts ...tea.ProgramOption) *Form {
+	f.teaOptions = opts
 	return f
 }
 
@@ -567,7 +577,7 @@ func (f *Form) Run() error {
 
 // run runs the form in normal mode.
 func (f *Form) run() error {
-	m, err := tea.NewProgram(f, tea.WithOutput(os.Stderr)).Run()
+	m, err := tea.NewProgram(f, f.teaOptions...).Run()
 	if m.(*Form).aborted {
 		err = ErrUserAborted
 	}
