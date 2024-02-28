@@ -205,6 +205,10 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case updateValueMsg:
 		t.textarea.SetValue(string(msg))
+		t.textarea, cmd = t.textarea.Update(msg)
+		cmds = append(cmds, cmd)
+		*t.value = t.textarea.Value()
+
 	case tea.KeyMsg:
 		t.err = nil
 
