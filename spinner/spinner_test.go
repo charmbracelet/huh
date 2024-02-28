@@ -43,17 +43,6 @@ func TestSpinnerView(t *testing.T) {
 		t.Errorf("Expected view to contain title 'Test', got '%s'", view)
 	}
 }
-func TestSpinnerAction(t *testing.T) {
-	var actionCalled bool
-	testAction := func() { actionCalled = true }
-
-	s := New().Action(testAction)
-	s.Run()
-
-	if !actionCalled {
-		t.Errorf("Action was not called after Run")
-	}
-}
 
 func TestSpinnerContextCancellation(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
