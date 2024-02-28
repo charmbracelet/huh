@@ -5,14 +5,11 @@ import (
 	"unicode/utf8"
 )
 
-// ErrInputEmpty is an error indicating that the input cannot be empty.
-var ErrInputEmpty = fmt.Errorf("input cannot be empty")
-
 // ValidateNotEmpty checks if the input is not empty.
 func ValidateNotEmpty() func(s string) error {
 	return func(s string) error {
 		if err := ValidateMinLength(1)(s); err != nil {
-			return ErrInputEmpty
+			return fmt.Errorf("input cannot be empty")
 		}
 		return nil
 	}
