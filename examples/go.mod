@@ -3,7 +3,7 @@ module examples
 go 1.19
 
 require (
-	github.com/charmbracelet/bubbles v0.17.2-0.20240131162854-364eac96a867
+	github.com/charmbracelet/bubbles v0.18.0
 	github.com/charmbracelet/bubbletea v0.25.0
 	github.com/charmbracelet/huh v0.0.0-00010101000000-000000000000
 	github.com/charmbracelet/huh/spinner v0.0.0-00010101000000-000000000000
