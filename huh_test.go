@@ -514,7 +514,7 @@ func TestSelectPageNavigation(t *testing.T) {
 		NewMultiSelect[string]().Options(opts...).Title("Choose"),
 		NewSelect[string]().Options(opts...).Title("Choose"),
 	} {
-		f := NewForm(NewGroup(field.WithHeight(10)))
+		f := NewForm(NewGroup(field)).WithHeight(10)
 		f.Update(f.Init())
 
 		view := f.View()
