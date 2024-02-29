@@ -489,9 +489,6 @@ func (s *Select[T]) runAccessible() error {
 
 // WithTheme sets the theme of the select field.
 func (s *Select[T]) WithTheme(theme *Theme) Field {
-	if s.theme != nil {
-		return s
-	}
 	s.theme = theme
 	s.filter.Cursor.Style = s.theme.Focused.TextInput.Cursor
 	s.filter.PromptStyle = s.theme.Focused.TextInput.Prompt

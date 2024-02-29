@@ -224,9 +224,6 @@ func (c *Confirm) String() string {
 
 // WithTheme sets the theme of the confirm field.
 func (c *Confirm) WithTheme(theme *Theme) Field {
-	if c.theme != nil {
-		return c
-	}
 	c.theme = theme
 	return c
 }
