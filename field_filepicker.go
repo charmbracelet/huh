@@ -55,7 +55,6 @@ func NewFilePicker() *FilePicker {
 		value:    new(string),
 		validate: func(string) error { return nil },
 		picker:   fp,
-		theme:    ThemeCharm(),
 	}
 }
 
@@ -288,6 +287,10 @@ func (f *FilePicker) runAccessible() error {
 
 // WithTheme sets the theme of the file field.
 func (f *FilePicker) WithTheme(theme *Theme) Field {
+	if f.theme != nil {
+		return f
+	}
+
 	f.theme = theme
 
 	// TODO: add specific themes

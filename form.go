@@ -86,7 +86,6 @@ func NewForm(groups ...*Group) *Form {
 
 	// NB: If dynamic forms come into play this will need to be applied when
 	// groups and fields are added.
-	f.WithTheme(f.theme)
 	f.WithKeyMap(f.keymap)
 	f.WithWidth(f.width)
 	f.WithHeight(f.height)
@@ -541,6 +540,9 @@ func (f *Form) View() string {
 
 // Run runs the form.
 func (f *Form) Run() error {
+	// Apply the default theme to any unstyled groups / fields.
+	f.WithTheme(ThemeCharm())
+
 	f.submitCmd = tea.Quit
 	f.cancelCmd = tea.Quit
 

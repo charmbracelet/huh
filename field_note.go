@@ -31,7 +31,6 @@ type Note struct {
 func NewNote() *Note {
 	return &Note{
 		showNextButton: false,
-		theme:          ThemeCharm(),
 		skip:           true,
 	}
 }

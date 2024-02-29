@@ -55,7 +55,6 @@ func NewMultiSelect[T comparable]() *MultiSelect[T] {
 		validate:  func([]T) error { return nil },
 		filtering: false,
 		filter:    filter,
-		theme:     ThemeCharm(),
 	}
 }
 
