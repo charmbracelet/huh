@@ -44,6 +44,7 @@ func NewConfirm() *Confirm {
 		affirmative: "Yes",
 		negative:    "No",
 		validate:    func(bool) error { return nil },
+		theme:       ThemeCharm(),
 	}
 }
 
