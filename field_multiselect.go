@@ -514,9 +514,6 @@ func (m *MultiSelect[T]) runAccessible() error {
 
 // WithTheme sets the theme of the multi-select field.
 func (m *MultiSelect[T]) WithTheme(theme *Theme) Field {
-	if m.theme != nil {
-		return m
-	}
 	m.theme = theme
 	m.filter.Cursor.Style = m.theme.Focused.TextInput.Cursor
 	m.filter.PromptStyle = m.theme.Focused.TextInput.Prompt
