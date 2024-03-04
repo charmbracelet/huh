@@ -290,7 +290,7 @@ func (f *FilePicker) runAccessible() error {
 func (f *FilePicker) WithTheme(theme *Theme) Field {
 	f.theme = theme
 
-	// TODO: add specific themes
+	// XXX: add specific themes
 	f.picker.Styles = filepicker.Styles{
 		DisabledCursor:   lipgloss.Style{},
 		Cursor:           theme.Focused.TextInput.Prompt,
