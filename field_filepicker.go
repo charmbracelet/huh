@@ -65,6 +65,12 @@ func (f *FilePicker) CurrentDirectory(directory string) *FilePicker {
 	return f
 }
 
+// Picking sets whether the file picker should be in the picking files state.
+func (f *FilePicker) Picking(v bool) *FilePicker {
+	f.setPicking(v)
+	return f
+}
+
 // ShowHidden sets whether to show hidden files.
 func (f *FilePicker) ShowHidden(v bool) *FilePicker {
 	f.picker.ShowHidden = v
@@ -322,6 +328,7 @@ func (f *FilePicker) WithKeyMap(k *KeyMap) Field {
 		Open:     k.FilePicker.Open,
 		Select:   k.FilePicker.Select,
 	}
+	f.setPicking(f.picking)
 	return f
 }
 
