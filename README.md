@@ -397,6 +397,7 @@ Tea example][example].
 ## `Huh?` in the Wild
 For some `Huh?` programs in production, see:
 
+* [glyphs](https://github.com/maaslalani/glyphs): a unicode symbol picker
 * [meteor](https://github.com/stefanlogue/meteor): a highly customisable conventional commit message tool
 
 ## Feedback
