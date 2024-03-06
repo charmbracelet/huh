@@ -7,7 +7,7 @@ require (
 	github.com/charmbracelet/bubbletea v0.25.1-0.20240302212246-73d971c9b07f
 	github.com/charmbracelet/huh v0.0.0-00010101000000-000000000000
 	github.com/charmbracelet/huh/spinner v0.0.0-00010101000000-000000000000
-	github.com/charmbracelet/lipgloss v0.9.1
+	github.com/charmbracelet/lipgloss v0.10.0
 	github.com/charmbracelet/x/exp/strings v0.0.0-20240304160204-3835fda67169
 )
 
