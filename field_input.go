@@ -32,11 +32,12 @@ type Input struct {
 	focused bool
 
 	// options
-	width      int
-	height     int
-	accessible bool
-	theme      *Theme
-	keymap     InputKeyMap
+	width              int
+	height             int
+	accessible         bool
+	theme              *Theme
+	keymap             InputKeyMap
+	suggestionCallback func(val string) []string
 }
 
 // NewInput returns a new input field.
@@ -96,6 +97,11 @@ func (i *Input) Suggestions(suggestions []string) *Input {
 	i.textinput.ShowSuggestions = len(suggestions) > 0
 	i.textinput.KeyMap.AcceptSuggestion.SetEnabled(len(suggestions) > 0)
 	i.textinput.SetSuggestions(suggestions)
+	return i
+}
+
+func (i *Input) SetSuggestionCallback(callback func(inputTextVal string) []string) *Input {
+	i.suggestionCallback = callback
 	return i
 }
 
@@ -224,6 +230,12 @@ func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return i, nil
 			}
 			cmds = append(cmds, nextField)
+		}
+
+		if i.suggestionCallback != nil {
+			if suggestions := i.suggestionCallback(i.textinput.Value()); len(suggestions) > 0 {
+				i.Suggestions(suggestions)
+			}
 		}
 	}
 
