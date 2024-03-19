@@ -9,14 +9,14 @@ import (
 
 func main() {
 	action := func(p spinner.Printer) {
-    p.Println("Added bottom bun")
-    time.Sleep(time.Second)
-    p.Println("Added patty")
-    time.Sleep(time.Second)
-    p.Println("Added condiments")
+		p.Println("Added bottom bun")
 		time.Sleep(time.Second)
-    p.Println("Added top bun")
-    time.Sleep(time.Second)
+		p.Println("Added patty")
+		time.Sleep(time.Second)
+		p.Println("Added condiments")
+		time.Sleep(time.Second)
+		p.Println("Added top bun")
+		time.Sleep(time.Second)
 	}
 	_ = spinner.New().Title("Preparing your burger").ActionWithProgram(action).Run()
 	fmt.Println("Order up!")

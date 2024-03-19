@@ -30,20 +30,19 @@ type Spinner struct {
 }
 
 type Printer interface {
-  Println(values ...interface{})
-  Printf(format string, values ...interface{})
+	Println(values ...interface{})
+	Printf(format string, values ...interface{})
 }
 
 type accessiblePrinter struct {}
 
 func (p accessiblePrinter) Println(values ...interface{}) {
-  fmt.Println(values...)
+	fmt.Println(values...)
 }
 
 func (p accessiblePrinter) Printf(format string, values ...interface{}) {
-  fmt.Printf(format, values...)
+	fmt.Printf(format, values...)
 }
-
 
 type Type spinner.Spinner
 
@@ -82,8 +81,8 @@ func (s *Spinner) Action(action func()) *Spinner {
 
 // ActionWithProgram sets the action of the spinner with a reference to the Bubble Tea program
 func (s *Spinner) ActionWithProgram(action func(Printer)) *Spinner {
-  s.action = action
-  return s
+	s.action = action
+	return s
 }
 
 // Context sets the context of the spinner.
@@ -182,7 +181,7 @@ func (s *Spinner) runAccessible() error {
 	s.output.HideCursor()
 	frame := s.spinner.Style.Render("...")
 	title := s.titleStyle.Render(s.title)
-  fmt.Println(title + frame)
+	fmt.Println(title + frame)
 	s.action(accessiblePrinter{})
 	s.output.ShowCursor()
 	return nil
