@@ -18,6 +18,6 @@ func main() {
 		p.Println("Added top bun")
 		time.Sleep(time.Second)
 	}
-	_ = spinner.New().Title("Preparing your burger").ActionWithProgram(action).Run()
+	_ = spinner.New().Title("Preparing your burger").ActionWithPrinter(action).Run()
 	fmt.Println("Order up!")
 }

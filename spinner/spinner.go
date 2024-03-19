@@ -80,7 +80,7 @@ func (s *Spinner) Action(action func()) *Spinner {
 }
 
 // ActionWithProgram sets the action of the spinner with a reference to the Bubble Tea program
-func (s *Spinner) ActionWithProgram(action func(Printer)) *Spinner {
+func (s *Spinner) ActionWithPrinter(action func(Printer)) *Spinner {
 	s.action = action
 	return s
 }
