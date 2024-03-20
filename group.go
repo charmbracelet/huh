@@ -169,13 +169,13 @@ type nextFieldMsg struct{}
 // different key bindings or events to trigger group progression.
 type prevFieldMsg struct{}
 
-// nextField is the command to move to the next field.
-func nextField() tea.Msg {
+// NextField is the command to move to the next field.
+func NextField() tea.Msg {
 	return nextFieldMsg{}
 }
 
-// prevField is the command to move to the previous field.
-func prevField() tea.Msg {
+// PrevField is the command to move to the previous field.
+func PrevField() tea.Msg {
 	return prevFieldMsg{}
 }
 
