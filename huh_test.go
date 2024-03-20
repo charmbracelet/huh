@@ -779,7 +779,7 @@ func TestSkip(t *testing.T) {
 	}
 
 	// next field should skip both of the notes and proceed to the last input.
-	f.Update(nextField())
+	f.Update(NextField())
 	view = f.View()
 
 	if strings.Contains(view, "┃ First") {
@@ -793,7 +793,7 @@ func TestSkip(t *testing.T) {
 	}
 
 	// previous field should skip both of the notes and focus the first input.
-	f.Update(prevField())
+	f.Update(PrevField())
 	view = f.View()
 
 	if strings.Contains(view, "┃ Second") {

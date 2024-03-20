@@ -97,11 +97,11 @@ func (n *Note) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, n.keymap.Prev):
-			return n, prevField
+			return n, PrevField
 		case key.Matches(msg, n.keymap.Next, n.keymap.Submit):
-			return n, nextField
+			return n, NextField
 		}
-		return n, nextField
+		return n, NextField
 	}
 	return n, nil
 }

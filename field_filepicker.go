@@ -187,10 +187,10 @@ func (f *FilePicker) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return f, nil
 		case key.Matches(msg, f.keymap.Next):
 			f.setPicking(false)
-			return f, nextField
+			return f, NextField
 		case key.Matches(msg, f.keymap.Prev):
 			f.setPicking(false)
-			return f, prevField
+			return f, PrevField
 		}
 	}
 
@@ -200,7 +200,7 @@ func (f *FilePicker) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if didSelect {
 		*f.value = file
 		f.setPicking(false)
-		return f, nextField
+		return f, NextField
 	}
 	didSelect, _ = f.picker.DidSelectDisabledFile(msg)
 	if didSelect {
