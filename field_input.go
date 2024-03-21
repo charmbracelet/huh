@@ -342,3 +342,8 @@ func (i *Input) GetKey() string {
 func (i *Input) GetValue() any {
 	return *i.value
 }
+
+// GetFocused returns if the input is focused.
+func (i *Input) GetFocused() bool {
+	return i.focused
+}
