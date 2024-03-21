@@ -311,11 +311,10 @@ func (g *Group) View() string {
 		keys := g.fields[g.paginator.Page].HelpKeyBinds(FormatShort)
 		view.WriteString(g.help.ShortHelpView(keys))
 	}
-	if !g.showErrors {
-		return g.viewport.View() + "\n" + view.String()
-	}
-	for _, err := range errors {
-		view.WriteString(g.theme.Focused.ErrorMessage.Render(err.Error()))
+	if g.showErrors {
+		for _, err := range errors {
+			view.WriteString(g.theme.Focused.ErrorMessage.Render(err.Error()))
+		}
 	}
 	return view.String()
 }
