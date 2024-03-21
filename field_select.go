@@ -116,6 +116,17 @@ func (s *Select[T]) Options(options ...Option[T]) *Select[T] {
 	return s
 }
 
+// Filter options based on a hide function.
+func (s *Select[T]) hideOptions() []Option[T] {
+	var hideOptions []Option[T]
+	for _, option := range s.filteredOptions {
+		if option.hide == nil || !option.hide() {
+			hideOptions = append(hideOptions, option)
+		}
+	}
+	return hideOptions
+}
+
 // Inline sets whether the select input should be inline.
 func (s *Select[T]) Inline(v bool) *Select[T] {
 	s.inline = v
@@ -375,6 +386,10 @@ func (s *Select[T]) choicesView() string {
 		c      = styles.SelectSelector.String()
 		sb     strings.Builder
 	)
+
+	filterOptions := s.hideOptions()
+	s.options = filterOptions
+	s.filteredOptions = filterOptions
 
 	if s.inline {
 		sb.WriteString(styles.PrevIndicator.Faint(s.selected <= 0).String())

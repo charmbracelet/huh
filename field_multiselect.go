@@ -112,6 +112,17 @@ func (m *MultiSelect[T]) Options(options ...Option[T]) *MultiSelect[T] {
 	return m
 }
 
+// Filter options based on a hide function.
+func (m *MultiSelect[T]) hideOptions() []Option[T] {
+	var hideOptions []Option[T]
+	for _, option := range m.filteredOptions {
+		if option.hide == nil || !option.hide() {
+			hideOptions = append(hideOptions, option)
+		}
+	}
+	return hideOptions
+}
+
 // Filterable sets the multi-select field as filterable.
 func (m *MultiSelect[T]) Filterable(filterable bool) *MultiSelect[T] {
 	m.filterable = filterable
@@ -375,6 +386,11 @@ func (m *MultiSelect[T]) choicesView() string {
 		c      = styles.MultiSelectSelector.String()
 		sb     strings.Builder
 	)
+
+	filterOptions := m.hideOptions()
+	m.options = filterOptions
+	m.filteredOptions = filterOptions
+
 	for i, option := range m.filteredOptions {
 		if m.cursor == i {
 			sb.WriteString(c)
