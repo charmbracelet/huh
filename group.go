@@ -310,11 +310,10 @@ func (g *Group) View() string {
 	if g.showHelp && len(errors) <= 0 {
 		view.WriteString(g.help.ShortHelpView(g.fields[g.paginator.Page].KeyBinds()))
 	}
-	if !g.showErrors {
-		return g.viewport.View() + "\n" + view.String()
-	}
-	for _, err := range errors {
-		view.WriteString(g.theme.Focused.ErrorMessage.Render(err.Error()))
+	if g.showErrors {
+		for _, err := range errors {
+			view.WriteString(g.theme.Focused.ErrorMessage.Render(err.Error()))
+		}
 	}
 	return view.String()
 }
