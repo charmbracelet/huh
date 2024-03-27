@@ -21,12 +21,27 @@ import (
 // ⣾  Loading...
 type Spinner struct {
 	spinner    spinner.Model
-	action     func()
+	action     func(Printer)
 	ctx        context.Context
 	accessible bool
 	output     *termenv.Output
 	title      string
 	titleStyle lipgloss.Style
+}
+
+type Printer interface {
+	Println(values ...interface{})
+	Printf(format string, values ...interface{})
+}
+
+type accessiblePrinter struct {}
+
+func (p accessiblePrinter) Println(values ...interface{}) {
+	fmt.Println(values...)
+}
+
+func (p accessiblePrinter) Printf(format string, values ...interface{}) {
+	fmt.Printf(format, values...)
 }
 
 type Type spinner.Spinner
@@ -60,6 +75,12 @@ func (s *Spinner) Title(title string) *Spinner {
 
 // Action sets the action of the spinner.
 func (s *Spinner) Action(action func()) *Spinner {
+	s.action = func(_ Printer) { action() }
+	return s
+}
+
+// ActionWithProgram sets the action of the spinner with a reference to the Bubble Tea program
+func (s *Spinner) ActionWithPrinter(action func(Printer)) *Spinner {
 	s.action = action
 	return s
 }
@@ -96,7 +117,7 @@ func New() *Spinner {
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("#F780E2"))
 
 	return &Spinner{
-		action:     func() { time.Sleep(time.Second) },
+		action:     func(_ Printer) { time.Sleep(time.Second) },
 		spinner:    s,
 		title:      "Loading...",
 		titleStyle: lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#FFFDF5", Dark: "#FFFDF5"}),
@@ -145,7 +166,7 @@ func (s *Spinner) Run() error {
 
 	if s.ctx == nil {
 		go func() {
-			s.action()
+			s.action(p)
 			p.Quit()
 		}()
 	}
@@ -161,9 +182,7 @@ func (s *Spinner) runAccessible() error {
 	frame := s.spinner.Style.Render("...")
 	title := s.titleStyle.Render(s.title)
 	fmt.Println(title + frame)
-	s.action()
+	s.action(accessiblePrinter{})
 	s.output.ShowCursor()
-	s.output.CursorBack(len(frame) + len(title))
-
 	return nil
 }
