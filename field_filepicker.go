@@ -77,6 +77,30 @@ func (f *FilePicker) ShowHidden(v bool) *FilePicker {
 	return f
 }
 
+// ShowSize sets whether to show file sizes.
+func (f *FilePicker) ShowSize(v bool) *FilePicker {
+	f.picker.ShowSize = v
+	return f
+}
+
+// ShowPermissions sets whether to show file permissions.
+func (f *FilePicker) ShowPermissions(v bool) *FilePicker {
+	f.picker.ShowPermissions = v
+	return f
+}
+
+// FileAllowed sets whether to allow files to be selected.
+func (f *FilePicker) FileAllowed(v bool) *FilePicker {
+	f.picker.FileAllowed = v
+	return f
+}
+
+// DirAllowed sets whether to allow files to be selected.
+func (f *FilePicker) DirAllowed(v bool) *FilePicker {
+	f.picker.DirAllowed = v
+	return f
+}
+
 // Value sets the value of the file field.
 func (f *FilePicker) Value(value *string) *FilePicker {
 	f.value = value
