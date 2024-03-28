@@ -166,8 +166,8 @@ func (m *MultiSelect[T]) KeyBinds() []key.Binding {
 	return []key.Binding{m.keymap.Toggle, m.keymap.Up, m.keymap.Down, m.keymap.Filter, m.keymap.SetFilter, m.keymap.ClearFilter, m.keymap.Prev, m.keymap.Submit, m.keymap.Next}
 }
 
-// KeyBindsHelp returns the help keybindings for the multi-select field.
-func (m *MultiSelect[T]) KeyBindsHelp(HelpFormat) []key.Binding {
+// HelpKeyBinds returns the help keybindings for the multi-select field.
+func (m *MultiSelect[T]) HelpKeyBinds(HelpFormat) []key.Binding {
 	return m.KeyBinds()
 }
 

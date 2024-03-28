@@ -287,7 +287,7 @@ func (g *Group) View() string {
 	g.viewport.SetContent(fields.String() + "\n")
 
 	if g.showHelp && len(errors) <= 0 {
-		keys := g.fields[g.paginator.Page].KeyBindsHelp(FormatShort)
+		keys := g.fields[g.paginator.Page].HelpKeyBinds(FormatShort)
 		view.WriteString(g.help.ShortHelpView(keys))
 	}
 

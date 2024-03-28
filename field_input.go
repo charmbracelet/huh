@@ -160,8 +160,8 @@ func (i *Input) KeyBinds() []key.Binding {
 	return []key.Binding{i.keymap.Prev, i.keymap.Submit, i.keymap.Next}
 }
 
-// KeyBindsHelp returns the help keybindings for the input field.
-func (i *Input) KeyBindsHelp(HelpFormat) []key.Binding {
+// HelpKeyBinds returns the help keybindings for the input field.
+func (i *Input) HelpKeyBinds(HelpFormat) []key.Binding {
 	return i.KeyBinds()
 }
 

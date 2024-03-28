@@ -153,8 +153,8 @@ func (s *Select[T]) KeyBinds() []key.Binding {
 	return []key.Binding{s.keymap.Up, s.keymap.Down, s.keymap.Filter, s.keymap.SetFilter, s.keymap.ClearFilter, s.keymap.Prev, s.keymap.Next, s.keymap.Submit}
 }
 
-// KeyBindsHelp returns the help keybindings for the select field.
-func (s *Select[T]) KeyBindsHelp(HelpFormat) []key.Binding {
+// HelpKeyBinds returns the help keybindings for the select field.
+func (s *Select[T]) HelpKeyBinds(HelpFormat) []key.Binding {
 	return s.KeyBinds()
 }
 

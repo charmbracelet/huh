@@ -14,7 +14,7 @@ func main() {
 		Placeholder("What's on your mind?").
 		Value(&story)
 
-	// Create a form to show help.
+	// Create a form to show text.
 	form := huh.NewForm(huh.NewGroup(text))
 	form.Run()
 }

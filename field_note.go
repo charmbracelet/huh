@@ -81,8 +81,8 @@ func (n *Note) KeyBinds() []key.Binding {
 	return []key.Binding{n.keymap.Prev, n.keymap.Submit, n.keymap.Next}
 }
 
-// KeyBindsHelp returns the help keybindings for the note field.
-func (n *Note) KeyBindsHelp(HelpFormat) []key.Binding {
+// HelpKeyBinds returns the help keybindings for the note field.
+func (n *Note) HelpKeyBinds(HelpFormat) []key.Binding {
 	return n.KeyBinds()
 }
 

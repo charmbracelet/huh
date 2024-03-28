@@ -124,8 +124,8 @@ func (c *Confirm) KeyBinds() []key.Binding {
 	return []key.Binding{c.keymap.Toggle, c.keymap.Prev, c.keymap.Submit, c.keymap.Next}
 }
 
-// KeyBindsHelp returns the help keybindings for the confirm field.
-func (c *Confirm) KeyBindsHelp(HelpFormat) []key.Binding {
+// HelpKeyBinds returns the help keybindings for the confirm field.
+func (c *Confirm) HelpKeyBinds(HelpFormat) []key.Binding {
 	return c.KeyBinds()
 }
 

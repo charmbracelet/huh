@@ -180,8 +180,8 @@ func (t *Text) KeyBinds() []key.Binding {
 	return []key.Binding{t.keymap.NewLine, t.keymap.Editor, t.keymap.Prev, t.keymap.Submit, t.keymap.Next}
 }
 
-// KeyBindsHelp returns the help keybindings for the text field.
-func (t *Text) KeyBindsHelp(HelpFormat) []key.Binding {
+// HelpKeyBinds returns the help keybindings for the text field.
+func (t *Text) HelpKeyBinds(HelpFormat) []key.Binding {
 	return t.KeyBinds()
 }
 

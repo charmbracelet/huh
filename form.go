@@ -119,8 +119,8 @@ type Field interface {
 	// KeyBinds returns all keybindings.
 	KeyBinds() []key.Binding
 
-	// KeyBindsHelp returns the help keybindings.
-	KeyBindsHelp(HelpFormat) []key.Binding
+	// HelpKeyBinds returns all keybindings displayed via help.
+	HelpKeyBinds(HelpFormat) []key.Binding
 
 	// WithTheme sets the theme on a field.
 	WithTheme(*Theme) Field
@@ -332,16 +332,16 @@ func (f *Form) Help() help.Model {
 	return f.groups[f.paginator.Page].help
 }
 
-// KeyBinds returns the current fields' keybinds.
+// KeyBinds returns the current field's keybinds.
 func (f *Form) KeyBinds() []key.Binding {
 	group := f.groups[f.paginator.Page]
 	return group.fields[group.paginator.Page].KeyBinds()
 }
 
-// KeyBindsHelp returns the current fields' help keybinds.
-func (f *Form) KeyBindsHelp(format HelpFormat) []key.Binding {
+// HelpKeyBinds returns the current field's keybinds displayed via help.
+func (f *Form) HelpKeyBinds(format HelpFormat) []key.Binding {
 	group := f.groups[f.paginator.Page]
-	return group.fields[group.paginator.Page].KeyBindsHelp(format)
+	return group.fields[group.paginator.Page].HelpKeyBinds(format)
 }
 
 // Get returns a result from the form.
