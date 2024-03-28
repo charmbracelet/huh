@@ -400,6 +400,7 @@ For some `Huh?` programs in production, see:
 * [glyphs](https://github.com/maaslalani/glyphs): a unicode symbol picker
 * [meteor](https://github.com/stefanlogue/meteor): a highly customisable conventional commit message tool
 * [freeze](https://github.com/charmbracelet/freeze): a tool for generating images of code and terminal output
+* [gum](https://github.com/charmbracelet/gum): a tool for glamorous shell scripts
 
 ## Feedback
 
