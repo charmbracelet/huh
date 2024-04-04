@@ -216,14 +216,14 @@ func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if i.err != nil {
 				return i, nil
 			}
-			cmds = append(cmds, prevField)
+			cmds = append(cmds, PrevField)
 		case key.Matches(msg, i.keymap.Next, i.keymap.Submit):
 			value := i.textinput.Value()
 			i.err = i.validate(value)
 			if i.err != nil {
 				return i, nil
 			}
-			cmds = append(cmds, nextField)
+			cmds = append(cmds, NextField)
 		}
 	}
 

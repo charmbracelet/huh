@@ -148,9 +148,9 @@ func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			v := !*c.value
 			*c.value = v
 		case key.Matches(msg, c.keymap.Prev):
-			cmds = append(cmds, prevField)
+			cmds = append(cmds, PrevField)
 		case key.Matches(msg, c.keymap.Next, c.keymap.Submit):
-			cmds = append(cmds, nextField)
+			cmds = append(cmds, NextField)
 		}
 	}
 

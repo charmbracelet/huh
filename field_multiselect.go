@@ -268,13 +268,13 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.err != nil {
 				return m, nil
 			}
-			return m, prevField
+			return m, PrevField
 		case key.Matches(msg, m.keymap.Next, m.keymap.Submit):
 			m.finalize()
 			if m.err != nil {
 				return m, nil
 			}
-			return m, nextField
+			return m, NextField
 		}
 
 		if m.filtering {
