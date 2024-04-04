@@ -279,7 +279,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return s, nil
 			}
 			*s.value = value
-			return s, prevField
+			return s, PrevField
 		case key.Matches(msg, s.keymap.Next, s.keymap.Submit):
 			if s.selected >= len(s.filteredOptions) {
 				break
@@ -291,7 +291,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return s, nil
 			}
 			*s.value = value
-			return s, nextField
+			return s, NextField
 		}
 
 		if s.filtering {

@@ -402,13 +402,13 @@ func (f *Form) PrevGroup() tea.Cmd {
 
 // NextField moves the form to the next field.
 func (f *Form) NextField() tea.Cmd {
-	_, cmd := f.Update(nextField())
+	_, cmd := f.Update(NextField())
 	return cmd
 }
 
 // NextField moves the form to the next field.
 func (f *Form) PrevField() tea.Cmd {
-	_, cmd := f.Update(prevField())
+	_, cmd := f.Update(PrevField())
 	return cmd
 }
 
