@@ -8,7 +8,7 @@ require (
 	github.com/charmbracelet/huh v0.0.0-00010101000000-000000000000
 	github.com/charmbracelet/huh/spinner v0.0.0-00010101000000-000000000000
 	github.com/charmbracelet/lipgloss v0.10.0
-	github.com/charmbracelet/x/exp/strings v0.0.0-20240304160204-3835fda67169
+	github.com/charmbracelet/x/exp/strings v0.0.0-20240403043919-dea9035a27d4
 )
 
 require (
@@ -27,9 +27,9 @@ require (
 	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/muesli/termenv v0.15.2 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
-	golang.org/x/sync v0.6.0 // indirect
-	golang.org/x/sys v0.18.0 // indirect
-	golang.org/x/term v0.17.0 // indirect
+	golang.org/x/sync v0.7.0 // indirect
+	golang.org/x/sys v0.19.0 // indirect
+	golang.org/x/term v0.19.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 )
 
