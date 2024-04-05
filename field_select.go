@@ -87,6 +87,13 @@ func (s *Select[T]) Title(title string) *Select[T] {
 	return s
 }
 
+// Filtering sets the filtering state of the select field.
+func (s *Select[T]) Filtering(filtering bool) *Select[T] {
+	s.filtering = filtering
+	s.filter.Focus()
+	return s
+}
+
 // Description sets the description of the select field.
 func (s *Select[T]) Description(description string) *Select[T] {
 	s.description = description
