@@ -457,6 +457,9 @@ func (m *MultiSelect[T]) printOptions() {
 
 // setFilter sets the filter of the select field.
 func (m *MultiSelect[T]) setFilter(filter bool) {
+	if !m.filterable {
+		return
+	}
 	m.filtering = filter
 	m.keymap.SetFilter.SetEnabled(filter)
 	m.keymap.Filter.SetEnabled(!filter)
