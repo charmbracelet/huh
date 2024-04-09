@@ -183,9 +183,14 @@ func (f *FilePicker) Blur() tea.Cmd {
 	return nil
 }
 
-// KeyBinds returns the help keybindings for the file field.
+// KeyBinds returns all keybindings for the file field.
 func (f *FilePicker) KeyBinds() []key.Binding {
 	return []key.Binding{f.keymap.Up, f.keymap.Down, f.keymap.Close, f.keymap.Open, f.keymap.Prev, f.keymap.Next, f.keymap.Submit}
+}
+
+// HelpKeyBinds returns the help keybindings for the file field.
+func (f *FilePicker) HelpKeyBinds(HelpFormat) []key.Binding {
+	return f.KeyBinds()
 }
 
 // Init initializes the file field.
