@@ -530,6 +530,12 @@ func (f *Form) isGroupHidden(page int) bool {
 	return hide()
 }
 
+// Reset resets the form after it has been submitted.
+func (f *Form) Reset() {
+	f.quitting = false
+	f.State = StateNormal
+}
+
 // View renders the form.
 func (f *Form) View() string {
 	if f.quitting {
