@@ -389,8 +389,13 @@ func TestConfirm(t *testing.T) {
 }
 
 func TestSelect(t *testing.T) {
-	field := NewSelect[string]().Options(NewOptions("Foo", "Bar", "Baz")...).Title("Which one?")
-	f := NewForm(NewGroup(field))
+	field := NewSelect[string]().Options(
+		NewOption("Foo", "Foo"),
+		NewOption("Bar", "Bar").Disabled(true),
+		NewOption("Baz", "Baz"),
+	).Title("Which one?")
+	inputField := NewInput()
+	f := NewForm(NewGroup(field, inputField))
 	f.Update(f.Init())
 
 	view := ansi.Strip(f.View())
@@ -405,15 +410,14 @@ func TestSelect(t *testing.T) {
 		t.Error("Expected field to contain Which one?.")
 	}
 
-	// Move selection cursor down
 	if !strings.Contains(view, "> Foo") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected cursor to be on Foo.")
 	}
 
+	// Move selection cursor down
 	m, _ := f.Update(keys('j'))
 	f = m.(*Form)
-
 	view = ansi.Strip(f.View())
 
 	if strings.Contains(view, "> Foo") {
@@ -426,14 +430,43 @@ func TestSelect(t *testing.T) {
 		t.Error("Expected cursor to be on Bar.")
 	}
 
-	if !strings.Contains(view, "↑ up • ↓ down • / filter • enter submit") {
+	if !strings.Contains(view, "↑ up • ↓ down • / filter • enter select") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected field to contain help.")
+	}
+
+	// Attempt to select "Bar" (a disabled option)
+	m, _ = f.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	f = m.(*Form)
+	view = ansi.Strip(f.View())
+
+	if !strings.Contains(view, "enter select") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected focus to stay on the current question.")
+	}
+
+	// Move selection cursor down
+	m, _ = f.Update(keys('j'))
+	f = m.(*Form)
+	view = ansi.Strip(f.View())
+
+	// Select "Baz"
+	m, _ = f.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	f = m.(*Form)
+	view = ansi.Strip(f.View())
+
+	if strings.Contains(view, "enter submit") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected focus to be on the next question.")
 	}
 }
 
 func TestMultiSelect(t *testing.T) {
-	field := NewMultiSelect[string]().Options(NewOptions("Foo", "Bar", "Baz")...).Title("Which one?")
+	field := NewMultiSelect[string]().Options(
+		NewOption("Foo", "Foo"),
+		NewOption("Bar", "Bar").Disabled(true),
+		NewOption("Baz", "Baz"),
+	).Title("Which one?")
 	f := NewForm(NewGroup(field))
 	f.Update(f.Init())
 
@@ -465,16 +498,29 @@ func TestMultiSelect(t *testing.T) {
 
 	if !strings.Contains(view, "> • Bar") {
 		t.Log(pretty.Render(view))
-		t.Error("Expected cursor to be on Bar.")
+		t.Error("Expected Bar to be selected.")
 	}
+
+	// Attempt to toggle "Bar" (a disabled option)
+	m, _ = f.Update(keys('x'))
+	view = ansi.Strip(m.View())
+
+	if !strings.Contains(view, "> • Bar") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected Bar to stay unselected.")
+	}
+
+	// Move selection cursor down
+	m, _ = f.Update(keys('j'))
+	view = ansi.Strip(m.View())
 
 	// Toggle
 	m, _ = f.Update(keys('x'))
 	view = ansi.Strip(m.View())
 
-	if !strings.Contains(view, "> ✓ Bar") {
+	if !strings.Contains(view, "> ✓ Baz") {
 		t.Log(pretty.Render(view))
-		t.Error("Expected cursor to be on Bar.")
+		t.Error("Expected Baz to be selected.")
 	}
 
 	if !strings.Contains(view, "x toggle • ↑ up • ↓ down • / filter • enter submit") {
