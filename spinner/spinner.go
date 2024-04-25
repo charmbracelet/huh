@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/charmbracelet/bubbles/spinner"
@@ -159,11 +160,33 @@ func (s *Spinner) Run() error {
 func (s *Spinner) runAccessible() error {
 	s.output.HideCursor()
 	frame := s.spinner.Style.Render("...")
-	title := s.titleStyle.Render(s.title)
+	title := s.titleStyle.Render(strings.TrimSuffix(s.title, "..."))
 	fmt.Println(title + frame)
-	s.action()
-	s.output.ShowCursor()
-	s.output.CursorBack(len(frame) + len(title))
 
-	return nil
+	if s.ctx == nil {
+		s.action()
+		s.output.ShowCursor()
+		s.output.CursorBack(len(frame) + len(title))
+		return nil
+	}
+
+	actionDone := make(chan struct{})
+
+	go func() {
+		s.action()
+		actionDone <- struct{}{}
+	}()
+
+	for {
+		select {
+		case <-s.ctx.Done():
+			s.output.ShowCursor()
+			s.output.CursorBack(len(frame) + len(title))
+			return s.ctx.Err()
+		case <-actionDone:
+			s.output.ShowCursor()
+			s.output.CursorBack(len(frame) + len(title))
+			return nil
+		}
+	}
 }
