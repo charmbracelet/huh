@@ -10,6 +10,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+const defaultWidth = 80
+
 // FormState represents the current state of the form.
 type FormState int
 
@@ -76,8 +78,6 @@ func NewForm(groups ...*Group) *Form {
 		paginator: p,
 		theme:     ThemeCharm(),
 		keymap:    NewDefaultKeyMap(),
-		width:     0,
-		height:    0,
 		results:   make(map[string]any),
 		teaOptions: []tea.ProgramOption{
 			tea.WithOutput(os.Stderr),
@@ -91,6 +91,11 @@ func NewForm(groups ...*Group) *Form {
 	f.WithWidth(f.width)
 	f.WithHeight(f.height)
 	f.UpdateFieldPositions()
+
+	if os.Getenv("TERM") == "dumb" {
+		f.WithWidth(defaultWidth)
+		f.WithAccessible(true)
+	}
 
 	return f
 }
