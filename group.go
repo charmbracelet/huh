@@ -288,17 +288,23 @@ func (g *Group) buildView() {
 
 // View renders the group.
 func (g *Group) View() string {
-	var view strings.Builder
+	// Write the footer view containing errors/keybindings to an alternate
+	// buffer to ensure it is non-empty before appending a line separator.
+	var view, foot strings.Builder
 	view.WriteString(g.viewport.View())
-	view.WriteRune('\n')
+	foot.WriteRune('\n')
 	errors := g.Errors()
 	if g.showHelp && len(errors) <= 0 {
-		view.WriteString(g.help.ShortHelpView(g.fields[g.paginator.Page].KeyBinds()))
+		foot.WriteString(g.help.ShortHelpView(g.fields[g.paginator.Page].KeyBinds()))
 	}
 	if g.showErrors {
 		for _, err := range errors {
-			view.WriteString(ThemeCharm().Focused.ErrorMessage.Render(err.Error()))
+			foot.WriteString(ThemeCharm().Focused.ErrorMessage.Render(err.Error()))
 		}
+	}
+	if strings.TrimSpace(foot.String()) != "" {
+		view.Grow(foot.Len())
+		view.WriteString(foot.String())
 	}
 	return view.String()
 }
