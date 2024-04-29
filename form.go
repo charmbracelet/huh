@@ -2,6 +2,7 @@ package huh
 
 import (
 	"errors"
+	"io"
 	"os"
 
 	"github.com/charmbracelet/bubbles/help"
@@ -62,6 +63,7 @@ type Form struct {
 	theme      *Theme
 	keymap     *KeyMap
 	teaOptions []tea.ProgramOption
+	output     io.Writer
 }
 
 // NewForm returns a form with the given groups and default themes and
@@ -285,7 +287,14 @@ func (f *Form) WithHeight(height int) *Form {
 	return f
 }
 
-// WithProgramOptions sets the tea options of thea form.
+// WithOutput sets the io.Writer to output the form.
+func (f *Form) WithOutput(w io.Writer) *Form {
+	f.output = w
+	f.teaOptions = append(f.teaOptions, tea.WithOutput(w))
+	return f
+}
+
+// WithProgramOptions sets the tea options of the form.
 func (f *Form) WithProgramOptions(opts ...tea.ProgramOption) *Form {
 	f.teaOptions = opts
 	return f
