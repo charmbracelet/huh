@@ -140,11 +140,12 @@ func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-
 		c.err = nil
-
 		switch {
 		case key.Matches(msg, c.keymap.Toggle):
+			if c.negative == "" {
+				break
+			}
 			v := !*c.value
 			*c.value = v
 		case key.Matches(msg, c.keymap.Prev):
@@ -182,19 +183,21 @@ func (c *Confirm) View() string {
 		sb.WriteString("\n")
 	}
 
-	if *c.value {
-		sb.WriteString(lipgloss.JoinHorizontal(
-			lipgloss.Center,
-			styles.FocusedButton.Render(c.affirmative),
-			styles.BlurredButton.Render(c.negative),
-		))
+	var negative string
+	var affirmative string
+	if c.negative != "" {
+		if *c.value {
+			affirmative = styles.FocusedButton.Render(c.affirmative)
+			negative = styles.BlurredButton.Render(c.negative)
+		} else {
+			affirmative = styles.BlurredButton.Render(c.affirmative)
+			negative = styles.FocusedButton.Render(c.negative)
+		}
 	} else {
-		sb.WriteString(lipgloss.JoinHorizontal(
-			lipgloss.Center,
-			styles.BlurredButton.Render(c.affirmative),
-			styles.FocusedButton.Render(c.negative),
-		))
+		affirmative = styles.FocusedButton.Render(c.affirmative)
 	}
+
+	sb.WriteString(lipgloss.JoinHorizontal(lipgloss.Center, affirmative, negative))
 	return styles.Base.Render(sb.String())
 }
 
