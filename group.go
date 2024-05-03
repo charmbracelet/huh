@@ -261,7 +261,7 @@ func (g *Group) fullHeight() int {
 	return height
 }
 
-func (g *Group) buildView() {
+func (g *Group) getContent() (int, string) {
 	var fields strings.Builder
 	offset := 0
 	gap := "\n\n"
@@ -282,7 +282,13 @@ func (g *Group) buildView() {
 		}
 	}
 
-	g.viewport.SetContent(fields.String() + "\n")
+	return offset, fields.String() + "\n"
+}
+
+func (g *Group) buildView() {
+	offset, content := g.getContent()
+
+	g.viewport.SetContent(content)
 	g.viewport.SetYOffset(offset)
 }
 
@@ -290,6 +296,17 @@ func (g *Group) buildView() {
 func (g *Group) View() string {
 	var view strings.Builder
 	view.WriteString(g.viewport.View())
+	view.WriteString(g.Footer())
+	return view.String()
+}
+
+func (g *Group) Content() string {
+	_, content := g.getContent()
+	return content
+}
+
+func (g *Group) Footer() string {
+	var view strings.Builder
 	view.WriteRune('\n')
 	errors := g.Errors()
 	if g.showHelp && len(errors) <= 0 {

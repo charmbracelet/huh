@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/paginator"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 const defaultWidth = 80
@@ -63,6 +64,7 @@ type Form struct {
 	keymap     *KeyMap
 	teaOptions []tea.ProgramOption
 	output     io.Writer
+	columns    int
 }
 
 // NewForm returns a form with the given groups and default themes and
@@ -79,6 +81,7 @@ func NewForm(groups ...*Group) *Form {
 		paginator: p,
 		keymap:    NewDefaultKeyMap(),
 		results:   make(map[string]any),
+		columns:   1,
 		teaOptions: []tea.ProgramOption{
 			tea.WithOutput(os.Stderr),
 		},
@@ -265,8 +268,9 @@ func (f *Form) WithWidth(width int) *Form {
 		return f
 	}
 	f.width = width
+	columnWidth := width / f.columns
 	for _, group := range f.groups {
-		group.WithWidth(width)
+		group.WithWidth(columnWidth)
 	}
 	return f
 }
@@ -293,6 +297,12 @@ func (f *Form) WithOutput(w io.Writer) *Form {
 // WithProgramOptions sets the tea options of the form.
 func (f *Form) WithProgramOptions(opts ...tea.ProgramOption) *Form {
 	f.teaOptions = opts
+	return f
+}
+
+// WithColumns sets the number of columns to render the form over.
+func (f *Form) WithColumns(columns int) *Form {
+	f.columns = columns
 	return f
 }
 
@@ -427,6 +437,12 @@ func (f *Form) Init() tea.Cmd {
 	cmds := make([]tea.Cmd, len(f.groups))
 	for i, group := range f.groups {
 		cmds[i] = group.Init()
+
+		if i != 0 {
+			for _, field := range group.fields {
+				field.Blur()
+			}
+		}
 	}
 
 	if f.isGroupHidden(f.paginator.Page) {
@@ -452,7 +468,7 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			break
 		}
 		for _, group := range f.groups {
-			group.WithWidth(msg.Width)
+			group.WithWidth(msg.Width / f.columns)
 		}
 		if f.height > 0 {
 			break
@@ -540,13 +556,38 @@ func (f *Form) isGroupHidden(page int) bool {
 	return hide()
 }
 
+func (f *Form) visibleGroups() []*Group {
+	segmentIndex := f.paginator.Page / f.columns
+	start := segmentIndex * f.columns
+	end := start + f.columns
+
+	if end > len(f.groups) {
+		end = len(f.groups)
+	}
+
+	return f.groups[start:end]
+}
+
 // View renders the form.
 func (f *Form) View() string {
 	if f.quitting {
 		return ""
 	}
+	groups := f.visibleGroups()
+	if len(groups) == 0 {
+		return ""
+	}
 
-	return f.groups[f.paginator.Page].View()
+	var columns []string
+	for _, group := range groups {
+		columns = append(columns, group.Content())
+	}
+	footer := f.groups[f.paginator.Page].Footer()
+
+	return lipgloss.JoinVertical(lipgloss.Left,
+		lipgloss.JoinHorizontal(lipgloss.Top, columns...),
+		footer,
+	)
 }
 
 // Run runs the form.
