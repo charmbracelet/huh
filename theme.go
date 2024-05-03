@@ -37,6 +37,26 @@ func (t Theme) copy() Theme {
 	}
 }
 
+// WithRenderer returns a copy of a theme with all children styles having the specified renderer.
+func (t Theme) WithRenderer(r *lipgloss.Renderer) Theme {
+	return Theme{
+		Form:           t.Form.Renderer(r),
+		Group:          t.Group.Renderer(r),
+		FieldSeparator: t.FieldSeparator.Renderer(r),
+		Blurred:        t.Blurred.renderer(r),
+		Focused:        t.Focused.renderer(r),
+		Help: help.Styles{
+			Ellipsis:       t.Help.Ellipsis.Renderer(r),
+			ShortKey:       t.Help.ShortKey.Renderer(r),
+			ShortDesc:      t.Help.ShortDesc.Renderer(r),
+			ShortSeparator: t.Help.ShortSeparator.Renderer(r),
+			FullKey:        t.Help.FullKey.Renderer(r),
+			FullDesc:       t.Help.FullDesc.Renderer(r),
+			FullSeparator:  t.Help.FullSeparator.Renderer(r),
+		},
+	}
+}
+
 // FieldStyles are the styles for input fields.
 type FieldStyles struct {
 	Base           lipgloss.Style
@@ -93,6 +113,16 @@ func (t TextInputStyles) copy() TextInputStyles {
 	}
 }
 
+// renderer returns a copy of a TextInputStyles with all children styles having the specified renderer.
+func (t TextInputStyles) renderer(r *lipgloss.Renderer) TextInputStyles {
+	return TextInputStyles{
+		Cursor:      t.Cursor.Renderer(r),
+		Placeholder: t.Placeholder.Renderer(r),
+		Prompt:      t.Prompt.Renderer(r),
+		Text:        t.Text.Renderer(r),
+	}
+}
+
 // copy returns a copy of a FieldStyles with all children styles copied.
 func (f FieldStyles) copy() FieldStyles {
 	return FieldStyles{
@@ -118,6 +148,34 @@ func (f FieldStyles) copy() FieldStyles {
 		Card:                f.Card.Copy(),
 		NoteTitle:           f.NoteTitle.Copy(),
 		Next:                f.Next.Copy(),
+	}
+}
+
+// copy returns a copy of a FieldStyles with all children styles copied.
+func (f FieldStyles) renderer(r *lipgloss.Renderer) FieldStyles {
+	return FieldStyles{
+		Base:                f.Base.Renderer(r),
+		Title:               f.Title.Renderer(r),
+		Description:         f.Description.Renderer(r),
+		ErrorIndicator:      f.ErrorIndicator.Renderer(r),
+		ErrorMessage:        f.ErrorMessage.Renderer(r),
+		SelectSelector:      f.SelectSelector.Renderer(r),
+		NextIndicator:       f.NextIndicator.Renderer(r),
+		PrevIndicator:       f.PrevIndicator.Renderer(r),
+		Option:              f.Option.Renderer(r),
+		Directory:           f.Directory.Renderer(r),
+		File:                f.File.Renderer(r),
+		MultiSelectSelector: f.MultiSelectSelector.Renderer(r),
+		SelectedOption:      f.SelectedOption.Renderer(r),
+		SelectedPrefix:      f.SelectedPrefix.Renderer(r),
+		UnselectedOption:    f.UnselectedOption.Renderer(r),
+		UnselectedPrefix:    f.UnselectedPrefix.Renderer(r),
+		FocusedButton:       f.FocusedButton.Renderer(r),
+		BlurredButton:       f.BlurredButton.Renderer(r),
+		TextInput:           f.TextInput.renderer(r),
+		Card:                f.Card.Renderer(r),
+		NoteTitle:           f.NoteTitle.Renderer(r),
+		Next:                f.Next.Renderer(r),
 	}
 }
 
