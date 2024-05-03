@@ -792,25 +792,14 @@ func batchUpdate(m tea.Model, cmd tea.Cmd) tea.Model {
 	if cmd == nil {
 		return m
 	}
-
 	msg := cmd()
-	if msg == nil {
+	m, cmd = m.Update(msg)
+	if cmd == nil {
 		return m
 	}
-
-	switch msg := msg.(type) {
-	case tea.BatchMsg:
-		for _, c := range msg {
-			m, cmd = m.Update(c())
-			if cmd == nil {
-				continue
-			}
-		}
-		return batchUpdate(m, cmd)
-	}
-
+	msg = cmd()
 	m, cmd = m.Update(msg)
-	return batchUpdate(m, cmd)
+	return m
 }
 
 func keys(runes ...rune) tea.KeyMsg {
