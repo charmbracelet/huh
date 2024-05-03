@@ -324,7 +324,7 @@ func (f *FilePicker) WithTheme(theme *Theme) Field {
 	f.picker.Styles = filepicker.Styles{
 		DisabledCursor:   lipgloss.Style{},
 		Cursor:           theme.Focused.TextInput.Prompt,
-		Symlink:          lipgloss.NewStyle(),
+		Symlink:          theme.Renderer.NewStyle(),
 		Directory:        theme.Focused.Directory,
 		File:             theme.Focused.File,
 		DisabledFile:     theme.Focused.TextInput.Placeholder,

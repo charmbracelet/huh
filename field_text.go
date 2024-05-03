@@ -10,7 +10,6 @@ import (
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh/accessibility"
-	"github.com/charmbracelet/lipgloss"
 )
 
 // Text is a form text field. It allows for a multi-line string input.
@@ -47,7 +46,6 @@ func NewText() *Text {
 	text := textarea.New()
 	text.ShowLineNumbers = false
 	text.Prompt = ""
-	text.FocusedStyle.CursorLine = lipgloss.NewStyle()
 
 	editorCmd, editorArgs := getEditor()
 
@@ -265,6 +263,7 @@ func (t *Text) View() string {
 	textareaStyles.Prompt = styles.TextInput.Prompt
 	textareaStyles.CursorLine = styles.TextInput.Text
 	t.textarea.Cursor.Style = styles.TextInput.Cursor
+	t.textarea.FocusedStyle.CursorLine = t.theme.Renderer.NewStyle()
 
 	var sb strings.Builder
 	if t.title != "" {

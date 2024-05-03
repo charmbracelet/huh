@@ -113,9 +113,7 @@ func (n *Note) View() string {
 		styles = n.theme.Focused
 	}
 
-	var (
-		sb strings.Builder
-	)
+	var sb strings.Builder
 
 	if n.title != "" {
 		sb.WriteString(styles.NoteTitle.Render(n.title))
