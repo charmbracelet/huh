@@ -126,42 +126,42 @@ const (
 	buttonPaddingVertical   = 0
 )
 
-// ThemeBase returns a new base theme with general styles to be inherited by
-// other themes.
-func ThemeBase() *Theme {
+// ThemeBaseWithRenderer returns a new base theme with general styles to be inherited by
+// other themes, with a custom lipgloss renderer.
+func ThemeBaseWithRenderer(lg *lipgloss.Renderer) *Theme {
 	var t Theme
 
-	t.FieldSeparator = lipgloss.NewStyle().SetString("\n\n")
+	t.FieldSeparator = lg.NewStyle().SetString("\n\n")
 
-	button := lipgloss.NewStyle().
+	button := lg.NewStyle().
 		Padding(buttonPaddingVertical, buttonPaddingHorizontal).
 		MarginRight(1)
 
 	// Focused styles.
 	f := &t.Focused
-	f.Base = lipgloss.NewStyle().
+	f.Base = lg.NewStyle().
 		PaddingLeft(1).
 		BorderStyle(lipgloss.ThickBorder()).
 		BorderLeft(true)
-	f.Card = lipgloss.NewStyle().
+	f.Card = lg.NewStyle().
 		PaddingLeft(1)
-	f.ErrorIndicator = lipgloss.NewStyle().
+	f.ErrorIndicator = lg.NewStyle().
 		SetString(" *")
-	f.ErrorMessage = lipgloss.NewStyle().
+	f.ErrorMessage = lg.NewStyle().
 		SetString(" *")
-	f.SelectSelector = lipgloss.NewStyle().
+	f.SelectSelector = lg.NewStyle().
 		SetString("> ")
-	f.NextIndicator = lipgloss.NewStyle().
+	f.NextIndicator = lg.NewStyle().
 		MarginLeft(1).
 		SetString("→")
-	f.PrevIndicator = lipgloss.NewStyle().
+	f.PrevIndicator = lg.NewStyle().
 		MarginRight(1).
 		SetString("←")
-	f.MultiSelectSelector = lipgloss.NewStyle().
+	f.MultiSelectSelector = lg.NewStyle().
 		SetString("> ")
-	f.SelectedPrefix = lipgloss.NewStyle().
+	f.SelectedPrefix = lg.NewStyle().
 		SetString("[•] ")
-	f.UnselectedPrefix = lipgloss.NewStyle().
+	f.UnselectedPrefix = lg.NewStyle().
 		SetString("[ ] ")
 	f.FocusedButton = button.Copy().
 		Foreground(lipgloss.Color("0")).
@@ -169,23 +169,30 @@ func ThemeBase() *Theme {
 	f.BlurredButton = button.Copy().
 		Foreground(lipgloss.Color("7")).
 		Background(lipgloss.Color("0"))
-	f.TextInput.Placeholder = lipgloss.NewStyle().Foreground(lipgloss.Color("8"))
+	f.TextInput.Placeholder = lg.NewStyle().Foreground(lipgloss.Color("8"))
 
 	t.Help = help.New().Styles
 
 	// Blurred styles.
 	t.Blurred = f.copy()
 	t.Blurred.Base = t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
-	t.Blurred.MultiSelectSelector = lipgloss.NewStyle().SetString("  ")
-	t.Blurred.NextIndicator = lipgloss.NewStyle()
-	t.Blurred.PrevIndicator = lipgloss.NewStyle()
+	t.Blurred.MultiSelectSelector = lg.NewStyle().SetString("  ")
+	t.Blurred.NextIndicator = lg.NewStyle()
+	t.Blurred.PrevIndicator = lg.NewStyle()
 
 	return &t
 }
 
-// ThemeCharm returns a new theme based on the Charm color scheme.
-func ThemeCharm() *Theme {
-	t := ThemeBase().copy()
+// ThemeBase returns a new base theme with general styles to be inherited by
+// other themes.
+func ThemeBase() *Theme {
+	return ThemeBaseWithRenderer(lipgloss.DefaultRenderer())
+}
+
+// ThemeCharmWithRenderer returns a new theme based on the Charm color scheme,
+// with a custom renderer.
+func ThemeCharmWithRenderer(lg *lipgloss.Renderer) *Theme {
+	t := ThemeBaseWithRenderer(lg).copy()
 
 	var (
 		normalFg = lipgloss.AdaptiveColor{Light: "235", Dark: "252"}
@@ -210,8 +217,8 @@ func ThemeCharm() *Theme {
 	f.Option.Foreground(normalFg)
 	f.MultiSelectSelector.Foreground(fuchsia)
 	f.SelectedOption.Foreground(green)
-	f.SelectedPrefix = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#02CF92", Dark: "#02A877"}).SetString("✓ ")
-	f.UnselectedPrefix = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "", Dark: "243"}).SetString("• ")
+	f.SelectedPrefix = lg.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#02CF92", Dark: "#02A877"}).SetString("✓ ")
+	f.UnselectedPrefix = lg.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "", Dark: "243"}).SetString("• ")
 	f.UnselectedOption.Foreground(normalFg)
 	f.FocusedButton.Foreground(cream).Background(fuchsia)
 	f.Next = f.FocusedButton.Copy()
@@ -223,15 +230,21 @@ func ThemeCharm() *Theme {
 
 	t.Blurred = f.copy()
 	t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
-	t.Blurred.NextIndicator = lipgloss.NewStyle()
-	t.Blurred.PrevIndicator = lipgloss.NewStyle()
+	t.Blurred.NextIndicator = lg.NewStyle()
+	t.Blurred.PrevIndicator = lg.NewStyle()
 
 	return &t
 }
 
-// ThemeDracula returns a new theme based on the Dracula color scheme.
-func ThemeDracula() *Theme {
-	t := ThemeBase().copy()
+// ThemeCharm returns a new theme based on the Charm color scheme.
+func ThemeCharm() *Theme {
+	return ThemeCharmWithRenderer(lipgloss.DefaultRenderer())
+}
+
+// ThemeDracula returns a new theme based on the Dracula color scheme,
+// with a custom renderer.
+func ThemeDraculaWithRenderer(lg *lipgloss.Renderer) *Theme {
+	t := ThemeBaseWithRenderer(lg).copy()
 
 	var (
 		background = lipgloss.AdaptiveColor{Dark: "#282a36"}
@@ -271,15 +284,21 @@ func ThemeDracula() *Theme {
 
 	t.Blurred = f.copy()
 	t.Blurred.Base = t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
-	t.Blurred.NextIndicator = lipgloss.NewStyle()
-	t.Blurred.PrevIndicator = lipgloss.NewStyle()
+	t.Blurred.NextIndicator = lg.NewStyle()
+	t.Blurred.PrevIndicator = lg.NewStyle()
 
 	return &t
 }
 
-// ThemeBase16 returns a new theme based on the base16 color scheme.
-func ThemeBase16() *Theme {
-	t := ThemeBase().copy()
+// ThemeDracula returns a new theme based on the Dracula color scheme.
+func ThemeDracula() *Theme {
+	return ThemeDraculaWithRenderer(lipgloss.DefaultRenderer())
+}
+
+// ThemeBase16 returns a new theme based on the base16 color scheme,
+// with a custom renderer.
+func ThemeBase16WithRenderer(lg *lipgloss.Renderer) *Theme {
+	t := ThemeBaseWithRenderer(lg).copy()
 
 	f := &t.Focused
 	f.Base.BorderForeground(lipgloss.Color("8"))
@@ -310,15 +329,21 @@ func ThemeBase16() *Theme {
 	t.Blurred.NoteTitle.Foreground(lipgloss.Color("8"))
 	t.Blurred.TextInput.Prompt.Foreground(lipgloss.Color("8"))
 	t.Blurred.TextInput.Text.Foreground(lipgloss.Color("7"))
-	t.Blurred.NextIndicator = lipgloss.NewStyle()
-	t.Blurred.PrevIndicator = lipgloss.NewStyle()
+	t.Blurred.NextIndicator = lg.NewStyle()
+	t.Blurred.PrevIndicator = lg.NewStyle()
 
 	return &t
 }
 
-// ThemeCatppuccin returns a new theme based on the Catppuccin color scheme.
-func ThemeCatppuccin() *Theme {
-	t := ThemeBase().copy()
+// ThemeBase16 returns a new theme based on the base16 color scheme.
+func ThemeBase16() *Theme {
+	return ThemeBase16WithRenderer(lipgloss.DefaultRenderer())
+}
+
+// ThemeCatppuccin returns a new theme based on the Catppuccin color scheme,
+// with a custom renderer.
+func ThemeCatppuccinWithRenderer(lg *lipgloss.Renderer) *Theme {
+	t := ThemeBaseWithRenderer(lg).copy()
 
 	light := catppuccin.Latte
 	dark := catppuccin.Mocha
@@ -372,4 +397,9 @@ func ThemeCatppuccin() *Theme {
 	t.Help.FullSeparator.Foreground(subtext0)
 
 	return &t
+}
+
+// ThemeCatppuccin returns a new theme based on the Catppuccin color scheme.
+func ThemeCatppuccin() *Theme {
+	return ThemeCatppuccinWithRenderer(lipgloss.DefaultRenderer())
 }
