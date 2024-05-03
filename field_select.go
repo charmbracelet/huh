@@ -270,7 +270,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				s.viewport.LineDown(1)
 			}
 		case key.Matches(msg, s.keymap.Prev):
-			if s.selected >= len(s.filteredOptions) {
+			if s.selected >= len(s.filteredOptions) || s.filteredOptions[s.selected].disabled {
 				break
 			}
 			value := s.filteredOptions[s.selected].Value
@@ -281,7 +281,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			*s.value = value
 			return s, PrevField
 		case key.Matches(msg, s.keymap.Next, s.keymap.Submit):
-			if s.selected >= len(s.filteredOptions) {
+			if s.selected >= len(s.filteredOptions) || s.filteredOptions[s.selected].disabled {
 				break
 			}
 			value := s.filteredOptions[s.selected].Value
@@ -389,9 +389,17 @@ func (s *Select[T]) choicesView() string {
 
 	for i, option := range s.filteredOptions {
 		if s.selected == i {
-			sb.WriteString(c + styles.SelectedOption.Render(option.Key))
+			if option.disabled {
+				sb.WriteString(c + styles.DisabledOption.Render(option.Key))
+			} else {
+				sb.WriteString(c + styles.SelectedOption.Render(option.Key))
+			}
 		} else {
-			sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)) + styles.Option.Render(option.Key))
+			if option.disabled {
+				sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)) + styles.DisabledOption.Render(option.Key))
+			} else {
+				sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)) + styles.Option.Render(option.Key))
+			}
 		}
 		if i < len(s.options)-1 {
 			sb.WriteString("\n")

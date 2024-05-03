@@ -50,6 +50,7 @@ type FieldStyles struct {
 	Option         lipgloss.Style // Select options
 	NextIndicator  lipgloss.Style
 	PrevIndicator  lipgloss.Style
+	DisabledOption lipgloss.Style
 
 	// FilePicker styles.
 	Directory lipgloss.Style
@@ -109,6 +110,7 @@ func (f FieldStyles) copy() FieldStyles {
 		File:                f.File.Copy(),
 		MultiSelectSelector: f.MultiSelectSelector.Copy(),
 		SelectedOption:      f.SelectedOption.Copy(),
+		DisabledOption:      f.DisabledOption.Copy(),
 		SelectedPrefix:      f.SelectedPrefix.Copy(),
 		UnselectedOption:    f.UnselectedOption.Copy(),
 		UnselectedPrefix:    f.UnselectedPrefix.Copy(),
@@ -194,6 +196,7 @@ func ThemeCharm() *Theme {
 		fuchsia  = lipgloss.Color("#F780E2")
 		green    = lipgloss.AdaptiveColor{Light: "#02BA84", Dark: "#02BF87"}
 		red      = lipgloss.AdaptiveColor{Light: "#FF4672", Dark: "#ED567A"}
+		comment  = lipgloss.AdaptiveColor{Light: "", Dark: "243"}
 	)
 
 	f := &t.Focused
@@ -201,7 +204,7 @@ func ThemeCharm() *Theme {
 	f.Title.Foreground(indigo).Bold(true)
 	f.NoteTitle.Foreground(indigo).Bold(true).MarginBottom(1)
 	f.Directory.Foreground(indigo)
-	f.Description.Foreground(lipgloss.AdaptiveColor{Light: "", Dark: "243"})
+	f.Description.Foreground(comment)
 	f.ErrorIndicator.Foreground(red)
 	f.ErrorMessage.Foreground(red)
 	f.SelectSelector.Foreground(fuchsia)
@@ -210,6 +213,7 @@ func ThemeCharm() *Theme {
 	f.Option.Foreground(normalFg)
 	f.MultiSelectSelector.Foreground(fuchsia)
 	f.SelectedOption.Foreground(green)
+	f.DisabledOption.Foreground(comment)
 	f.SelectedPrefix = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#02CF92", Dark: "#02A877"}).SetString("✓ ")
 	f.UnselectedPrefix = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "", Dark: "243"}).SetString("• ")
 	f.UnselectedOption.Foreground(normalFg)
@@ -259,6 +263,7 @@ func ThemeDracula() *Theme {
 	f.Option.Foreground(foreground)
 	f.MultiSelectSelector.Foreground(yellow)
 	f.SelectedOption.Foreground(green)
+	f.DisabledOption.Foreground(comment)
 	f.SelectedPrefix.Foreground(green)
 	f.UnselectedOption.Foreground(foreground)
 	f.UnselectedPrefix.Foreground(comment)
@@ -295,6 +300,7 @@ func ThemeBase16() *Theme {
 	f.Option.Foreground(lipgloss.Color("7"))
 	f.MultiSelectSelector.Foreground(lipgloss.Color("3"))
 	f.SelectedOption.Foreground(lipgloss.Color("2"))
+	f.DisabledOption.Foreground(lipgloss.Color("8"))
 	f.SelectedPrefix.Foreground(lipgloss.Color("2"))
 	f.UnselectedOption.Foreground(lipgloss.Color("7"))
 	f.FocusedButton.Foreground(lipgloss.Color("7")).Background(lipgloss.Color("5"))
@@ -350,6 +356,7 @@ func ThemeCatppuccin() *Theme {
 	f.Option.Foreground(text)
 	f.MultiSelectSelector.Foreground(pink)
 	f.SelectedOption.Foreground(green)
+	f.DisabledOption.Foreground(subtext0)
 	f.SelectedPrefix.Foreground(green)
 	f.UnselectedPrefix.Foreground(text)
 	f.UnselectedOption.Foreground(text)

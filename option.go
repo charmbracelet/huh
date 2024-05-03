@@ -7,6 +7,7 @@ type Option[T comparable] struct {
 	Key      string
 	Value    T
 	selected bool
+	disabled bool
 }
 
 // NewOptions returns new options from a list of values.
@@ -29,6 +30,12 @@ func NewOption[T comparable](key string, value T) Option[T] {
 // Selected sets whether the option is currently selected.
 func (o Option[T]) Selected(selected bool) Option[T] {
 	o.selected = selected
+	return o
+}
+
+// Disabled sets whether the option is disabled.
+func (o Option[T]) Disabled(disabled bool) Option[T] {
+	o.disabled = disabled
 	return o
 }
 

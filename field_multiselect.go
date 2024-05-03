@@ -255,7 +255,8 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keymap.Toggle):
 			for i, option := range m.options {
 				if option.Key == m.filteredOptions[m.cursor].Key {
-					if !m.options[m.cursor].selected && m.limit > 0 && m.numSelected() >= m.limit {
+					if !m.options[m.cursor].selected && m.limit > 0 && m.numSelected() >= m.limit ||
+						m.options[m.cursor].disabled {
 						break
 					}
 					selected := m.options[i].selected
@@ -384,10 +385,18 @@ func (m *MultiSelect[T]) choicesView() string {
 
 		if m.filteredOptions[i].selected {
 			sb.WriteString(styles.SelectedPrefix.String())
-			sb.WriteString(styles.SelectedOption.Render(option.Key))
+			if option.disabled {
+				sb.WriteString(styles.DisabledOption.Render(option.Key))
+			} else {
+				sb.WriteString(styles.SelectedOption.Render(option.Key))
+			}
 		} else {
 			sb.WriteString(styles.UnselectedPrefix.String())
-			sb.WriteString(styles.UnselectedOption.Render(option.Key))
+			if option.disabled {
+				sb.WriteString(styles.DisabledOption.Render(option.Key))
+			} else {
+				sb.WriteString(styles.UnselectedOption.Render(option.Key))
+			}
 		}
 		if i < len(m.options)-1 {
 			sb.WriteString("\n")
