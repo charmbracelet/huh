@@ -63,16 +63,6 @@ type TextInputStyles struct {
 	Text        lipgloss.Style
 }
 
-// copy returns a copy of a TextInputStyles with all children styles copied.
-func (t TextInputStyles) copy() TextInputStyles {
-	return TextInputStyles{
-		Cursor:      t.Cursor.Copy(),
-		Placeholder: t.Placeholder.Copy(),
-		Prompt:      t.Prompt.Copy(),
-		Text:        t.Text.Copy(),
-	}
-}
-
 const (
 	buttonPaddingHorizontal = 2
 	buttonPaddingVertical   = 0
@@ -100,8 +90,8 @@ func ThemeBase() *Theme {
 	t.Focused.MultiSelectSelector = lipgloss.NewStyle().SetString("> ")
 	t.Focused.SelectedPrefix = lipgloss.NewStyle().SetString("[•] ")
 	t.Focused.UnselectedPrefix = lipgloss.NewStyle().SetString("[ ] ")
-	t.Focused.FocusedButton = button.Copy().Foreground(lipgloss.Color("0")).Background(lipgloss.Color("7"))
-	t.Focused.BlurredButton = button.Copy().Foreground(lipgloss.Color("7")).Background(lipgloss.Color("0"))
+	t.Focused.FocusedButton = button.Foreground(lipgloss.Color("0")).Background(lipgloss.Color("7"))
+	t.Focused.BlurredButton = button.Foreground(lipgloss.Color("7")).Background(lipgloss.Color("0"))
 	t.Focused.TextInput.Placeholder = lipgloss.NewStyle().Foreground(lipgloss.Color("8"))
 
 	t.Help = help.New().Styles
@@ -146,7 +136,7 @@ func ThemeCharm() *Theme {
 	t.Focused.UnselectedPrefix = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "", Dark: "243"}).SetString("• ")
 	t.Focused.UnselectedOption = t.Focused.UnselectedOption.Foreground(normalFg)
 	t.Focused.FocusedButton = t.Focused.FocusedButton.Foreground(cream).Background(fuchsia)
-	t.Focused.Next = t.Focused.FocusedButton.Copy()
+	t.Focused.Next = t.Focused.FocusedButton
 	t.Focused.BlurredButton = t.Focused.BlurredButton.Foreground(normalFg).Background(lipgloss.AdaptiveColor{Light: "252", Dark: "237"})
 
 	t.Focused.TextInput.Cursor = t.Focused.TextInput.Cursor.Foreground(green)
