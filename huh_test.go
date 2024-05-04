@@ -692,7 +692,6 @@ func TestPrevGroup(t *testing.T) {
 func TestNote(t *testing.T) {
 	field := NewNote().Title("Taco").Description("How may we take your order?").Next(true)
 	f := NewForm(NewGroup(field))
-	f.theme.Focused.Base.Border(lipgloss.HiddenBorder())
 	f.Update(f.Init())
 
 	view := ansi.Strip(f.View())

@@ -106,13 +106,14 @@ func (n *Note) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (n *Note) activeStyles() *FieldStyles {
-	if n.theme == nil {
-		return &ThemeCharm().Blurred
+	theme := n.theme
+	if theme == nil {
+		theme = ThemeCharm()
 	}
 	if n.focused {
-		return &n.theme.Focused
+		return &theme.Focused
 	}
-	return &n.theme.Focused
+	return &theme.Focused
 }
 
 // View renders the note field.

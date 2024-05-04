@@ -60,7 +60,6 @@ type Form struct {
 	// options
 	width      int
 	height     int
-	theme      *Theme
 	keymap     *KeyMap
 	teaOptions []tea.ProgramOption
 	output     io.Writer

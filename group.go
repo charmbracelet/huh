@@ -254,13 +254,7 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // height returns the full height of the group.
 func (g *Group) fullHeight() int {
-	var height int
-
-	gap := "\n\n"
-	if gap != "" {
-		height += len(g.fields)
-	}
-
+	height := len(g.fields)
 	for _, f := range g.fields {
 		height += lipgloss.Height(f.View())
 	}

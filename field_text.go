@@ -243,13 +243,14 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (t *Text) activeStyles() *FieldStyles {
-	if t.theme == nil {
-		return &ThemeCharm().Blurred
+	theme := t.theme
+	if theme == nil {
+		theme = ThemeCharm()
 	}
 	if t.focused {
-		return &t.theme.Focused
+		return &theme.Focused
 	}
-	return &t.theme.Blurred
+	return &theme.Blurred
 }
 
 func (t *Text) activeTextAreaStyles() *textarea.Style {

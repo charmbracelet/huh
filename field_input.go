@@ -230,13 +230,14 @@ func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (i *Input) activeStyles() *FieldStyles {
-	if i.theme == nil {
-		return &ThemeCharm().Blurred
+	theme := i.theme
+	if theme == nil {
+		theme = ThemeCharm()
 	}
 	if i.focused {
-		return &i.theme.Focused
+		return &theme.Focused
 	}
-	return &i.theme.Blurred
+	return &theme.Blurred
 }
 
 // View renders the input field.

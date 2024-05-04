@@ -305,11 +305,6 @@ func (m *MultiSelect[T]) updateViewportHeight() {
 		return
 	}
 
-	// Wait until the theme has appied or things'll panic.
-	if m.theme == nil {
-		return
-	}
-
 	const minHeight = 1
 	m.viewport.Height = max(minHeight, m.height-
 		lipgloss.Height(m.titleView())-
@@ -337,13 +332,14 @@ func (m *MultiSelect[T]) finalize() {
 }
 
 func (m *MultiSelect[T]) activeStyles() *FieldStyles {
-	if m.theme == nil {
-		return &ThemeCharm().Blurred
+	theme := m.theme
+	if theme == nil {
+		theme = ThemeCharm()
 	}
 	if m.focused {
-		return &m.theme.Focused
+		return &theme.Focused
 	}
-	return &m.theme.Blurred
+	return &theme.Blurred
 }
 
 func (m *MultiSelect[T]) titleView() string {

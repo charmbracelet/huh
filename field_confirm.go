@@ -158,13 +158,14 @@ func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (c *Confirm) activeStyles() *FieldStyles {
-	if c.theme == nil {
-		return &ThemeCharm().Blurred
+	theme := c.theme
+	if theme == nil {
+		theme = ThemeCharm()
 	}
 	if c.focused {
-		return &c.theme.Focused
+		return &theme.Focused
 	}
-	return &c.theme.Blurred
+	return &theme.Blurred
 }
 
 // View renders the confirm field.
