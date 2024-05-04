@@ -20,6 +20,6 @@ func main() {
 			huh.NewInput().Title("Nineth"),
 			huh.NewInput().Title("Tenth"),
 		),
-	).WithColumns(2)
+	)
 	form.Run()
 }

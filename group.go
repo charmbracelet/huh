@@ -300,11 +300,13 @@ func (g *Group) View() string {
 	return view.String()
 }
 
+// Content renders the group's content only (no footer).
 func (g *Group) Content() string {
 	_, content := g.getContent()
 	return content
 }
 
+// Footer renders the group's footer only (no content).
 func (g *Group) Footer() string {
 	var view strings.Builder
 	view.WriteRune('\n')
