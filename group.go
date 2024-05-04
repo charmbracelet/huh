@@ -38,7 +38,6 @@ type Group struct {
 	// group options
 	width  int
 	height int
-	theme  *Theme
 	keymap *KeyMap
 	hide   func() bool
 }
@@ -91,7 +90,6 @@ func (g *Group) WithShowErrors(show bool) *Group {
 
 // WithTheme sets the theme on a group.
 func (g *Group) WithTheme(t *Theme) *Group {
-	g.theme = t
 	g.help.Styles = t.Help
 	for _, field := range g.fields {
 		field.WithTheme(t)
@@ -258,11 +256,7 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (g *Group) fullHeight() int {
 	var height int
 
-	if g.theme == nil {
-		return g.height // unknown
-	}
-
-	gap := g.theme.FieldSeparator.String()
+	gap := "\n\n"
 	if gap != "" {
 		height += len(g.fields)
 	}
@@ -276,10 +270,7 @@ func (g *Group) fullHeight() int {
 func (g *Group) buildView() {
 	var fields strings.Builder
 	offset := 0
-	gap := g.theme.FieldSeparator.String()
-	if gap == "" {
-		gap = "\n"
-	}
+	gap := "\n\n"
 
 	// if the focused field is requesting it be zoomed, only show that field.
 	if g.fields[g.paginator.Page].Zoom() {
@@ -312,7 +303,7 @@ func (g *Group) View() string {
 	}
 	if g.showErrors {
 		for _, err := range errors {
-			view.WriteString(g.theme.Focused.ErrorMessage.Render(err.Error()))
+			view.WriteString(ThemeCharm().Focused.ErrorMessage.Render(err.Error()))
 		}
 	}
 	return view.String()

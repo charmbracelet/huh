@@ -74,7 +74,8 @@ func main() {
 					}
 					return nil
 				}).
-				Value(&order.Burger.Type),
+				Value(&order.Burger.Type).
+				WithTheme(huh.ThemeCatppuccin()),
 
 			huh.NewMultiSelect[string]().
 				Title("Toppings").
@@ -97,7 +98,7 @@ func main() {
 				Value(&order.Burger.Toppings).
 				Filterable(true).
 				Limit(4),
-		),
+		).WithTheme(huh.ThemeDracula()),
 
 		// Prompt for toppings and special instructions.
 		// The customer can ask for up to 4 toppings.
@@ -109,7 +110,8 @@ func main() {
 					huh.NewOption("Medium", Medium),
 					huh.NewOption("Hot", Hot),
 				).
-				Value(&order.Burger.Spice),
+				Value(&order.Burger.Spice).
+				WithTheme(huh.ThemeDracula()),
 
 			huh.NewSelect[string]().
 				Options(huh.NewOptions("Fries", "Disco Fries", "R&B Fries", "Carrots")...).
@@ -146,7 +148,7 @@ func main() {
 				Affirmative("Yes!").
 				Negative("No."),
 		),
-	).WithAccessible(accessible)
+	).WithAccessible(accessible).WithTheme(huh.ThemeBase())
 
 	err := form.Run()
 
