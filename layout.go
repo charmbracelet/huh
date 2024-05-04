@@ -29,7 +29,7 @@ func (l *layoutDefault) View(f *Form) string {
 	return f.groups[f.paginator.Page].View()
 }
 
-func (l *layoutDefault) GroupWidth(f *Form, g *Group, w int) int {
+func (l *layoutDefault) GroupWidth(_ *Form, _ *Group, w int) int {
 	return w
 }
 
@@ -67,7 +67,7 @@ func (l *layoutColumns) View(f *Form) string {
 	)
 }
 
-func (l *layoutColumns) GroupWidth(f *Form, g *Group, w int) int {
+func (l *layoutColumns) GroupWidth(_ *Form, _ *Group, w int) int {
 	return w / l.columns
 }
 
@@ -86,6 +86,6 @@ func (l *layoutStack) View(f *Form) string {
 	return view.String()
 }
 
-func (l *layoutStack) GroupWidth(f *Form, g *Group, w int) int {
+func (l *layoutStack) GroupWidth(_ *Form, _ *Group, w int) int {
 	return w
 }
