@@ -60,7 +60,6 @@ type Form struct {
 	// options
 	width      int
 	height     int
-	theme      *Theme
 	keymap     *KeyMap
 	teaOptions []tea.ProgramOption
 	output     io.Writer
@@ -78,7 +77,6 @@ func NewForm(groups ...*Group) *Form {
 	f := &Form{
 		groups:    groups,
 		paginator: p,
-		theme:     ThemeCharm(),
 		keymap:    NewDefaultKeyMap(),
 		results:   make(map[string]any),
 		teaOptions: []tea.ProgramOption{
@@ -88,7 +86,6 @@ func NewForm(groups ...*Group) *Form {
 
 	// NB: If dynamic forms come into play this will need to be applied when
 	// groups and fields are added.
-	f.WithTheme(f.theme)
 	f.WithKeyMap(f.keymap)
 	f.WithWidth(f.width)
 	f.WithHeight(f.height)
@@ -238,7 +235,6 @@ func (f *Form) WithTheme(theme *Theme) *Form {
 	if theme == nil {
 		return f
 	}
-	f.theme = theme
 	for _, group := range f.groups {
 		group.WithTheme(theme)
 	}

@@ -58,7 +58,6 @@ func NewText() *Text {
 		editorCmd:       editorCmd,
 		editorArgs:      editorArgs,
 		editorExtension: "md",
-		theme:           ThemeCharm(),
 	}
 
 	return t
@@ -243,19 +242,31 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return t, tea.Batch(cmds...)
 }
 
+func (t *Text) activeStyles() *FieldStyles {
+	theme := t.theme
+	if theme == nil {
+		theme = ThemeCharm()
+	}
+	if t.focused {
+		return &theme.Focused
+	}
+	return &theme.Blurred
+}
+
+func (t *Text) activeTextAreaStyles() *textarea.Style {
+	if t.theme == nil {
+		return &t.textarea.BlurredStyle
+	}
+	if t.focused {
+		return &t.textarea.FocusedStyle
+	}
+	return &t.textarea.BlurredStyle
+}
+
 // View renders the text field.
 func (t *Text) View() string {
-	var (
-		styles         FieldStyles
-		textareaStyles *textarea.Style
-	)
-	if t.focused {
-		styles = t.theme.Focused
-		textareaStyles = &t.textarea.FocusedStyle
-	} else {
-		styles = t.theme.Blurred
-		textareaStyles = &t.textarea.BlurredStyle
-	}
+	var styles = t.activeStyles()
+	var textareaStyles = t.activeTextAreaStyles()
 
 	// NB: since the method is on a pointer receiver these are being mutated.
 	// Because this runs on every render this shouldn't matter in practice,
@@ -293,7 +304,8 @@ func (t *Text) Run() error {
 
 // runAccessible runs an accessible text field.
 func (t *Text) runAccessible() error {
-	fmt.Println(t.theme.Blurred.Base.Render(t.theme.Focused.Title.Render(t.title)))
+	styles := t.activeStyles()
+	fmt.Println(styles.Title.Render(t.title))
 	fmt.Println()
 	*t.value = accessibility.PromptString("Input: ", func(input string) error {
 		if err := t.validate(input); err != nil {
@@ -312,6 +324,9 @@ func (t *Text) runAccessible() error {
 
 // WithTheme sets the theme on a text field.
 func (t *Text) WithTheme(theme *Theme) Field {
+	if t.theme != nil {
+		return t
+	}
 	t.theme = theme
 	return t
 }
@@ -332,7 +347,7 @@ func (t *Text) WithAccessible(accessible bool) Field {
 // WithWidth sets the width of the text field.
 func (t *Text) WithWidth(width int) Field {
 	t.width = width
-	t.textarea.SetWidth(width - t.theme.Blurred.Base.GetHorizontalFrameSize())
+	t.textarea.SetWidth(width - t.activeStyles().Base.GetHorizontalFrameSize())
 	return t
 }
 
@@ -345,7 +360,7 @@ func (t *Text) WithHeight(height int) Field {
 	if t.description != "" {
 		adjust++
 	}
-	t.textarea.SetHeight(height - t.theme.Blurred.Base.GetVerticalFrameSize() - adjust)
+	t.textarea.SetHeight(height - t.activeStyles().Base.GetVerticalFrameSize() - adjust)
 	return t
 }
 

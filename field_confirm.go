@@ -44,7 +44,6 @@ func NewConfirm() *Confirm {
 		affirmative: "Yes",
 		negative:    "No",
 		validate:    func(bool) error { return nil },
-		theme:       ThemeCharm(),
 	}
 }
 
@@ -158,12 +157,20 @@ func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return c, tea.Batch(cmds...)
 }
 
+func (c *Confirm) activeStyles() *FieldStyles {
+	theme := c.theme
+	if theme == nil {
+		theme = ThemeCharm()
+	}
+	if c.focused {
+		return &theme.Focused
+	}
+	return &theme.Blurred
+}
+
 // View renders the confirm field.
 func (c *Confirm) View() string {
-	styles := c.theme.Blurred
-	if c.focused {
-		styles = c.theme.Focused
-	}
+	styles := c.activeStyles()
 
 	var sb strings.Builder
 	sb.WriteString(styles.Title.Render(c.title))
@@ -211,10 +218,11 @@ func (c *Confirm) Run() error {
 
 // runAccessible runs the confirm field in accessible mode.
 func (c *Confirm) runAccessible() error {
-	fmt.Println(c.theme.Blurred.Base.Render(c.theme.Focused.Title.Render(c.title)))
+	styles := c.activeStyles()
+	fmt.Println(styles.Title.Render(c.title))
 	fmt.Println()
 	*c.value = accessibility.PromptBool()
-	fmt.Println(c.theme.Focused.SelectedOption.Render("Chose: "+c.String()) + "\n")
+	fmt.Println(styles.SelectedOption.Render("Chose: "+c.String()) + "\n")
 	return nil
 }
 
@@ -227,6 +235,9 @@ func (c *Confirm) String() string {
 
 // WithTheme sets the theme of the confirm field.
 func (c *Confirm) WithTheme(theme *Theme) Field {
+	if c.theme != nil {
+		return c
+	}
 	c.theme = theme
 	return c
 }

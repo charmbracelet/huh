@@ -31,7 +31,6 @@ type Note struct {
 func NewNote() *Note {
 	return &Note{
 		showNextButton: false,
-		theme:          ThemeCharm(),
 		skip:           true,
 	}
 }
@@ -106,15 +105,22 @@ func (n *Note) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return n, nil
 }
 
+func (n *Note) activeStyles() *FieldStyles {
+	theme := n.theme
+	if theme == nil {
+		theme = ThemeCharm()
+	}
+	if n.focused {
+		return &theme.Focused
+	}
+	return &theme.Focused
+}
+
 // View renders the note field.
 func (n *Note) View() string {
-	styles := n.theme.Blurred
-	if n.focused {
-		styles = n.theme.Focused
-	}
-
 	var (
-		sb strings.Builder
+		styles = n.activeStyles()
+		sb     strings.Builder
 	)
 
 	if n.title != "" {
@@ -148,13 +154,16 @@ func (n *Note) runAccessible() error {
 
 	body += n.description
 
-	fmt.Println(n.theme.Blurred.Base.Render(body))
+	fmt.Println(body)
 	fmt.Println()
 	return nil
 }
 
 // WithTheme sets the theme on a note field.
 func (n *Note) WithTheme(theme *Theme) Field {
+	if n.theme != nil {
+		return n
+	}
 	n.theme = theme
 	return n
 }
