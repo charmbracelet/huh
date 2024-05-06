@@ -12,6 +12,7 @@ import (
 )
 
 var pretty = lipgloss.NewStyle().
+	Width(60).
 	Border(lipgloss.NormalBorder()).
 	MarginTop(1).
 	Padding(1, 3, 1, 2)
@@ -120,7 +121,7 @@ func TestForm(t *testing.T) {
 	//   ↑ up • ↓ down • / filter • enter select
 	//
 
-	if !strings.Contains(view, "Shell?") {
+	if !strings.Contains(view, "┃ Shell?") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected form to contain Shell? title")
 	}

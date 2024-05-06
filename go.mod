@@ -6,9 +6,9 @@ require (
 	github.com/catppuccin/go v0.2.0
 	github.com/charmbracelet/bubbles v0.18.0
 	github.com/charmbracelet/bubbletea v0.26.1
-	github.com/charmbracelet/lipgloss v0.10.0
-	github.com/charmbracelet/x/exp/strings v0.0.0-20240403043919-dea9035a27d4
-	github.com/charmbracelet/x/exp/term v0.0.0-20240321133156-7faadd06c281
+	github.com/charmbracelet/lipgloss v0.10.1-0.20240506202754-3ee5dcab73cb
+	github.com/charmbracelet/x/exp/strings v0.0.0-20240506152644-8135bef4e495
+	github.com/charmbracelet/x/exp/term v0.0.0-20240506152644-8135bef4e495
 )
 
 require (
@@ -26,7 +26,7 @@ require (
 	github.com/muesli/termenv v0.15.2 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	golang.org/x/sync v0.7.0 // indirect
-	golang.org/x/sys v0.19.0 // indirect
-	golang.org/x/term v0.19.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/sys v0.20.0 // indirect
+	golang.org/x/term v0.20.0 // indirect
+	golang.org/x/text v0.15.0 // indirect
 )

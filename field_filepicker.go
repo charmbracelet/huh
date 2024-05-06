@@ -344,7 +344,7 @@ func (f *FilePicker) WithTheme(theme *Theme) Field {
 		Selected:         theme.Focused.SelectedOption,
 		DisabledSelected: theme.Focused.TextInput.Placeholder,
 		FileSize:         theme.Focused.TextInput.Placeholder,
-		EmptyDirectory:   theme.Focused.TextInput.Placeholder.Copy().SetString("No files found."),
+		EmptyDirectory:   theme.Focused.TextInput.Placeholder.SetString("No files found."),
 	}
 
 	return f
