@@ -118,6 +118,26 @@ func main() {
 				Description("You get one free side with this order."),
 		),
 
+		// Confirm the customer is happy with their selection so far.
+		huh.NewGroup(
+			huh.NewNote().
+				Title("So you are going for:").
+				WithContent(func() string {
+					keyword := func(s string) string {
+						return lipgloss.NewStyle().Foreground(lipgloss.Color("212")).Render(s)
+					}
+					return fmt.Sprintf(
+						"One %s%s\ntopped with %s\nwith %s on the side",
+						keyword(order.Burger.Spice.String()),
+						keyword(order.Burger.Type),
+						keyword(xstrings.EnglishJoin(order.Burger.Toppings, true)),
+						keyword(order.Side),
+					)
+				}).
+				Next(true).
+				WithNextLabel("Let's do this!"),
+		),
+
 		// Gather final details for the order.
 		huh.NewGroup(
 			huh.NewInput().

@@ -25,6 +25,8 @@ type Note struct {
 	accessible bool
 	theme      *Theme
 	keymap     NoteKeyMap
+	content    func() string
+	nextLabel  string
 }
 
 // NewNote creates a new note field.
@@ -32,6 +34,8 @@ func NewNote() *Note {
 	return &Note{
 		showNextButton: false,
 		skip:           true,
+		content:        func() string { return "" },
+		nextLabel:      "Next",
 	}
 }
 
@@ -130,8 +134,14 @@ func (n *Note) View() string {
 		sb.WriteString("\n")
 		sb.WriteString(render(n.description))
 	}
+	content := n.content()
+	if content != "" {
+		sb.WriteString("\n")
+		sb.WriteString(content)
+	}
 	if n.showNextButton {
-		sb.WriteString(styles.Next.Render("Next"))
+		sb.WriteString("\n\n")
+		sb.WriteString(styles.Next.Render(n.nextLabel))
 	}
 	return styles.Card.Render(sb.String())
 }
@@ -202,6 +212,18 @@ func (n *Note) WithPosition(p FieldPosition) Field {
 	n.keymap.Prev.SetEnabled(!p.IsFirst())
 	n.keymap.Next.SetEnabled(!p.IsLast())
 	n.keymap.Submit.SetEnabled(p.IsLast())
+	return n
+}
+
+// WithContent allows setting note content dynamically.
+func (n *Note) WithContent(content func() string) *Note {
+	n.content = content
+	return n
+}
+
+// WithNextLabel sets the label used on the next button.
+func (n *Note) WithNextLabel(label string) *Note {
+	n.nextLabel = label
 	return n
 }
 
