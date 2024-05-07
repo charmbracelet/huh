@@ -140,7 +140,6 @@ func (n *Note) View() string {
 		sb.WriteString(content)
 	}
 	if n.showNextButton {
-		sb.WriteString("\n\n")
 		sb.WriteString(styles.Next.Render(n.nextLabel))
 	}
 	return styles.Card.Render(sb.String())

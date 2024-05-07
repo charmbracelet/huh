@@ -127,7 +127,7 @@ func main() {
 						return lipgloss.NewStyle().Foreground(lipgloss.Color("212")).Render(s)
 					}
 					return fmt.Sprintf(
-						"One %s%s\ntopped with %s\nwith %s on the side",
+						"One %s%s\ntopped with %s\nwith %s on the side\n\n",
 						keyword(order.Burger.Spice.String()),
 						keyword(order.Burger.Type),
 						keyword(xstrings.EnglishJoin(order.Burger.Toppings, true)),
