@@ -13,6 +13,7 @@ type Note struct {
 	// customization
 	title       string
 	description string
+	nextLabel   string
 
 	// state
 	showNextButton bool
@@ -25,7 +26,6 @@ type Note struct {
 	accessible bool
 	theme      *Theme
 	keymap     NoteKeyMap
-	nextLabel  string
 }
 
 // NewNote creates a new note field.
