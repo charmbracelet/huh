@@ -23,6 +23,11 @@ func LayoutColumns(columns int) Layout {
 	return &layoutColumns{columns: columns}
 }
 
+// Grid layout distributes groups in a grid.
+func LayoutGrid(rows int, columns int) Layout {
+	return &layoutGrid{rows: rows, columns: columns}
+}
+
 type layoutDefault struct{}
 
 func (l *layoutDefault) View(f *Form) string {
@@ -88,4 +93,57 @@ func (l *layoutStack) View(f *Form) string {
 
 func (l *layoutStack) GroupWidth(_ *Form, _ *Group, w int) int {
 	return w
+}
+
+type layoutGrid struct {
+	rows, columns int
+}
+
+func (l *layoutGrid) visibleGroups(f *Form) [][]*Group {
+	total := l.rows * l.columns
+	segmentIndex := f.paginator.Page / total
+	start := segmentIndex * total
+	end := start + total
+
+	if end > len(f.groups) {
+		end = len(f.groups)
+	}
+
+	visible := f.groups[start:end]
+	grid := make([][]*Group, l.rows)
+	for i := 0; i < l.rows; i++ {
+		startRow := i * l.columns
+		endRow := startRow + l.columns
+		if startRow >= len(visible) {
+			break
+		}
+		if endRow > len(visible) {
+			endRow = len(visible)
+		}
+		grid[i] = visible[startRow:endRow]
+	}
+	return grid
+}
+
+func (l *layoutGrid) View(f *Form) string {
+	grid := l.visibleGroups(f)
+	if len(grid) == 0 {
+		return ""
+	}
+
+	var rows []string
+	for _, row := range grid {
+		var columns []string
+		for _, group := range row {
+			columns = append(columns, group.Content())
+		}
+		rows = append(rows, lipgloss.JoinHorizontal(lipgloss.Top, columns...))
+	}
+	footer := f.groups[f.paginator.Page].Footer()
+
+	return lipgloss.JoinVertical(lipgloss.Left, strings.Join(rows, "\n"), footer)
+}
+
+func (l *layoutGrid) GroupWidth(_ *Form, _ *Group, w int) int {
+	return w / l.columns
 }
