@@ -61,7 +61,7 @@ func main() {
 			Title("Charmburger").
 			Description("Welcome to _Charmburger™_.\n\nHow may we take your order?\n\n").
 			Next(true).
-			WithNextLabel("Let's go!"),
+			NextLabel("Let's go!"),
 		),
 
 		// Choose a burger.

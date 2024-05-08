@@ -55,6 +55,12 @@ func (n *Note) Next(show bool) *Note {
 	return n
 }
 
+// NextLabel sets the next button label.
+func (n *Note) NextLabel(label string) *Note {
+	n.nextLabel = label
+	return n
+}
+
 // Focus focuses the note field.
 func (n *Note) Focus() tea.Cmd {
 	n.focused = true
@@ -204,12 +210,6 @@ func (n *Note) WithPosition(p FieldPosition) Field {
 	n.keymap.Prev.SetEnabled(!p.IsFirst())
 	n.keymap.Next.SetEnabled(!p.IsLast())
 	n.keymap.Submit.SetEnabled(p.IsLast())
-	return n
-}
-
-// WithNextLabel sets the next button label.
-func (n *Note) WithNextLabel(label string) Field {
-	n.nextLabel = label
 	return n
 }
 
