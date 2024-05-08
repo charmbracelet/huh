@@ -29,12 +29,12 @@ package main
 import "github.com/charmbracelet/huh"
 
 var (
-    burger string
-    toppings []string
-    sauceLevel int
-    name string
+    burger       string
+    toppings     []string
+    sauceLevel   int
+    name         string
     instructions string
-    discount bool
+    discount     bool
 )
 ```
 
