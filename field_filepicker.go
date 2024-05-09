@@ -61,6 +61,7 @@ func NewFilePicker() *FilePicker {
 // CurrentDirectory sets the directory of the file field.
 func (f *FilePicker) CurrentDirectory(directory string) *FilePicker {
 	f.picker.CurrentDirectory = directory
+	f.Init()
 	return f
 }
 
