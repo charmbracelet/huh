@@ -40,6 +40,7 @@ type Group struct {
 	height int
 	keymap *KeyMap
 	hide   func() bool
+	active bool
 }
 
 // NewGroup returns a new group with the given fields.
@@ -53,6 +54,7 @@ func NewGroup(fields ...Field) *Group {
 		help:       help.New(),
 		showHelp:   true,
 		showErrors: true,
+		active:     false,
 	}
 
 	height := group.fullHeight()
@@ -190,8 +192,10 @@ func (g *Group) Init() tea.Cmd {
 		return tea.Batch(cmds...)
 	}
 
-	cmd := g.fields[g.paginator.Page].Focus()
-	cmds = append(cmds, cmd)
+	if g.active {
+		cmd := g.fields[g.paginator.Page].Focus()
+		cmds = append(cmds, cmd)
+	}
 	g.buildView()
 	return tea.Batch(cmds...)
 }

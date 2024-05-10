@@ -437,13 +437,10 @@ func (f *Form) PrevField() tea.Cmd {
 func (f *Form) Init() tea.Cmd {
 	cmds := make([]tea.Cmd, len(f.groups))
 	for i, group := range f.groups {
-		cmds[i] = group.Init()
-
-		if i != 0 {
-			for _, field := range group.fields {
-				field.Blur()
-			}
+		if i == 0 {
+			group.active = true
 		}
+		cmds[i] = group.Init()
 	}
 
 	if f.isGroupHidden(f.paginator.Page) {
@@ -520,6 +517,7 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return submit()
 			}
 		}
+		f.groups[f.paginator.Page].active = true
 		return f, f.groups[f.paginator.Page].Init()
 
 	case prevGroupMsg:
@@ -534,6 +532,7 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
+		f.groups[f.paginator.Page].active = true
 		return f, f.groups[f.paginator.Page].Init()
 	}
 
