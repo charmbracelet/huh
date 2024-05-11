@@ -586,3 +586,14 @@ func (f *Form) runAccessible() error {
 
 	return nil
 }
+
+// Results returns a shallow copy of the results map.
+func (f *Form) Results() map[string]any {
+	cp := make(map[string]any, len(f.results))
+
+	for k, v := range f.results {
+		cp[k] = v
+	}
+
+	return cp
+}
