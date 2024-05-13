@@ -374,6 +374,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// position and filteredOptions.
 			s.selected = clamp(s.selected, 0, len(msg.options)-1)
 			s.filteredOptions = msg.options
+			s.updateValue()
 		}
 	case tea.KeyMsg:
 		s.err = nil
