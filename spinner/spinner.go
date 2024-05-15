@@ -2,6 +2,7 @@ package spinner
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -151,9 +152,13 @@ func (s *Spinner) Run() error {
 		}()
 	}
 
-	_, _ = p.Run()
+	_, err := p.Run()
 
-	return nil
+	if errors.Is(err, tea.ErrProgramKilled) {
+		return nil
+	} else {
+		return err
+	}
 }
 
 // runAccessible runs the spinner in an accessible mode (statically).
