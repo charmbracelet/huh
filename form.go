@@ -252,6 +252,7 @@ func (f *Form) WithKeyMap(keymap *KeyMap) *Form {
 	for _, group := range f.groups {
 		group.WithKeyMap(keymap)
 	}
+	f.UpdateFieldPositions()
 	return f
 }
 
