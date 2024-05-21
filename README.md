@@ -322,7 +322,7 @@ fmt.Println("Order up!")
 </table>
 
 For more on Spinners see the [spinner examples](./spinner/examples) and
-[the spinner docs](https://pkg.go.dev/github.com/charmbracelet/huh@main/spinner).
+[the spinner docs](https://pkg.go.dev/github.com/charmbracelet/huh/spinner).
 
 ## What about Bubble Tea?
 
