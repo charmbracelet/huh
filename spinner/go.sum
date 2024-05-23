@@ -4,10 +4,10 @@ github.com/charmbracelet/bubbles v0.18.0 h1:PYv1A036luoBGroX6VWjQIE9Syf2Wby2oOl/
 github.com/charmbracelet/bubbles v0.18.0/go.mod h1:08qhZhtIwzgrtBjAcJnij1t1H0ZRjwHyGsy6AL11PSw=
 github.com/charmbracelet/bubbletea v0.26.1 h1:xujcQeF73rh4jwu3+zhfQsvV18x+7zIjlw7/CYbzGJ0=
 github.com/charmbracelet/bubbletea v0.26.1/go.mod h1:FzKr7sKoO8iFVcdIBM9J0sJOcQv5nDQaYwsee3kpbgo=
-github.com/charmbracelet/lipgloss v0.10.1-0.20240506202754-3ee5dcab73cb h1:Hs3xzxHuruNT2Iuo87iS40c0PhLqpnUKBI6Xw6Ad3wQ=
-github.com/charmbracelet/lipgloss v0.10.1-0.20240506202754-3ee5dcab73cb/go.mod h1:EPP2QJ0ectp3zo6gx9f8oJGq8keirqPJ3XpYEI8wrrs=
-github.com/charmbracelet/x/exp/term v0.0.0-20240506152644-8135bef4e495 h1:+0U9qX8Pv8KiYgRxfBvORRjgBzLgHMjtElP4O0PyKYA=
-github.com/charmbracelet/x/exp/term v0.0.0-20240506152644-8135bef4e495/go.mod h1:qeR6w1zITbkF7vEhcx0CqX5GfnIiQloJWQghN6HfP+c=
+github.com/charmbracelet/lipgloss v0.11.0 h1:UoAcbQ6Qml8hDwSWs0Y1cB5TEQuZkDPH/ZqwWWYTG4g=
+github.com/charmbracelet/lipgloss v0.11.0/go.mod h1:1UdRTH9gYgpcdNN5oBtjbu/IzNKtzVtb7sqN1t9LNn8=
+github.com/charmbracelet/x/ansi v0.1.1 h1:CGAduulr6egay/YVbGc8Hsu8deMg1xZ/bkaXTPi1JDk=
+github.com/charmbracelet/x/ansi v0.1.1/go.mod h1:dk73KoMTT5AX5BsX0KrqhsTqAnhZZoCBjs7dGWp4Ktw=
 github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f h1:Y/CXytFA4m6baUTXGLOoWe4PQhGxaX0KpnayAqC48p4=
 github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f/go.mod h1:vw97MGsxSvLiUE2X8qFplwetxpGLQrlU1Q9AUEIzCaM=
 github.com/lucasb-eyer/go-colorful v1.2.0 h1:1nnpGOrhyZZuNyfu1QjKiUICQ74+3FNCN69Aj6K7nkY=
