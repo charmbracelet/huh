@@ -6,7 +6,7 @@ require (
 	github.com/catppuccin/go v0.2.0
 	github.com/charmbracelet/bubbles v0.18.0
 	github.com/charmbracelet/bubbletea v0.26.1
-	github.com/charmbracelet/lipgloss v0.10.1-0.20240506202754-3ee5dcab73cb
+	github.com/charmbracelet/lipgloss v0.11.0
 	github.com/charmbracelet/x/exp/strings v0.0.0-20240506152644-8135bef4e495
 	github.com/charmbracelet/x/exp/term v0.0.0-20240506152644-8135bef4e495
 )
@@ -14,6 +14,7 @@ require (
 require (
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
+	github.com/charmbracelet/x/ansi v0.1.1 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
