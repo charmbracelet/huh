@@ -11,42 +11,55 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-// Input is a form input field.
+// Input is a input field.
+//
+// The input field is a field that allows the user to enter text. Use it to user
+// input. It can be used for collecting text, passwords, or other short input.
+//
+// The input field supports Suggestions, Placeholder, and Validation.
 type Input struct {
+	id    int
 	value *string
 	key   string
 
-	// customization
-	title       string
-	description string
-	inline      bool
+	title       Eval[string]
+	description Eval[string]
+	placeholder Eval[string]
+	suggestions Eval[[]string]
 
-	// error handling
-	validate func(string) error
-	err      error
-
-	// model
 	textinput textinput.Model
 
-	// state
-	focused bool
+	inline   bool
+	validate func(string) error
+	err      error
+	focused  bool
 
-	// options
+	accessible bool
 	width      int
 	height     int
-	accessible bool
-	theme      *Theme
-	keymap     InputKeyMap
+
+	theme  *Theme
+	keymap InputKeyMap
 }
 
-// NewInput returns a new input field.
+// NewInput creates a new input field.
+//
+// The input field is a field that allows the user to enter text. Use it to user
+// input. It can be used for collecting text, passwords, or other short input.
+//
+// The input field supports Suggestions, Placeholder, and Validation.
 func NewInput() *Input {
 	input := textinput.New()
 
 	i := &Input{
-		value:     new(string),
-		textinput: input,
-		validate:  func(string) error { return nil },
+		id:          nextID(),
+		value:       new(string),
+		textinput:   input,
+		validate:    func(string) error { return nil },
+		title:       Eval[string]{cache: make(map[uint64]string)},
+		description: Eval[string]{cache: make(map[uint64]string)},
+		placeholder: Eval[string]{cache: make(map[uint64]string)},
+		suggestions: Eval[[]string]{cache: make(map[uint64][]string)},
 	}
 
 	return i
@@ -66,14 +79,46 @@ func (i *Input) Key(key string) *Input {
 }
 
 // Title sets the title of the input field.
+//
+// The Title is static for dynamic Title use `TitleFunc`.
 func (i *Input) Title(title string) *Input {
-	i.title = title
+	i.title.val = title
+	i.title.fn = nil
 	return i
 }
 
 // Description sets the description of the input field.
+//
+// The Description is static for dynamic Description use `DescriptionFunc`.
 func (i *Input) Description(description string) *Input {
-	i.description = description
+	i.description.val = description
+	i.description.fn = nil
+	return i
+}
+
+// TitleFunc sets the title func of the input field.
+//
+// The TitleFunc will be re-evaluated when the binding of the TitleFunc changes.
+// This is useful when you want to display dynamic content and update the title
+// when another part of your form changes.
+//
+// See README#Dynamic for more usage information.
+func (i *Input) TitleFunc(f func() string, bindings any) *Input {
+	i.title.fn = f
+	i.title.bindings = bindings
+	return i
+}
+
+// DescriptionFunc sets the description func of the input field.
+//
+// The DescriptionFunc will be re-evaluated when the binding of the
+// DescriptionFunc changes. This is useful when you want to display dynamic
+// content and update the description when another part of your form changes.
+//
+// See README#Dynamic for more usage information.
+func (i *Input) DescriptionFunc(f func() string, bindings any) *Input {
+	i.description.fn = f
+	i.description.bindings = bindings
 	return i
 }
 
@@ -91,10 +136,32 @@ func (i *Input) CharLimit(charlimit int) *Input {
 
 // Suggestions sets the suggestions to display for autocomplete in the input
 // field.
+//
+// The suggestions are static for dynamic suggestions use `SuggestionsFunc`.
 func (i *Input) Suggestions(suggestions []string) *Input {
+	i.suggestions.fn = nil
+
 	i.textinput.ShowSuggestions = len(suggestions) > 0
 	i.textinput.KeyMap.AcceptSuggestion.SetEnabled(len(suggestions) > 0)
 	i.textinput.SetSuggestions(suggestions)
+	return i
+}
+
+// SuggestionsFunc sets the suggestions func to display for autocomplete in the
+// input field.
+//
+// The SuggestionsFunc will be re-evaluated when the binding of the
+// SuggestionsFunc changes. This is useful when you want to display dynamic
+// suggestions when another part of your form changes.
+//
+// See README#Dynamic for more usage information.
+func (i *Input) SuggestionsFunc(f func() []string, bindings any) *Input {
+	i.suggestions.fn = f
+	i.suggestions.bindings = bindings
+	i.suggestions.loading = true
+
+	i.textinput.KeyMap.AcceptSuggestion.SetEnabled(f != nil)
+	i.textinput.ShowSuggestions = f != nil
 	return i
 }
 
@@ -139,6 +206,13 @@ func (i *Input) Placeholder(str string) *Input {
 	return i
 }
 
+// PlaceholderFunc sets the placeholder func of the text input.
+func (i *Input) PlaceholderFunc(f func() string, bindings any) *Input {
+	i.placeholder.fn = f
+	i.placeholder.bindings = bindings
+	return i
+}
+
 // Inline sets whether the title and input should be on the same line.
 func (i *Input) Inline(inline bool) *Input {
 	i.inline = inline
@@ -152,19 +226,13 @@ func (i *Input) Validate(validate func(string) error) *Input {
 }
 
 // Error returns the error of the input field.
-func (i *Input) Error() error {
-	return i.err
-}
+func (i *Input) Error() error { return i.err }
 
 // Skip returns whether the input should be skipped or should be blocking.
-func (*Input) Skip() bool {
-	return false
-}
+func (*Input) Skip() bool { return false }
 
 // Zoom returns whether the input should be zoomed.
-func (*Input) Zoom() bool {
-	return false
-}
+func (*Input) Zoom() bool { return false }
 
 // Focus focuses the input field.
 func (i *Input) Focus() tea.Cmd {
@@ -205,6 +273,69 @@ func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	*i.value = i.textinput.Value()
 
 	switch msg := msg.(type) {
+	case updateFieldMsg:
+		var cmds []tea.Cmd
+		if ok, hash := i.title.shouldUpdate(); ok {
+			i.title.bindingsHash = hash
+			if !i.title.loadFromCache() {
+				i.title.loading = true
+				cmds = append(cmds, func() tea.Msg {
+					return updateTitleMsg{id: i.id, title: i.title.fn(), hash: hash}
+				})
+			}
+		}
+		if ok, hash := i.description.shouldUpdate(); ok {
+			i.description.bindingsHash = hash
+			if !i.description.loadFromCache() {
+				i.description.loading = true
+				cmds = append(cmds, func() tea.Msg {
+					return updateDescriptionMsg{id: i.id, description: i.description.fn(), hash: hash}
+				})
+			}
+		}
+		if ok, hash := i.placeholder.shouldUpdate(); ok {
+			i.placeholder.bindingsHash = hash
+			if i.placeholder.loadFromCache() {
+				i.textinput.Placeholder = i.placeholder.val
+			} else {
+				i.placeholder.loading = true
+				cmds = append(cmds, func() tea.Msg {
+					return updatePlaceholderMsg{id: i.id, placeholder: i.placeholder.fn(), hash: hash}
+				})
+			}
+		}
+		if ok, hash := i.suggestions.shouldUpdate(); ok {
+			i.suggestions.bindingsHash = hash
+			if i.suggestions.loadFromCache() {
+				i.textinput.ShowSuggestions = len(i.suggestions.val) > 0
+				i.textinput.SetSuggestions(i.suggestions.val)
+			} else {
+				i.suggestions.loading = true
+				cmds = append(cmds, func() tea.Msg {
+					return updateSuggestionsMsg{id: i.id, suggestions: i.suggestions.fn(), hash: hash}
+				})
+			}
+		}
+		return i, tea.Batch(cmds...)
+	case updateTitleMsg:
+		if i.id == msg.id && i.title.bindingsHash == msg.hash {
+			i.title.update(msg.title)
+		}
+	case updateDescriptionMsg:
+		if i.id == msg.id && i.description.bindingsHash == msg.hash {
+			i.description.update(msg.description)
+		}
+	case updatePlaceholderMsg:
+		if i.id == msg.id && i.placeholder.bindingsHash == msg.hash {
+			i.placeholder.update(msg.placeholder)
+			i.textinput.Placeholder = msg.placeholder
+		}
+	case updateSuggestionsMsg:
+		if i.id == msg.id && i.suggestions.bindingsHash == msg.hash {
+			i.suggestions.update(msg.suggestions)
+			i.textinput.ShowSuggestions = len(msg.suggestions) > 0
+			i.textinput.SetSuggestions(msg.suggestions)
+		}
 	case tea.KeyMsg:
 		i.err = nil
 
@@ -253,14 +384,14 @@ func (i *Input) View() string {
 	i.textinput.TextStyle = styles.TextInput.Text
 
 	var sb strings.Builder
-	if i.title != "" {
-		sb.WriteString(styles.Title.Render(i.title))
+	if i.title.val != "" || i.title.fn != nil {
+		sb.WriteString(styles.Title.Render(i.title.val))
 		if !i.inline {
 			sb.WriteString("\n")
 		}
 	}
-	if i.description != "" {
-		sb.WriteString(styles.Description.Render(i.description))
+	if i.description.val != "" || i.description.fn != nil {
+		sb.WriteString(styles.Description.Render(i.description.val))
 		if !i.inline {
 			sb.WriteString("\n")
 		}
@@ -286,7 +417,7 @@ func (i *Input) run() error {
 // runAccessible runs the input field in accessible mode.
 func (i *Input) runAccessible() error {
 	styles := i.activeStyles()
-	fmt.Println(styles.Title.Render(i.title))
+	fmt.Println(styles.Title.Render(i.title.val))
 	fmt.Println()
 	*i.value = accessibility.PromptString("Input: ", i.validate)
 	fmt.Println(styles.SelectedOption.Render("Input: " + *i.value + "\n"))
@@ -321,8 +452,8 @@ func (i *Input) WithWidth(width int) Field {
 	i.width = width
 	frameSize := styles.Base.GetHorizontalFrameSize()
 	promptWidth := lipgloss.Width(i.textinput.PromptStyle.Render(i.textinput.Prompt))
-	titleWidth := lipgloss.Width(styles.Title.Render(i.title))
-	descriptionWidth := lipgloss.Width(styles.Description.Render(i.description))
+	titleWidth := lipgloss.Width(styles.Title.Render(i.title.val))
+	descriptionWidth := lipgloss.Width(styles.Description.Render(i.description.val))
 	i.textinput.Width = width - frameSize - promptWidth - 1
 	if i.inline {
 		i.textinput.Width -= titleWidth
@@ -346,11 +477,7 @@ func (i *Input) WithPosition(p FieldPosition) Field {
 }
 
 // GetKey returns the key of the field.
-func (i *Input) GetKey() string {
-	return i.key
-}
+func (i *Input) GetKey() string { return i.key }
 
 // GetValue returns the value of the field.
-func (i *Input) GetValue() any {
-	return *i.value
-}
+func (i *Input) GetValue() any { return *i.value }

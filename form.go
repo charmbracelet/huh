@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io"
 	"os"
+	"sync"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -12,6 +13,21 @@ import (
 )
 
 const defaultWidth = 80
+
+// Internal ID management. Used during animating to ensure that frame messages
+// are received only by spinner components that sent them.
+var (
+	lastID int
+	idMtx  sync.Mutex
+)
+
+// Return the next ID we should use on the Model.
+func nextID() int {
+	idMtx.Lock()
+	defer idMtx.Unlock()
+	lastID++
+	return lastID
+}
 
 // FormState represents the current state of the form.
 type FormState int

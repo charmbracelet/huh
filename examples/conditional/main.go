@@ -38,44 +38,40 @@ func main() {
 						huh.NewOption("A vegetable", vegetables),
 						huh.NewOption("A drink", drinks),
 					),
+
+				huh.NewSelect[string]().
+					Value(&choice).
+					Height(7).
+					TitleFunc(func() string {
+						return fmt.Sprintf("Okay, what kind of %s are you in the mood for?", category)
+					}, &category).
+					OptionsFunc(func() []huh.Option[string] {
+						switch category {
+						case fruits:
+							return []huh.Option[string]{
+								huh.NewOption("Tangerine", "tangerine"),
+								huh.NewOption("Canteloupe", "canteloupe"),
+								huh.NewOption("Pomelo", "pomelo"),
+								huh.NewOption("Grapefruit", "grapefruit"),
+							}
+						case vegetables:
+							return []huh.Option[string]{
+								huh.NewOption("Carrot", "carrot"),
+								huh.NewOption("Jicama", "jicama"),
+								huh.NewOption("Kohlrabi", "kohlrabi"),
+								huh.NewOption("Fennel", "fennel"),
+								huh.NewOption("Ginger", "ginger"),
+							}
+						default:
+							return []huh.Option[string]{
+								huh.NewOption("Coffee", "coffee"),
+								huh.NewOption("Tea", "tea"),
+								huh.NewOption("Bubble Tea", "bubble tea"),
+								huh.NewOption("Agua Fresca", "agua-fresca"),
+							}
+						}
+					}, &category),
 			),
-
-			huh.NewGroup(
-				huh.NewSelect[string]().
-					Title("Okay, what kind of fruit are you in the mood for?").
-					Options(
-						huh.NewOption("Tangerine", "tangerine"),
-						huh.NewOption("Canteloupe", "canteloupe"),
-						huh.NewOption("Pomelo", "pomelo"),
-						huh.NewOption("Grapefruit", "grapefruit"),
-					).
-					Value(&choice),
-			).WithHideFunc(func() bool { return category != fruits }),
-
-			huh.NewGroup(
-				huh.NewSelect[string]().
-					Title("Okay, what kind of vegetable are you in the mood for?").
-					Options(
-						huh.NewOption("Carrot", "carrot"),
-						huh.NewOption("Jicama", "jicama"),
-						huh.NewOption("Kohlrabi", "kohlrabi"),
-						huh.NewOption("Fennel", "fennel"),
-						huh.NewOption("Ginger", "ginger"),
-					).
-					Value(&choice),
-			).WithHideFunc(func() bool { return category != vegetables }),
-
-			huh.NewGroup(
-				huh.NewSelect[string]().
-					Title(fmt.Sprintf("Okay, what kind of %s are you in the mood for?", category)).
-					Options(
-						huh.NewOption("Coffee", "coffee"),
-						huh.NewOption("Tea", "tea"),
-						huh.NewOption("Bubble Tea", "bubble tea"),
-						huh.NewOption("Agua Fresca", "agua-fresca"),
-					).
-					Value(&choice),
-			).WithHideFunc(func() bool { return category != drinks }),
 		).Run()
 
 	if err != nil {

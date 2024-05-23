@@ -5,6 +5,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/paginator"
+	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -155,6 +156,13 @@ func (g *Group) Errors() []error {
 	return errs
 }
 
+// updateFieldMsg is a message to update the fields of a group that is currently
+// displayed.
+//
+// This is used to update all TitleFunc, DescriptionFunc, and ...Func update
+// methods to make all fields dynamically update based on user input.
+type updateFieldMsg struct{}
+
 // nextFieldMsg is a message to move to the next field,
 //
 // each field controls when to send this message such that it is able to use
@@ -234,9 +242,29 @@ func (g *Group) prevField() []tea.Cmd {
 func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
-	m, cmd := g.fields[g.paginator.Page].Update(msg)
-	g.fields[g.paginator.Page] = m.(Field)
-	cmds = append(cmds, cmd)
+	// Update all the fields in the group.
+	for i := range g.fields {
+		switch msg := msg.(type) {
+		case spinner.TickMsg,
+			updateTitleMsg,
+			updateDescriptionMsg,
+			updateSuggestionsMsg,
+			updateOptionsMsg[string],
+			updatePlaceholderMsg:
+			m, cmd := g.fields[i].Update(msg)
+			g.fields[i] = m.(Field)
+			cmds = append(cmds, cmd)
+		}
+		var _msg tea.Msg
+		if g.paginator.Page == i {
+			_msg = msg
+		} else {
+			_msg = updateFieldMsg{}
+		}
+		m, cmd := g.fields[i].Update(_msg)
+		g.fields[i] = m.(Field)
+		cmds = append(cmds, cmd)
+	}
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:

@@ -8,46 +8,111 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-// Note is a form note field.
+// Note is a note field.
+//
+// A note is responsible for displaying information to the user. Use it to
+// provide context around a different field. Generally, the notes are not
+// interacted with unless the note has a next button `Next(true)`.
 type Note struct {
-	// customization
-	title       string
-	description string
+	id int
 
-	// state
-	showNextButton bool
+	title       Eval[string]
+	description Eval[string]
+
 	focused        bool
+	showNextButton bool
+	skip           bool
 
-	// options
-	skip       bool
-	width      int
-	height     int
 	accessible bool
-	theme      *Theme
-	keymap     NoteKeyMap
+	height     int
+	width      int
+
+	theme  *Theme
+	keymap NoteKeyMap
 }
 
 // NewNote creates a new note field.
+//
+// A note is responsible for displaying information to the user. Use it to
+// provide context around a different field. Generally, the notes are not
+// interacted with unless the note has a next button `Next(true)`.
 func NewNote() *Note {
 	return &Note{
+		id:             nextID(),
 		showNextButton: false,
 		skip:           true,
+		title:          Eval[string]{cache: make(map[uint64]string)},
+		description:    Eval[string]{cache: make(map[uint64]string)},
 	}
 }
 
-// Title sets the title of the note field.
+// Title sets the note field's title.
+//
+// This title will be static, for dynamic titles use `TitleFunc`.
 func (n *Note) Title(title string) *Note {
-	n.title = title
+	n.title.val = title
+	n.title.fn = nil
 	return n
 }
 
-// Description sets the description of the note field.
+// TitleFunc sets the title func of the note field.
+//
+// The TitleFunc will be re-evaluated when the binding of the TitleFunc changes.
+// This is useful when you want to display dynamic content and update the title
+// of a note when another part of your form changes.
+//
+// See README.md#Dynamic for more usage information.
+func (n *Note) TitleFunc(f func() string, bindings any) *Note {
+	n.title.fn = f
+	n.title.bindings = bindings
+	return n
+}
+
+// Description sets the note field's description.
+//
+// This description will be static, for dynamic descriptions use `DescriptionFunc`.
 func (n *Note) Description(description string) *Note {
-	n.description = description
+	n.description.val = description
+	n.description.fn = nil
 	return n
 }
 
-// Next sets whether to show the next button.
+// DescriptionFunc sets the description func of the note field.
+//
+// The DescriptionFunc will be re-evaluated when the binding of the
+// DescriptionFunc changes. This is useful when you want to display dynamic
+// content and update the description of a note when another part of your form
+// changes.
+//
+// For example, you can make a dynamic markdown preview with the following Form & Group.
+//
+//	huh.NewText().Title("Markdown").Value(&md),
+//	huh.NewNote().Height(20).Title("Preview").
+//	  DescriptionFunc(func() string {
+//	      return md
+//	  }, &md),
+//
+// Notice the `binding` of the Note is the same as the `Value` of the Text field.
+// This binds the two values together, so that when the `Value` of the Text
+// field changes so does the Note description.
+func (n *Note) DescriptionFunc(f func() string, bindings any) *Note {
+	n.description.fn = f
+	n.description.bindings = bindings
+	return n
+}
+
+// Height sets the note field's height.
+func (n *Note) Height(height int) *Note {
+	n.height = height
+	return n
+}
+
+// Next sets whether or not to show the next button.
+//
+//	Title
+//	Description
+//
+//	[ Next ]
 func (n *Note) Next(show bool) *Note {
 	n.showNextButton = show
 	return n
@@ -66,33 +131,58 @@ func (n *Note) Blur() tea.Cmd {
 }
 
 // Error returns the error of the note field.
-func (n *Note) Error() error {
-	return nil
-}
+func (n *Note) Error() error { return nil }
 
 // Skip returns whether the note should be skipped or should be blocking.
-func (n *Note) Skip() bool {
-	return n.skip
-}
+func (n *Note) Skip() bool { return n.skip }
 
 // Zoom returns whether the note should be zoomed.
-func (n *Note) Zoom() bool {
-	return false
-}
+func (n *Note) Zoom() bool { return false }
 
 // KeyBinds returns the help message for the note field.
 func (n *Note) KeyBinds() []key.Binding {
-	return []key.Binding{n.keymap.Prev, n.keymap.Submit, n.keymap.Next}
+	return []key.Binding{
+		n.keymap.Prev,
+		n.keymap.Submit,
+		n.keymap.Next,
+	}
 }
 
 // Init initializes the note field.
-func (n *Note) Init() tea.Cmd {
-	return nil
-}
+func (n *Note) Init() tea.Cmd { return nil }
 
 // Update updates the note field.
 func (n *Note) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case updateFieldMsg:
+		var cmds []tea.Cmd
+		if ok, hash := n.title.shouldUpdate(); ok {
+			n.title.bindingsHash = hash
+			if !n.title.loadFromCache() {
+				n.title.loading = true
+				cmds = append(cmds, func() tea.Msg {
+					return updateTitleMsg{id: n.id, title: n.title.fn(), hash: hash}
+				})
+			}
+		}
+		if ok, hash := n.description.shouldUpdate(); ok {
+			n.description.bindingsHash = hash
+			if !n.description.loadFromCache() {
+				n.description.loading = true
+				cmds = append(cmds, func() tea.Msg {
+					return updateDescriptionMsg{id: n.id, description: n.description.fn(), hash: hash}
+				})
+			}
+		}
+		return n, tea.Batch(cmds...)
+	case updateTitleMsg:
+		if msg.id == n.id && msg.hash == n.title.bindingsHash {
+			n.title.update(msg.title)
+		}
+	case updateDescriptionMsg:
+		if msg.id == n.id && msg.hash == n.description.bindingsHash {
+			n.description.update(msg.description)
+		}
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, n.keymap.Prev):
@@ -113,27 +203,25 @@ func (n *Note) activeStyles() *FieldStyles {
 	if n.focused {
 		return &theme.Focused
 	}
-	return &theme.Focused
+	return &theme.Blurred
 }
 
 // View renders the note field.
 func (n *Note) View() string {
-	var (
-		styles = n.activeStyles()
-		sb     strings.Builder
-	)
+	styles := n.activeStyles()
+	sb := strings.Builder{}
 
-	if n.title != "" {
-		sb.WriteString(styles.NoteTitle.Render(n.title))
+	if n.title.val != "" || n.title.fn != nil {
+		sb.WriteString(styles.NoteTitle.Render(n.title.val))
 	}
-	if n.description != "" {
+	if n.description.val != "" || n.description.fn != nil {
 		sb.WriteString("\n")
-		sb.WriteString(render(n.description))
+		sb.WriteString(render(n.description.val))
 	}
 	if n.showNextButton {
 		sb.WriteString(styles.Next.Render("Next"))
 	}
-	return styles.Card.Render(sb.String())
+	return styles.Card.Height(n.height).Render(sb.String())
 }
 
 // Run runs the note field.
@@ -146,15 +234,12 @@ func (n *Note) Run() error {
 
 // runAccessible runs an accessible note field.
 func (n *Note) runAccessible() error {
-	var body string
-
-	if n.title != "" {
-		body = n.title + "\n\n"
+	if n.title.val != "" {
+		fmt.Println(n.title.val)
+		fmt.Println()
 	}
 
-	body += n.description
-
-	fmt.Println(body)
+	fmt.Println(n.description.val)
 	fmt.Println()
 	return nil
 }
@@ -188,7 +273,7 @@ func (n *Note) WithWidth(width int) Field {
 
 // WithHeight sets the height of the note field.
 func (n *Note) WithHeight(height int) Field {
-	n.height = height
+	n.Height(height)
 	return n
 }
 
@@ -206,14 +291,10 @@ func (n *Note) WithPosition(p FieldPosition) Field {
 }
 
 // GetValue satisfies the Field interface, notes do not have values.
-func (n *Note) GetValue() any {
-	return nil
-}
+func (n *Note) GetValue() any { return nil }
 
 // GetKey satisfies the Field interface, notes do not have keys.
-func (n *Note) GetKey() string {
-	return ""
-}
+func (n *Note) GetKey() string { return "" }
 
 func render(input string) string {
 	var result strings.Builder

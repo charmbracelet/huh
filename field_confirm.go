@@ -12,12 +12,14 @@ import (
 
 // Confirm is a form confirm field.
 type Confirm struct {
+	id int
+
 	value *bool
 	key   string
 
 	// customization
-	title       string
-	description string
+	title       Eval[string]
+	description Eval[string]
 	affirmative string
 	negative    string
 
@@ -40,7 +42,10 @@ type Confirm struct {
 // NewConfirm returns a new confirm field.
 func NewConfirm() *Confirm {
 	return &Confirm{
+		id:          nextID(),
 		value:       new(bool),
+		title:       Eval[string]{cache: make(map[uint64]string)},
+		description: Eval[string]{cache: make(map[uint64]string)},
 		affirmative: "Yes",
 		negative:    "No",
 		validate:    func(bool) error { return nil },
@@ -94,13 +99,29 @@ func (c *Confirm) Key(key string) *Confirm {
 
 // Title sets the title of the confirm field.
 func (c *Confirm) Title(title string) *Confirm {
-	c.title = title
+	c.title.val = title
+	c.title.fn = nil
+	return c
+}
+
+// TitleFunc sets the title func of the confirm field.
+func (c *Confirm) TitleFunc(f func() string, bindings any) *Confirm {
+	c.title.fn = f
+	c.title.bindings = bindings
 	return c
 }
 
 // Description sets the description of the confirm field.
 func (c *Confirm) Description(description string) *Confirm {
-	c.description = description
+	c.description.val = description
+	c.description.fn = nil
+	return c
+}
+
+// DescriptionFunc sets the description function of the confirm field.
+func (c *Confirm) DescriptionFunc(f func() string, bindings any) *Confirm {
+	c.description.fn = f
+	c.description.bindings = bindings
 	return c
 }
 
@@ -138,6 +159,36 @@ func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
+	case updateFieldMsg:
+		if ok, hash := c.title.shouldUpdate(); ok {
+			c.title.bindingsHash = hash
+			if !c.title.loadFromCache() {
+				c.title.loading = true
+				cmds = append(cmds, func() tea.Msg {
+					return updateTitleMsg{id: c.id, title: c.title.fn(), hash: hash}
+				})
+			}
+		}
+		if ok, hash := c.description.shouldUpdate(); ok {
+			c.description.bindingsHash = hash
+			if !c.description.loadFromCache() {
+				c.description.loading = true
+				cmds = append(cmds, func() tea.Msg {
+					return updateDescriptionMsg{id: c.id, description: c.description.fn(), hash: hash}
+				})
+			}
+		}
+
+	case updateTitleMsg:
+		if msg.id == c.id && msg.hash == c.title.bindingsHash {
+			c.title.val = msg.title
+			c.title.loading = false
+		}
+	case updateDescriptionMsg:
+		if msg.id == c.id && msg.hash == c.description.bindingsHash {
+			c.description.val = msg.description
+			c.description.loading = false
+		}
 	case tea.KeyMsg:
 		c.err = nil
 		switch {
@@ -173,14 +224,14 @@ func (c *Confirm) View() string {
 	styles := c.activeStyles()
 
 	var sb strings.Builder
-	sb.WriteString(styles.Title.Render(c.title))
+	sb.WriteString(styles.Title.Render(c.title.val))
 	if c.err != nil {
 		sb.WriteString(styles.ErrorIndicator.String())
 	}
 
-	description := styles.Description.Render(c.description)
+	description := styles.Description.Render(c.description.val)
 
-	if !c.inline && c.description != "" {
+	if !c.inline && (c.description.val != "" || c.description.fn != nil) {
 		sb.WriteString("\n")
 	}
 	sb.WriteString(description)
@@ -219,7 +270,7 @@ func (c *Confirm) Run() error {
 // runAccessible runs the confirm field in accessible mode.
 func (c *Confirm) runAccessible() error {
 	styles := c.activeStyles()
-	fmt.Println(styles.Title.Render(c.title))
+	fmt.Println(styles.Title.Render(c.title.val))
 	fmt.Println()
 	*c.value = accessibility.PromptBool()
 	fmt.Println(styles.SelectedOption.Render("Chose: "+c.String()) + "\n")
