@@ -13,6 +13,7 @@ type Note struct {
 	// customization
 	title       string
 	description string
+	nextLabel   string
 
 	// state
 	showNextButton bool
@@ -32,6 +33,7 @@ func NewNote() *Note {
 	return &Note{
 		showNextButton: false,
 		skip:           true,
+		nextLabel:      "Next",
 	}
 }
 
@@ -50,6 +52,12 @@ func (n *Note) Description(description string) *Note {
 // Next sets whether to show the next button.
 func (n *Note) Next(show bool) *Note {
 	n.showNextButton = show
+	return n
+}
+
+// NextLabel sets the next button label.
+func (n *Note) NextLabel(label string) *Note {
+	n.nextLabel = label
 	return n
 }
 
@@ -131,7 +139,7 @@ func (n *Note) View() string {
 		sb.WriteString(render(n.description))
 	}
 	if n.showNextButton {
-		sb.WriteString(styles.Next.Render("Next"))
+		sb.WriteString(styles.Next.Render(n.nextLabel))
 	}
 	return styles.Card.Render(sb.String())
 }
