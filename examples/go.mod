@@ -7,11 +7,11 @@ require (
 	github.com/charmbracelet/bubbletea v0.26.3
 	github.com/charmbracelet/huh v0.0.0-00010101000000-000000000000
 	github.com/charmbracelet/huh/spinner v0.0.0-00010101000000-000000000000
-	github.com/charmbracelet/lipgloss v0.10.1-0.20240506202754-3ee5dcab73cb
+	github.com/charmbracelet/lipgloss v0.11.0
 	github.com/charmbracelet/log v0.4.0
 	github.com/charmbracelet/ssh v0.0.0-20240401141849-854cddfa2917
 	github.com/charmbracelet/wish v1.4.0
-	github.com/charmbracelet/x/exp/strings v0.0.0-20240506152644-8135bef4e495
+	github.com/charmbracelet/x/exp/strings v0.0.0-20240524151031-ff83003bf67a
 )
 
 require (
@@ -23,10 +23,10 @@ require (
 	github.com/charmbracelet/keygen v0.5.0 // indirect
 	github.com/charmbracelet/x/ansi v0.1.1 // indirect
 	github.com/charmbracelet/x/errors v0.0.0-20240117030013-d31dba354651 // indirect
-	github.com/charmbracelet/x/exp/term v0.0.0-20240506152644-8135bef4e495 // indirect
-	github.com/charmbracelet/x/input v0.1.0 // indirect
+	github.com/charmbracelet/x/exp/term v0.0.0-20240524151031-ff83003bf67a // indirect
+	github.com/charmbracelet/x/input v0.1.1 // indirect
 	github.com/charmbracelet/x/term v0.1.1 // indirect
-	github.com/charmbracelet/x/windows v0.1.0 // indirect
+	github.com/charmbracelet/x/windows v0.1.2 // indirect
 	github.com/creack/pty v1.1.21 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
