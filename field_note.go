@@ -226,9 +226,17 @@ func (n *Note) GetKey() string {
 func render(input string) string {
 	var result strings.Builder
 	var italic, bold, codeblock bool
+	var escape bool
 
 	for _, char := range input {
+		if escape {
+			result.WriteRune(char)
+			escape = false
+			continue
+		}
 		switch char {
+		case '\\':
+			escape = true
 		case '_':
 			if !italic {
 				result.WriteString("\033[3m")
