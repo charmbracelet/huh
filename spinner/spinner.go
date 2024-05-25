@@ -143,8 +143,17 @@ func (s *Spinner) Run() error {
 		return s.runAccessible()
 	}
 
-	p := tea.NewProgram(s, tea.WithContext(s.ctx), tea.WithOutput(os.Stderr))
+	hasCtx := s.ctx != nil
+	hasCtxErr := hasCtx && s.ctx.Err() != nil
 
+	if hasCtxErr {
+		if errors.Is(s.ctx.Err(), context.Canceled) {
+			return nil
+		}
+		return s.ctx.Err()
+	}
+
+	p := tea.NewProgram(s, tea.WithContext(s.ctx), tea.WithOutput(os.Stderr))
 	if s.ctx == nil {
 		go func() {
 			s.action()
@@ -153,7 +162,6 @@ func (s *Spinner) Run() error {
 	}
 
 	_, err := p.Run()
-
 	if errors.Is(err, tea.ErrProgramKilled) {
 		return nil
 	} else {
