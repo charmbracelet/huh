@@ -215,9 +215,8 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, t.keymap.Editor):
 			ext := strings.TrimPrefix(t.editorExtension, ".")
 			tmpFile, _ := os.CreateTemp(os.TempDir(), "*."+ext)
-			//nolint:gosec
 			cmd := exec.Command(t.editorCmd, append(t.editorArgs, tmpFile.Name())...)
-			_ = os.WriteFile(tmpFile.Name(), []byte(t.textarea.Value()), os.ModePerm)
+			_ = os.WriteFile(tmpFile.Name(), []byte(t.textarea.Value()), 0600)
 			cmds = append(cmds, tea.ExecProcess(cmd, func(error) tea.Msg {
 				content, _ := os.ReadFile(tmpFile.Name())
 				_ = os.Remove(tmpFile.Name())
