@@ -62,7 +62,6 @@ type Form struct {
 	height     int
 	keymap     *KeyMap
 	teaOptions []tea.ProgramOption
-	output     io.Writer
 }
 
 // NewForm returns a form with the given groups and default themes and
@@ -286,7 +285,6 @@ func (f *Form) WithHeight(height int) *Form {
 
 // WithOutput sets the io.Writer to output the form.
 func (f *Form) WithOutput(w io.Writer) *Form {
-	f.output = w
 	f.teaOptions = append(f.teaOptions, tea.WithOutput(w))
 	return f
 }
