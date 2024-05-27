@@ -167,17 +167,23 @@ func (m *MultiSelect[T]) Blur() tea.Cmd {
 
 // KeyBinds returns the help message for the multi-select field.
 func (m *MultiSelect[T]) KeyBinds() []key.Binding {
-	return []key.Binding{
+	bindings := []key.Binding{
 		m.keymap.Toggle,
 		m.keymap.Up,
 		m.keymap.Down,
-		m.keymap.Filter,
-		m.keymap.SetFilter,
-		m.keymap.ClearFilter,
-		m.keymap.Prev,
-		m.keymap.Submit,
-		m.keymap.Next,
 	}
+
+	if m.filterable {
+		bindings = append(bindings, m.keymap.Filter)
+		bindings = append(bindings, m.keymap.SetFilter)
+		bindings = append(bindings, m.keymap.ClearFilter)
+	}
+
+	bindings = append(bindings, m.keymap.Prev)
+	bindings = append(bindings, m.keymap.Submit)
+	bindings = append(bindings, m.keymap.Next)
+
+	return bindings
 }
 
 // Init initializes the multi-select field.
@@ -202,7 +208,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.err = nil
 
 		switch {
-		case key.Matches(msg, m.keymap.Filter):
+		case key.Matches(msg, m.keymap.Filter) && m.filterable:
 			m.setFilter(true)
 			return m, m.filter.Focus()
 		case key.Matches(msg, m.keymap.SetFilter):
