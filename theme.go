@@ -74,6 +74,8 @@ const (
 func ThemeBase() *Theme {
 	var t Theme
 
+	t.Form = lipgloss.NewStyle()
+	t.Group = lipgloss.NewStyle()
 	t.FieldSeparator = lipgloss.NewStyle().SetString("\n\n")
 
 	button := lipgloss.NewStyle().
