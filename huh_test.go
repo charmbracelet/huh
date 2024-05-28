@@ -433,6 +433,58 @@ func TestSelect(t *testing.T) {
 	}
 }
 
+func TestSelectOfInterface(t *testing.T) {
+	type People struct {
+		Name string
+		Age  int
+	}
+	field := NewSelect[People]().Options(ToOptions(func(p People) string { return p.Name }, 
+		People{Name: "Foo", Age: 20}, 
+		People{Name: "Bar", Age: 25}, 
+		People{Name: "Baz", Age: 23},
+		)...).Title("Which one?")
+	f := NewForm(NewGroup(field))
+	f.Update(f.Init())
+
+	view := ansi.Strip(f.View())
+
+	if !strings.Contains(view, "Foo") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to contain Foo.")
+	}
+
+	if !strings.Contains(view, "Which one?") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to contain Which one?.")
+	}
+
+	// Move selection cursor down
+	if !strings.Contains(view, "> Foo") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected cursor to be on Foo.")
+	}
+
+	m, _ := f.Update(keys('j'))
+	f = m.(*Form)
+
+	view = ansi.Strip(f.View())
+
+	if strings.Contains(view, "> Foo") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected cursor to be on Bar.")
+	}
+
+	if !strings.Contains(view, "> Bar") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected cursor to be on Bar.")
+	}
+
+	if !strings.Contains(view, "↑ up • ↓ down • / filter • enter submit") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to contain help.")
+	}
+}
+
 func TestMultiSelect(t *testing.T) {
 	field := NewMultiSelect[string]().Options(NewOptions("Foo", "Bar", "Baz")...).Title("Which one?")
 	f := NewForm(NewGroup(field))
