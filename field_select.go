@@ -490,6 +490,7 @@ func (s *Select[T]) WithTheme(theme *Theme) Field {
 	}
 	s.theme = theme
 	s.filter.Cursor.Style = s.theme.Focused.TextInput.Cursor
+	s.filter.Cursor.TextStyle = s.theme.Focused.TextInput.CursorText
 	s.filter.PromptStyle = s.theme.Focused.TextInput.Prompt
 	s.updateViewportHeight()
 	return s

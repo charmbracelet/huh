@@ -276,6 +276,7 @@ func (t *Text) View() string {
 	textareaStyles.Prompt = styles.TextInput.Prompt
 	textareaStyles.CursorLine = styles.TextInput.Text
 	t.textarea.Cursor.Style = styles.TextInput.Cursor
+	t.textarea.Cursor.TextStyle = styles.TextInput.CursorText
 
 	var sb strings.Builder
 	if t.title != "" {
