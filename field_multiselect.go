@@ -522,6 +522,7 @@ func (m *MultiSelect[T]) WithTheme(theme *Theme) Field {
 // WithKeyMap sets the keymap of the multi-select field.
 func (m *MultiSelect[T]) WithKeyMap(k *KeyMap) Field {
 	m.keymap = k.MultiSelect
+	m.keymap.Filter.SetEnabled(m.filterable)
 	return m
 }
 
