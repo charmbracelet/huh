@@ -270,12 +270,12 @@ func (g *Group) fullHeight() int {
 	return height
 }
 
-func (g *Group) style() lipgloss.Style {
+func (g *Group) styles() *GroupStyles {
 	theme := g.theme
 	if theme == nil {
 		theme = ThemeCharm()
 	}
-	return theme.Group
+	return &theme.Group
 }
 
 func (g *Group) getContent() (int, string) {
@@ -325,6 +325,8 @@ func (g *Group) Content() string {
 
 // Footer renders the group's footer only (no content).
 func (g *Group) Footer() string {
+	styles := g.styles()
+
 	var view strings.Builder
 	view.WriteRune('\n')
 	errors := g.Errors()
@@ -333,8 +335,8 @@ func (g *Group) Footer() string {
 	}
 	if g.showErrors {
 		for _, err := range errors {
-			view.WriteString(ThemeCharm().Focused.ErrorMessage.Render(err.Error()))
+			view.WriteString(styles.ErrorMessage.Render(err.Error()))
 		}
 	}
-	return g.style().Render(view.String())
+	return styles.Base.Render(view.String())
 }

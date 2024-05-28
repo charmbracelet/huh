@@ -11,7 +11,6 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/paginator"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
 
 const defaultWidth = 80
@@ -578,12 +577,12 @@ func (f *Form) isGroupHidden(page int) bool {
 	return hide()
 }
 
-func (f *Form) style() lipgloss.Style {
+func (f *Form) styles() *FormStyles {
 	theme := f.theme
 	if theme == nil {
 		theme = ThemeCharm()
 	}
-	return theme.Form
+	return &theme.Form
 }
 
 // View renders the form.
@@ -592,7 +591,9 @@ func (f *Form) View() string {
 		return ""
 	}
 
-	return f.style().Render(f.layout.View(f))
+	styles := f.styles()
+
+	return styles.Base.Render(f.layout.View(f))
 }
 
 // Run runs the form.
