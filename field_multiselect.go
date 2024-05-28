@@ -514,6 +514,7 @@ func (m *MultiSelect[T]) WithTheme(theme *Theme) Field {
 	}
 	m.theme = theme
 	m.filter.Cursor.Style = m.theme.Focused.TextInput.Cursor
+	m.filter.Cursor.TextStyle = m.theme.Focused.TextInput.CursorText
 	m.filter.PromptStyle = m.theme.Focused.TextInput.Prompt
 	m.updateViewportHeight()
 	return m

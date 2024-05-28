@@ -250,6 +250,7 @@ func (i *Input) View() string {
 	i.textinput.PlaceholderStyle = styles.TextInput.Placeholder
 	i.textinput.PromptStyle = styles.TextInput.Prompt
 	i.textinput.Cursor.Style = styles.TextInput.Cursor
+	i.textinput.Cursor.TextStyle = styles.TextInput.CursorText
 	i.textinput.TextStyle = styles.TextInput.Text
 
 	var sb strings.Builder

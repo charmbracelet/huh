@@ -58,6 +58,7 @@ type FieldStyles struct {
 // TextInputStyles are the styles for text inputs.
 type TextInputStyles struct {
 	Cursor      lipgloss.Style
+	CursorText  lipgloss.Style
 	Placeholder lipgloss.Style
 	Prompt      lipgloss.Style
 	Text        lipgloss.Style
