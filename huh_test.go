@@ -478,7 +478,20 @@ func TestMultiSelect(t *testing.T) {
 		t.Error("Expected cursor to be on Bar.")
 	}
 
+	field.Filterable(true)
+	f = NewForm(NewGroup(field))
+	f.Update(f.Init())
+	view = ansi.Strip(m.View())
 	if !strings.Contains(view, "x toggle • ↑ up • ↓ down • / filter • enter submit") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to contain help.")
+	}
+
+	field.Filterable(false)
+	f = NewForm(NewGroup(field))
+	f.Update(f.Init())
+	view = ansi.Strip(m.View())
+	if !strings.Contains(view, "x toggle • ↑ up • ↓ down • enter submit") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected field to contain help.")
 	}
