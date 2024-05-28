@@ -19,6 +19,7 @@ type Theme struct {
 
 // GroupStyles are the styles for a group.
 type GroupStyles struct {
+	Base        lipgloss.Style
 	Title       lipgloss.Style
 	Description lipgloss.Style
 }
@@ -80,6 +81,8 @@ const (
 func ThemeBase() *Theme {
 	var t Theme
 
+	t.Form = lipgloss.NewStyle()
+	t.Group.Base = lipgloss.NewStyle()
 	t.FieldSeparator = lipgloss.NewStyle().SetString("\n\n")
 
 	button := lipgloss.NewStyle().

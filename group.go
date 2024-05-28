@@ -37,11 +37,10 @@ type Group struct {
 	// group options
 	width  int
 	height int
+	theme  *Theme
 	keymap *KeyMap
 	hide   func() bool
 	active bool
-
-	theme *Theme
 }
 
 // NewGroup returns a new group with the given fields.
@@ -296,6 +295,14 @@ func (g *Group) fullHeight() int {
 	return height
 }
 
+func (g *Group) style() GroupStyles {
+	theme := g.theme
+	if theme == nil {
+		theme = ThemeCharm()
+	}
+	return theme.Group
+}
+
 func (g *Group) getContent() (int, string) {
 	var fields strings.Builder
 	offset := 0
@@ -374,5 +381,5 @@ func (g *Group) Footer() string {
 			view.WriteString(ThemeCharm().Focused.ErrorMessage.Render(err.Error()))
 		}
 	}
-	return view.String()
+	return g.style().Base.Render(view.String())
 }
