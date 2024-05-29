@@ -367,7 +367,6 @@ func (s *Select[T]) descriptionView() string {
 func (s *Select[T]) choicesView() string {
 	var (
 		styles = s.activeStyles()
-		c      = styles.SelectSelector.String()
 		sb     strings.Builder
 	)
 
@@ -384,9 +383,9 @@ func (s *Select[T]) choicesView() string {
 
 	for i, option := range s.filteredOptions {
 		if s.selected == i {
-			sb.WriteString(c + styles.SelectedOption.Render(option.Key))
+			sb.WriteString(styles.SelectSelector.String() + styles.SelectedOption.Render(option.Key))
 		} else {
-			sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)) + styles.Option.Render(option.Key))
+			sb.WriteString(styles.UnselectSelector.String() + styles.Option.Render(option.Key))
 		}
 		if i < len(s.options)-1 {
 			sb.WriteString("\n")
