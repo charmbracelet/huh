@@ -252,6 +252,11 @@ func (i *Input) View() string {
 	i.textinput.Cursor.Style = styles.TextInput.Cursor
 	i.textinput.TextStyle = styles.TextInput.Text
 
+	// Adjust text input size to its char limit if it fit in its width
+	if i.textinput.CharLimit > 0 {
+		i.textinput.Width = min(i.textinput.CharLimit, i.textinput.Width)
+	}
+
 	var sb strings.Builder
 	if i.title != "" {
 		sb.WriteString(styles.Title.Render(i.title))
