@@ -15,8 +15,8 @@ import (
 
 // Text is a form text field. It allows for a multi-line string input.
 type Text struct {
-	value *string
-	key   string
+	accessor Accessor[string]
+	key      string
 
 	// error handling
 	validate func(string) error
@@ -52,7 +52,7 @@ func NewText() *Text {
 	editorCmd, editorArgs := getEditor()
 
 	t := &Text{
-		value:           new(string),
+		accessor:        &EmbeddedAccessor[string]{},
 		textarea:        text,
 		validate:        func(string) error { return nil },
 		editorCmd:       editorCmd,
@@ -65,8 +65,13 @@ func NewText() *Text {
 
 // Value sets the value of the text field.
 func (t *Text) Value(value *string) *Text {
-	t.value = value
-	t.textarea.SetValue(*value)
+	return t.Accessor(NewPointerAccessor(value))
+}
+
+// Accessor sets the accessor of the text field.
+func (t *Text) Accessor(accessor Accessor[string]) *Text {
+	t.accessor = accessor
+	t.textarea.SetValue(t.accessor.Get())
 	return t
 }
 
@@ -173,9 +178,9 @@ func (t *Text) Focus() tea.Cmd {
 // Blur blurs the text field.
 func (t *Text) Blur() tea.Cmd {
 	t.focused = false
-	*t.value = t.textarea.Value()
+	t.accessor.Set(t.textarea.Value())
 	t.textarea.Blur()
-	t.err = t.validate(*t.value)
+	t.err = t.validate(t.accessor.Get())
 	return nil
 }
 
@@ -199,14 +204,14 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	t.textarea, cmd = t.textarea.Update(msg)
 	cmds = append(cmds, cmd)
-	*t.value = t.textarea.Value()
+	t.accessor.Set(t.textarea.Value())
 
 	switch msg := msg.(type) {
 	case updateValueMsg:
 		t.textarea.SetValue(string(msg))
 		t.textarea, cmd = t.textarea.Update(msg)
 		cmds = append(cmds, cmd)
-		*t.value = t.textarea.Value()
+		t.accessor.Set(t.textarea.Value())
 
 	case tea.KeyMsg:
 		t.err = nil
@@ -308,7 +313,7 @@ func (t *Text) runAccessible() error {
 	styles := t.activeStyles()
 	fmt.Println(styles.Title.Render(t.title))
 	fmt.Println()
-	*t.value = accessibility.PromptString("Input: ", func(input string) error {
+	t.accessor.Set(accessibility.PromptString("Input: ", func(input string) error {
 		if err := t.validate(input); err != nil {
 			// Handle the error from t.validate, return it
 			return err
@@ -318,7 +323,7 @@ func (t *Text) runAccessible() error {
 			return fmt.Errorf("Input cannot exceed %d characters", t.textarea.CharLimit)
 		}
 		return nil
-	})
+	}))
 	fmt.Println()
 	return nil
 }
@@ -380,5 +385,5 @@ func (t *Text) GetKey() string {
 
 // GetValue returns the value of the field.
 func (t *Text) GetValue() any {
-	return *t.value
+	return t.accessor.Get()
 }

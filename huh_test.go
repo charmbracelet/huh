@@ -297,6 +297,10 @@ func TestInput(t *testing.T) {
 		t.Log(pretty.Render(view))
 		t.Error("Expected field to contain help.")
 	}
+
+	if field.GetValue() != "Huh" {
+		t.Error("Expected field value to be Huh")
+	}
 }
 
 func TestInlineInput(t *testing.T) {
@@ -335,6 +339,10 @@ func TestInlineInput(t *testing.T) {
 		t.Log(pretty.Render(view))
 		t.Error("Expected field to contain help.")
 	}
+
+	if field.GetValue() != "Huh" {
+		t.Error("Expected field value to be Huh")
+	}
 }
 
 func TestText(t *testing.T) {
@@ -355,6 +363,10 @@ func TestText(t *testing.T) {
 	if !strings.Contains(view, "alt+enter / ctrl+j new line • ctrl+e open editor • enter submit") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected field to contain help.")
+	}
+
+	if field.GetValue() != "Huh" {
+		t.Error("Expected field value to be Huh")
 	}
 }
 
@@ -387,6 +399,24 @@ func TestConfirm(t *testing.T) {
 		t.Log(pretty.Render(view))
 		t.Error("Expected field to contain help.")
 	}
+
+	if field.GetValue() != false {
+		t.Error("Expected field value to be false")
+	}
+
+	// Toggle left
+	m, _ = f.Update(tea.KeyMsg{Type: tea.KeyLeft})
+
+	if field.GetValue() != true {
+		t.Error("Expected field value to be true")
+	}
+
+	// Toggle right
+	m, _ = f.Update(tea.KeyMsg{Type: tea.KeyRight})
+
+	if field.GetValue() != false {
+		t.Error("Expected field value to be false")
+	}
 }
 
 func TestSelect(t *testing.T) {
@@ -406,13 +436,13 @@ func TestSelect(t *testing.T) {
 		t.Error("Expected field to contain Which one?.")
 	}
 
-	// Move selection cursor down
 	if !strings.Contains(view, "> Foo") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected cursor to be on Foo.")
 	}
 
-	m, _ := f.Update(keys('j'))
+	// Move selection cursor down
+	m, _ := f.Update(tea.KeyMsg{Type: tea.KeyDown})
 	f = m.(*Form)
 
 	view = ansi.Strip(f.View())
@@ -430,6 +460,14 @@ func TestSelect(t *testing.T) {
 	if !strings.Contains(view, "↑ up • ↓ down • / filter • enter submit") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected field to contain help.")
+	}
+
+	// Submit
+	m, _ = f.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	f = m.(*Form)
+
+	if field.GetValue() != "Bar" {
+		t.Error("Expected field value to be Bar")
 	}
 }
 
@@ -481,6 +519,23 @@ func TestMultiSelect(t *testing.T) {
 	if !strings.Contains(view, "x toggle • ↑ up • ↓ down • / filter • enter submit") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected field to contain help.")
+	}
+
+	// Submit
+	m, _ = f.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	f = m.(*Form)
+
+	value := field.GetValue()
+	if value, ok := value.([]string); !ok {
+		t.Error("Expected field value to a slice of string")
+	} else {
+		if len(value) != 1 {
+			t.Error("Expected field value length to be 1")
+		} else {
+			if value[0] != "Bar" {
+				t.Error("Expected first field value length to be Bar")
+			}
+		}
 	}
 }
 

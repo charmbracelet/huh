@@ -14,7 +14,7 @@ import (
 
 // Select is a form select field.
 type Select[T comparable] struct {
-	value    *T
+	accessor Accessor[T]
 	key      string
 	viewport viewport.Model
 
@@ -50,7 +50,7 @@ func NewSelect[T comparable]() *Select[T] {
 
 	return &Select[T]{
 		options:   []Option[T]{},
-		value:     new(T),
+		accessor:  &EmbeddedAccessor[T]{},
 		validate:  func(T) error { return nil },
 		filtering: false,
 		filter:    filter,
@@ -59,8 +59,13 @@ func NewSelect[T comparable]() *Select[T] {
 
 // Value sets the value of the select field.
 func (s *Select[T]) Value(value *T) *Select[T] {
-	s.value = value
-	s.selectValue(*value)
+	return s.Accessor(NewPointerAccessor(value))
+}
+
+// Accessor sets the accessor of the select field.
+func (s *Select[T]) Accessor(accessor Accessor[T]) *Select[T] {
+	s.accessor = accessor
+	s.selectValue(s.accessor.Get())
 	return s
 }
 
@@ -109,7 +114,7 @@ func (s *Select[T]) Options(options ...Option[T]) *Select[T] {
 
 	// Set the cursor to the existing value or the last selected option.
 	for i, option := range options {
-		if option.Value == *s.value {
+		if option.Value == s.accessor.Get() {
 			s.selected = i
 			break
 		} else if option.selected {
@@ -172,7 +177,7 @@ func (s *Select[T]) Focus() tea.Cmd {
 
 // Blur blurs the select field.
 func (s *Select[T]) Blur() tea.Cmd {
-	value := *s.value
+	value := s.accessor.Get()
 	if s.inline {
 		s.clearFilter()
 		s.selectValue(value)
@@ -284,7 +289,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if s.err != nil {
 				return s, nil
 			}
-			*s.value = value
+			s.accessor.Set(value)
 			return s, PrevField
 		case key.Matches(msg, s.keymap.Next, s.keymap.Submit):
 			if s.selected >= len(s.filteredOptions) {
@@ -296,7 +301,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if s.err != nil {
 				return s, nil
 			}
-			*s.value = value
+			s.accessor.Set(value)
 			return s, NextField
 		}
 
@@ -483,7 +488,7 @@ func (s *Select[T]) runAccessible() error {
 			continue
 		}
 		fmt.Println(styles.SelectedOption.Render("Chose: " + option.Key + "\n"))
-		*s.value = option.Value
+		s.accessor.Set(option.Value)
 		break
 	}
 
@@ -550,5 +555,5 @@ func (s *Select[T]) GetKey() string {
 
 // GetValue returns the value of the field.
 func (s *Select[T]) GetValue() any {
-	return *s.value
+	return s.accessor.Get()
 }

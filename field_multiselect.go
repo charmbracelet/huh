@@ -14,8 +14,8 @@ import (
 
 // MultiSelect is a form multi-select field.
 type MultiSelect[T comparable] struct {
-	value *[]T
-	key   string
+	accessor Accessor[[]T]
+	key      string
 
 	// customization
 	title           string
@@ -51,7 +51,7 @@ func NewMultiSelect[T comparable]() *MultiSelect[T] {
 
 	return &MultiSelect[T]{
 		options:   []Option[T]{},
-		value:     new([]T),
+		accessor:  &EmbeddedAccessor[[]T]{},
 		validate:  func([]T) error { return nil },
 		filtering: false,
 		filter:    filter,
@@ -60,9 +60,14 @@ func NewMultiSelect[T comparable]() *MultiSelect[T] {
 
 // Value sets the value of the multi-select field.
 func (m *MultiSelect[T]) Value(value *[]T) *MultiSelect[T] {
-	m.value = value
+	return m.Accessor(NewPointerAccessor(value))
+}
+
+// Accessor sets the accessor of the input field.
+func (m *MultiSelect[T]) Accessor(accessor Accessor[[]T]) *MultiSelect[T] {
+	m.accessor = accessor
 	for i, o := range m.options {
-		for _, v := range *value {
+		for _, v := range m.accessor.Get() {
 			if o.Value == v {
 				m.options[i].selected = true
 				break
@@ -98,7 +103,7 @@ func (m *MultiSelect[T]) Options(options ...Option[T]) *MultiSelect[T] {
 	}
 
 	for i, o := range options {
-		for _, v := range *m.value {
+		for _, v := range m.accessor.Get() {
 			if o.Value == v {
 				options[i].selected = true
 				break
@@ -329,13 +334,14 @@ func (m *MultiSelect[T]) numSelected() int {
 }
 
 func (m *MultiSelect[T]) finalize() {
-	*m.value = make([]T, 0)
+	value := make([]T, 0)
 	for _, option := range m.options {
 		if option.selected {
-			*m.value = append(*m.value, option.Value)
+			value = append(value, option.Value)
 		}
 	}
-	m.err = m.validate(*m.value)
+	m.accessor.Set(value)
+	m.err = m.validate(m.accessor.Get())
 }
 
 func (m *MultiSelect[T]) activeStyles() *FieldStyles {
@@ -479,7 +485,7 @@ func (m *MultiSelect[T]) runAccessible() error {
 		choice = accessibility.PromptInt("Select: ", 0, len(m.options))
 		if choice == 0 {
 			m.finalize()
-			err := m.validate(*m.value)
+			err := m.validate(m.accessor.Get())
 			if err != nil {
 				fmt.Println(err)
 				continue
@@ -503,12 +509,14 @@ func (m *MultiSelect[T]) runAccessible() error {
 
 	var values []string
 
+	value := m.accessor.Get()
 	for _, option := range m.options {
 		if option.selected {
-			*m.value = append(*m.value, option.Value)
+			value = append(value, option.Value)
 			values = append(values, option.Key)
 		}
 	}
+	m.accessor.Set(value)
 
 	fmt.Println(styles.SelectedOption.Render("Selected:", strings.Join(values, ", ")+"\n"))
 	return nil
@@ -571,5 +579,5 @@ func (m *MultiSelect[T]) GetKey() string {
 
 // GetValue returns the multi-select's value.
 func (m *MultiSelect[T]) GetValue() any {
-	return *m.value
+	return m.accessor.Get()
 }
