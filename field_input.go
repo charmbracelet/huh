@@ -13,8 +13,8 @@ import (
 
 // Input is a form input field.
 type Input struct {
-	value *string
-	key   string
+	accessor Accessor[string]
+	key      string
 
 	// customization
 	title       string
@@ -44,7 +44,7 @@ func NewInput() *Input {
 	input := textinput.New()
 
 	i := &Input{
-		value:     new(string),
+		accessor:  &EmbeddedAccessor[string]{},
 		textinput: input,
 		validate:  func(string) error { return nil },
 	}
@@ -54,8 +54,13 @@ func NewInput() *Input {
 
 // Value sets the value of the input field.
 func (i *Input) Value(value *string) *Input {
-	i.value = value
-	i.textinput.SetValue(*value)
+	return i.Accessor(NewPointerAccessor(value))
+}
+
+// Accessor sets the accessor of the input field.
+func (i *Input) Accessor(accessor Accessor[string]) *Input {
+	i.accessor = accessor
+	i.textinput.SetValue(i.accessor.Get())
 	return i
 }
 
@@ -175,9 +180,9 @@ func (i *Input) Focus() tea.Cmd {
 // Blur blurs the input field.
 func (i *Input) Blur() tea.Cmd {
 	i.focused = false
-	*i.value = i.textinput.Value()
+	i.accessor.Set(i.textinput.Value())
 	i.textinput.Blur()
-	i.err = i.validate(*i.value)
+	i.err = i.validate(i.accessor.Get())
 	return nil
 }
 
@@ -202,7 +207,7 @@ func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	i.textinput, cmd = i.textinput.Update(msg)
 	cmds = append(cmds, cmd)
-	*i.value = i.textinput.Value()
+	i.accessor.Set(i.textinput.Value())
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -294,8 +299,8 @@ func (i *Input) runAccessible() error {
 	styles := i.activeStyles()
 	fmt.Println(styles.Title.Render(i.title))
 	fmt.Println()
-	*i.value = accessibility.PromptString("Input: ", i.validate)
-	fmt.Println(styles.SelectedOption.Render("Input: " + *i.value + "\n"))
+	i.accessor.Set(accessibility.PromptString("Input: ", i.validate))
+	fmt.Println(styles.SelectedOption.Render("Input: " + i.accessor.Get() + "\n"))
 	return nil
 }
 
@@ -358,5 +363,5 @@ func (i *Input) GetKey() string {
 
 // GetValue returns the value of the field.
 func (i *Input) GetValue() any {
-	return *i.value
+	return i.accessor.Get()
 }

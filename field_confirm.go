@@ -12,8 +12,8 @@ import (
 
 // Confirm is a form confirm field.
 type Confirm struct {
-	value *bool
-	key   string
+	accessor Accessor[bool]
+	key      string
 
 	// customization
 	title       string
@@ -40,7 +40,7 @@ type Confirm struct {
 // NewConfirm returns a new confirm field.
 func NewConfirm() *Confirm {
 	return &Confirm{
-		value:       new(bool),
+		accessor:    &EmbeddedAccessor[bool]{},
 		affirmative: "Yes",
 		negative:    "No",
 		validate:    func(bool) error { return nil },
@@ -82,7 +82,12 @@ func (c *Confirm) Negative(negative string) *Confirm {
 
 // Value sets the value of the confirm field.
 func (c *Confirm) Value(value *bool) *Confirm {
-	c.value = value
+	return c.Accessor(NewPointerAccessor(value))
+}
+
+// Accessor sets the accessor of the confirm field.
+func (c *Confirm) Accessor(accessor Accessor[bool]) *Confirm {
+	c.accessor = accessor
 	return c
 }
 
@@ -119,7 +124,7 @@ func (c *Confirm) Focus() tea.Cmd {
 // Blur blurs the confirm field.
 func (c *Confirm) Blur() tea.Cmd {
 	c.focused = false
-	c.err = c.validate(*c.value)
+	c.err = c.validate(c.accessor.Get())
 	return nil
 }
 
@@ -145,8 +150,7 @@ func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if c.negative == "" {
 				break
 			}
-			v := !*c.value
-			*c.value = v
+			c.accessor.Set(!c.accessor.Get())
 		case key.Matches(msg, c.keymap.Prev):
 			cmds = append(cmds, PrevField)
 		case key.Matches(msg, c.keymap.Next, c.keymap.Submit):
@@ -193,7 +197,7 @@ func (c *Confirm) View() string {
 	var negative string
 	var affirmative string
 	if c.negative != "" {
-		if *c.value {
+		if c.accessor.Get() {
 			affirmative = styles.FocusedButton.Render(c.affirmative)
 			negative = styles.BlurredButton.Render(c.negative)
 		} else {
@@ -221,13 +225,13 @@ func (c *Confirm) runAccessible() error {
 	styles := c.activeStyles()
 	fmt.Println(styles.Title.Render(c.title))
 	fmt.Println()
-	*c.value = accessibility.PromptBool()
+	c.accessor.Set(accessibility.PromptBool())
 	fmt.Println(styles.SelectedOption.Render("Chose: "+c.String()) + "\n")
 	return nil
 }
 
 func (c *Confirm) String() string {
-	if *c.value {
+	if c.accessor.Get() {
 		return c.affirmative
 	}
 	return c.negative
@@ -281,5 +285,5 @@ func (c *Confirm) GetKey() string {
 
 // GetValue returns the value of the field.
 func (c *Confirm) GetValue() any {
-	return *c.value
+	return c.accessor.Get()
 }
