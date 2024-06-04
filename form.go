@@ -289,6 +289,12 @@ func (f *Form) WithOutput(w io.Writer) *Form {
 	return f
 }
 
+// WithInput sets the io.Reader to the input form.
+func (f *Form) WithInput(r io.Reader) *Form {
+	f.teaOptions = append(f.teaOptions, tea.WithInput(r))
+	return f
+}
+
 // WithProgramOptions sets the tea options of the form.
 func (f *Form) WithProgramOptions(opts ...tea.ProgramOption) *Form {
 	f.teaOptions = opts
