@@ -322,7 +322,7 @@ fmt.Println("Order up!")
 </table>
 
 For more on Spinners see the [spinner examples](./spinner/examples) and
-[the spinner docs](https://pkg.go.dev/github.com/charmbracelet/huh@main/spinner).
+[the spinner docs](https://pkg.go.dev/github.com/charmbracelet/huh/spinner).
 
 ## What about Bubble Tea?
 
@@ -401,6 +401,8 @@ For some `Huh?` programs in production, see:
 * [meteor](https://github.com/stefanlogue/meteor): a highly customisable conventional commit message tool
 * [freeze](https://github.com/charmbracelet/freeze): a tool for generating images of code and terminal output
 * [gum](https://github.com/charmbracelet/gum): a tool for glamorous shell scripts
+* [savvy](https://github.com/getsavvyinc/savvy-cli): the easiest way to create, share, and run runbooks in the terminal
+
 
 ## Feedback
 

@@ -62,7 +62,7 @@ type Form struct {
 	height     int
 	keymap     *KeyMap
 	teaOptions []tea.ProgramOption
-	output     io.Writer
+
 	layout     Layout
 }
 
@@ -254,6 +254,7 @@ func (f *Form) WithKeyMap(keymap *KeyMap) *Form {
 	for _, group := range f.groups {
 		group.WithKeyMap(keymap)
 	}
+	f.UpdateFieldPositions()
 	return f
 }
 
@@ -288,8 +289,13 @@ func (f *Form) WithHeight(height int) *Form {
 
 // WithOutput sets the io.Writer to output the form.
 func (f *Form) WithOutput(w io.Writer) *Form {
-	f.output = w
 	f.teaOptions = append(f.teaOptions, tea.WithOutput(w))
+	return f
+}
+
+// WithInput sets the io.Reader to the input form.
+func (f *Form) WithInput(r io.Reader) *Form {
+	f.teaOptions = append(f.teaOptions, tea.WithInput(r))
 	return f
 }
 

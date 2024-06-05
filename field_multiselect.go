@@ -251,7 +251,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keymap.HalfPageDown):
 			m.cursor = min(m.cursor+m.viewport.Height/2, len(m.filteredOptions)-1)
 			m.viewport.HalfViewDown()
-		case key.Matches(msg, m.keymap.Toggle):
+		case key.Matches(msg, m.keymap.Toggle) && !m.filtering:
 			for i, option := range m.options {
 				if option.Key == m.filteredOptions[m.cursor].Key {
 					if !m.options[m.cursor].selected && m.limit > 0 && m.numSelected() >= m.limit {
@@ -514,6 +514,7 @@ func (m *MultiSelect[T]) WithTheme(theme *Theme) Field {
 	}
 	m.theme = theme
 	m.filter.Cursor.Style = m.theme.Focused.TextInput.Cursor
+	m.filter.Cursor.TextStyle = m.theme.Focused.TextInput.CursorText
 	m.filter.PromptStyle = m.theme.Focused.TextInput.Prompt
 	m.updateViewportHeight()
 	return m

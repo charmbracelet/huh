@@ -46,7 +46,6 @@ func TestSpinnerView(t *testing.T) {
 
 func TestSpinnerContextCancellation(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	s := New().Context(ctx)
 	cancel() // Cancel before running
