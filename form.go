@@ -63,7 +63,7 @@ type Form struct {
 	keymap     *KeyMap
 	teaOptions []tea.ProgramOption
 
-	layout     Layout
+	layout Layout
 }
 
 // NewForm returns a form with the given groups and default themes and
