@@ -40,6 +40,7 @@ type Group struct {
 	height int
 	keymap *KeyMap
 	hide   func() bool
+	active bool
 }
 
 // NewGroup returns a new group with the given fields.
@@ -53,6 +54,7 @@ func NewGroup(fields ...Field) *Group {
 		help:       help.New(),
 		showHelp:   true,
 		showErrors: true,
+		active:     false,
 	}
 
 	height := group.fullHeight()
@@ -190,8 +192,10 @@ func (g *Group) Init() tea.Cmd {
 		return tea.Batch(cmds...)
 	}
 
-	cmd := g.fields[g.paginator.Page].Focus()
-	cmds = append(cmds, cmd)
+	if g.active {
+		cmd := g.fields[g.paginator.Page].Focus()
+		cmds = append(cmds, cmd)
+	}
 	g.buildView()
 	return tea.Batch(cmds...)
 }
@@ -261,7 +265,7 @@ func (g *Group) fullHeight() int {
 	return height
 }
 
-func (g *Group) buildView() {
+func (g *Group) getContent() (int, string) {
 	var fields strings.Builder
 	offset := 0
 	gap := "\n\n"
@@ -282,7 +286,13 @@ func (g *Group) buildView() {
 		}
 	}
 
-	g.viewport.SetContent(fields.String() + "\n")
+	return offset, fields.String() + "\n"
+}
+
+func (g *Group) buildView() {
+	offset, content := g.getContent()
+
+	g.viewport.SetContent(content)
 	g.viewport.SetYOffset(offset)
 }
 
@@ -290,6 +300,19 @@ func (g *Group) buildView() {
 func (g *Group) View() string {
 	var view strings.Builder
 	view.WriteString(g.viewport.View())
+	view.WriteString(g.Footer())
+	return view.String()
+}
+
+// Content renders the group's content only (no footer).
+func (g *Group) Content() string {
+	_, content := g.getContent()
+	return content
+}
+
+// Footer renders the group's footer only (no content).
+func (g *Group) Footer() string {
+	var view strings.Builder
 	view.WriteRune('\n')
 	errors := g.Errors()
 	if g.showHelp && len(errors) <= 0 {
