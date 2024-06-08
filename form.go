@@ -1,9 +1,11 @@
 package huh
 
 import (
+	"context"
 	"errors"
 	"io"
 	"os"
+	"time"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -61,6 +63,7 @@ type Form struct {
 	width      int
 	height     int
 	keymap     *KeyMap
+	timeout    time.Duration
 	teaOptions []tea.ProgramOption
 
 	layout Layout
@@ -296,6 +299,12 @@ func (f *Form) WithOutput(w io.Writer) *Form {
 // WithInput sets the io.Reader to the input form.
 func (f *Form) WithInput(r io.Reader) *Form {
 	f.teaOptions = append(f.teaOptions, tea.WithInput(r))
+	return f
+}
+
+// WithTimeout sets the duration for the form to be killed.
+func (f *Form) WithTimeout(t time.Duration) *Form {
+	f.timeout = t
 	return f
 }
 
@@ -590,10 +599,12 @@ func (f *Form) Run() error {
 
 // run runs the form in normal mode.
 func (f *Form) run() error {
-	m, err := tea.NewProgram(f, f.teaOptions...).Run()
+	ctx, cancel := context.WithTimeout(context.Background(), f.timeout)
+	m, err := tea.NewProgram(f, append(f.teaOptions, tea.WithContext(ctx))...).Run()
 	if m.(*Form).aborted {
 		err = ErrUserAborted
 	}
+	cancel()
 	return err
 }
 
