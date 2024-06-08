@@ -1,9 +1,11 @@
 package huh
 
 import (
+	"context"
 	"errors"
 	"io"
 	"os"
+	"time"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -29,6 +31,9 @@ const (
 
 // ErrUserAborted is the error returned when a user exits the form before submitting.
 var ErrUserAborted = errors.New("user aborted")
+
+// ErrTimeout is the error returned when the timeout is reached.
+var ErrTimeout = errors.New("timeout")
 
 // Form is a collection of groups that are displayed one at a time on a "page".
 //
@@ -61,6 +66,7 @@ type Form struct {
 	width      int
 	height     int
 	keymap     *KeyMap
+	timeout    time.Duration
 	teaOptions []tea.ProgramOption
 
 	layout Layout
@@ -296,6 +302,12 @@ func (f *Form) WithOutput(w io.Writer) *Form {
 // WithInput sets the io.Reader to the input form.
 func (f *Form) WithInput(r io.Reader) *Form {
 	f.teaOptions = append(f.teaOptions, tea.WithInput(r))
+	return f
+}
+
+// WithTimeout sets the duration for the form to be killed.
+func (f *Form) WithTimeout(t time.Duration) *Form {
+	f.timeout = t
 	return f
 }
 
@@ -590,9 +602,18 @@ func (f *Form) Run() error {
 
 // run runs the form in normal mode.
 func (f *Form) run() error {
+	startTime := time.Now()
+	if f.timeout > 0 {
+		ctx, cancel := context.WithTimeout(context.Background(), f.timeout)
+		defer cancel()
+		f.teaOptions = append(f.teaOptions, tea.WithContext(ctx))
+	}
 	m, err := tea.NewProgram(f, f.teaOptions...).Run()
 	if m.(*Form).aborted {
 		err = ErrUserAborted
+	}
+	if err != nil && time.Since(startTime) >= f.timeout {
+		err = ErrTimeout
 	}
 	return err
 }
