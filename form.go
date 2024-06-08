@@ -32,6 +32,9 @@ const (
 // ErrUserAborted is the error returned when a user exits the form before submitting.
 var ErrUserAborted = errors.New("user aborted")
 
+// ErrTimeout is the error returned when the timeout is reached.
+var ErrTimeout = errors.New("timeout")
+
 // Form is a collection of groups that are displayed one at a time on a "page".
 //
 // The form can navigate between groups and is complete once all the groups are
@@ -599,12 +602,19 @@ func (f *Form) Run() error {
 
 // run runs the form in normal mode.
 func (f *Form) run() error {
-	ctx, cancel := context.WithTimeout(context.Background(), f.timeout)
-	m, err := tea.NewProgram(f, append(f.teaOptions, tea.WithContext(ctx))...).Run()
+	startTime := time.Now()
+	if f.timeout > 0 {
+		ctx, cancel := context.WithTimeout(context.Background(), f.timeout)
+		defer cancel()
+		f.teaOptions = append(f.teaOptions, tea.WithContext(ctx))
+	}
+	m, err := tea.NewProgram(f, f.teaOptions...).Run()
 	if m.(*Form).aborted {
 		err = ErrUserAborted
 	}
-	cancel()
+	if err != nil && time.Since(startTime) >= f.timeout {
+		err = ErrTimeout
+	}
 	return err
 }
 
