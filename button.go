@@ -60,10 +60,9 @@ func (b *Button) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // View renders the button
 func (b *Button) View() string {
-	var (
-		styles  = b.activeStyles()
-		builder strings.Builder
-	)
+	styles := b.activeStyles()
+
+	var builder strings.Builder
 
 	title := b.title
 	if title == "" {
@@ -86,7 +85,7 @@ func (b *Button) View() string {
 		builder.WriteString(styles.Description.Render(b.description))
 	}
 
-	return styles.Card.Render(builder.String())
+	return styles.Base.Render(builder.String())
 }
 
 func (b *Button) activeStyles() *FieldStyles {
