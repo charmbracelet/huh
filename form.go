@@ -49,8 +49,8 @@ type Form struct {
 	paginator paginator.Model
 
 	// callbacks
-	submitCmd tea.Cmd
-	cancelCmd tea.Cmd
+	SubmitCmd tea.Cmd
+	CancelCmd tea.Cmd
 
 	State FormState
 
@@ -501,7 +501,7 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			f.aborted = true
 			f.quitting = true
 			f.State = StateAborted
-			return f, f.cancelCmd
+			return f, f.CancelCmd
 		}
 
 	case nextFieldMsg:
@@ -517,7 +517,7 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		submit := func() (tea.Model, tea.Cmd) {
 			f.quitting = true
 			f.State = StateCompleted
-			return f, f.submitCmd
+			return f, f.SubmitCmd
 		}
 
 		if f.paginator.OnLastPage() {
@@ -586,8 +586,8 @@ func (f *Form) View() string {
 
 // Run runs the form.
 func (f *Form) Run() error {
-	f.submitCmd = tea.Quit
-	f.cancelCmd = tea.Quit
+	f.SubmitCmd = tea.Quit
+	f.CancelCmd = tea.Quit
 
 	if len(f.groups) == 0 {
 		return nil
