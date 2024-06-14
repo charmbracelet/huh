@@ -589,20 +589,10 @@ type CallbackOptions struct {
 	CancelCmd tea.Cmd
 }
 
-func (f *Form) RunWithCallbacks(options CallbackOptions) error {
-	f.SubmitCmd = options.SubmitCmd
-	f.CancelCmd = options.CancelCmd
-	return f.Run()
-}
-
 // Run runs the form.
 func (f *Form) Run() error {
-	if f.SubmitCmd == nil {
-		f.SubmitCmd = tea.Quit
-	}
-	if f.CancelCmd == nil {
-		f.CancelCmd = tea.Quit
-	}
+	f.SubmitCmd = tea.Quit
+	f.CancelCmd = tea.Quit
 
 	if len(f.groups) == 0 {
 		return nil
