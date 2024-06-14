@@ -584,11 +584,6 @@ func (f *Form) View() string {
 	return f.layout.View(f)
 }
 
-type CallbackOptions struct {
-	SubmitCmd tea.Cmd
-	CancelCmd tea.Cmd
-}
-
 // Run runs the form.
 func (f *Form) Run() error {
 	f.SubmitCmd = tea.Quit
