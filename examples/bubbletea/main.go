@@ -46,7 +46,7 @@ func NewStyles(lg *lipgloss.Renderer) *Styles {
 		Bold(true)
 	s.Highlight = lg.NewStyle().
 		Foreground(lipgloss.Color("212"))
-	s.ErrorHeaderText = s.HeaderText.Copy().
+	s.ErrorHeaderText = s.HeaderText.
 		Foreground(red)
 	s.Help = lg.NewStyle().
 		Foreground(lipgloss.Color("240"))
@@ -155,7 +155,7 @@ func (m Model) View() string {
 		var b strings.Builder
 		fmt.Fprintf(&b, "Congratulations, you’re Charm’s newest\n%s!\n\n", title)
 		fmt.Fprintf(&b, "Your job description is as follows:\n\n%s\n\nPlease proceed to HR immediately.", role)
-		return s.Status.Copy().Margin(0, 1).Padding(1, 2).Width(48).Render(b.String()) + "\n\n"
+		return s.Status.Margin(0, 1).Padding(1, 2).Width(48).Render(b.String()) + "\n\n"
 	default:
 
 		var class string
@@ -189,7 +189,7 @@ func (m Model) View() string {
 
 			const statusWidth = 28
 			statusMarginLeft := m.width - statusWidth - lipgloss.Width(form) - s.Status.GetMarginRight()
-			status = s.Status.Copy().
+			status = s.Status.
 				Height(lipgloss.Height(form)).
 				Width(statusWidth).
 				MarginLeft(statusMarginLeft).

@@ -55,7 +55,6 @@ func NewMultiSelect[T comparable]() *MultiSelect[T] {
 		validate:  func([]T) error { return nil },
 		filtering: false,
 		filter:    filter,
-		theme:     ThemeCharm(),
 	}
 }
 
@@ -268,13 +267,13 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.err != nil {
 				return m, nil
 			}
-			return m, prevField
+			return m, PrevField
 		case key.Matches(msg, m.keymap.Next, m.keymap.Submit):
 			m.finalize()
 			if m.err != nil {
 				return m, nil
 			}
-			return m, nextField
+			return m, NextField
 		}
 
 		if m.filtering {
@@ -306,11 +305,6 @@ func (m *MultiSelect[T]) updateViewportHeight() {
 		return
 	}
 
-	// Wait until the theme has appied or things'll panic.
-	if m.theme == nil {
-		return
-	}
-
 	const minHeight = 1
 	m.viewport.Height = max(minHeight, m.height-
 		lipgloss.Height(m.titleView())-
@@ -338,10 +332,14 @@ func (m *MultiSelect[T]) finalize() {
 }
 
 func (m *MultiSelect[T]) activeStyles() *FieldStyles {
-	if m.focused {
-		return &m.theme.Focused
+	theme := m.theme
+	if theme == nil {
+		theme = ThemeCharm()
 	}
-	return &m.theme.Blurred
+	if m.focused {
+		return &theme.Focused
+	}
+	return &theme.Blurred
 }
 
 func (m *MultiSelect[T]) titleView() string {
@@ -419,21 +417,22 @@ func (m *MultiSelect[T]) View() string {
 }
 
 func (m *MultiSelect[T]) printOptions() {
+	styles := m.activeStyles()
 	var sb strings.Builder
 
-	sb.WriteString(m.theme.Focused.Title.Render(m.title))
+	sb.WriteString(styles.Title.Render(m.title))
 	sb.WriteString("\n")
 
 	for i, option := range m.options {
 		if option.selected {
-			sb.WriteString(m.theme.Focused.SelectedOption.Render(fmt.Sprintf("%d. %s %s", i+1, "✓", option.Key)))
+			sb.WriteString(styles.SelectedOption.Render(fmt.Sprintf("%d. %s %s", i+1, "✓", option.Key)))
 		} else {
 			sb.WriteString(fmt.Sprintf("%d. %s %s", i+1, " ", option.Key))
 		}
 		sb.WriteString("\n")
 	}
 
-	fmt.Println(m.theme.Blurred.Base.Render(sb.String()))
+	fmt.Println(sb.String())
 }
 
 // setFilter sets the filter of the select field.
@@ -464,6 +463,7 @@ func (m *MultiSelect[T]) Run() error {
 // runAccessible() runs the multi-select field in accessible mode.
 func (m *MultiSelect[T]) runAccessible() error {
 	m.printOptions()
+	styles := m.activeStyles()
 
 	var choice int
 	for {
@@ -503,12 +503,15 @@ func (m *MultiSelect[T]) runAccessible() error {
 		}
 	}
 
-	fmt.Println(m.theme.Focused.SelectedOption.Render("Selected:", strings.Join(values, ", ")+"\n"))
+	fmt.Println(styles.SelectedOption.Render("Selected:", strings.Join(values, ", ")+"\n"))
 	return nil
 }
 
 // WithTheme sets the theme of the multi-select field.
 func (m *MultiSelect[T]) WithTheme(theme *Theme) Field {
+	if m.theme != nil {
+		return m
+	}
 	m.theme = theme
 	m.filter.Cursor.Style = m.theme.Focused.TextInput.Cursor
 	m.filter.PromptStyle = m.theme.Focused.TextInput.Prompt

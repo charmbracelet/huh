@@ -44,7 +44,6 @@ func NewConfirm() *Confirm {
 		affirmative: "Yes",
 		negative:    "No",
 		validate:    func(bool) error { return nil },
-		theme:       ThemeCharm(),
 	}
 }
 
@@ -140,29 +139,38 @@ func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-
 		c.err = nil
-
 		switch {
 		case key.Matches(msg, c.keymap.Toggle):
+			if c.negative == "" {
+				break
+			}
 			v := !*c.value
 			*c.value = v
 		case key.Matches(msg, c.keymap.Prev):
-			cmds = append(cmds, prevField)
+			cmds = append(cmds, PrevField)
 		case key.Matches(msg, c.keymap.Next, c.keymap.Submit):
-			cmds = append(cmds, nextField)
+			cmds = append(cmds, NextField)
 		}
 	}
 
 	return c, tea.Batch(cmds...)
 }
 
+func (c *Confirm) activeStyles() *FieldStyles {
+	theme := c.theme
+	if theme == nil {
+		theme = ThemeCharm()
+	}
+	if c.focused {
+		return &theme.Focused
+	}
+	return &theme.Blurred
+}
+
 // View renders the confirm field.
 func (c *Confirm) View() string {
-	styles := c.theme.Blurred
-	if c.focused {
-		styles = c.theme.Focused
-	}
+	styles := c.activeStyles()
 
 	var sb strings.Builder
 	sb.WriteString(styles.Title.Render(c.title))
@@ -182,19 +190,21 @@ func (c *Confirm) View() string {
 		sb.WriteString("\n")
 	}
 
-	if *c.value {
-		sb.WriteString(lipgloss.JoinHorizontal(
-			lipgloss.Center,
-			styles.FocusedButton.Render(c.affirmative),
-			styles.BlurredButton.Render(c.negative),
-		))
+	var negative string
+	var affirmative string
+	if c.negative != "" {
+		if *c.value {
+			affirmative = styles.FocusedButton.Render(c.affirmative)
+			negative = styles.BlurredButton.Render(c.negative)
+		} else {
+			affirmative = styles.BlurredButton.Render(c.affirmative)
+			negative = styles.FocusedButton.Render(c.negative)
+		}
 	} else {
-		sb.WriteString(lipgloss.JoinHorizontal(
-			lipgloss.Center,
-			styles.BlurredButton.Render(c.affirmative),
-			styles.FocusedButton.Render(c.negative),
-		))
+		affirmative = styles.FocusedButton.Render(c.affirmative)
 	}
+
+	sb.WriteString(lipgloss.JoinHorizontal(lipgloss.Center, affirmative, negative))
 	return styles.Base.Render(sb.String())
 }
 
@@ -208,10 +218,11 @@ func (c *Confirm) Run() error {
 
 // runAccessible runs the confirm field in accessible mode.
 func (c *Confirm) runAccessible() error {
-	fmt.Println(c.theme.Blurred.Base.Render(c.theme.Focused.Title.Render(c.title)))
+	styles := c.activeStyles()
+	fmt.Println(styles.Title.Render(c.title))
 	fmt.Println()
 	*c.value = accessibility.PromptBool()
-	fmt.Println(c.theme.Focused.SelectedOption.Render("Chose: "+c.String()) + "\n")
+	fmt.Println(styles.SelectedOption.Render("Chose: "+c.String()) + "\n")
 	return nil
 }
 
@@ -224,6 +235,9 @@ func (c *Confirm) String() string {
 
 // WithTheme sets the theme of the confirm field.
 func (c *Confirm) WithTheme(theme *Theme) Field {
+	if c.theme != nil {
+		return c
+	}
 	c.theme = theme
 	return c
 }

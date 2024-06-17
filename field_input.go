@@ -48,7 +48,6 @@ func NewInput() *Input {
 		value:     new(string),
 		textinput: input,
 		validate:  func(string) error { return nil },
-		theme:     ThemeCharm(),
 	}
 
 	return i
@@ -222,14 +221,14 @@ func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if i.err != nil {
 				return i, nil
 			}
-			cmds = append(cmds, prevField)
+			cmds = append(cmds, PrevField)
 		case key.Matches(msg, i.keymap.Next, i.keymap.Submit):
 			value := i.textinput.Value()
 			i.err = i.validate(value)
 			if i.err != nil {
 				return i, nil
 			}
-			cmds = append(cmds, nextField)
+			cmds = append(cmds, NextField)
 		}
 
 		if i.suggestionCallback != nil {
@@ -242,12 +241,20 @@ func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return i, tea.Batch(cmds...)
 }
 
+func (i *Input) activeStyles() *FieldStyles {
+	theme := i.theme
+	if theme == nil {
+		theme = ThemeCharm()
+	}
+	if i.focused {
+		return &theme.Focused
+	}
+	return &theme.Blurred
+}
+
 // View renders the input field.
 func (i *Input) View() string {
-	styles := i.theme.Blurred
-	if i.focused {
-		styles = i.theme.Focused
-	}
+	styles := i.activeStyles()
 
 	// NB: since the method is on a pointer receiver these are being mutated.
 	// Because this runs on every render this shouldn't matter in practice,
@@ -290,10 +297,11 @@ func (i *Input) run() error {
 
 // runAccessible runs the input field in accessible mode.
 func (i *Input) runAccessible() error {
-	fmt.Println(i.theme.Blurred.Base.Render(i.theme.Focused.Title.Render(i.title)))
+	styles := i.activeStyles()
+	fmt.Println(styles.Title.Render(i.title))
 	fmt.Println()
 	*i.value = accessibility.PromptString("Input: ", i.validate)
-	fmt.Println(i.theme.Focused.SelectedOption.Render("Input: " + *i.value + "\n"))
+	fmt.Println(styles.SelectedOption.Render("Input: " + *i.value + "\n"))
 	return nil
 }
 
@@ -312,17 +320,21 @@ func (i *Input) WithAccessible(accessible bool) Field {
 
 // WithTheme sets the theme of the input field.
 func (i *Input) WithTheme(theme *Theme) Field {
+	if i.theme != nil {
+		return i
+	}
 	i.theme = theme
 	return i
 }
 
 // WithWidth sets the width of the input field.
 func (i *Input) WithWidth(width int) Field {
+	styles := i.activeStyles()
 	i.width = width
-	frameSize := i.theme.Blurred.Base.GetHorizontalFrameSize()
+	frameSize := styles.Base.GetHorizontalFrameSize()
 	promptWidth := lipgloss.Width(i.textinput.PromptStyle.Render(i.textinput.Prompt))
-	titleWidth := lipgloss.Width(i.theme.Focused.Title.Render(i.title))
-	descriptionWidth := lipgloss.Width(i.theme.Focused.Description.Render(i.description))
+	titleWidth := lipgloss.Width(styles.Title.Render(i.title))
+	descriptionWidth := lipgloss.Width(styles.Description.Render(i.description))
 	i.textinput.Width = width - frameSize - promptWidth - 1
 	if i.inline {
 		i.textinput.Width -= titleWidth

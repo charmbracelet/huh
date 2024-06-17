@@ -55,7 +55,6 @@ func NewFilePicker() *FilePicker {
 		value:    new(string),
 		validate: func(string) error { return nil },
 		picker:   fp,
-		theme:    ThemeCharm(),
 	}
 }
 
@@ -74,6 +73,30 @@ func (f *FilePicker) Picking(v bool) *FilePicker {
 // ShowHidden sets whether to show hidden files.
 func (f *FilePicker) ShowHidden(v bool) *FilePicker {
 	f.picker.ShowHidden = v
+	return f
+}
+
+// ShowSize sets whether to show file sizes.
+func (f *FilePicker) ShowSize(v bool) *FilePicker {
+	f.picker.ShowSize = v
+	return f
+}
+
+// ShowPermissions sets whether to show file permissions.
+func (f *FilePicker) ShowPermissions(v bool) *FilePicker {
+	f.picker.ShowPermissions = v
+	return f
+}
+
+// FileAllowed sets whether to allow files to be selected.
+func (f *FilePicker) FileAllowed(v bool) *FilePicker {
+	f.picker.FileAllowed = v
+	return f
+}
+
+// DirAllowed sets whether to allow files to be selected.
+func (f *FilePicker) DirAllowed(v bool) *FilePicker {
+	f.picker.DirAllowed = v
 	return f
 }
 
@@ -187,10 +210,10 @@ func (f *FilePicker) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return f, nil
 		case key.Matches(msg, f.keymap.Next):
 			f.setPicking(false)
-			return f, nextField
+			return f, NextField
 		case key.Matches(msg, f.keymap.Prev):
 			f.setPicking(false)
-			return f, prevField
+			return f, PrevField
 		}
 	}
 
@@ -200,7 +223,7 @@ func (f *FilePicker) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if didSelect {
 		*f.value = file
 		f.setPicking(false)
-		return f, nextField
+		return f, NextField
 	}
 	didSelect, _ = f.picker.DidSelectDisabledFile(msg)
 	if didSelect {
@@ -211,12 +234,21 @@ func (f *FilePicker) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return f, cmd
 }
 
+func (f *FilePicker) activeStyles() *FieldStyles {
+	theme := f.theme
+	if theme == nil {
+		theme = ThemeCharm()
+	}
+	if f.focused {
+		return &theme.Focused
+	}
+	return &theme.Blurred
+}
+
 // View renders the file field.
 func (f *FilePicker) View() string {
-	styles := f.theme.Blurred
-	if f.focused {
-		styles = f.theme.Focused
-	}
+	styles := f.activeStyles()
+
 	var sb strings.Builder
 	if f.title != "" {
 		sb.WriteString(styles.Title.Render(f.title) + "\n")
@@ -262,7 +294,8 @@ func (f *FilePicker) Run() error {
 
 // runAccessible runs an accessible file field.
 func (f *FilePicker) runAccessible() error {
-	fmt.Println(f.theme.Blurred.Base.Render(f.theme.Focused.Title.Render(f.title)))
+	styles := f.activeStyles()
+	fmt.Println(styles.Title.Render(f.title))
 	fmt.Println()
 
 	validateFile := func(s string) error {
@@ -288,12 +321,15 @@ func (f *FilePicker) runAccessible() error {
 	}
 
 	*f.value = accessibility.PromptString("File: ", validateFile)
-	fmt.Println(f.theme.Focused.SelectedOption.Render(*f.value + "\n"))
+	fmt.Println(styles.SelectedOption.Render(*f.value + "\n"))
 	return nil
 }
 
 // WithTheme sets the theme of the file field.
 func (f *FilePicker) WithTheme(theme *Theme) Field {
+	if f.theme != nil || theme == nil {
+		return f
+	}
 	f.theme = theme
 
 	// XXX: add specific themes
@@ -308,7 +344,7 @@ func (f *FilePicker) WithTheme(theme *Theme) Field {
 		Selected:         theme.Focused.SelectedOption,
 		DisabledSelected: theme.Focused.TextInput.Placeholder,
 		FileSize:         theme.Focused.TextInput.Placeholder,
-		EmptyDirectory:   theme.Focused.TextInput.Placeholder.Copy().SetString("No files found."),
+		EmptyDirectory:   theme.Focused.TextInput.Placeholder.SetString("No files found."),
 	}
 
 	return f

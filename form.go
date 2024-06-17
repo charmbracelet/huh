@@ -2,6 +2,7 @@ package huh
 
 import (
 	"errors"
+	"io"
 	"os"
 
 	"github.com/charmbracelet/bubbles/help"
@@ -9,6 +10,8 @@ import (
 	"github.com/charmbracelet/bubbles/paginator"
 	tea "github.com/charmbracelet/bubbletea"
 )
+
+const defaultWidth = 80
 
 // FormState represents the current state of the form.
 type FormState int
@@ -57,9 +60,9 @@ type Form struct {
 	// options
 	width      int
 	height     int
-	theme      *Theme
 	keymap     *KeyMap
 	teaOptions []tea.ProgramOption
+	output     io.Writer
 }
 
 // NewForm returns a form with the given groups and default themes and
@@ -74,10 +77,7 @@ func NewForm(groups ...*Group) *Form {
 	f := &Form{
 		groups:    groups,
 		paginator: p,
-		theme:     ThemeCharm(),
 		keymap:    NewDefaultKeyMap(),
-		width:     0,
-		height:    0,
 		results:   make(map[string]any),
 		teaOptions: []tea.ProgramOption{
 			tea.WithOutput(os.Stderr),
@@ -86,11 +86,15 @@ func NewForm(groups ...*Group) *Form {
 
 	// NB: If dynamic forms come into play this will need to be applied when
 	// groups and fields are added.
-	f.WithTheme(f.theme)
 	f.WithKeyMap(f.keymap)
 	f.WithWidth(f.width)
 	f.WithHeight(f.height)
 	f.UpdateFieldPositions()
+
+	if os.Getenv("TERM") == "dumb" {
+		f.WithWidth(defaultWidth)
+		f.WithAccessible(true)
+	}
 
 	return f
 }
@@ -231,7 +235,6 @@ func (f *Form) WithTheme(theme *Theme) *Form {
 	if theme == nil {
 		return f
 	}
-	f.theme = theme
 	for _, group := range f.groups {
 		group.WithTheme(theme)
 	}
@@ -249,6 +252,7 @@ func (f *Form) WithKeyMap(keymap *KeyMap) *Form {
 	for _, group := range f.groups {
 		group.WithKeyMap(keymap)
 	}
+	f.UpdateFieldPositions()
 	return f
 }
 
@@ -280,7 +284,14 @@ func (f *Form) WithHeight(height int) *Form {
 	return f
 }
 
-// WithProgramOptions sets the tea options of thea form.
+// WithOutput sets the io.Writer to output the form.
+func (f *Form) WithOutput(w io.Writer) *Form {
+	f.output = w
+	f.teaOptions = append(f.teaOptions, tea.WithOutput(w))
+	return f
+}
+
+// WithProgramOptions sets the tea options of the form.
 func (f *Form) WithProgramOptions(opts ...tea.ProgramOption) *Form {
 	f.teaOptions = opts
 	return f
@@ -402,13 +413,13 @@ func (f *Form) PrevGroup() tea.Cmd {
 
 // NextField moves the form to the next field.
 func (f *Form) NextField() tea.Cmd {
-	_, cmd := f.Update(nextField())
+	_, cmd := f.Update(NextField())
 	return cmd
 }
 
 // NextField moves the form to the next field.
 func (f *Form) PrevField() tea.Cmd {
-	_, cmd := f.Update(prevField())
+	_, cmd := f.Update(PrevField())
 	return cmd
 }
 

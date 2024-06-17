@@ -38,7 +38,6 @@ type Group struct {
 	// group options
 	width  int
 	height int
-	theme  *Theme
 	keymap *KeyMap
 	hide   func() bool
 }
@@ -91,7 +90,6 @@ func (g *Group) WithShowErrors(show bool) *Group {
 
 // WithTheme sets the theme on a group.
 func (g *Group) WithTheme(t *Theme) *Group {
-	g.theme = t
 	g.help.Styles = t.Help
 	for _, field := range g.fields {
 		field.WithTheme(t)
@@ -169,13 +167,13 @@ type nextFieldMsg struct{}
 // different key bindings or events to trigger group progression.
 type prevFieldMsg struct{}
 
-// nextField is the command to move to the next field.
-func nextField() tea.Msg {
+// NextField is the command to move to the next field.
+func NextField() tea.Msg {
 	return nextFieldMsg{}
 }
 
-// prevField is the command to move to the previous field.
-func prevField() tea.Msg {
+// PrevField is the command to move to the previous field.
+func PrevField() tea.Msg {
 	return prevFieldMsg{}
 }
 
@@ -242,7 +240,7 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		g.WithHeight(min(g.fullHeight(), msg.Height-1))
+		g.WithHeight(min(g.height, min(g.fullHeight(), msg.Height-1)))
 	case nextFieldMsg:
 		cmds = append(cmds, g.nextField()...)
 	case prevFieldMsg:
@@ -256,17 +254,7 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // height returns the full height of the group.
 func (g *Group) fullHeight() int {
-	var height int
-
-	if g.theme == nil {
-		return g.height // unknown
-	}
-
-	gap := g.theme.FieldSeparator.String()
-	if gap != "" {
-		height += len(g.fields)
-	}
-
+	height := len(g.fields)
 	for _, f := range g.fields {
 		height += lipgloss.Height(f.View())
 	}
@@ -276,10 +264,7 @@ func (g *Group) fullHeight() int {
 func (g *Group) buildView() {
 	var fields strings.Builder
 	offset := 0
-	gap := g.theme.FieldSeparator.String()
-	if gap == "" {
-		gap = "\n"
-	}
+	gap := "\n\n"
 
 	// if the focused field is requesting it be zoomed, only show that field.
 	if g.fields[g.paginator.Page].Zoom() {
@@ -310,11 +295,10 @@ func (g *Group) View() string {
 	if g.showHelp && len(errors) <= 0 {
 		view.WriteString(g.help.ShortHelpView(g.fields[g.paginator.Page].KeyBinds()))
 	}
-	if !g.showErrors {
-		return g.viewport.View() + "\n" + view.String()
-	}
-	for _, err := range errors {
-		view.WriteString(g.theme.Focused.ErrorMessage.Render(err.Error()))
+	if g.showErrors {
+		for _, err := range errors {
+			view.WriteString(ThemeCharm().Focused.ErrorMessage.Render(err.Error()))
+		}
 	}
 	return view.String()
 }

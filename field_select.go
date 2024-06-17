@@ -54,7 +54,6 @@ func NewSelect[T comparable]() *Select[T] {
 		validate:  func(T) error { return nil },
 		filtering: false,
 		filter:    filter,
-		theme:     ThemeCharm(),
 	}
 }
 
@@ -279,7 +278,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return s, nil
 			}
 			*s.value = value
-			return s, prevField
+			return s, PrevField
 		case key.Matches(msg, s.keymap.Next, s.keymap.Submit):
 			if s.selected >= len(s.filteredOptions) {
 				break
@@ -291,7 +290,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return s, nil
 			}
 			*s.value = value
-			return s, nextField
+			return s, NextField
 		}
 
 		if s.filtering {
@@ -323,11 +322,6 @@ func (s *Select[T]) updateViewportHeight() {
 		return
 	}
 
-	// Wait until the theme has appied.
-	if s.theme == nil {
-		return
-	}
-
 	const minHeight = 1
 	s.viewport.Height = max(minHeight, s.height-
 		lipgloss.Height(s.titleView())-
@@ -335,13 +329,14 @@ func (s *Select[T]) updateViewportHeight() {
 }
 
 func (s *Select[T]) activeStyles() *FieldStyles {
-	if s.theme == nil {
-		return nil
+	theme := s.theme
+	if theme == nil {
+		theme = ThemeCharm()
 	}
 	if s.focused {
-		return &s.theme.Focused
+		return &theme.Focused
 	}
-	return &s.theme.Blurred
+	return &theme.Blurred
 }
 
 func (s *Select[T]) titleView() string {
@@ -462,15 +457,16 @@ func (s *Select[T]) Run() error {
 // runAccessible runs an accessible select field.
 func (s *Select[T]) runAccessible() error {
 	var sb strings.Builder
+	styles := s.activeStyles()
 
-	sb.WriteString(s.theme.Focused.Title.Render(s.title) + "\n")
+	sb.WriteString(styles.Title.Render(s.title) + "\n")
 
 	for i, option := range s.options {
 		sb.WriteString(fmt.Sprintf("%d. %s", i+1, option.Key))
 		sb.WriteString("\n")
 	}
 
-	fmt.Println(s.theme.Blurred.Base.Render(sb.String()))
+	fmt.Println(sb.String())
 
 	for {
 		choice := accessibility.PromptInt("Choose: ", 1, len(s.options))
@@ -479,7 +475,7 @@ func (s *Select[T]) runAccessible() error {
 			fmt.Println(err.Error())
 			continue
 		}
-		fmt.Println(s.theme.Focused.SelectedOption.Render("Chose: " + option.Key + "\n"))
+		fmt.Println(styles.SelectedOption.Render("Chose: " + option.Key + "\n"))
 		*s.value = option.Value
 		break
 	}
@@ -489,6 +485,9 @@ func (s *Select[T]) runAccessible() error {
 
 // WithTheme sets the theme of the select field.
 func (s *Select[T]) WithTheme(theme *Theme) Field {
+	if s.theme != nil {
+		return s
+	}
 	s.theme = theme
 	s.filter.Cursor.Style = s.theme.Focused.TextInput.Cursor
 	s.filter.PromptStyle = s.theme.Focused.TextInput.Prompt

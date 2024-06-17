@@ -2,8 +2,10 @@ package spinner
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/charmbracelet/bubbles/spinner"
@@ -141,8 +143,17 @@ func (s *Spinner) Run() error {
 		return s.runAccessible()
 	}
 
-	p := tea.NewProgram(s, tea.WithContext(s.ctx), tea.WithOutput(os.Stderr))
+	hasCtx := s.ctx != nil
+	hasCtxErr := hasCtx && s.ctx.Err() != nil
 
+	if hasCtxErr {
+		if errors.Is(s.ctx.Err(), context.Canceled) {
+			return nil
+		}
+		return s.ctx.Err()
+	}
+
+	p := tea.NewProgram(s, tea.WithContext(s.ctx), tea.WithOutput(os.Stderr))
 	if s.ctx == nil {
 		go func() {
 			s.action()
@@ -150,20 +161,45 @@ func (s *Spinner) Run() error {
 		}()
 	}
 
-	_, _ = p.Run()
-
-	return nil
+	_, err := p.Run()
+	if errors.Is(err, tea.ErrProgramKilled) {
+		return nil
+	} else {
+		return err
+	}
 }
 
 // runAccessible runs the spinner in an accessible mode (statically).
 func (s *Spinner) runAccessible() error {
 	s.output.HideCursor()
 	frame := s.spinner.Style.Render("...")
-	title := s.titleStyle.Render(s.title)
+	title := s.titleStyle.Render(strings.TrimSuffix(s.title, "..."))
 	fmt.Println(title + frame)
-	s.action()
-	s.output.ShowCursor()
-	s.output.CursorBack(len(frame) + len(title))
 
-	return nil
+	if s.ctx == nil {
+		s.action()
+		s.output.ShowCursor()
+		s.output.CursorBack(len(frame) + len(title))
+		return nil
+	}
+
+	actionDone := make(chan struct{})
+
+	go func() {
+		s.action()
+		actionDone <- struct{}{}
+	}()
+
+	for {
+		select {
+		case <-s.ctx.Done():
+			s.output.ShowCursor()
+			s.output.CursorBack(len(frame) + len(title))
+			return s.ctx.Err()
+		case <-actionDone:
+			s.output.ShowCursor()
+			s.output.CursorBack(len(frame) + len(title))
+			return nil
+		}
+	}
 }
