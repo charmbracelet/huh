@@ -12,7 +12,6 @@ func main() {
 		Description("Please confirm. ").
 		Affirmative("Yes!").
 		Negative("No.").
-		Inline(true).
 		Value(&happy)
 
 	huh.NewForm(huh.NewGroup(confirm)).Run()

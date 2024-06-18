@@ -117,6 +117,13 @@ func (m *MultiSelect[T]) Filterable(filterable bool) *MultiSelect[T] {
 	return m
 }
 
+// Filtering sets the filtering state of the multi-select field.
+func (m *MultiSelect[T]) Filtering(filtering bool) *MultiSelect[T] {
+	m.filtering = filtering
+	m.filter.Focus()
+	return m
+}
+
 // Limit sets the limit of the multi-select field.
 func (m *MultiSelect[T]) Limit(limit int) *MultiSelect[T] {
 	m.limit = limit
@@ -513,9 +520,11 @@ func (m *MultiSelect[T]) WithTheme(theme *Theme) Field {
 		return m
 	}
 	m.theme = theme
-	m.filter.Cursor.Style = m.theme.Focused.TextInput.Cursor
-	m.filter.Cursor.TextStyle = m.theme.Focused.TextInput.CursorText
-	m.filter.PromptStyle = m.theme.Focused.TextInput.Prompt
+	m.filter.Cursor.Style = theme.Focused.TextInput.Cursor
+	m.filter.Cursor.TextStyle = theme.Focused.TextInput.CursorText
+	m.filter.PromptStyle = theme.Focused.TextInput.Prompt
+	m.filter.TextStyle = theme.Focused.TextInput.Text
+	m.filter.PlaceholderStyle = theme.Focused.TextInput.Placeholder
 	m.updateViewportHeight()
 	return m
 }
