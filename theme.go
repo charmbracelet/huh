@@ -26,10 +26,11 @@ type FieldStyles struct {
 	ErrorMessage   lipgloss.Style
 
 	// Select styles.
-	SelectSelector lipgloss.Style // Selection indicator
-	Option         lipgloss.Style // Select options
-	NextIndicator  lipgloss.Style
-	PrevIndicator  lipgloss.Style
+	SelectSelector   lipgloss.Style // Selection indicator
+	UnselectSelector lipgloss.Style
+	Option           lipgloss.Style // Select options
+	NextIndicator    lipgloss.Style
+	PrevIndicator    lipgloss.Style
 
 	// FilePicker styles.
 	Directory lipgloss.Style
@@ -86,6 +87,7 @@ func ThemeBase() *Theme {
 	t.Focused.ErrorIndicator = lipgloss.NewStyle().SetString(" *")
 	t.Focused.ErrorMessage = lipgloss.NewStyle().SetString(" *")
 	t.Focused.SelectSelector = lipgloss.NewStyle().SetString("> ")
+	t.Focused.UnselectSelector = lipgloss.NewStyle().SetString("  ")
 	t.Focused.NextIndicator = lipgloss.NewStyle().MarginLeft(1).SetString("→")
 	t.Focused.PrevIndicator = lipgloss.NewStyle().MarginRight(1).SetString("←")
 	t.Focused.MultiSelectSelector = lipgloss.NewStyle().SetString("> ")
