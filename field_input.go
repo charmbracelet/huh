@@ -205,10 +205,6 @@ func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 	var cmd tea.Cmd
 
-	i.textinput, cmd = i.textinput.Update(msg)
-	cmds = append(cmds, cmd)
-	i.accessor.Set(i.textinput.Value())
-
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		i.err = nil
@@ -230,6 +226,10 @@ func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmds = append(cmds, NextField)
 		}
 	}
+
+	i.textinput, cmd = i.textinput.Update(msg)
+	cmds = append(cmds, cmd)
+	i.accessor.Set(i.textinput.Value())
 
 	return i, tea.Batch(cmds...)
 }
