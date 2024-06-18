@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 	"strings"
 
@@ -73,19 +74,44 @@ func NewModel() Model {
 	m.lg = lipgloss.DefaultRenderer()
 	m.styles = NewStyles(m.lg)
 
+	classOptions := huh.NewOptions("Warrior", "Mage", "Rogue")
+
+	classSelect := huh.NewSelect[string]().
+		Key("class").
+		Options(classOptions...).
+		Title("Choose your class").
+		Description("This will determine your department")
+
+	levelOptions := huh.NewOptions("1", "20", "9999")
+
+	levelSelect := huh.NewSelect[string]().
+		Key("level").
+		Options(levelOptions...).
+		Title("Choose your level").
+		Description("This will determine your benefits package")
+
 	m.form = huh.NewForm(
 		huh.NewGroup(
-			huh.NewSelect[string]().
-				Key("class").
-				Options(huh.NewOptions("Warrior", "Mage", "Rogue")...).
-				Title("Choose your class").
-				Description("This will determine your department"),
+			classSelect,
 
-			huh.NewSelect[string]().
-				Key("level").
-				Options(huh.NewOptions("1", "20", "9999")...).
-				Title("Choose your level").
-				Description("This will determine your benefits package"),
+			levelSelect,
+
+			huh.NewButton().
+				Title("Randomize").
+				Description("Randomize class and level selections.").
+				Action(func() error {
+					if len(classOptions) > 0 {
+						rv := rand.Intn(len(classOptions))
+						classSelect.Value(&classOptions[rv].Value)
+					}
+
+					if len(levelOptions) > 0 {
+						rv := rand.Intn(len(levelOptions))
+						levelSelect.Value(&levelOptions[rv].Value)
+					}
+
+					return nil
+				}),
 
 			huh.NewConfirm().
 				Key("done").
