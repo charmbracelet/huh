@@ -355,7 +355,7 @@ func (s *Select[T]) titleView() string {
 		sb     = strings.Builder{}
 	)
 	if s.filtering {
-		sb.WriteString(styles.Title.Render(s.filter.View()))
+		sb.WriteString(s.filter.View())
 	} else if s.filter.Value() != "" && !s.inline {
 		sb.WriteString(styles.Title.Render(s.title) + styles.Description.Render("/"+s.filter.Value()))
 	} else {
@@ -496,9 +496,11 @@ func (s *Select[T]) WithTheme(theme *Theme) Field {
 		return s
 	}
 	s.theme = theme
-	s.filter.Cursor.Style = s.theme.Focused.TextInput.Cursor
-	s.filter.Cursor.TextStyle = s.theme.Focused.TextInput.CursorText
-	s.filter.PromptStyle = s.theme.Focused.TextInput.Prompt
+	s.filter.Cursor.Style = theme.Focused.TextInput.Cursor
+	s.filter.Cursor.TextStyle = theme.Focused.TextInput.CursorText
+	s.filter.PromptStyle = theme.Focused.TextInput.Prompt
+	s.filter.TextStyle = theme.Focused.TextInput.Text
+	s.filter.PlaceholderStyle = theme.Focused.TextInput.Placeholder
 	s.updateViewportHeight()
 	return s
 }
