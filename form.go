@@ -59,6 +59,9 @@ type Form struct {
 	// to be more accessible to screen readers.
 	accessible bool
 
+	// the program this form is running in, used for testing
+	program *tea.Program
+
 	quitting bool
 	aborted  bool
 
@@ -90,6 +93,9 @@ func NewForm(groups ...*Group) *Form {
 		teaOptions: []tea.ProgramOption{
 			tea.WithOutput(os.Stderr),
 		},
+
+		SubmitCmd: tea.Quit,
+		CancelCmd: tea.Quit,
 	}
 
 	// NB: If dynamic forms come into play this will need to be applied when
@@ -586,9 +592,6 @@ func (f *Form) View() string {
 
 // Run runs the form.
 func (f *Form) Run() error {
-	f.SubmitCmd = tea.Quit
-	f.CancelCmd = tea.Quit
-
 	if len(f.groups) == 0 {
 		return nil
 	}
@@ -602,18 +605,18 @@ func (f *Form) Run() error {
 
 // run runs the form in normal mode.
 func (f *Form) run() error {
-	startTime := time.Now()
 	if f.timeout > 0 {
 		ctx, cancel := context.WithTimeout(context.Background(), f.timeout)
 		defer cancel()
 		f.teaOptions = append(f.teaOptions, tea.WithContext(ctx))
 	}
-	m, err := tea.NewProgram(f, f.teaOptions...).Run()
+	f.program = tea.NewProgram(f, f.teaOptions...)
+	m, err := f.program.Run()
 	if m.(*Form).aborted {
-		err = ErrUserAborted
+		return ErrUserAborted
 	}
-	if err != nil && time.Since(startTime) >= f.timeout {
-		err = ErrTimeout
+	if errors.Is(err, tea.ErrProgramKilled) {
+		return ErrTimeout
 	}
 	return err
 }

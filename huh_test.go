@@ -1,10 +1,13 @@
 package huh
 
 import (
+	"errors"
 	"fmt"
+	"io"
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -840,6 +843,31 @@ func TestSkip(t *testing.T) {
 	if !strings.Contains(view, "┃ First") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected first field to be focused")
+	}
+}
+
+func TestTimeout(t *testing.T) {
+	// Testing timeout requires a real program, so make sure it doesn't interfere with our test runner.
+	f := NewForm(NewGroup(NewInput().Title("Foo"))).WithInput(nil).WithOutput(io.Discard)
+
+	// Test that the form times out after 100ms and returns a timeout error.
+	err := f.WithTimeout(100 * time.Millisecond).run()
+	if err == nil || !errors.Is(err, ErrTimeout) {
+		t.Errorf("expected timeout error, got %v", err)
+	}
+
+	// Test that the form aborts without throwing a timeout error when explicitly told to abort.
+	// run() is blocking, so we need to send the message in a separate goroutine.
+	go func() {
+		// Give it some time to start.
+		time.Sleep(200 * time.Millisecond)
+		// Tell the form to abort.
+		f.program.Send(tea.KeyMsg{Type: tea.KeyCtrlC})
+	}()
+	// Run the program.
+	err = f.WithTimeout(5 * time.Second).run()
+	if err == nil || !errors.Is(err, ErrUserAborted) {
+		t.Errorf("expected user aborted error, got %v", err)
 	}
 }
 
