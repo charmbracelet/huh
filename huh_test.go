@@ -1,6 +1,7 @@
 package huh
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -848,24 +849,27 @@ func TestSkip(t *testing.T) {
 
 func TestTimeout(t *testing.T) {
 	// Testing timeout requires a real program, so make sure it doesn't interfere with our test runner.
-	f := NewForm(NewGroup(NewInput().Title("Foo"))).WithInput(nil).WithOutput(io.Discard)
+	f := NewForm(NewGroup(NewInput().Title("Foo"))).WithInput(nil).WithOutput(io.Discard).WithAccessible(false)
 
-	// Test that the form times out after 100ms and returns a timeout error.
-	err := f.WithTimeout(100 * time.Millisecond).run()
+	// Test that the form times out after 1ms and returns a timeout error.
+	err := f.WithTimeout(1 * time.Millisecond).Run()
 	if err == nil || !errors.Is(err, ErrTimeout) {
 		t.Errorf("expected timeout error, got %v", err)
 	}
 
 	// Test that the form aborts without throwing a timeout error when explicitly told to abort.
+	// We use a cancellable context as the parent, so we can kill the program later.
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	// run() is blocking, so we need to send the message in a separate goroutine.
 	go func() {
-		// Give it some time to start.
-		time.Sleep(200 * time.Millisecond)
 		// Tell the form to abort.
-		f.program.Send(tea.KeyMsg{Type: tea.KeyCtrlC})
+		f.Update(tea.KeyMsg{Type: tea.KeyCtrlC})
+		// Since we don't have access to the program, we notify it by cancelling the context.
+		cancel()
 	}()
 	// Run the program.
-	err = f.WithTimeout(5 * time.Second).run()
+	err = f.WithTimeout(5 * time.Second).RunWithContext(ctx)
 	if err == nil || !errors.Is(err, ErrUserAborted) {
 		t.Errorf("expected user aborted error, got %v", err)
 	}
