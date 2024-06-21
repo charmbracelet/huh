@@ -11,6 +11,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/paginator"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 const defaultWidth = 80
@@ -65,6 +66,7 @@ type Form struct {
 	// options
 	width      int
 	height     int
+	theme      *Theme
 	keymap     *KeyMap
 	timeout    time.Duration
 	teaOptions []tea.ProgramOption
@@ -240,9 +242,10 @@ func (f *Form) WithShowErrors(v bool) *Form {
 // can be applied to each group and field individually for more granular
 // control.
 func (f *Form) WithTheme(theme *Theme) *Form {
-	if theme == nil {
+	if f.theme != nil {
 		return f
 	}
+	f.theme = theme
 	for _, group := range f.groups {
 		group.WithTheme(theme)
 	}
@@ -575,13 +578,21 @@ func (f *Form) isGroupHidden(page int) bool {
 	return hide()
 }
 
+func (f *Form) style() lipgloss.Style {
+	theme := f.theme
+	if theme == nil {
+		theme = ThemeCharm()
+	}
+	return theme.Form
+}
+
 // View renders the form.
 func (f *Form) View() string {
 	if f.quitting {
 		return ""
 	}
 
-	return f.layout.View(f)
+	return f.style().Render(f.layout.View(f))
 }
 
 // Run runs the form.

@@ -38,6 +38,7 @@ type Group struct {
 	// group options
 	width  int
 	height int
+	theme  *Theme
 	keymap *KeyMap
 	hide   func() bool
 	active bool
@@ -92,6 +93,10 @@ func (g *Group) WithShowErrors(show bool) *Group {
 
 // WithTheme sets the theme on a group.
 func (g *Group) WithTheme(t *Theme) *Group {
+	if g.theme != nil {
+		return g
+	}
+	g.theme = t
 	g.help.Styles = t.Help
 	for _, field := range g.fields {
 		field.WithTheme(t)
@@ -265,6 +270,14 @@ func (g *Group) fullHeight() int {
 	return height
 }
 
+func (g *Group) style() lipgloss.Style {
+	theme := g.theme
+	if theme == nil {
+		theme = ThemeCharm()
+	}
+	return theme.Group
+}
+
 func (g *Group) getContent() (int, string) {
 	var fields strings.Builder
 	offset := 0
@@ -323,5 +336,5 @@ func (g *Group) Footer() string {
 			view.WriteString(ThemeCharm().Focused.ErrorMessage.Render(err.Error()))
 		}
 	}
-	return view.String()
+	return g.style().Render(view.String())
 }
