@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/catppuccin/go v0.2.0
 	github.com/charmbracelet/bubbles v0.18.0
-	github.com/charmbracelet/bubbletea v0.26.4
+	github.com/charmbracelet/bubbletea v0.26.5
 	github.com/charmbracelet/lipgloss v0.11.0
 	github.com/charmbracelet/x/exp/strings v0.0.0-20240617190524-788ec55faed1
 	github.com/charmbracelet/x/exp/term v0.0.0-20240524151031-ff83003bf67a
