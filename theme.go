@@ -9,12 +9,23 @@ import (
 // Theme is a collection of styles for components of the form.
 // Themes can be applied to a form using the WithTheme option.
 type Theme struct {
-	Form           lipgloss.Style
-	Group          lipgloss.Style
+	Form           FormStyles
+	Group          GroupStyles
 	FieldSeparator lipgloss.Style
 	Blurred        FieldStyles
 	Focused        FieldStyles
 	Help           help.Styles
+}
+
+// FormStyles are the styles for form.
+type FormStyles struct {
+	Base lipgloss.Style
+}
+
+// GroupStyles are the styles for form groups.
+type GroupStyles struct {
+	Base         lipgloss.Style
+	ErrorMessage lipgloss.Style
 }
 
 // FieldStyles are the styles for input fields.
@@ -23,7 +34,6 @@ type FieldStyles struct {
 	Title          lipgloss.Style
 	Description    lipgloss.Style
 	ErrorIndicator lipgloss.Style
-	ErrorMessage   lipgloss.Style
 
 	// Select styles.
 	SelectSelector lipgloss.Style // Selection indicator
@@ -74,6 +84,13 @@ const (
 func ThemeBase() *Theme {
 	var t Theme
 
+	// Form styles.
+	t.Form.Base = lipgloss.NewStyle()
+
+	// Group styles.
+	t.Group.Base = lipgloss.NewStyle()
+	t.Group.ErrorMessage = lipgloss.NewStyle().SetString(" *")
+
 	t.FieldSeparator = lipgloss.NewStyle().SetString("\n\n")
 
 	button := lipgloss.NewStyle().
@@ -84,7 +101,6 @@ func ThemeBase() *Theme {
 	t.Focused.Base = lipgloss.NewStyle().PaddingLeft(1).BorderStyle(lipgloss.ThickBorder()).BorderLeft(true)
 	t.Focused.Card = lipgloss.NewStyle().PaddingLeft(1)
 	t.Focused.ErrorIndicator = lipgloss.NewStyle().SetString(" *")
-	t.Focused.ErrorMessage = lipgloss.NewStyle().SetString(" *")
 	t.Focused.SelectSelector = lipgloss.NewStyle().SetString("> ")
 	t.Focused.NextIndicator = lipgloss.NewStyle().MarginLeft(1).SetString("→")
 	t.Focused.PrevIndicator = lipgloss.NewStyle().MarginRight(1).SetString("←")
@@ -120,13 +136,14 @@ func ThemeCharm() *Theme {
 		red      = lipgloss.AdaptiveColor{Light: "#FF4672", Dark: "#ED567A"}
 	)
 
+	t.Group.ErrorMessage = t.Group.ErrorMessage.Foreground(red)
+
 	t.Focused.Base = t.Focused.Base.BorderForeground(lipgloss.Color("238"))
 	t.Focused.Title = t.Focused.Title.Foreground(indigo).Bold(true)
 	t.Focused.NoteTitle = t.Focused.NoteTitle.Foreground(indigo).Bold(true).MarginBottom(1)
 	t.Focused.Directory = t.Focused.Directory.Foreground(indigo)
 	t.Focused.Description = t.Focused.Description.Foreground(lipgloss.AdaptiveColor{Light: "", Dark: "243"})
 	t.Focused.ErrorIndicator = t.Focused.ErrorIndicator.Foreground(red)
-	t.Focused.ErrorMessage = t.Focused.ErrorMessage.Foreground(red)
 	t.Focused.SelectSelector = t.Focused.SelectSelector.Foreground(fuchsia)
 	t.Focused.NextIndicator = t.Focused.NextIndicator.Foreground(fuchsia)
 	t.Focused.PrevIndicator = t.Focused.PrevIndicator.Foreground(fuchsia)
@@ -167,6 +184,8 @@ func ThemeDracula() *Theme {
 		yellow     = lipgloss.AdaptiveColor{Dark: "#f1fa8c"}
 	)
 
+	t.Group.ErrorMessage = t.Group.ErrorMessage.Foreground(red)
+
 	t.Focused.Base = t.Focused.Base.BorderForeground(selection)
 	t.Focused.Title = t.Focused.Title.Foreground(purple)
 	t.Focused.NoteTitle = t.Focused.NoteTitle.Foreground(purple)
@@ -174,7 +193,6 @@ func ThemeDracula() *Theme {
 	t.Focused.ErrorIndicator = t.Focused.ErrorIndicator.Foreground(red)
 	t.Focused.Directory = t.Focused.Directory.Foreground(purple)
 	t.Focused.File = t.Focused.File.Foreground(foreground)
-	t.Focused.ErrorMessage = t.Focused.ErrorMessage.Foreground(red)
 	t.Focused.SelectSelector = t.Focused.SelectSelector.Foreground(yellow)
 	t.Focused.NextIndicator = t.Focused.NextIndicator.Foreground(yellow)
 	t.Focused.PrevIndicator = t.Focused.PrevIndicator.Foreground(yellow)
@@ -203,13 +221,14 @@ func ThemeDracula() *Theme {
 func ThemeBase16() *Theme {
 	t := ThemeBase()
 
+	t.Group.ErrorMessage = t.Group.ErrorMessage.Foreground(lipgloss.Color("9"))
+
 	t.Focused.Base = t.Focused.Base.BorderForeground(lipgloss.Color("8"))
 	t.Focused.Title = t.Focused.Title.Foreground(lipgloss.Color("6"))
 	t.Focused.NoteTitle = t.Focused.NoteTitle.Foreground(lipgloss.Color("6"))
 	t.Focused.Directory = t.Focused.Directory.Foreground(lipgloss.Color("6"))
 	t.Focused.Description = t.Focused.Description.Foreground(lipgloss.Color("8"))
 	t.Focused.ErrorIndicator = t.Focused.ErrorIndicator.Foreground(lipgloss.Color("9"))
-	t.Focused.ErrorMessage = t.Focused.ErrorMessage.Foreground(lipgloss.Color("9"))
 	t.Focused.SelectSelector = t.Focused.SelectSelector.Foreground(lipgloss.Color("3"))
 	t.Focused.NextIndicator = t.Focused.NextIndicator.Foreground(lipgloss.Color("3"))
 	t.Focused.PrevIndicator = t.Focused.PrevIndicator.Foreground(lipgloss.Color("3"))
@@ -259,13 +278,14 @@ func ThemeCatppuccin() *Theme {
 		cursor   = lipgloss.AdaptiveColor{Light: light.Rosewater().Hex, Dark: dark.Rosewater().Hex}
 	)
 
+	t.Group.ErrorMessage = t.Group.ErrorMessage.Foreground(red)
+
 	t.Focused.Base = t.Focused.Base.BorderForeground(subtext1)
 	t.Focused.Title = t.Focused.Title.Foreground(mauve)
 	t.Focused.NoteTitle = t.Focused.NoteTitle.Foreground(mauve)
 	t.Focused.Directory = t.Focused.Directory.Foreground(mauve)
 	t.Focused.Description = t.Focused.Description.Foreground(subtext0)
 	t.Focused.ErrorIndicator = t.Focused.ErrorIndicator.Foreground(red)
-	t.Focused.ErrorMessage = t.Focused.ErrorMessage.Foreground(red)
 	t.Focused.SelectSelector = t.Focused.SelectSelector.Foreground(pink)
 	t.Focused.NextIndicator = t.Focused.NextIndicator.Foreground(pink)
 	t.Focused.PrevIndicator = t.Focused.PrevIndicator.Foreground(pink)
