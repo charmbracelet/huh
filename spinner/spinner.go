@@ -23,7 +23,7 @@ import (
 // ⣾  Loading...
 type Spinner struct {
 	spinner    spinner.Model
-	action     func()
+	action     func() error
 	ctx        context.Context
 	accessible bool
 	output     *termenv.Output
@@ -61,7 +61,7 @@ func (s *Spinner) Title(title string) *Spinner {
 }
 
 // Action sets the action of the spinner.
-func (s *Spinner) Action(action func()) *Spinner {
+func (s *Spinner) Action(action func() error) *Spinner {
 	s.action = action
 	return s
 }
@@ -98,7 +98,7 @@ func New() *Spinner {
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("#F780E2"))
 
 	return &Spinner{
-		action:     func() { time.Sleep(time.Second) },
+		action:     func() error { time.Sleep(time.Second); return nil },
 		spinner:    s,
 		title:      "Loading...",
 		titleStyle: lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#FFFDF5", Dark: "#FFFDF5"}),
@@ -153,10 +153,11 @@ func (s *Spinner) Run() error {
 		return s.ctx.Err()
 	}
 
+	var actionErr error
 	p := tea.NewProgram(s, tea.WithContext(s.ctx), tea.WithOutput(os.Stderr))
 	if s.ctx == nil {
 		go func() {
-			s.action()
+			actionErr = s.action()
 			p.Quit()
 		}()
 	}
@@ -165,6 +166,9 @@ func (s *Spinner) Run() error {
 	if errors.Is(err, tea.ErrProgramKilled) {
 		return nil
 	} else {
+		if actionErr != nil {
+			return actionErr
+		}
 		return err
 	}
 }
