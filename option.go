@@ -21,6 +21,18 @@ func NewOptions[T comparable](values ...T) []Option[T] {
 	return options
 }
 
+// ToOptions returns new options from a list of values and a key getter. 
+func ToOptions[T comparable](getKey func(T) string, values ...T) []Option[T] {
+	options := make([]Option[T], len(values))
+	for i, o := range values {
+		options[i] = Option[T]{
+			Key:   getKey(o),
+			Value: o,
+		}
+	}
+	return options
+}
+
 // NewOption returns a new select option.
 func NewOption[T comparable](key string, value T) Option[T] {
 	return Option[T]{Key: key, Value: value}
