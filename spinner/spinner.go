@@ -164,8 +164,7 @@ func (s *Spinner) Run() error {
 		return s.runAccessible()
 	}
 
-	p := tea.NewProgram(s, tea.WithContext(s.ctx), tea.WithOutput(os.Stderr))
-	m, err := p.Run()
+	m, err := tea.NewProgram(s, tea.WithContext(s.ctx), tea.WithOutput(os.Stderr)).Run()
 	mm := m.(*Spinner)
 	if mm.err != nil {
 		return mm.err
