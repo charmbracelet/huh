@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
@@ -157,10 +156,8 @@ func (s *Spinner) Run() error {
 
 	// sets a dummy action if the spinner does not have a context nor an action.
 	if !hasCtx && s.action == nil {
-		s.action = func() error {
-			time.Sleep(time.Second)
-			return nil
-		}
+		// there's nothing to do!
+		return nil
 	}
 
 	if s.accessible {
