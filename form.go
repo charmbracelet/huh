@@ -35,6 +35,9 @@ var ErrUserAborted = errors.New("user aborted")
 // ErrTimeout is the error returned when the timeout is reached.
 var ErrTimeout = errors.New("timeout")
 
+// ErrTimeoutUnsupported is the error returned when timeout is used while in accessible mode.
+var ErrTimeoutUnsupported = errors.New("timeout is not supported in accessible mode")
+
 // Form is a collection of groups that are displayed one at a time on a "page".
 //
 // The form can navigate between groups and is complete once all the groups are
@@ -586,6 +589,11 @@ func (f *Form) View() string {
 
 // Run runs the form.
 func (f *Form) Run() error {
+	return f.RunWithContext(context.Background())
+}
+
+// RunWithContext runs the form with the given context.
+func (f *Form) RunWithContext(ctx context.Context) error {
 	f.SubmitCmd = tea.Quit
 	f.CancelCmd = tea.Quit
 
@@ -597,29 +605,36 @@ func (f *Form) Run() error {
 		return f.runAccessible()
 	}
 
-	return f.run()
+	return f.run(ctx)
 }
 
 // run runs the form in normal mode.
-func (f *Form) run() error {
-	startTime := time.Now()
+func (f *Form) run(ctx context.Context) error {
 	if f.timeout > 0 {
-		ctx, cancel := context.WithTimeout(context.Background(), f.timeout)
+		ctx, cancel := context.WithTimeout(ctx, f.timeout)
 		defer cancel()
 		f.teaOptions = append(f.teaOptions, tea.WithContext(ctx))
+	} else {
+		f.teaOptions = append(f.teaOptions, tea.WithContext(ctx))
 	}
+
 	m, err := tea.NewProgram(f, f.teaOptions...).Run()
 	if m.(*Form).aborted {
-		err = ErrUserAborted
+		return ErrUserAborted
 	}
-	if err != nil && time.Since(startTime) >= f.timeout {
-		err = ErrTimeout
+	if errors.Is(err, tea.ErrProgramKilled) {
+		return ErrTimeout
 	}
 	return err
 }
 
 // runAccessible runs the form in accessible mode.
 func (f *Form) runAccessible() error {
+	// Timeouts are not supported in this mode.
+	if f.timeout > 0 {
+		return ErrTimeoutUnsupported
+	}
+
 	for _, group := range f.groups {
 		for _, field := range group.fields {
 			field.Init()
