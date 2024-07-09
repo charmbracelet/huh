@@ -438,7 +438,7 @@ func (m *MultiSelect[T]) numSelected() int {
 	return count
 }
 
-func (m MultiSelect[T]) updateValue() {
+func (m *MultiSelect[T]) updateValue() {
 	value := make([]T, 0)
 	for _, option := range m.options.val {
 		if option.selected {
