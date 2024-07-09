@@ -4,31 +4,17 @@ go 1.19
 
 require (
 	github.com/charmbracelet/bubbles v0.18.0
-<<<<<<< HEAD
 	github.com/charmbracelet/bubbletea v0.26.4
 	github.com/charmbracelet/lipgloss v0.11.0
-||||||| parent of 52c6f51 (chore(deps): bump deps)
-	github.com/charmbracelet/bubbletea v0.26.1
-	github.com/charmbracelet/lipgloss v0.10.1-0.20240506202754-3ee5dcab73cb
-=======
-	github.com/charmbracelet/bubbletea v0.26.2
-	github.com/charmbracelet/lipgloss v0.10.1-0.20240509172331-e3596ae70d0e
->>>>>>> 52c6f51 (chore(deps): bump deps)
 	github.com/muesli/termenv v0.15.2
 )
 
 require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
-<<<<<<< HEAD
 	github.com/charmbracelet/x/ansi v0.1.2 // indirect
 	github.com/charmbracelet/x/input v0.1.2 // indirect
 	github.com/charmbracelet/x/term v0.1.1 // indirect
 	github.com/charmbracelet/x/windows v0.1.2 // indirect
-||||||| parent of 52c6f51 (chore(deps): bump deps)
-	github.com/charmbracelet/x/exp/term v0.0.0-20240506152644-8135bef4e495 // indirect
-=======
-	github.com/charmbracelet/x/exp/term v0.0.0-20240510181320-e66de7a51531 // indirect
->>>>>>> 52c6f51 (chore(deps): bump deps)
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect

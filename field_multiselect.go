@@ -18,7 +18,7 @@ import (
 type MultiSelect[T comparable] struct {
 	accessor Accessor[[]T]
 	key      string
-	id    int
+	id       int
 
 	// customization
 	title           Eval[string]
@@ -56,17 +56,14 @@ func NewMultiSelect[T comparable]() *MultiSelect[T] {
 	s := spinner.New(spinner.WithSpinner(spinner.Line))
 
 	return &MultiSelect[T]{
-		options:   []Option[T]{},
-		accessor:  &EmbeddedAccessor[[]T]{},
-		validate:  func([]T) error { return nil },
-		filtering: false,
-		filter:    filter,
-		id:          nextID(),
-		title:       Eval[string]{cache: make(map[uint64]string)},
-		description: Eval[string]{cache: make(map[uint64]string)},
+		accessor:    &EmbeddedAccessor[[]T]{},
 		validate:    func([]T) error { return nil },
 		filtering:   false,
 		filter:      filter,
+		id:          nextID(),
+		options:     Eval[[]Option[T]]{cache: make(map[uint64][]Option[T])},
+		title:       Eval[string]{cache: make(map[uint64]string)},
+		description: Eval[string]{cache: make(map[uint64]string)},
 		spinner:     s,
 	}
 }
@@ -79,11 +76,8 @@ func (m *MultiSelect[T]) Value(value *[]T) *MultiSelect[T] {
 // Accessor sets the accessor of the input field.
 func (m *MultiSelect[T]) Accessor(accessor Accessor[[]T]) *MultiSelect[T] {
 	m.accessor = accessor
-	for i, o := range m.options {
-		for _, v := range m.accessor.Get() {
-	m.value = value
 	for i, o := range m.options.val {
-		for _, v := range *value {
+		for _, v := range m.accessor.Get() {
 			if o.Value == v {
 				m.options.val[i].selected = true
 				break
@@ -385,14 +379,14 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.updateValue()
 		case key.Matches(msg, m.keymap.Prev):
 			m.updateValue()
-			m.err = m.validate(*m.value)
+			m.err = m.validate(m.accessor.Get())
 			if m.err != nil {
 				return m, nil
 			}
 			return m, PrevField
 		case key.Matches(msg, m.keymap.Next, m.keymap.Submit):
 			m.updateValue()
-			m.err = m.validate(*m.value)
+			m.err = m.validate(m.accessor.Get())
 			if m.err != nil {
 				return m, nil
 			}
@@ -445,7 +439,7 @@ func (m *MultiSelect[T]) numSelected() int {
 }
 
 func (m MultiSelect[T]) updateValue() {
-	*m.value = make([]T, 0)
+	value := make([]T, 0)
 	for _, option := range m.options.val {
 		if option.selected {
 			value = append(value, option.Value)
