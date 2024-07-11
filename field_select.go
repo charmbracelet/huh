@@ -564,7 +564,7 @@ func (s *Select[T]) optionsView() string {
 		if s.selected == i {
 			sb.WriteString(c + styles.SelectedOption.Render(option.Key))
 		} else {
-			sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)) + styles.Option.Render(option.Key))
+			sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)) + styles.UnselectedOption.Render(option.Key))
 		}
 		if i < len(s.options.val)-1 {
 			sb.WriteString("\n")
