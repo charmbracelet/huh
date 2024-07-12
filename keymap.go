@@ -174,7 +174,7 @@ func NewDefaultKeyMap() *KeyMap {
 			Prev:   key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),
 			Next:   key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "next")),
 			Submit: key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "submit")),
-			Toggle: key.NewBinding(key.WithKeys("h", "l", "right", "left"), key.WithHelp("←/→", "toggle")),
+			Toggle: key.NewBinding(key.WithKeys("h", "l", "right", "left", "tab", "shift+tab"), key.WithHelp("←/→", "toggle")),
 			Accept: key.NewBinding(key.WithKeys("y", "Y"), key.WithHelp("y", "Yes")),
 			Reject: key.NewBinding(key.WithKeys("n", "N"), key.WithHelp("n", "No")),
 		},
