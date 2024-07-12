@@ -150,7 +150,7 @@ func (c *Confirm) Blur() tea.Cmd {
 
 // KeyBinds returns the help message for the confirm field.
 func (c *Confirm) KeyBinds() []key.Binding {
-	return []key.Binding{c.keymap.Toggle, c.keymap.Prev, c.keymap.Submit, c.keymap.Next}
+	return []key.Binding{c.keymap.Toggle, c.keymap.Prev, c.keymap.Submit, c.keymap.Next, c.keymap.Accept, c.keymap.Reject}
 }
 
 // Init initializes the confirm field.
@@ -205,6 +205,12 @@ func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmds = append(cmds, PrevField)
 		case key.Matches(msg, c.keymap.Next, c.keymap.Submit):
 			cmds = append(cmds, NextField)
+		case key.Matches(msg, c.keymap.Accept):
+			c.accessor.Set(true)
+			cmds = append(cmds, NextField)
+		case key.Matches(msg, c.keymap.Reject):
+			c.accessor.Set(false)
+			cmds = append(cmds, NextField)
 		}
 	}
 
@@ -254,11 +260,27 @@ func (c *Confirm) View() string {
 			affirmative = styles.BlurredButton.Render(c.affirmative)
 			negative = styles.FocusedButton.Render(c.negative)
 		}
+		c.keymap.Reject.SetHelp("n", c.negative)
 	} else {
 		affirmative = styles.FocusedButton.Render(c.affirmative)
+		c.keymap.Reject.SetEnabled(false)
 	}
 
-	sb.WriteString(lipgloss.JoinHorizontal(lipgloss.Center, affirmative, negative))
+	c.keymap.Accept.SetHelp("y", c.affirmative)
+
+	buttonsRow := lipgloss.JoinHorizontal(lipgloss.Center, affirmative, negative)
+
+	promptWidth := lipgloss.Width(sb.String())
+	buttonsWidth := lipgloss.Width(buttonsRow)
+
+	renderWidth := promptWidth
+	if buttonsWidth > renderWidth {
+		renderWidth = buttonsWidth
+	}
+
+	style := lipgloss.NewStyle().Width(renderWidth).Align(lipgloss.Center)
+
+	sb.WriteString(style.Render(buttonsRow))
 	return styles.Base.Render(sb.String())
 }
 
