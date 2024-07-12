@@ -150,7 +150,7 @@ func (c *Confirm) Blur() tea.Cmd {
 
 // KeyBinds returns the help message for the confirm field.
 func (c *Confirm) KeyBinds() []key.Binding {
-	return []key.Binding{c.keymap.Toggle, c.keymap.Prev, c.keymap.Submit, c.keymap.Next}
+	return []key.Binding{c.keymap.Toggle, c.keymap.Prev, c.keymap.Submit, c.keymap.Next, c.keymap.Accept, c.keymap.Reject}
 }
 
 // Init initializes the confirm field.
@@ -204,6 +204,12 @@ func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, c.keymap.Prev):
 			cmds = append(cmds, PrevField)
 		case key.Matches(msg, c.keymap.Next, c.keymap.Submit):
+			cmds = append(cmds, NextField)
+		case key.Matches(msg, c.keymap.Accept):
+			c.accessor.Set(true)
+			cmds = append(cmds, NextField)
+		case key.Matches(msg, c.keymap.Reject):
+			c.accessor.Set(false)
 			cmds = append(cmds, NextField)
 		}
 	}
