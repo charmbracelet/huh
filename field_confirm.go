@@ -260,9 +260,13 @@ func (c *Confirm) View() string {
 			affirmative = styles.BlurredButton.Render(c.affirmative)
 			negative = styles.FocusedButton.Render(c.negative)
 		}
+		c.keymap.Reject.SetHelp("n", c.negative)
 	} else {
 		affirmative = styles.FocusedButton.Render(c.affirmative)
+		c.keymap.Reject.SetEnabled(false)
 	}
+
+	c.keymap.Accept.SetHelp("y", c.affirmative)
 
 	sb.WriteString(lipgloss.JoinHorizontal(lipgloss.Center, affirmative, negative))
 	return styles.Base.Render(sb.String())
