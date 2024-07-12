@@ -268,19 +268,19 @@ func (c *Confirm) View() string {
 
 	c.keymap.Accept.SetHelp("y", c.affirmative)
 
-	buttons := lipgloss.JoinHorizontal(lipgloss.Center, affirmative, negative)
+	buttonsRow := lipgloss.JoinHorizontal(lipgloss.Center, affirmative, negative)
 
-	prompt_width := lipgloss.Width(sb.String())
-	buttons_width := lipgloss.Width(buttons)
+	promptWidth := lipgloss.Width(sb.String())
+	buttonsWidth := lipgloss.Width(buttonsRow)
 
-	render_width := prompt_width
-	if buttons_width > render_width {
-		render_width = buttons_width
+	renderWidth := promptWidth
+	if buttonsWidth > renderWidth {
+		renderWidth = buttonsWidth
 	}
 
-	style := lipgloss.NewStyle().Width(render_width).Align(lipgloss.Center)
+	style := lipgloss.NewStyle().Width(renderWidth).Align(lipgloss.Center)
 
-	sb.WriteString(style.Render(buttons))
+	sb.WriteString(style.Render(buttonsRow))
 	return styles.Base.Render(sb.String())
 }
 
