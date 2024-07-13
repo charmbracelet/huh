@@ -253,7 +253,7 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			updateTitleMsg,
 			updateDescriptionMsg,
 			updateSuggestionsMsg,
-			updateOptionsMsg[string],
+			isUpdateOptionsMsg,
 			updatePlaceholderMsg:
 			m, cmd := g.fields[i].Update(msg)
 			g.fields[i] = m.(Field)

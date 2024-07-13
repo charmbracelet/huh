@@ -77,7 +77,13 @@ type updateSuggestionsMsg struct {
 	suggestions []string
 }
 
+type isUpdateOptionsMsg interface {
+	IsUpdateOptionsMsg()
+}
+
 type updateOptionsMsg[T comparable] struct {
+	isUpdateOptionsMsg
+
 	id      int
 	hash    uint64
 	options []Option[T]
