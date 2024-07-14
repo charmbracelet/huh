@@ -280,7 +280,7 @@ Themes can take advantage of the full range of
 
 [lipgloss]: https://github.com/charmbracelet/lipgloss
 
-## Dynamic
+## Dynamic Forms
 
 `huh?` forms can be as dynamic as your heart desires. Simply replace properties
 with their equivalent `Func` to recompute the properties value every time a
