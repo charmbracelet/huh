@@ -126,7 +126,7 @@ And that’s it! For more info see [the full source][burgersource] for this
 example as well as [the docs][docs].
 
 If you need more dynamic forms that change based on input from previous fields,
-check out the [dynamic forms](#dynamic) example.
+check out the [dynamic forms](#dynamic-forms) example.
 
 [burgersource]: ./examples/burger/main.go
 [docs]: https://pkg.go.dev/github.com/charmbracelet/huh?tab=doc
