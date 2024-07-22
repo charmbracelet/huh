@@ -255,13 +255,12 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			g.fields[i] = m.(Field)
 			cmds = append(cmds, cmd)
 		}
-		var _msg tea.Msg
 		if g.paginator.Page == i {
-			_msg = msg
-		} else {
-			_msg = updateFieldMsg{}
+			m, cmd := g.fields[i].Update(msg)
+			g.fields[i] = m.(Field)
+			cmds = append(cmds, cmd)
 		}
-		m, cmd := g.fields[i].Update(_msg)
+		m, cmd := g.fields[i].Update(updateFieldMsg{})
 		g.fields[i] = m.(Field)
 		cmds = append(cmds, cmd)
 	}
