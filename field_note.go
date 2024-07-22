@@ -310,7 +310,7 @@ func render(input string) string {
 	var escape bool
 
 	for _, char := range input {
-		if escape {
+		if escape || codeblock {
 			result.WriteRune(char)
 			escape = false
 			continue
