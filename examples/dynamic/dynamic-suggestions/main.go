@@ -34,7 +34,7 @@ func main() {
 				SuggestionsFunc(func() []string {
 					switch org {
 					case "charmbracelet":
-						return []string{"bubbletea", "huh", "mods", "melt", "freeze", "gum", "vhs", "pop"}
+						return []string{"bubbletea", "huh", "mods", "melt", "freeze", "gum", "vhs", "pop", "lipgloss", "harmonica"}
 					case "hashicorp":
 						return []string{"terraform", "vault", "waypoint"}
 					case "golang":
