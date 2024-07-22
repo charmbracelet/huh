@@ -253,10 +253,6 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 	var cmd tea.Cmd
 
-	t.textarea, cmd = t.textarea.Update(msg)
-	cmds = append(cmds, cmd)
-	t.accessor.Set(t.textarea.Value())
-
 	switch msg := msg.(type) {
 	case updateValueMsg:
 		t.textarea.SetValue(string(msg))
@@ -337,6 +333,10 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmds = append(cmds, PrevField)
 		}
 	}
+
+	t.textarea, cmd = t.textarea.Update(msg)
+	cmds = append(cmds, cmd)
+	t.accessor.Set(t.textarea.Value())
 
 	return t, tea.Batch(cmds...)
 }
