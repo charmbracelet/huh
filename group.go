@@ -5,7 +5,6 @@ import (
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/paginator"
-	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -249,12 +248,9 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// Update all the fields in the group.
 	for i := range g.fields {
 		switch msg := msg.(type) {
-		case spinner.TickMsg,
-			updateTitleMsg,
-			updateDescriptionMsg,
-			updateSuggestionsMsg,
-			updateOptionsMsg[string],
-			updatePlaceholderMsg:
+		case tea.KeyMsg:
+			break
+		default:
 			m, cmd := g.fields[i].Update(msg)
 			g.fields[i] = m.(Field)
 			cmds = append(cmds, cmd)
