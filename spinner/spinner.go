@@ -109,6 +109,7 @@ func New() *Spinner {
 
 	return &Spinner{
 		spinner:    s,
+		ctx:        context.Background(),
 		title:      "Loading...",
 		titleStyle: lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#FFFDF5", Dark: "#FFFDF5"}),
 		output:     termenv.NewOutput(os.Stdout),
@@ -154,19 +155,11 @@ func (s *Spinner) View() string {
 
 // Run runs the spinner.
 func (s *Spinner) Run() error {
-	hasCtx := s.ctx != nil
-
-	if hasCtx && s.ctx.Err() != nil {
+	if s.ctx.Err() != nil {
 		if errors.Is(s.ctx.Err(), context.Canceled) {
 			return nil
 		}
 		return s.ctx.Err()
-	}
-
-	// sets a dummy action if the spinner does not have a context nor an action.
-	if !hasCtx && s.action == nil {
-		// there's nothing to do!
-		return nil
 	}
 
 	if s.accessible {
@@ -187,13 +180,6 @@ func (s *Spinner) runAccessible() error {
 	frame := s.spinner.Style.Render("...")
 	title := s.titleStyle.Render(strings.TrimSuffix(s.title, "..."))
 	fmt.Println(title + frame)
-
-	if s.ctx == nil {
-		err := s.action(context.Background())
-		s.output.ShowCursor()
-		s.output.CursorBack(len(frame) + len(title))
-		return err
-	}
 
 	actionDone := make(chan error)
 	if s.action != nil {
