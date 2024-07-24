@@ -309,11 +309,6 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	if s.filtering {
 		s.filter, cmd = s.filter.Update(msg)
-
-		// Keep the selected item in view.
-		if s.selected < s.viewport.YOffset || s.selected >= s.viewport.YOffset+s.viewport.Height {
-			s.viewport.SetYOffset(s.selected)
-		}
 	}
 
 	switch msg := msg.(type) {
@@ -588,10 +583,18 @@ func (s *Select[T]) optionsView() string {
 	return sb.String()
 }
 
+// startAtSelected makes the viewport content start at the selected element.
+func (s *Select[T]) startAtSelected() {
+	if s.selected > s.viewport.Height {
+		s.viewport.SetYOffset(s.selected)
+	}
+}
+
 // View renders the select field.
 func (s *Select[T]) View() string {
 	styles := s.activeStyles()
 	s.viewport.SetContent(s.optionsView())
+	s.startAtSelected()
 
 	var sb strings.Builder
 	if s.title.val != "" || s.title.fn != nil {
