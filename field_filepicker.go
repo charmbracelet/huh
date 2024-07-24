@@ -215,7 +215,7 @@ func (f *FilePicker) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return f, f.picker.Init()
 		case key.Matches(msg, f.keymap.Close):
 			f.setPicking(false)
-			return f, nil
+			return f, NextField
 		case key.Matches(msg, f.keymap.Next):
 			f.setPicking(false)
 			return f, NextField
