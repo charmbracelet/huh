@@ -157,9 +157,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	prepareBurger := func() error {
+	prepareBurger := func() {
 		time.Sleep(2 * time.Second)
-		return nil
 	}
 
 	_ = spinner.New().Title("Preparing your burger...").Accessible(accessible).Action(prepareBurger).Run()
