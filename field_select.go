@@ -14,8 +14,10 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-const minHeight = 1
-const defaultHeight = 10
+const (
+	minHeight     = 1
+	defaultHeight = 10
+)
 
 // Select is a select field.
 //
@@ -296,8 +298,8 @@ func (s *Select[T]) KeyBinds() []key.Binding {
 }
 
 // Init initializes the select field.
-func (s *Select[T]) Init() tea.Cmd {
-	return nil
+func (s *Select[T]) Init() (tea.Model, tea.Cmd) {
+	return s, nil
 }
 
 // Update updates the select field.
@@ -506,7 +508,7 @@ func (s *Select[T]) updateViewportHeight() {
 func (s *Select[T]) activeStyles() *FieldStyles {
 	theme := s.theme
 	if theme == nil {
-		theme = ThemeCharm()
+		theme = ThemeCharm(true)
 	}
 	if s.focused {
 		return &theme.Focused

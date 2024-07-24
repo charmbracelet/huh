@@ -187,7 +187,7 @@ func PrevField() tea.Msg {
 }
 
 // Init initializes the group.
-func (g *Group) Init() tea.Cmd {
+func (g *Group) Init() (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	if g.fields[g.paginator.Page].Skip() {
@@ -196,7 +196,7 @@ func (g *Group) Init() tea.Cmd {
 		} else if g.paginator.Page == 0 {
 			cmds = append(cmds, g.nextField()...)
 		}
-		return tea.Batch(cmds...)
+		return g, tea.Batch(cmds...)
 	}
 
 	if g.active {
@@ -204,7 +204,7 @@ func (g *Group) Init() tea.Cmd {
 		cmds = append(cmds, cmd)
 	}
 	g.buildView()
-	return tea.Batch(cmds...)
+	return g, tea.Batch(cmds...)
 }
 
 // nextField moves to the next field.
@@ -343,7 +343,7 @@ func (g *Group) Footer() string {
 	}
 	if g.showErrors {
 		for _, err := range errors {
-			view.WriteString(ThemeCharm().Focused.ErrorMessage.Render(err.Error()))
+			view.WriteString(ThemeCharm(true).Focused.ErrorMessage.Render(err.Error()))
 		}
 	}
 	return view.String()

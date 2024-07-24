@@ -157,7 +157,7 @@ func (n *Note) KeyBinds() []key.Binding {
 }
 
 // Init initializes the note field.
-func (n *Note) Init() tea.Cmd { return nil }
+func (n *Note) Init() (tea.Model, tea.Cmd) { return n, nil }
 
 // Update updates the note field.
 func (n *Note) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -206,7 +206,7 @@ func (n *Note) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (n *Note) activeStyles() *FieldStyles {
 	theme := n.theme
 	if theme == nil {
-		theme = ThemeCharm()
+		theme = ThemeCharm(true)
 	}
 	if n.focused {
 		return &theme.Focused

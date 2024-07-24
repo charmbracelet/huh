@@ -6,6 +6,20 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+type theme interface {
+	Form() lipgloss.Style
+	Group() lipgloss.Style
+	FieldSeparator() lipgloss.Style
+	Blurred() FieldStyles
+	Focused() FieldStyles
+	Help() help.Styles
+}
+
+type LightDarkTheme interface {
+	Light() theme
+	Dark() theme
+}
+
 // Theme is a collection of styles for components of the form.
 // Themes can be applied to a form using the WithTheme option.
 type Theme struct {
@@ -108,23 +122,38 @@ func ThemeBase() *Theme {
 }
 
 // ThemeCharm returns a new theme based on the Charm color scheme.
-func ThemeCharm() *Theme {
+func ThemeCharm(isDark bool) *Theme {
 	t := ThemeBase()
 
-	var (
-		normalFg = lipgloss.AdaptiveColor{Light: "235", Dark: "252"}
-		indigo   = lipgloss.AdaptiveColor{Light: "#5A56E0", Dark: "#7571F9"}
-		cream    = lipgloss.AdaptiveColor{Light: "#FFFDF5", Dark: "#FFFDF5"}
-		fuchsia  = lipgloss.Color("#F780E2")
-		green    = lipgloss.AdaptiveColor{Light: "#02BA84", Dark: "#02BF87"}
-		red      = lipgloss.AdaptiveColor{Light: "#FF4672", Dark: "#ED567A"}
-	)
+	normalFg := lipgloss.Color(235)
+	indigo := lipgloss.Color("#5A56E0")
+	cream := lipgloss.Color("#FFFDF5")
+	fuchsia := lipgloss.Color("#F780E2")
+	green := lipgloss.Color("#02BA84")
+	red := lipgloss.Color("#FF4672")
+	desc := lipgloss.Color(0)
+	selectedPrefix := lipgloss.Color("#02CF92")
+	unselectedPrefix := lipgloss.Color(0)
+	blurred := lipgloss.Color(252)
+	placeholder := lipgloss.Color(248)
+	if isDark {
+		normalFg = lipgloss.Color(252)
+		indigo = lipgloss.Color("#7571F9")
+		cream = lipgloss.Color("#FFFDF5")
+		green = lipgloss.Color("#02BF87")
+		red = lipgloss.Color("#ED567A")
+		desc = lipgloss.Color(243)
+		selectedPrefix = lipgloss.Color("#02A877")
+		unselectedPrefix = lipgloss.Color(243)
+		blurred = lipgloss.Color(237)
+		placeholder = lipgloss.Color(238)
+	}
 
 	t.Focused.Base = t.Focused.Base.BorderForeground(lipgloss.Color("238"))
 	t.Focused.Title = t.Focused.Title.Foreground(indigo).Bold(true)
 	t.Focused.NoteTitle = t.Focused.NoteTitle.Foreground(indigo).Bold(true).MarginBottom(1)
 	t.Focused.Directory = t.Focused.Directory.Foreground(indigo)
-	t.Focused.Description = t.Focused.Description.Foreground(lipgloss.AdaptiveColor{Light: "", Dark: "243"})
+	t.Focused.Description = t.Focused.Description.Foreground(desc)
 	t.Focused.ErrorIndicator = t.Focused.ErrorIndicator.Foreground(red)
 	t.Focused.ErrorMessage = t.Focused.ErrorMessage.Foreground(red)
 	t.Focused.SelectSelector = t.Focused.SelectSelector.Foreground(fuchsia)
@@ -133,15 +162,15 @@ func ThemeCharm() *Theme {
 	t.Focused.Option = t.Focused.Option.Foreground(normalFg)
 	t.Focused.MultiSelectSelector = t.Focused.MultiSelectSelector.Foreground(fuchsia)
 	t.Focused.SelectedOption = t.Focused.SelectedOption.Foreground(green)
-	t.Focused.SelectedPrefix = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#02CF92", Dark: "#02A877"}).SetString("✓ ")
-	t.Focused.UnselectedPrefix = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "", Dark: "243"}).SetString("• ")
+	t.Focused.SelectedPrefix = lipgloss.NewStyle().Foreground(selectedPrefix).SetString("✓ ")
+	t.Focused.UnselectedPrefix = lipgloss.NewStyle().Foreground(unselectedPrefix).SetString("• ")
 	t.Focused.UnselectedOption = t.Focused.UnselectedOption.Foreground(normalFg)
 	t.Focused.FocusedButton = t.Focused.FocusedButton.Foreground(cream).Background(fuchsia)
 	t.Focused.Next = t.Focused.FocusedButton
-	t.Focused.BlurredButton = t.Focused.BlurredButton.Foreground(normalFg).Background(lipgloss.AdaptiveColor{Light: "252", Dark: "237"})
+	t.Focused.BlurredButton = t.Focused.BlurredButton.Foreground(normalFg).Background(blurred)
 
 	t.Focused.TextInput.Cursor = t.Focused.TextInput.Cursor.Foreground(green)
-	t.Focused.TextInput.Placeholder = t.Focused.TextInput.Placeholder.Foreground(lipgloss.AdaptiveColor{Light: "248", Dark: "238"})
+	t.Focused.TextInput.Placeholder = t.Focused.TextInput.Placeholder.Foreground(placeholder)
 	t.Focused.TextInput.Prompt = t.Focused.TextInput.Prompt.Foreground(fuchsia)
 
 	t.Blurred = t.Focused
@@ -157,14 +186,14 @@ func ThemeDracula() *Theme {
 	t := ThemeBase()
 
 	var (
-		background = lipgloss.AdaptiveColor{Dark: "#282a36"}
-		selection  = lipgloss.AdaptiveColor{Dark: "#44475a"}
-		foreground = lipgloss.AdaptiveColor{Dark: "#f8f8f2"}
-		comment    = lipgloss.AdaptiveColor{Dark: "#6272a4"}
-		green      = lipgloss.AdaptiveColor{Dark: "#50fa7b"}
-		purple     = lipgloss.AdaptiveColor{Dark: "#bd93f9"}
-		red        = lipgloss.AdaptiveColor{Dark: "#ff5555"}
-		yellow     = lipgloss.AdaptiveColor{Dark: "#f1fa8c"}
+		background = lipgloss.Color("#282a36")
+		selection  = lipgloss.Color("#44475a")
+		foreground = lipgloss.Color("#f8f8f2")
+		comment    = lipgloss.Color("#6272a4")
+		green      = lipgloss.Color("#50fa7b")
+		purple     = lipgloss.Color("#bd93f9")
+		red        = lipgloss.Color("#ff5555")
+		yellow     = lipgloss.Color("#f1fa8c")
 	)
 
 	t.Focused.Base = t.Focused.Base.BorderForeground(selection)
@@ -240,23 +269,26 @@ func ThemeBase16() *Theme {
 }
 
 // ThemeCatppuccin returns a new theme based on the Catppuccin color scheme.
-func ThemeCatppuccin() *Theme {
+func ThemeCatppuccin(isDark bool) *Theme {
 	t := ThemeBase()
 
-	light := catppuccin.Latte
-	dark := catppuccin.Mocha
+	flavour := catppuccin.Latte
+	if isDark {
+		flavour = catppuccin.Mocha
+	}
+
 	var (
-		base     = lipgloss.AdaptiveColor{Light: light.Base().Hex, Dark: dark.Base().Hex}
-		text     = lipgloss.AdaptiveColor{Light: light.Text().Hex, Dark: dark.Text().Hex}
-		subtext1 = lipgloss.AdaptiveColor{Light: light.Subtext1().Hex, Dark: dark.Subtext1().Hex}
-		subtext0 = lipgloss.AdaptiveColor{Light: light.Subtext0().Hex, Dark: dark.Subtext0().Hex}
-		overlay1 = lipgloss.AdaptiveColor{Light: light.Overlay1().Hex, Dark: dark.Overlay1().Hex}
-		overlay0 = lipgloss.AdaptiveColor{Light: light.Overlay0().Hex, Dark: dark.Overlay0().Hex}
-		green    = lipgloss.AdaptiveColor{Light: light.Green().Hex, Dark: dark.Green().Hex}
-		red      = lipgloss.AdaptiveColor{Light: light.Red().Hex, Dark: dark.Red().Hex}
-		pink     = lipgloss.AdaptiveColor{Light: light.Pink().Hex, Dark: dark.Pink().Hex}
-		mauve    = lipgloss.AdaptiveColor{Light: light.Mauve().Hex, Dark: dark.Mauve().Hex}
-		cursor   = lipgloss.AdaptiveColor{Light: light.Rosewater().Hex, Dark: dark.Rosewater().Hex}
+		base     = flavour.Base()
+		text     = flavour.Text()
+		subtext1 = flavour.Subtext1()
+		subtext0 = flavour.Subtext0()
+		overlay1 = flavour.Overlay1()
+		overlay0 = flavour.Overlay0()
+		green    = flavour.Green()
+		red      = flavour.Red()
+		pink     = flavour.Pink()
+		mauve    = flavour.Mauve()
+		cursor   = flavour.Rosewater()
 	)
 
 	t.Focused.Base = t.Focused.Base.BorderForeground(subtext1)

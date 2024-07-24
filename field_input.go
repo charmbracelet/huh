@@ -263,9 +263,9 @@ func (i *Input) KeyBinds() []key.Binding {
 }
 
 // Init initializes the input field.
-func (i *Input) Init() tea.Cmd {
+func (i *Input) Init() (tea.Model, tea.Cmd) {
 	i.textinput.Blur()
-	return nil
+	return i, nil
 }
 
 // Update updates the input field.
@@ -368,7 +368,7 @@ func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (i *Input) activeStyles() *FieldStyles {
 	theme := i.theme
 	if theme == nil {
-		theme = ThemeCharm()
+		theme = ThemeCharm(true)
 	}
 	if i.focused {
 		return &theme.Focused

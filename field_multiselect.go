@@ -234,8 +234,8 @@ func (m *MultiSelect[T]) KeyBinds() []key.Binding {
 }
 
 // Init initializes the multi-select field.
-func (m *MultiSelect[T]) Init() tea.Cmd {
-	return nil
+func (m *MultiSelect[T]) Init() (tea.Model, tea.Cmd) {
+	return m, nil
 }
 
 // Update updates the multi-select field.
@@ -452,7 +452,7 @@ func (m *MultiSelect[T]) updateValue() {
 func (m *MultiSelect[T]) activeStyles() *FieldStyles {
 	theme := m.theme
 	if theme == nil {
-		theme = ThemeCharm()
+		theme = ThemeCharm(true)
 	}
 	if m.focused {
 		return &theme.Focused

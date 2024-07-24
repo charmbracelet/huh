@@ -3,12 +3,12 @@ module examples
 go 1.22
 
 require (
-	github.com/charmbracelet/bubbles v0.18.0
-	github.com/charmbracelet/bubbletea v0.26.6
+	github.com/charmbracelet/bubbles v0.18.1-0.20240722203105-d996a2d61d05
+	github.com/charmbracelet/bubbletea v0.26.7-0.20240723145215-d180c920508b
 	github.com/charmbracelet/glamour v0.7.0
 	github.com/charmbracelet/huh v0.0.0-00010101000000-000000000000
 	github.com/charmbracelet/huh/spinner v0.0.0-00010101000000-000000000000
-	github.com/charmbracelet/lipgloss v0.12.1
+	github.com/charmbracelet/lipgloss v0.12.2-0.20240722162534-2390dea254e8
 	github.com/charmbracelet/log v0.4.0
 	github.com/charmbracelet/ssh v0.0.0-20240515141028-546b2ee33a4d
 	github.com/charmbracelet/wish v1.4.0
@@ -24,6 +24,7 @@ require (
 	github.com/catppuccin/go v0.2.0 // indirect
 	github.com/charmbracelet/harmonica v0.2.0 // indirect
 	github.com/charmbracelet/keygen v0.5.0 // indirect
+	github.com/charmbracelet/shampoo v0.0.0-00010101000000-000000000000 // indirect
 	github.com/charmbracelet/x/ansi v0.1.4 // indirect
 	github.com/charmbracelet/x/errors v0.0.0-20240524151031-ff83003bf67a // indirect
 	github.com/charmbracelet/x/exp/term v0.0.0-20240524151031-ff83003bf67a // indirect
@@ -38,7 +39,6 @@ require (
 	github.com/gorilla/css v1.0.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/mattn/go-localereader v0.0.1 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.25 // indirect
 	github.com/mitchellh/hashstructure/v2 v2.0.2 // indirect
@@ -56,9 +56,10 @@ require (
 	golang.org/x/net v0.22.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/sys v0.22.0 // indirect
-	golang.org/x/text v0.16.0 // indirect
 )
 
 replace github.com/charmbracelet/huh => ../
+
+replace github.com/charmbracelet/shampoo => ../../shampoo
 
 replace github.com/charmbracelet/huh/spinner => ../spinner

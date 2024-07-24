@@ -134,9 +134,7 @@ func NewForm(groups ...*Group) *Form {
 // Each field implements the Bubble Tea Model interface.
 type Field interface {
 	// Bubble Tea Model
-	Init() tea.Cmd
-	Update(tea.Msg) (tea.Model, tea.Cmd)
-	View() string
+	tea.Model
 
 	// Bubble Tea Events
 	Blur() tea.Cmd
@@ -471,20 +469,20 @@ func (f *Form) PrevField() tea.Cmd {
 }
 
 // Init initializes the form.
-func (f *Form) Init() tea.Cmd {
+func (f *Form) Init() (tea.Model, tea.Cmd) {
 	cmds := make([]tea.Cmd, len(f.groups))
 	for i, group := range f.groups {
 		if i == 0 {
 			group.active = true
 		}
-		cmds[i] = group.Init()
+		_, cmds[i] = group.Init()
 	}
 
 	if f.isGroupHidden(f.paginator.Page) {
 		cmds = append(cmds, nextGroup)
 	}
 
-	return tea.Batch(cmds...)
+	return f, tea.Batch(cmds...)
 }
 
 // Update updates the form.
@@ -555,7 +553,8 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 		f.groups[f.paginator.Page].active = true
-		return f, f.groups[f.paginator.Page].Init()
+		_, cmd := f.groups[f.paginator.Page].Init()
+		return f, cmd
 
 	case prevGroupMsg:
 		if len(group.Errors()) > 0 {
@@ -570,7 +569,8 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		f.groups[f.paginator.Page].active = true
-		return f, f.groups[f.paginator.Page].Init()
+		_, cmd := f.groups[f.paginator.Page].Init()
+		return f, cmd
 	}
 
 	m, cmd := group.Update(msg)

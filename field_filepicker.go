@@ -196,8 +196,8 @@ func (f *FilePicker) KeyBinds() []key.Binding {
 }
 
 // Init initializes the file field.
-func (f *FilePicker) Init() tea.Cmd {
-	return f.picker.Init()
+func (f *FilePicker) Init() (tea.Model, tea.Cmd) {
+	return f, f.picker.Init()
 }
 
 // Update updates the file field.
@@ -245,7 +245,7 @@ func (f *FilePicker) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (f *FilePicker) activeStyles() *FieldStyles {
 	theme := f.theme
 	if theme == nil {
-		theme = ThemeCharm()
+		theme = ThemeCharm(true)
 	}
 	if f.focused {
 		return &theme.Focused

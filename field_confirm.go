@@ -154,8 +154,8 @@ func (c *Confirm) KeyBinds() []key.Binding {
 }
 
 // Init initializes the confirm field.
-func (c *Confirm) Init() tea.Cmd {
-	return nil
+func (c *Confirm) Init() (tea.Model, tea.Cmd) {
+	return c, nil
 }
 
 // Update updates the confirm field.
@@ -163,6 +163,7 @@ func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
+	case tea.BackgroundColorMsg:
 	case updateFieldMsg:
 		if ok, hash := c.title.shouldUpdate(); ok {
 			c.title.bindingsHash = hash
@@ -220,7 +221,7 @@ func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (c *Confirm) activeStyles() *FieldStyles {
 	theme := c.theme
 	if theme == nil {
-		theme = ThemeCharm()
+		theme = ThemeCharm(true)
 	}
 	if c.focused {
 		return &theme.Focused
