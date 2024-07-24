@@ -1,10 +1,14 @@
 package huh
 
 import (
+	"context"
+	"errors"
 	"fmt"
+	"io"
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -841,6 +845,41 @@ func TestSkip(t *testing.T) {
 		t.Log(pretty.Render(view))
 		t.Error("Expected first field to be focused")
 	}
+}
+
+func TestTimeout(t *testing.T) {
+	// This test requires a real program, so make sure it doesn't interfere with our test runner.
+	f := formProgram()
+
+	// Test that the form times out after 1ms and returns a timeout error.
+	err := f.WithTimeout(1 * time.Millisecond).Run()
+	if err == nil || !errors.Is(err, ErrTimeout) {
+		t.Errorf("expected timeout error, got %v", err)
+	}
+}
+
+func TestAbort(t *testing.T) {
+	// This test requires a real program, so make sure it doesn't interfere with our test runner.
+	f := formProgram()
+
+	// Test that the form aborts without throwing a timeout error when explicitly told to abort.
+	ctx, cancel := context.WithCancel(context.Background())
+	// Since the context is cancelled, the program should exit immediately.
+	cancel()
+	// Tell the form to abort.
+	f.Update(tea.KeyMsg{Type: tea.KeyCtrlC})
+	// Run the program.
+	err := f.RunWithContext(ctx)
+	if err == nil || !errors.Is(err, ErrUserAborted) {
+		t.Errorf("expected user aborted error, got %v", err)
+	}
+}
+
+// formProgram returns a new Form with a nil input and output, so it can be used as a test program.
+func formProgram() *Form {
+	return NewForm(NewGroup(NewInput().Title("Foo"))).
+		WithInput(nil).WithOutput(io.Discard).
+		WithAccessible(false)
 }
 
 func batchUpdate(m tea.Model, cmd tea.Cmd) tea.Model {

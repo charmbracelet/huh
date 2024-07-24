@@ -97,6 +97,8 @@ type ConfirmKeyMap struct {
 	Prev   key.Binding
 	Toggle key.Binding
 	Submit key.Binding
+	Accept key.Binding
+	Reject key.Binding
 }
 
 // NewDefaultKeyMap returns a new default keymap.
@@ -173,6 +175,8 @@ func NewDefaultKeyMap() *KeyMap {
 			Next:   key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "next")),
 			Submit: key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "submit")),
 			Toggle: key.NewBinding(key.WithKeys("h", "l", "right", "left"), key.WithHelp("←/→", "toggle")),
+			Accept: key.NewBinding(key.WithKeys("y", "Y"), key.WithHelp("y", "Yes")),
+			Reject: key.NewBinding(key.WithKeys("n", "N"), key.WithHelp("n", "No")),
 		},
 	}
 }
