@@ -8,9 +8,8 @@ import (
 )
 
 func main() {
-	action := func() error {
+	action := func() {
 		time.Sleep(1 * time.Second)
-		return nil
 	}
 	if err := spinner.New().Title("Preparing your burger...").Action(action).Run(); err != nil {
 		fmt.Println("Failed:", err)

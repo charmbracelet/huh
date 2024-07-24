@@ -22,7 +22,7 @@ import (
 // ⣾  Loading...
 type Spinner struct {
 	spinner    spinner.Model
-	action     func() error
+	action     func(ctx context.Context) error
 	ctx        context.Context
 	accessible bool
 	output     *termenv.Output
@@ -62,7 +62,16 @@ func (s *Spinner) Title(title string) *Spinner {
 }
 
 // Action sets the action of the spinner.
-func (s *Spinner) Action(action func() error) *Spinner {
+func (s *Spinner) Action(action func()) *Spinner {
+	s.action = func(ctx context.Context) error {
+		action()
+		return nil
+	}
+	return s
+}
+
+// ActionErr sets the action of the spinner.
+func (s *Spinner) ActionErr(action func(ctx context.Context) error) *Spinner {
 	s.action = action
 	return s
 }
@@ -110,7 +119,7 @@ func New() *Spinner {
 func (s *Spinner) Init() tea.Cmd {
 	return tea.Batch(s.spinner.Tick, func() tea.Msg {
 		if s.action != nil {
-			return doneMsg{err: s.action()}
+			return doneMsg{err: s.action(s.ctx)}
 		}
 		return nil
 	})
@@ -180,7 +189,7 @@ func (s *Spinner) runAccessible() error {
 	fmt.Println(title + frame)
 
 	if s.ctx == nil {
-		err := s.action()
+		err := s.action(context.Background())
 		s.output.ShowCursor()
 		s.output.CursorBack(len(frame) + len(title))
 		return err
@@ -189,7 +198,7 @@ func (s *Spinner) runAccessible() error {
 	actionDone := make(chan error)
 	if s.action != nil {
 		go func() {
-			actionDone <- s.action()
+			actionDone <- s.action(s.ctx)
 		}()
 	}
 
@@ -198,6 +207,9 @@ func (s *Spinner) runAccessible() error {
 		case <-s.ctx.Done():
 			s.output.ShowCursor()
 			s.output.CursorBack(len(frame) + len(title))
+			if errors.Is(s.ctx.Err(), context.Canceled) {
+				return nil
+			}
 			return s.ctx.Err()
 		case err := <-actionDone:
 			s.output.ShowCursor()
