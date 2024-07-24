@@ -47,7 +47,6 @@ type Select[T comparable] struct {
 	spinner   spinner.Model
 
 	inline     bool
-	paginate   bool
 	width      int
 	height     int
 	accessible bool
