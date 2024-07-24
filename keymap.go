@@ -65,6 +65,7 @@ type MultiSelectKeyMap struct {
 	SetFilter    key.Binding
 	ClearFilter  key.Binding
 	Submit       key.Binding
+	All          key.Binding
 }
 
 // FilePickerKey is the keybindings for filepicker fields.
@@ -164,6 +165,7 @@ func NewDefaultKeyMap() *KeyMap {
 			HalfPageDown: key.NewBinding(key.WithKeys("ctrl+d"), key.WithHelp("ctrl+d", "½ page down")),
 			GotoTop:      key.NewBinding(key.WithKeys("home", "g"), key.WithHelp("g/home", "go to start")),
 			GotoBottom:   key.NewBinding(key.WithKeys("end", "G"), key.WithHelp("G/end", "go to end")),
+			All:          key.NewBinding(key.WithKeys("a"), key.WithHelp("a", "toggle select all")),
 		},
 		Note: NoteKeyMap{
 			Prev:   key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),

@@ -230,6 +230,7 @@ func (m *MultiSelect[T]) KeyBinds() []key.Binding {
 		m.keymap.Prev,
 		m.keymap.Submit,
 		m.keymap.Next,
+		m.keymap.All,
 	}
 }
 
@@ -374,6 +375,21 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					selected := m.options.val[i].selected
 					m.options.val[i].selected = !selected
 					m.filteredOptions[m.cursor].selected = !selected
+				}
+			}
+			m.updateValue()
+		case key.Matches(msg, m.keymap.All) && !m.filtering:
+			for i, option := range m.options.val {
+				if !m.options.val[m.cursor].selected && m.limit > 0 && m.numSelected() >= m.limit {
+					break
+				}
+				for j := range m.filteredOptions {
+					if option.Key == m.filteredOptions[j].Key {
+						selected := option.selected
+						m.options.val[i].selected = !selected
+						m.filteredOptions[j].selected = !selected
+						break
+					}
 				}
 			}
 			m.updateValue()
