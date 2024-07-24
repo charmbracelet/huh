@@ -231,6 +231,7 @@ func (m *MultiSelect[T]) KeyBinds() []key.Binding {
 		m.keymap.Submit,
 		m.keymap.Next,
 		m.keymap.All,
+		m.keymap.None,
 	}
 }
 
