@@ -385,9 +385,22 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 				for j := range m.filteredOptions {
 					if option.Key == m.filteredOptions[j].Key {
-						selected := option.selected
-						m.options.val[i].selected = !selected
-						m.filteredOptions[j].selected = !selected
+						m.options.val[i].selected = true
+						m.filteredOptions[j].selected = true
+						break
+					}
+				}
+			}
+			m.updateValue()
+		case key.Matches(msg, m.keymap.None) && !m.filtering:
+			for i, option := range m.options.val {
+				if !m.options.val[m.cursor].selected && m.limit > 0 && m.numSelected() >= m.limit {
+					break
+				}
+				for j := range m.filteredOptions {
+					if option.Key == m.filteredOptions[j].Key {
+						m.options.val[i].selected = false
+						m.filteredOptions[j].selected = false
 						break
 					}
 				}
