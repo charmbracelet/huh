@@ -171,6 +171,7 @@ func (m *MultiSelect[T]) Filtering(filtering bool) *MultiSelect[T] {
 // Limit sets the limit of the multi-select field.
 func (m *MultiSelect[T]) Limit(limit int) *MultiSelect[T] {
 	m.limit = limit
+	m.keymap.ToggleAll.SetEnabled(limit == 0)
 	return m
 }
 
@@ -220,7 +221,7 @@ func (m *MultiSelect[T]) Blur() tea.Cmd {
 
 // KeyBinds returns the help message for the multi-select field.
 func (m *MultiSelect[T]) KeyBinds() []key.Binding {
-	return []key.Binding{
+	binds := []key.Binding{
 		m.keymap.Toggle,
 		m.keymap.Up,
 		m.keymap.Down,
@@ -231,6 +232,10 @@ func (m *MultiSelect[T]) KeyBinds() []key.Binding {
 		m.keymap.Submit,
 		m.keymap.Next,
 	}
+	if m.limit == 0 {
+		binds = append(binds, m.keymap.ToggleAll)
+	}
+	return binds
 }
 
 // Init initializes the multi-select field.
@@ -374,6 +379,26 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					selected := m.options.val[i].selected
 					m.options.val[i].selected = !selected
 					m.filteredOptions[m.cursor].selected = !selected
+				}
+			}
+			m.updateValue()
+		case key.Matches(msg, m.keymap.ToggleAll) && m.limit == 0:
+			selected := false
+
+			for _, option := range m.filteredOptions {
+				if !option.selected {
+					selected = true
+					break
+				}
+			}
+
+			for i, option := range m.options.val {
+				for j := range m.filteredOptions {
+					if option.Key == m.filteredOptions[j].Key {
+						m.options.val[i].selected = selected
+						m.filteredOptions[j].selected = selected
+						break
+					}
 				}
 			}
 			m.updateValue()
