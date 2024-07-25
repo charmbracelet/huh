@@ -1,9 +1,11 @@
 package spinner
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -22,7 +24,7 @@ import (
 // ⣾  Loading...
 type Spinner struct {
 	spinner    spinner.Model
-	action     func(ctx context.Context) error
+	action     func(ctx context.Context, w io.Writer) error
 	ctx        context.Context
 	accessible bool
 	output     *termenv.Output
@@ -30,6 +32,7 @@ type Spinner struct {
 	titleStyle lipgloss.Style
 
 	err error
+	buf bytes.Buffer
 }
 
 type Type spinner.Spinner
@@ -63,7 +66,7 @@ func (s *Spinner) Title(title string) *Spinner {
 
 // Action sets the action of the spinner.
 func (s *Spinner) Action(action func()) *Spinner {
-	s.action = func(ctx context.Context) error {
+	s.action = func(context.Context, io.Writer) error {
 		action()
 		return nil
 	}
@@ -71,7 +74,7 @@ func (s *Spinner) Action(action func()) *Spinner {
 }
 
 // ActionErr sets the action of the spinner.
-func (s *Spinner) ActionErr(action func(ctx context.Context) error) *Spinner {
+func (s *Spinner) ActionErr(action func(ctx context.Context, w io.Writer) error) *Spinner {
 	s.action = action
 	return s
 }
@@ -113,6 +116,7 @@ func New() *Spinner {
 		title:      "Loading...",
 		titleStyle: lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#FFFDF5", Dark: "#FFFDF5"}),
 		output:     termenv.NewOutput(os.Stdout),
+		buf:        bytes.Buffer{},
 	}
 }
 
@@ -120,7 +124,7 @@ func New() *Spinner {
 func (s *Spinner) Init() tea.Cmd {
 	return tea.Batch(s.spinner.Tick, func() tea.Msg {
 		if s.action != nil {
-			return doneMsg{err: s.action(s.ctx)}
+			return doneMsg{err: s.action(s.ctx, &s.buf)}
 		}
 		return nil
 	})
@@ -148,9 +152,9 @@ func (s *Spinner) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (s *Spinner) View() string {
 	var title string
 	if s.title != "" {
-		title = s.titleStyle.Render(s.title) + " "
+		title = s.titleStyle.Render(s.title)
 	}
-	return s.spinner.View() + title
+	return s.buf.String() + s.spinner.View() + title
 }
 
 // Run runs the spinner.
@@ -184,7 +188,7 @@ func (s *Spinner) runAccessible() error {
 	actionDone := make(chan error)
 	if s.action != nil {
 		go func() {
-			actionDone <- s.action(s.ctx)
+			actionDone <- s.action(s.ctx, os.Stdout)
 		}()
 	}
 
