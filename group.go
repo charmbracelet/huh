@@ -4,9 +4,9 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/bubbles/paginator"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/huh/internal/selector"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -18,15 +18,15 @@ import (
 // progress to the next group.
 type Group struct {
 	// collection of fields
-	fields []Field
+	fields   []Field
+	selector *selector.Selector
 
 	// information
 	title       string
 	description string
 
 	// navigation
-	paginator paginator.Model
-	viewport  viewport.Model
+	viewport viewport.Model
 
 	// help
 	showHelp bool
@@ -45,12 +45,10 @@ type Group struct {
 
 // NewGroup returns a new group with the given fields.
 func NewGroup(fields ...Field) *Group {
-	p := paginator.New()
-	p.SetTotalPages(len(fields))
-
+	selector := selector.NewSelector(len(fields))
 	group := &Group{
 		fields:     fields,
-		paginator:  p,
+		selector:   selector,
 		help:       help.New(),
 		showHelp:   true,
 		showErrors: true,
@@ -190,17 +188,17 @@ func PrevField() tea.Msg {
 func (g *Group) Init() tea.Cmd {
 	var cmds []tea.Cmd
 
-	if g.fields[g.paginator.Page].Skip() {
-		if g.paginator.OnLastPage() {
+	if g.fields[g.selector.Selected()].Skip() {
+		if g.selector.OnLast() {
 			cmds = append(cmds, g.prevField()...)
-		} else if g.paginator.Page == 0 {
+		} else if g.selector.OnFirst() {
 			cmds = append(cmds, g.nextField()...)
 		}
 		return tea.Batch(cmds...)
 	}
 
 	if g.active {
-		cmd := g.fields[g.paginator.Page].Focus()
+		cmd := g.fields[g.selector.Selected()].Focus()
 		cmds = append(cmds, cmd)
 	}
 	g.buildView()
@@ -209,35 +207,35 @@ func (g *Group) Init() tea.Cmd {
 
 // nextField moves to the next field.
 func (g *Group) nextField() []tea.Cmd {
-	blurCmd := g.fields[g.paginator.Page].Blur()
-	if g.paginator.OnLastPage() {
+	blurCmd := g.fields[g.selector.Selected()].Blur()
+	if g.selector.OnLast() {
 		return []tea.Cmd{blurCmd, nextGroup}
 	}
-	g.paginator.NextPage()
-	for g.fields[g.paginator.Page].Skip() {
-		if g.paginator.OnLastPage() {
+	g.selector.Next()
+	for g.fields[g.selector.Selected()].Skip() {
+		if g.selector.OnLast() {
 			return []tea.Cmd{blurCmd, nextGroup}
 		}
-		g.paginator.NextPage()
+		g.selector.Next()
 	}
-	focusCmd := g.fields[g.paginator.Page].Focus()
+	focusCmd := g.fields[g.selector.Selected()].Focus()
 	return []tea.Cmd{blurCmd, focusCmd}
 }
 
 // prevField moves to the previous field.
 func (g *Group) prevField() []tea.Cmd {
-	blurCmd := g.fields[g.paginator.Page].Blur()
-	if g.paginator.Page <= 0 {
+	blurCmd := g.fields[g.selector.Selected()].Blur()
+	if g.selector.OnFirst() {
 		return []tea.Cmd{blurCmd, prevGroup}
 	}
-	g.paginator.PrevPage()
-	for g.fields[g.paginator.Page].Skip() {
-		if g.paginator.Page <= 0 {
+	g.selector.Prev()
+	for g.fields[g.selector.Selected()].Skip() {
+		if g.selector.OnFirst() {
 			return []tea.Cmd{blurCmd, prevGroup}
 		}
-		g.paginator.PrevPage()
+		g.selector.Prev()
 	}
-	focusCmd := g.fields[g.paginator.Page].Focus()
+	focusCmd := g.fields[g.selector.Selected()].Focus()
 	return []tea.Cmd{blurCmd, focusCmd}
 }
 
@@ -255,7 +253,7 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			g.fields[i] = m.(Field)
 			cmds = append(cmds, cmd)
 		}
-		if g.paginator.Page == i {
+		if g.selector.Selected() == i {
 			m, cmd := g.fields[i].Update(msg)
 			g.fields[i] = m.(Field)
 			cmds = append(cmds, cmd)
@@ -294,13 +292,13 @@ func (g *Group) getContent() (int, string) {
 	gap := "\n\n"
 
 	// if the focused field is requesting it be zoomed, only show that field.
-	if g.fields[g.paginator.Page].Zoom() {
-		g.fields[g.paginator.Page].WithHeight(g.height - 1)
-		fields.WriteString(g.fields[g.paginator.Page].View())
+	if g.fields[g.selector.Selected()].Zoom() {
+		g.fields[g.selector.Selected()].WithHeight(g.height - 1)
+		fields.WriteString(g.fields[g.selector.Selected()].View())
 	} else {
 		for i, field := range g.fields {
 			fields.WriteString(field.View())
-			if i == g.paginator.Page {
+			if i == g.selector.Selected() {
 				offset = lipgloss.Height(fields.String()) - lipgloss.Height(field.View())
 			}
 			if i < len(g.fields)-1 {
@@ -339,7 +337,7 @@ func (g *Group) Footer() string {
 	view.WriteRune('\n')
 	errors := g.Errors()
 	if g.showHelp && len(errors) <= 0 {
-		view.WriteString(g.help.ShortHelpView(g.fields[g.paginator.Page].KeyBinds()))
+		view.WriteString(g.help.ShortHelpView(g.fields[g.selector.Selected()].KeyBinds()))
 	}
 	if g.showErrors {
 		for _, err := range errors {
