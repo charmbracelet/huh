@@ -18,8 +18,7 @@ import (
 // progress to the next group.
 type Group struct {
 	// collection of fields
-	fields   []Field
-	selector *selector.Selector
+	selector *selector.Selector[Field]
 
 	// information
 	title       string
@@ -45,9 +44,8 @@ type Group struct {
 
 // NewGroup returns a new group with the given fields.
 func NewGroup(fields ...Field) *Group {
-	selector := selector.NewSelector(len(fields))
+	selector := selector.NewSelector(fields)
 	group := &Group{
-		fields:     fields,
 		selector:   selector,
 		help:       help.New(),
 		showHelp:   true,
@@ -91,9 +89,10 @@ func (g *Group) WithShowErrors(show bool) *Group {
 // WithTheme sets the theme on a group.
 func (g *Group) WithTheme(t *Theme) *Group {
 	g.help.Styles = t.Help
-	for _, field := range g.fields {
+	g.selector.Range(func(_ int, field Field) bool {
 		field.WithTheme(t)
-	}
+		return true
+	})
 	if g.height <= 0 {
 		g.WithHeight(g.fullHeight())
 	}
@@ -103,9 +102,10 @@ func (g *Group) WithTheme(t *Theme) *Group {
 // WithKeyMap sets the keymap on a group.
 func (g *Group) WithKeyMap(k *KeyMap) *Group {
 	g.keymap = k
-	for _, field := range g.fields {
+	g.selector.Range(func(_ int, field Field) bool {
 		field.WithKeyMap(k)
-	}
+		return true
+	})
 	return g
 }
 
@@ -113,9 +113,10 @@ func (g *Group) WithKeyMap(k *KeyMap) *Group {
 func (g *Group) WithWidth(width int) *Group {
 	g.width = width
 	g.viewport.Width = width
-	for _, field := range g.fields {
+	g.selector.Range(func(_ int, field Field) bool {
 		field.WithWidth(width)
-	}
+		return true
+	})
 	return g
 }
 
@@ -123,12 +124,13 @@ func (g *Group) WithWidth(width int) *Group {
 func (g *Group) WithHeight(height int) *Group {
 	g.height = height
 	g.viewport.Height = height
-	for _, field := range g.fields {
+	g.selector.Range(func(_ int, field Field) bool {
 		// A field height must not exceed the form height.
 		if height-1 <= lipgloss.Height(field.View()) {
 			field.WithHeight(height)
 		}
-	}
+		return true
+	})
 	return g
 }
 
@@ -147,11 +149,12 @@ func (g *Group) WithHideFunc(hideFunc func() bool) *Group {
 // Errors returns the groups' fields' errors.
 func (g *Group) Errors() []error {
 	var errs []error
-	for _, field := range g.fields {
+	g.selector.Range(func(_ int, field Field) bool {
 		if err := field.Error(); err != nil {
 			errs = append(errs, err)
 		}
-	}
+		return true
+	})
 	return errs
 }
 
@@ -188,7 +191,7 @@ func PrevField() tea.Msg {
 func (g *Group) Init() tea.Cmd {
 	var cmds []tea.Cmd
 
-	if g.fields[g.selector.Selected()].Skip() {
+	if g.selector.Selected().Skip() {
 		if g.selector.OnLast() {
 			cmds = append(cmds, g.prevField()...)
 		} else if g.selector.OnFirst() {
@@ -198,7 +201,7 @@ func (g *Group) Init() tea.Cmd {
 	}
 
 	if g.active {
-		cmd := g.fields[g.selector.Selected()].Focus()
+		cmd := g.selector.Selected().Focus()
 		cmds = append(cmds, cmd)
 	}
 	g.buildView()
@@ -207,35 +210,35 @@ func (g *Group) Init() tea.Cmd {
 
 // nextField moves to the next field.
 func (g *Group) nextField() []tea.Cmd {
-	blurCmd := g.fields[g.selector.Selected()].Blur()
+	blurCmd := g.selector.Selected().Blur()
 	if g.selector.OnLast() {
 		return []tea.Cmd{blurCmd, nextGroup}
 	}
 	g.selector.Next()
-	for g.fields[g.selector.Selected()].Skip() {
+	for g.selector.Selected().Skip() {
 		if g.selector.OnLast() {
 			return []tea.Cmd{blurCmd, nextGroup}
 		}
 		g.selector.Next()
 	}
-	focusCmd := g.fields[g.selector.Selected()].Focus()
+	focusCmd := g.selector.Selected().Focus()
 	return []tea.Cmd{blurCmd, focusCmd}
 }
 
 // prevField moves to the previous field.
 func (g *Group) prevField() []tea.Cmd {
-	blurCmd := g.fields[g.selector.Selected()].Blur()
+	blurCmd := g.selector.Selected().Blur()
 	if g.selector.OnFirst() {
 		return []tea.Cmd{blurCmd, prevGroup}
 	}
 	g.selector.Prev()
-	for g.fields[g.selector.Selected()].Skip() {
+	for g.selector.Selected().Skip() {
 		if g.selector.OnFirst() {
 			return []tea.Cmd{blurCmd, prevGroup}
 		}
 		g.selector.Prev()
 	}
-	focusCmd := g.fields[g.selector.Selected()].Focus()
+	focusCmd := g.selector.Selected().Focus()
 	return []tea.Cmd{blurCmd, focusCmd}
 }
 
@@ -244,24 +247,25 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	// Update all the fields in the group.
-	for i := range g.fields {
+	g.selector.Range(func(i int, field Field) bool {
 		switch msg := msg.(type) {
 		case tea.KeyMsg:
 			break
 		default:
-			m, cmd := g.fields[i].Update(msg)
-			g.fields[i] = m.(Field)
+			m, cmd := field.Update(msg)
+			g.selector.Set(i, m.(Field))
 			cmds = append(cmds, cmd)
 		}
-		if g.selector.Selected() == i {
-			m, cmd := g.fields[i].Update(msg)
-			g.fields[i] = m.(Field)
+		if g.selector.Index() == i {
+			m, cmd := field.Update(msg)
+			g.selector.Set(i, m.(Field))
 			cmds = append(cmds, cmd)
 		}
-		m, cmd := g.fields[i].Update(updateFieldMsg{})
-		g.fields[i] = m.(Field)
+		m, cmd := field.Update(updateFieldMsg{})
+		g.selector.Set(i, m.(Field))
 		cmds = append(cmds, cmd)
-	}
+		return true
+	})
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
@@ -279,10 +283,11 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // height returns the full height of the group.
 func (g *Group) fullHeight() int {
-	height := len(g.fields)
-	for _, f := range g.fields {
-		height += lipgloss.Height(f.View())
-	}
+	height := g.selector.Total()
+	g.selector.Range(func(_ int, field Field) bool {
+		height += lipgloss.Height(field.View())
+		return true
+	})
 	return height
 }
 
@@ -292,19 +297,20 @@ func (g *Group) getContent() (int, string) {
 	gap := "\n\n"
 
 	// if the focused field is requesting it be zoomed, only show that field.
-	if g.fields[g.selector.Selected()].Zoom() {
-		g.fields[g.selector.Selected()].WithHeight(g.height - 1)
-		fields.WriteString(g.fields[g.selector.Selected()].View())
+	if g.selector.Selected().Zoom() {
+		g.selector.Selected().WithHeight(g.height - 1)
+		fields.WriteString(g.selector.Selected().View())
 	} else {
-		for i, field := range g.fields {
+		g.selector.Range(func(i int, field Field) bool {
 			fields.WriteString(field.View())
-			if i == g.selector.Selected() {
+			if i == g.selector.Index() {
 				offset = lipgloss.Height(fields.String()) - lipgloss.Height(field.View())
 			}
-			if i < len(g.fields)-1 {
+			if i < g.selector.Total()-1 {
 				fields.WriteString(gap)
 			}
-		}
+			return true
+		})
 	}
 
 	return offset, fields.String() + "\n"
@@ -337,7 +343,7 @@ func (g *Group) Footer() string {
 	view.WriteRune('\n')
 	errors := g.Errors()
 	if g.showHelp && len(errors) <= 0 {
-		view.WriteString(g.help.ShortHelpView(g.fields[g.selector.Selected()].KeyBinds()))
+		view.WriteString(g.help.ShortHelpView(g.selector.Selected().KeyBinds()))
 	}
 	if g.showErrors {
 		for _, err := range errors {
