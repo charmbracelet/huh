@@ -159,9 +159,6 @@ func (m *MultiSelect[T]) OptionsFunc(f func() []Option[T], bindings any) *MultiS
 // Filterable sets the multi-select field as filterable.
 func (m *MultiSelect[T]) Filterable(filterable bool) *MultiSelect[T] {
 	m.filterable = filterable
-	m.keymap.Filter.SetEnabled(filterable)
-	m.keymap.ClearFilter.SetEnabled(filterable)
-	m.keymap.SetFilter.SetEnabled(filterable)
 	return m
 }
 
@@ -240,9 +237,6 @@ func (m *MultiSelect[T]) KeyBinds() []key.Binding {
 	}
 	binds = append(
 		binds,
-		m.keymap.Filter,
-		m.keymap.SetFilter,
-		m.keymap.ClearFilter,
 		m.keymap.Prev,
 		m.keymap.Submit,
 		m.keymap.Next,
@@ -336,16 +330,16 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		m.err = nil
 		switch {
-		case key.Matches(msg, m.keymap.Filter) && m.filterable:
+		case key.Matches(msg, m.keymap.Filter):
 			m.setFilter(true)
 			return m, m.filter.Focus()
-		case key.Matches(msg, m.keymap.SetFilter) && m.filterable:
+		case key.Matches(msg, m.keymap.SetFilter):
 			if len(m.filteredOptions) <= 0 {
 				m.filter.SetValue("")
 				m.filteredOptions = m.options.val
 			}
 			m.setFilter(false)
-		case key.Matches(msg, m.keymap.ClearFilter) && m.filterable:
+		case key.Matches(msg, m.keymap.ClearFilter):
 			m.filter.SetValue("")
 			m.filteredOptions = m.options.val
 			m.setFilter(false)
@@ -692,6 +686,11 @@ func (m *MultiSelect[T]) WithTheme(theme *Theme) Field {
 // WithKeyMap sets the keymap of the multi-select field.
 func (m *MultiSelect[T]) WithKeyMap(k *KeyMap) Field {
 	m.keymap = k.MultiSelect
+	if !m.filterable {
+		m.keymap.Filter.SetEnabled(false)
+		m.keymap.ClearFilter.SetEnabled(false)
+		m.keymap.SetFilter.SetEnabled(false)
+	}
 	return m
 }
 
