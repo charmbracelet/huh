@@ -436,7 +436,7 @@ func (f *Form) GetString(key string) string {
 	return v
 }
 
-// GetInt returns a result as a string from the form.
+// GetInt returns a result as a int from the form.
 func (f *Form) GetInt(key string) int {
 	v, ok := f.results[key].(int)
 	if !ok {
