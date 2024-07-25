@@ -65,12 +65,12 @@ func TestForm(t *testing.T) {
 				Title("Toppings").
 				Description("Choose up to 4.").
 				Options(
-					NewOption("Lettuce").Selected(true),
-					NewOption("Tomatoes").Selected(true),
-					NewOption("Corn"),
-					NewOption("Salsa"),
-					NewOption("Sour Cream"),
-					NewOption("Cheese"),
+					NewOption("Lettuce", "lettuce").Selected(true),
+					NewOption("Tomatoes", "tomatoes").Selected(true),
+					NewOption("Corn", "corn"),
+					NewOption("Salsa", "salsa"),
+					NewOption("Sour Cream", "sour cream"),
+					NewOption("Cheese", "cheese"),
 				).
 				Validate(func(t []string) error {
 					if len(t) <= 0 {

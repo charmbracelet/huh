@@ -6,6 +6,7 @@ import (
 
 // Option is an option for select fields.
 type Option[T comparable] struct {
+	Key      string
 	Value    T
 	selected bool
 }
@@ -15,6 +16,7 @@ func NewOptions[T comparable](values ...T) []Option[T] {
 	options := make([]Option[T], len(values))
 	for i, o := range values {
 		options[i] = Option[T]{
+			Key:   fmt.Sprint(o),
 			Value: o,
 		}
 	}
@@ -29,10 +31,10 @@ func (o Option[T]) Selected(selected bool) Option[T] {
 
 // String returns the string representation of the Option.
 func (o Option[T]) String() string {
-	return fmt.Sprint(o.Value)
+	return o.Key
 }
 
 // NewOption returns a new select option.
-func NewOption[T comparable](value T) Option[T] {
-	return Option[T]{Value: value}
+func NewOption[T comparable](key string, value T) Option[T] {
+	return Option[T]{Key: key, Value: value}
 }

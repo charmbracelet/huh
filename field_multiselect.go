@@ -51,7 +51,7 @@ type MultiSelect[T comparable] struct {
 	filter    textinput.Model
 	viewport  viewport.Model
 	spinner   spinner.Model
-	// avoid iterating over options to figure out what is selectedIndices.
+	// avoid iterating over options to figure out what is selected.
 	selected map[int]Option[T]
 
 	// options
@@ -339,13 +339,11 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.filtering && msg.String() == "k" {
 				break
 			}
-
 			m.moveCursor(up)
 		case key.Matches(msg, m.keymap.Down):
 			if m.filtering && msg.String() == "j" {
 				break
 			}
-
 			m.moveCursor(down)
 		case key.Matches(msg, m.keymap.GotoTop):
 			if m.filtering {
