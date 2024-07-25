@@ -15,8 +15,9 @@ import (
 )
 
 const (
-	minHeight     = 1
-	defaultHeight = 10
+	minHeight       = 1
+	defaultHeight   = 10
+	defaultSelected = 0
 )
 
 // Select is a select field.
@@ -179,10 +180,7 @@ func (s *Select[T]) Options(options ...Option[T]) *Select[T] {
 	// Set the cursor to the existing value or the last selected option.
 	for i, option := range options {
 		if option.Value == s.accessor.Get() {
-			s.selected = i
-			break
-		} else if option.selected {
-			s.selected = i
+			s.ToggleSelect(i)
 		}
 	}
 
@@ -190,6 +188,22 @@ func (s *Select[T]) Options(options ...Option[T]) *Select[T] {
 	s.updateValue()
 
 	return s
+}
+
+// ToggleSelect sets or unsets the selected index.
+func (s *Select[T]) ToggleSelect(index int) {
+	s.selected = defaultSelected
+	if !s.isSelected(index) {
+		s.selected = index
+	}
+}
+
+// isSelected lets us know if the value at the given index is selected.
+func (s *Select[T]) isSelected(index int) bool {
+	if s.selected == index {
+		return true
+	}
+	return false
 }
 
 // OptionsFunc sets the options func of the select field.
@@ -473,7 +487,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if s.filter.Value() != "" {
 				s.filteredOptions = nil
 				for _, option := range s.options.val {
-					if s.filterFunc(option.Key) {
+					if s.filterFunc(option.String()) {
 						s.filteredOptions = append(s.filteredOptions, option)
 					}
 				}
@@ -557,7 +571,7 @@ func (s *Select[T]) optionsView() string {
 	if s.inline {
 		sb.WriteString(styles.PrevIndicator.Faint(s.selected <= 0).String())
 		if len(s.filteredOptions) > 0 {
-			sb.WriteString(styles.SelectedOption.Render(s.filteredOptions[s.selected].Key))
+			sb.WriteString(styles.SelectedOption.Render(s.filteredOptions[s.selected].String()))
 		} else {
 			sb.WriteString(styles.TextInput.Placeholder.Render("No matches"))
 		}
@@ -567,9 +581,9 @@ func (s *Select[T]) optionsView() string {
 
 	for i, option := range s.filteredOptions {
 		if s.selected == i {
-			sb.WriteString(c + styles.SelectedOption.Render(option.Key))
+			sb.WriteString(c + styles.SelectedOption.Render(option.String()))
 		} else {
-			sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)) + styles.UnselectedOption.Render(option.Key))
+			sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)) + styles.UnselectedOption.Render(option.String()))
 		}
 		if i < len(s.options.val)-1 {
 			sb.WriteString("\n")
@@ -652,7 +666,7 @@ func (s *Select[T]) runAccessible() error {
 	sb.WriteString(styles.Title.Render(s.title.val) + "\n")
 
 	for i, option := range s.options.val {
-		sb.WriteString(fmt.Sprintf("%d. %s", i+1, option.Key))
+		sb.WriteString(fmt.Sprintf("%d. %s", i+1, option.String()))
 		sb.WriteString("\n")
 	}
 
@@ -665,7 +679,7 @@ func (s *Select[T]) runAccessible() error {
 			fmt.Println(err.Error())
 			continue
 		}
-		fmt.Println(styles.SelectedOption.Render("Chose: " + option.Key + "\n"))
+		fmt.Println(styles.SelectedOption.Render("Chose: " + option.String() + "\n"))
 		s.accessor.Set(option.Value)
 		break
 	}

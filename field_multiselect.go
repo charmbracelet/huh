@@ -1,7 +1,9 @@
 package huh
 
 import (
+	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -40,6 +42,8 @@ type MultiSelect[T comparable] struct {
 	filter    textinput.Model
 	viewport  viewport.Model
 	spinner   spinner.Model
+	// avoid iterating over options to figure out what is selectedIndices.
+	selected map[int]Option[T]
 
 	// options
 	width      int
@@ -65,6 +69,7 @@ func NewMultiSelect[T comparable]() *MultiSelect[T] {
 		title:       Eval[string]{cache: make(map[uint64]string)},
 		description: Eval[string]{cache: make(map[uint64]string)},
 		spinner:     s,
+		selected:    make(map[int]Option[T]),
 	}
 }
 
@@ -79,7 +84,7 @@ func (m *MultiSelect[T]) Accessor(accessor Accessor[[]T]) *MultiSelect[T] {
 	for i, o := range m.options.val {
 		for _, v := range m.accessor.Get() {
 			if o.Value == v {
-				m.options.val[i].selected = true
+				m.Select(i, o)
 				break
 			}
 		}
@@ -130,7 +135,7 @@ func (m *MultiSelect[T]) Options(options ...Option[T]) *MultiSelect[T] {
 	for i, o := range options {
 		for _, v := range m.accessor.Get() {
 			if o.Value == v {
-				options[i].selected = true
+				m.Select(i, o)
 				break
 			}
 		}
@@ -372,13 +377,12 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.viewport.HalfViewDown()
 		case key.Matches(msg, m.keymap.Toggle) && !m.filtering:
 			for i, option := range m.options.val {
-				if option.Key == m.filteredOptions[m.cursor].Key {
-					if !m.options.val[m.cursor].selected && m.limit > 0 && m.numSelected() >= m.limit {
-						break
+				if i == m.cursor {
+					if m.isSelected(i) {
+						m.Deselect(i)
+					} else {
+						m.Select(i, option)
 					}
-					selected := m.options.val[i].selected
-					m.options.val[i].selected = !selected
-					m.filteredOptions[m.cursor].selected = !selected
 				}
 			}
 			m.updateValue()
@@ -423,14 +427,13 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.filter.Value() != "" {
 				m.filteredOptions = nil
 				for _, option := range m.options.val {
-					if m.filterFunc(option.Key) {
+					if m.filterFunc(option.String()) {
 						m.filteredOptions = append(m.filteredOptions, option)
 					}
 				}
 			}
 			if len(m.filteredOptions) > 0 {
 				m.cursor = min(m.cursor, len(m.filteredOptions)-1)
-				m.viewport.SetYOffset(clamp(m.cursor, 0, len(m.filteredOptions)-m.viewport.Height))
 			}
 		}
 	}
@@ -454,20 +457,15 @@ func (m *MultiSelect[T]) updateViewportHeight() {
 }
 
 func (m *MultiSelect[T]) numSelected() int {
-	var count int
-	for _, o := range m.options.val {
-		if o.selected {
-			count++
-		}
-	}
-	return count
+	return len(m.selected)
 }
 
 func (m *MultiSelect[T]) updateValue() {
 	value := make([]T, 0)
-	for _, option := range m.options.val {
-		if option.selected {
+	for i, option := range m.options.val {
+		if _, ok := m.selected[i]; ok {
 			value = append(value, option.Value)
+			m.selected[i] = option
 		}
 	}
 	m.accessor.Set(value)
@@ -530,12 +528,12 @@ func (m *MultiSelect[T]) optionsView() string {
 			sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)))
 		}
 
-		if m.filteredOptions[i].selected {
+		if _, ok := m.selected[i]; ok {
 			sb.WriteString(styles.SelectedPrefix.String())
-			sb.WriteString(styles.SelectedOption.Render(option.Key))
+			sb.WriteString(styles.SelectedOption.Render(option.String()))
 		} else {
 			sb.WriteString(styles.UnselectedPrefix.String())
-			sb.WriteString(styles.UnselectedOption.Render(option.Key))
+			sb.WriteString(styles.UnselectedOption.Render(option.String()))
 		}
 		if i < len(m.options.val)-1 {
 			sb.WriteString("\n")
@@ -574,10 +572,10 @@ func (m *MultiSelect[T]) printOptions() {
 	sb.WriteString("\n")
 
 	for i, option := range m.options.val {
-		if option.selected {
-			sb.WriteString(styles.SelectedOption.Render(fmt.Sprintf("%d. %s %s", i+1, "✓", option.Key)))
+		if _, ok := m.selected[i]; ok {
+			sb.WriteString(styles.SelectedOption.Render(fmt.Sprintf("%d. %s %s", i+1, "✓", option.String())))
 		} else {
-			sb.WriteString(fmt.Sprintf("%d. %s %s", i+1, " ", option.Key))
+			sb.WriteString(fmt.Sprintf("%d. %s %s", i+1, " ", option.String()))
 		}
 		sb.WriteString("\n")
 	}
@@ -630,27 +628,29 @@ func (m *MultiSelect[T]) runAccessible() error {
 			break
 		}
 
-		if !m.options.val[choice-1].selected && m.limit > 0 && m.numSelected() >= m.limit {
-			fmt.Printf("You can't select more than %d options.\n", m.limit)
-			continue
-		}
-		m.options.val[choice-1].selected = !m.options.val[choice-1].selected
-		if m.options.val[choice-1].selected {
-			fmt.Printf("Selected: %s\n\n", m.options.val[choice-1].Key)
+		// Toggle Selection
+		if m.isSelected(choice - 1) {
+			m.Deselect(choice - 1)
+			fmt.Printf("Deselected: %s\n\n", m.options.val[choice-1].String())
 		} else {
-			fmt.Printf("Deselected: %s\n\n", m.options.val[choice-1].Key)
+			err := m.Select(choice-1, m.options.val[choice-1])
+			if err != nil {
+				fmt.Printf("You can't select more than %d options.\n", m.limit)
+				continue
+			}
+			fmt.Printf("Selected: %s\n\n", m.options.val[choice-1].String())
 		}
-
 		m.printOptions()
 	}
 
 	var values []string
 
 	value := m.accessor.Get()
-	for _, option := range m.options.val {
-		if option.selected {
+	for i, option := range m.options.val {
+		if _, ok := m.selected[i]; ok {
 			value = append(value, option.Value)
-			values = append(values, option.Key)
+			values = append(values, option.String())
+			m.selected[i] = option
 		}
 	}
 	m.accessor.Set(value)
@@ -717,4 +717,26 @@ func (m *MultiSelect[T]) GetKey() string {
 // GetValue returns the multi-select's value.
 func (m *MultiSelect[T]) GetValue() any {
 	return m.accessor.Get()
+}
+
+// Select the option.
+func (m *MultiSelect[T]) Select(index int, o Option[T]) error {
+	if len(m.selected) >= m.limit {
+		return errors.New("Limit reached. Unable to select another option.")
+	}
+	m.selected[index] = o
+	return nil
+}
+
+// Deselect the option.
+func (m *MultiSelect[T]) Deselect(index int) {
+	delete(m.selected, index)
+}
+
+// isSelected lets us know if the value at the given index is selected.
+func (m *MultiSelect[T]) isSelected(index int) bool {
+	if _, ok := m.selected[index]; ok {
+		return true
+	}
+	return false
 }
