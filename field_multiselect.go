@@ -25,6 +25,8 @@ const (
 	halfDown
 )
 
+const defaultLimit = 2
+
 // MultiSelect is a form multi-select field.
 type MultiSelect[T comparable] struct {
 	accessor Accessor[[]T]
@@ -79,6 +81,7 @@ func NewMultiSelect[T comparable]() *MultiSelect[T] {
 		description: Eval[string]{cache: make(map[uint64]string)},
 		spinner:     s,
 		selected:    make(map[int]Option[T]),
+		limit:       defaultLimit,
 	}
 }
 
