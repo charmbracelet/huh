@@ -10,8 +10,8 @@ import (
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/paginator"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/huh/internal/selector"
 )
 
 const defaultWidth = 80
@@ -65,7 +65,7 @@ type Form struct {
 	results map[string]any
 
 	// navigation
-	paginator paginator.Model
+	selector *selector.Selector
 
 	// callbacks
 	SubmitCmd tea.Cmd
@@ -97,15 +97,14 @@ type Form struct {
 // Use With* methods to customize the form with options, such as setting
 // different themes and keybindings.
 func NewForm(groups ...*Group) *Form {
-	p := paginator.New()
-	p.SetTotalPages(len(groups))
+	selector := selector.NewSelector(len(groups))
 
 	f := &Form{
-		groups:    groups,
-		paginator: p,
-		keymap:    NewDefaultKeyMap(),
-		results:   make(map[string]any),
-		layout:    LayoutDefault,
+		groups:   groups,
+		selector: selector,
+		keymap:   NewDefaultKeyMap(),
+		results:  make(map[string]any),
+		layout:   LayoutDefault,
 		teaOptions: []tea.ProgramOption{
 			tea.WithOutput(os.Stderr),
 		},
@@ -400,18 +399,18 @@ func (f *Form) UpdateFieldPositions() *Form {
 
 // Errors returns the current groups' errors.
 func (f *Form) Errors() []error {
-	return f.groups[f.paginator.Page].Errors()
+	return f.groups[f.selector.Selected()].Errors()
 }
 
 // Help returns the current groups' help.
 func (f *Form) Help() help.Model {
-	return f.groups[f.paginator.Page].help
+	return f.groups[f.selector.Selected()].help
 }
 
 // KeyBinds returns the current fields' keybinds.
 func (f *Form) KeyBinds() []key.Binding {
-	group := f.groups[f.paginator.Page]
-	return group.fields[group.paginator.Page].KeyBinds()
+	group := f.groups[f.selector.Selected()]
+	return group.fields[f.selector.Selected()].KeyBinds()
 }
 
 // Get returns a result from the form.
@@ -480,7 +479,7 @@ func (f *Form) Init() tea.Cmd {
 		cmds[i] = group.Init()
 	}
 
-	if f.isGroupHidden(f.paginator.Page) {
+	if f.isGroupHidden(f.selector.Selected()) {
 		cmds = append(cmds, nextGroup)
 	}
 
@@ -494,7 +493,7 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return f, nil
 	}
 
-	page := f.paginator.Page
+	page := f.selector.Selected()
 	group := f.groups[page]
 
 	switch msg := msg.(type) {
@@ -525,8 +524,10 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case nextFieldMsg:
 		// Form is progressing to the next field, let's save the value of the current field.
-		field := group.fields[group.paginator.Page]
-		f.results[field.GetKey()] = field.GetValue()
+		if selected := group.selector.Selected(); selected < len(group.fields) {
+			field := group.fields[selected]
+			f.results[field.GetKey()] = field.GetValue()
+		}
 
 	case nextGroupMsg:
 		if len(group.Errors()) > 0 {
@@ -539,38 +540,38 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return f, f.SubmitCmd
 		}
 
-		if f.paginator.OnLastPage() {
+		if f.selector.OnLast() {
 			return submit()
 		}
 
-		for i := f.paginator.Page + 1; i < f.paginator.TotalPages; i++ {
+		for i := f.selector.Selected() + 1; i < f.selector.Total(); i++ {
 			if !f.isGroupHidden(i) {
-				f.paginator.Page = i
+				f.selector.SetSelected(i)
 				break
 			}
 			// all subsequent groups are hidden, so we must act as
 			// if we were in the last one.
-			if i == f.paginator.TotalPages-1 {
+			if i == f.selector.Total()-1 {
 				return submit()
 			}
 		}
-		f.groups[f.paginator.Page].active = true
-		return f, f.groups[f.paginator.Page].Init()
+		f.groups[f.selector.Selected()].active = true
+		return f, f.groups[f.selector.Selected()].Init()
 
 	case prevGroupMsg:
 		if len(group.Errors()) > 0 {
 			return f, nil
 		}
 
-		for i := f.paginator.Page - 1; i >= 0; i-- {
+		for i := f.selector.Selected() - 1; i >= 0; i-- {
 			if !f.isGroupHidden(i) {
-				f.paginator.Page = i
+				f.selector.SetSelected(i)
 				break
 			}
 		}
 
-		f.groups[f.paginator.Page].active = true
-		return f, f.groups[f.paginator.Page].Init()
+		f.groups[f.selector.Selected()].active = true
+		return f, f.groups[f.selector.Selected()].Init()
 	}
 
 	m, cmd := group.Update(msg)
