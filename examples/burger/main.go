@@ -51,7 +51,7 @@ type Burger struct {
 
 func main() {
 	var burger Burger
-	var order = Order{Burger: burger}
+	order := Order{Burger: burger}
 
 	// Should we run in accessible mode?
 	accessible, _ := strconv.ParseBool(os.Getenv("ACCESSIBLE"))
@@ -83,13 +83,13 @@ func main() {
 				Title("Toppings").
 				Description("Choose up to 4.").
 				Options(
-					huh.NewOption("Lettuce", "Lettuce").Selected(true),
-					huh.NewOption("Tomatoes", "Tomatoes").Selected(true),
-					huh.NewOption("Charm Sauce", "Charm Sauce"),
-					huh.NewOption("Jalapeños", "Jalapeños"),
-					huh.NewOption("Cheese", "Cheese"),
-					huh.NewOption("Vegan Cheese", "Vegan Cheese"),
-					huh.NewOption("Nutella", "Nutella"),
+					huh.NewOption("Lettuce").Selected(true),
+					huh.NewOption("Tomatoes").Selected(true),
+					huh.NewOption("Charm Sauce"),
+					huh.NewOption("Jalapeños"),
+					huh.NewOption("Cheese"),
+					huh.NewOption("Vegan Cheese"),
+					huh.NewOption("Nutella"),
 				).
 				Validate(func(t []string) error {
 					if len(t) <= 0 {
@@ -152,7 +152,6 @@ func main() {
 	).WithAccessible(accessible)
 
 	err := form.Run()
-
 	if err != nil {
 		fmt.Println("Uh oh:", err)
 		os.Exit(1)

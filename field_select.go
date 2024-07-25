@@ -183,7 +183,6 @@ func (s *Select[T]) Options(options ...Option[T]) *Select[T] {
 			s.ToggleSelect(i)
 		}
 	}
-
 	s.updateViewportHeight()
 	s.updateValue()
 
@@ -494,7 +493,6 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			if len(s.filteredOptions) > 0 {
 				s.selected = min(s.selected, len(s.filteredOptions)-1)
-				s.viewport.SetYOffset(clamp(s.selected, 0, len(s.filteredOptions)-s.viewport.Height))
 			}
 		}
 	}
@@ -599,8 +597,8 @@ func (s *Select[T]) optionsView() string {
 
 // startAtSelected makes the viewport content start at the selected element.
 func (s *Select[T]) startAtSelected() {
-	if s.selected > s.viewport.Height {
-		s.viewport.SetYOffset(s.selected)
+	if s.selected > s.viewport.YOffset+s.viewport.Height {
+		s.viewport.SetYOffset(s.selected - s.viewport.YOffset)
 	}
 }
 

@@ -6,7 +6,8 @@ import (
 
 // Option is an option for select fields.
 type Option[T comparable] struct {
-	Value T
+	Value    T
+	selected bool
 }
 
 // NewOptions returns new options from a list of values.
@@ -18,6 +19,12 @@ func NewOptions[T comparable](values ...T) []Option[T] {
 		}
 	}
 	return options
+}
+
+// Selected sets whether the option is currently selected.
+func (o Option[T]) Selected(selected bool) Option[T] {
+	o.selected = selected
+	return o
 }
 
 // String returns the string representation of the Option.

@@ -16,6 +16,15 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+const (
+	top int = iota
+	bottom
+	up
+	down
+	halfUp
+	halfDown
+)
+
 // MultiSelect is a form multi-select field.
 type MultiSelect[T comparable] struct {
 	accessor Accessor[[]T]
@@ -81,14 +90,7 @@ func (m *MultiSelect[T]) Value(value *[]T) *MultiSelect[T] {
 // Accessor sets the accessor of the input field.
 func (m *MultiSelect[T]) Accessor(accessor Accessor[[]T]) *MultiSelect[T] {
 	m.accessor = accessor
-	for i, o := range m.options.val {
-		for _, v := range m.accessor.Get() {
-			if o.Value == v {
-				m.Select(i, o)
-				break
-			}
-		}
-	}
+	m.initSelectedValues(m.options.val...)
 	return m
 }
 
@@ -131,17 +133,10 @@ func (m *MultiSelect[T]) Options(options ...Option[T]) *MultiSelect[T] {
 	if len(options) <= 0 {
 		return m
 	}
-
-	for i, o := range options {
-		for _, v := range m.accessor.Get() {
-			if o.Value == v {
-				m.Select(i, o)
-				break
-			}
-		}
-	}
+	m.initSelectedValues(options...)
 	m.options.val = options
 	m.filteredOptions = options
+	m.cursor = m.lowestSelectedIndex()
 	m.updateViewportHeight()
 	return m
 }
@@ -157,6 +152,7 @@ func (m *MultiSelect[T]) OptionsFunc(f func() []Option[T], bindings any) *MultiS
 		m.height = defaultHeight
 		m.updateViewportHeight()
 	}
+	m.cursor = m.lowestSelectedIndex()
 	return m
 }
 
@@ -344,47 +340,30 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				break
 			}
 
-			m.cursor = max(m.cursor-1, 0)
-			if m.cursor < m.viewport.YOffset {
-				m.viewport.SetYOffset(m.cursor)
-			}
+			m.moveCursor(up)
 		case key.Matches(msg, m.keymap.Down):
 			if m.filtering && msg.String() == "j" {
 				break
 			}
 
-			m.cursor = min(m.cursor+1, len(m.filteredOptions)-1)
-			if m.cursor >= m.viewport.YOffset+m.viewport.Height {
-				m.viewport.LineDown(1)
-			}
+			m.moveCursor(down)
 		case key.Matches(msg, m.keymap.GotoTop):
 			if m.filtering {
 				break
 			}
-			m.cursor = 0
-			m.viewport.GotoTop()
+			m.moveCursor(top)
 		case key.Matches(msg, m.keymap.GotoBottom):
 			if m.filtering {
 				break
 			}
-			m.cursor = len(m.filteredOptions) - 1
-			m.viewport.GotoBottom()
+			m.moveCursor(bottom)
 		case key.Matches(msg, m.keymap.HalfPageUp):
-			m.cursor = max(m.cursor-m.viewport.Height/2, 0)
-			m.viewport.HalfViewUp()
+			m.moveCursor(halfUp)
 		case key.Matches(msg, m.keymap.HalfPageDown):
-			m.cursor = min(m.cursor+m.viewport.Height/2, len(m.filteredOptions)-1)
-			m.viewport.HalfViewDown()
+			m.moveCursor(halfDown)
 		case key.Matches(msg, m.keymap.Toggle) && !m.filtering:
-			for i, option := range m.options.val {
-				if i == m.cursor {
-					if m.isSelected(i) {
-						m.Deselect(i)
-					} else {
-						m.Select(i, option)
-					}
-				}
-			}
+			opt := m.options.val[m.cursor]
+			m.ToggleSelect(m.cursor, opt)
 			m.updateValue()
 		case key.Matches(msg, m.keymap.ToggleAll) && m.limit == 0:
 			selected := false
@@ -462,11 +441,8 @@ func (m *MultiSelect[T]) numSelected() int {
 
 func (m *MultiSelect[T]) updateValue() {
 	value := make([]T, 0)
-	for i, option := range m.options.val {
-		if _, ok := m.selected[i]; ok {
-			value = append(value, option.Value)
-			m.selected[i] = option
-		}
+	for i := range m.selected {
+		value = append(value, m.selected[i].Value)
 	}
 	m.accessor.Set(value)
 	m.err = m.validate(m.accessor.Get())
@@ -547,11 +523,30 @@ func (m *MultiSelect[T]) optionsView() string {
 	return sb.String()
 }
 
+func (m *MultiSelect[T]) lowestSelectedIndex() int {
+	if len(m.selected) == 0 {
+		return 0
+	}
+	var indices []int
+	for k := range m.selected {
+		indices = append(indices, k)
+	}
+	return slices.Min(indices)
+}
+
+// startAtSelected makes the viewport content start at the selected element. Returns the index.
+func (m *MultiSelect[T]) startAtSelected() int {
+	if m.cursor > m.viewport.YOffset+m.viewport.Height {
+		m.viewport.SetYOffset(m.cursor - m.viewport.YOffset)
+	}
+	return m.cursor
+}
+
 // View renders the multi-select field.
 func (m *MultiSelect[T]) View() string {
 	styles := m.activeStyles()
-
 	m.viewport.SetContent(m.optionsView())
+	m.startAtSelected()
 
 	var sb strings.Builder
 	if m.title.val != "" || m.title.fn != nil {
@@ -629,22 +624,25 @@ func (m *MultiSelect[T]) runAccessible() error {
 		}
 
 		// Toggle Selection
-		if m.isSelected(choice - 1) {
-			m.Deselect(choice - 1)
-			fmt.Printf("Deselected: %s\n\n", m.options.val[choice-1].String())
+		err := m.ToggleSelect(choice-1, m.options.val[choice-1])
+		if err != nil {
+			fmt.Printf("You can't select more than %d options.\n", m.limit)
+			continue
+		}
+
+		// Provide confirmation message.
+		if o, ok := m.selected[choice-1]; ok {
+			// If it exists, it didn't before.
+			fmt.Printf("Selected: %s\n\n", o.String())
 		} else {
-			err := m.Select(choice-1, m.options.val[choice-1])
-			if err != nil {
-				fmt.Printf("You can't select more than %d options.\n", m.limit)
-				continue
-			}
-			fmt.Printf("Selected: %s\n\n", m.options.val[choice-1].String())
+			fmt.Printf("Deselected: %s\n\n", o.String())
 		}
 		m.printOptions()
 	}
 
 	var values []string
 
+	// TODO centralize this kind of loop
 	value := m.accessor.Get()
 	for i, option := range m.options.val {
 		if _, ok := m.selected[i]; ok {
@@ -719,8 +717,13 @@ func (m *MultiSelect[T]) GetValue() any {
 	return m.accessor.Get()
 }
 
-// Select the option.
-func (m *MultiSelect[T]) Select(index int, o Option[T]) error {
+// ToggleSelect selects or deselects the option. Returns an error if the number
+// of selected values exceeds the limit.
+func (m *MultiSelect[T]) ToggleSelect(index int, o Option[T]) error {
+	if _, ok := m.selected[index]; ok {
+		delete(m.selected, index)
+		return nil
+	}
 	if len(m.selected) >= m.limit {
 		return errors.New("Limit reached. Unable to select another option.")
 	}
@@ -728,15 +731,49 @@ func (m *MultiSelect[T]) Select(index int, o Option[T]) error {
 	return nil
 }
 
-// Deselect the option.
-func (m *MultiSelect[T]) Deselect(index int) {
-	delete(m.selected, index)
-}
-
-// isSelected lets us know if the value at the given index is selected.
+// isSelected returns true if the value at the given index is selected.
 func (m *MultiSelect[T]) isSelected(index int) bool {
 	if _, ok := m.selected[index]; ok {
 		return true
 	}
 	return false
+}
+
+// moveCursor repositions both the cursor and viewport offset while keeping
+// values within bounds.
+func (m *MultiSelect[T]) moveCursor(i int) {
+	switch i {
+	case top:
+		m.cursor = top
+		m.viewport.GotoTop()
+	case up:
+		m.cursor = max(m.cursor-1, 0)
+		if m.cursor < m.viewport.YOffset {
+			m.viewport.SetYOffset(m.cursor)
+		}
+	case down:
+		m.cursor = min(m.cursor+1, len(m.filteredOptions)-1)
+		if m.cursor >= m.viewport.YOffset+m.viewport.Height {
+			m.viewport.LineDown(1)
+		}
+	case bottom:
+		m.cursor = len(m.filteredOptions) - 1
+		m.viewport.GotoBottom()
+	case halfUp:
+		m.cursor = max(m.cursor-m.viewport.Height/2, 0)
+		m.viewport.HalfViewUp()
+	case halfDown:
+		m.cursor = min(m.cursor+m.viewport.Height/2, len(m.filteredOptions)-1)
+		m.viewport.HalfViewDown()
+	}
+}
+
+// initSelectedValues handles the Option's selected value that's set on
+// instantiation and adds it to our map of selected items.
+func (m *MultiSelect[T]) initSelectedValues(opts ...Option[T]) {
+	for i, o := range opts {
+		if o.selected {
+			m.selected[i] = o
+		}
+	}
 }
