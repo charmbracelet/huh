@@ -14,8 +14,10 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-const minHeight = 1
-const defaultHeight = 10
+const (
+	minHeight     = 1
+	defaultHeight = 10
+)
 
 // Select is a select field.
 //
@@ -400,7 +402,11 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if s.filtering && (msg.String() == "k" || msg.String() == "h") {
 				break
 			}
-			s.selected = max(s.selected-1, 0)
+			s.selected = s.selected - 1
+			if s.selected < 0 {
+				s.selected = len(s.filteredOptions) - 1
+				s.viewport.GotoBottom()
+			}
 			if s.selected < s.viewport.YOffset {
 				s.viewport.SetYOffset(s.selected)
 			}
@@ -433,7 +439,11 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if s.filtering && (msg.String() == "j" || msg.String() == "l") {
 				break
 			}
-			s.selected = min(s.selected+1, len(s.filteredOptions)-1)
+			s.selected = s.selected + 1
+			if s.selected > len(s.filteredOptions)-1 {
+				s.selected = 0
+				s.viewport.GotoTop()
+			}
 			if s.selected >= s.viewport.YOffset+s.viewport.Height {
 				s.viewport.LineDown(1)
 			}
