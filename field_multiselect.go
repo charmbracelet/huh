@@ -65,6 +65,7 @@ func NewMultiSelect[T comparable]() *MultiSelect[T] {
 		title:       Eval[string]{cache: make(map[uint64]string)},
 		description: Eval[string]{cache: make(map[uint64]string)},
 		spinner:     s,
+		filterable:  true,
 	}
 }
 
@@ -158,6 +159,9 @@ func (m *MultiSelect[T]) OptionsFunc(f func() []Option[T], bindings any) *MultiS
 // Filterable sets the multi-select field as filterable.
 func (m *MultiSelect[T]) Filterable(filterable bool) *MultiSelect[T] {
 	m.filterable = filterable
+	m.keymap.Filter.SetEnabled(filterable)
+	m.keymap.ClearFilter.SetEnabled(filterable)
+	m.keymap.SetFilter.SetEnabled(filterable)
 	return m
 }
 
@@ -225,13 +229,24 @@ func (m *MultiSelect[T]) KeyBinds() []key.Binding {
 		m.keymap.Toggle,
 		m.keymap.Up,
 		m.keymap.Down,
+	}
+	if m.filterable {
+		binds = append(
+			binds,
+			m.keymap.Filter,
+			m.keymap.SetFilter,
+			m.keymap.ClearFilter,
+		)
+	}
+	binds = append(
+		binds,
 		m.keymap.Filter,
 		m.keymap.SetFilter,
 		m.keymap.ClearFilter,
 		m.keymap.Prev,
 		m.keymap.Submit,
 		m.keymap.Next,
-	}
+	)
 	if m.limit == 0 {
 		binds = append(binds, m.keymap.ToggleAll)
 	}
@@ -321,16 +336,16 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		m.err = nil
 		switch {
-		case key.Matches(msg, m.keymap.Filter):
+		case key.Matches(msg, m.keymap.Filter) && m.filterable:
 			m.setFilter(true)
 			return m, m.filter.Focus()
-		case key.Matches(msg, m.keymap.SetFilter):
+		case key.Matches(msg, m.keymap.SetFilter) && m.filterable:
 			if len(m.filteredOptions) <= 0 {
 				m.filter.SetValue("")
 				m.filteredOptions = m.options.val
 			}
 			m.setFilter(false)
-		case key.Matches(msg, m.keymap.ClearFilter):
+		case key.Matches(msg, m.keymap.ClearFilter) && m.filterable:
 			m.filter.SetValue("")
 			m.filteredOptions = m.options.val
 			m.setFilter(false)
