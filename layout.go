@@ -31,7 +31,7 @@ func LayoutGrid(rows int, columns int) Layout {
 type layoutDefault struct{}
 
 func (l *layoutDefault) View(f *Form) string {
-	return f.groups[f.paginator.Page].View()
+	return f.groups[f.selector.Selected()].View()
 }
 
 func (l *layoutDefault) GroupWidth(_ *Form, _ *Group, w int) int {
@@ -43,7 +43,7 @@ type layoutColumns struct {
 }
 
 func (l *layoutColumns) visibleGroups(f *Form) []*Group {
-	segmentIndex := f.paginator.Page / l.columns
+	segmentIndex := f.selector.Selected() / l.columns
 	start := segmentIndex * l.columns
 	end := start + l.columns
 
@@ -64,7 +64,7 @@ func (l *layoutColumns) View(f *Form) string {
 	for _, group := range groups {
 		columns = append(columns, group.Content())
 	}
-	footer := f.groups[f.paginator.Page].Footer()
+	footer := f.groups[f.selector.Selected()].Footer()
 
 	return lipgloss.JoinVertical(lipgloss.Left,
 		lipgloss.JoinHorizontal(lipgloss.Top, columns...),
@@ -83,7 +83,7 @@ func (l *layoutStack) View(f *Form) string {
 	for _, group := range f.groups {
 		columns = append(columns, group.Content())
 	}
-	footer := f.groups[f.paginator.Page].Footer()
+	footer := f.groups[f.selector.Selected()].Footer()
 
 	var view strings.Builder
 	view.WriteString(strings.Join(columns, "\n"))
@@ -101,7 +101,7 @@ type layoutGrid struct {
 
 func (l *layoutGrid) visibleGroups(f *Form) [][]*Group {
 	total := l.rows * l.columns
-	segmentIndex := f.paginator.Page / total
+	segmentIndex := f.selector.Selected() / total
 	start := segmentIndex * total
 	end := start + total
 
@@ -139,7 +139,7 @@ func (l *layoutGrid) View(f *Form) string {
 		}
 		rows = append(rows, lipgloss.JoinHorizontal(lipgloss.Top, columns...))
 	}
-	footer := f.groups[f.paginator.Page].Footer()
+	footer := f.groups[f.selector.Selected()].Footer()
 
 	return lipgloss.JoinVertical(lipgloss.Left, strings.Join(rows, "\n"), footer)
 }
