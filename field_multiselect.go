@@ -382,7 +382,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 			m.updateValue()
-		case key.Matches(msg, m.keymap.ToggleAll) && !m.filtering && m.limit == 0:
+		case key.Matches(msg, m.keymap.ToggleAll) && m.limit == 0:
 			selected := false
 
 			for _, option := range m.filteredOptions {
