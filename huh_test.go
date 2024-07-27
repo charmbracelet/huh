@@ -88,8 +88,8 @@ func TestForm(t *testing.T) {
 				Limit(4),
 		),
 
-		// Prompt for toppings and special instructions.
-		// The customer can ask for at least two toppings.
+		// Prompt for beverages.
+		// The customer can ask for at least two beverages.
 		NewGroup(
 			NewMultiSelect[string]().
 				Title("Beverages").
