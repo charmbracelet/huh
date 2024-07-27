@@ -27,6 +27,7 @@ type MultiSelect[T comparable] struct {
 	filterable      bool
 	filteredOptions []Option[T]
 	limit           int
+	atLeast         int
 	height          int
 
 	// error handling
@@ -171,6 +172,12 @@ func (m *MultiSelect[T]) Filtering(filtering bool) *MultiSelect[T] {
 // Limit sets the limit of the multi-select field.
 func (m *MultiSelect[T]) Limit(limit int) *MultiSelect[T] {
 	m.limit = limit
+	return m
+}
+
+// AtLeast sets the minimum number of options that must be selected.
+func (m *MultiSelect[T]) AtLeast(atLeast int) *MultiSelect[T] {
+	m.atLeast = atLeast
 	return m
 }
 
@@ -379,6 +386,10 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.updateValue()
 		case key.Matches(msg, m.keymap.Prev):
 			m.updateValue()
+			if m.atLeast > 0 && m.numSelected() < m.atLeast {
+				m.err = fmt.Errorf("you must select at least %d options", m.atLeast)
+				return m, nil
+			}
 			m.err = m.validate(m.accessor.Get())
 			if m.err != nil {
 				return m, nil
@@ -386,6 +397,10 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, PrevField
 		case key.Matches(msg, m.keymap.Next, m.keymap.Submit):
 			m.updateValue()
+			if m.atLeast > 0 && m.numSelected() < m.atLeast {
+				m.err = fmt.Errorf("you must select at least %d options", m.atLeast)
+				return m, nil
+			}
 			m.err = m.validate(m.accessor.Get())
 			if m.err != nil {
 				return m, nil
