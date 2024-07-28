@@ -103,7 +103,7 @@ func TestForm(t *testing.T) {
 				).
 				Value(&order.Beverages.Name).
 				Filterable(true).
-				AtLeast(2),
+				Minimum(2),
 		),
 
 		// Gather final details for the order.
