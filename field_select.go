@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/bubbles/paginator"
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
@@ -31,6 +32,7 @@ type Select[T comparable] struct {
 	key      string
 
 	viewport viewport.Model
+	pager    paginator.Model
 
 	title           Eval[string]
 	description     Eval[string]
@@ -46,12 +48,14 @@ type Select[T comparable] struct {
 	filter    textinput.Model
 	spinner   spinner.Model
 
-	inline     bool
-	width      int
-	height     int
-	accessible bool
-	theme      *Theme
-	keymap     SelectKeyMap
+	inline       bool
+	width        int
+	height       int
+	accessible   bool
+	theme        *Theme
+	keymap       SelectKeyMap
+	customKeymap bool
+	pagination   bool
 }
 
 // NewSelect creates a new select field.
@@ -65,6 +69,9 @@ func NewSelect[T comparable]() *Select[T] {
 	filter.Prompt = "/"
 
 	s := spinner.New(spinner.WithSpinner(spinner.Line))
+	p := paginator.New()
+	p.Type = paginator.Dots
+	p.KeyMap = paginator.KeyMap{}
 
 	return &Select[T]{
 		accessor:    &EmbeddedAccessor[T]{},
@@ -75,6 +82,7 @@ func NewSelect[T comparable]() *Select[T] {
 		title:       Eval[string]{cache: make(map[uint64]string)},
 		description: Eval[string]{cache: make(map[uint64]string)},
 		spinner:     s,
+		pager:       p,
 	}
 }
 
@@ -98,6 +106,7 @@ func (s *Select[T]) selectValue(value T) {
 			break
 		}
 	}
+	s.updatePager()
 }
 
 // Key sets the key of the select field which can be used to retrieve the value
@@ -188,6 +197,7 @@ func (s *Select[T]) Options(options ...Option[T]) *Select[T] {
 
 	s.updateViewportHeight()
 	s.updateValue()
+	s.updatePager()
 
 	return s
 }
@@ -266,6 +276,7 @@ func (*Select[T]) Zoom() bool { return false }
 // Focus focuses the select field.
 func (s *Select[T]) Focus() tea.Cmd {
 	s.focused = true
+	s.updatePager()
 	return nil
 }
 
@@ -278,6 +289,7 @@ func (s *Select[T]) Blur() tea.Cmd {
 	}
 	s.focused = false
 	s.err = s.validate(value)
+	s.updatePager()
 	return nil
 }
 
@@ -342,7 +354,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			s.options.bindingsHash = hash
 			if s.options.loadFromCache() {
 				s.filteredOptions = s.options.val
-				s.selected = clamp(s.selected, 0, len(s.options.val)-1)
+				s.setSelected(clamp(s.selected, 0, len(s.options.val)-1))
 			} else {
 				s.options.loading = true
 				s.options.loadingStart = time.Now()
@@ -377,6 +389,15 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			s.selected = clamp(s.selected, 0, len(msg.options)-1)
 			s.filteredOptions = msg.options
 			s.updateValue()
+			s.updatePager()
+			s.viewport.SetContent(s.optionsView())
+			// XXX: Set the viewport to the selected item. When the options are
+			// dynamic, we need to update the selected item in the viewport to
+			// keep it in-sync with the paginator.
+			cmd = func() tea.Msg {
+				s.viewport.SetYOffset(s.selected)
+				return nil
+			}
 		}
 	case tea.KeyMsg:
 		s.err = nil
@@ -402,34 +423,38 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if s.filtering && (msg.String() == "k" || msg.String() == "h") {
 				break
 			}
-			s.selected = s.selected - 1
+			s.setSelected(s.selected - 1)
 			if s.selected < 0 {
-				s.selected = len(s.filteredOptions) - 1
+				s.setSelected(len(s.filteredOptions) - 1)
 				s.viewport.GotoBottom()
-			}
-			if s.selected < s.viewport.YOffset {
-				s.viewport.SetYOffset(s.selected)
+			} else if s.selected < s.viewport.YOffset {
+				if s.pagination {
+					s.viewport.ViewUp()
+				} else {
+					s.viewport.SetYOffset(s.selected)
+				}
 			}
 			s.updateValue()
 		case key.Matches(msg, s.keymap.GotoTop):
 			if s.filtering {
 				break
 			}
-			s.selected = 0
+			s.setSelected(0)
 			s.viewport.GotoTop()
 			s.updateValue()
 		case key.Matches(msg, s.keymap.GotoBottom):
 			if s.filtering {
 				break
 			}
-			s.selected = len(s.filteredOptions) - 1
+			s.setSelected(len(s.filteredOptions) - 1)
 			s.viewport.GotoBottom()
+			s.updateValue()
 		case key.Matches(msg, s.keymap.HalfPageUp):
-			s.selected = max(s.selected-s.viewport.Height/2, 0)
+			s.setSelected(max(s.selected-s.viewport.Height/2, 0))
 			s.viewport.HalfViewUp()
 			s.updateValue()
 		case key.Matches(msg, s.keymap.HalfPageDown):
-			s.selected = min(s.selected+s.viewport.Height/2, len(s.filteredOptions)-1)
+			s.setSelected(min(s.selected+s.viewport.Height/2, len(s.filteredOptions)-1))
 			s.viewport.HalfViewDown()
 			s.updateValue()
 		case key.Matches(msg, s.keymap.Down, s.keymap.Right):
@@ -439,13 +464,16 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if s.filtering && (msg.String() == "j" || msg.String() == "l") {
 				break
 			}
-			s.selected = s.selected + 1
+			s.setSelected(s.selected + 1)
 			if s.selected > len(s.filteredOptions)-1 {
-				s.selected = 0
+				s.setSelected(0)
 				s.viewport.GotoTop()
-			}
-			if s.selected >= s.viewport.YOffset+s.viewport.Height {
-				s.viewport.LineDown(1)
+			} else if s.selected >= s.viewport.YOffset+s.viewport.Height {
+				if s.pagination {
+					s.viewport.ViewDown()
+				} else {
+					s.viewport.LineDown(1)
+				}
 			}
 			s.updateValue()
 		case key.Matches(msg, s.keymap.Prev):
@@ -484,11 +512,14 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 			if len(s.filteredOptions) > 0 {
-				s.selected = min(s.selected, len(s.filteredOptions)-1)
+				s.setSelected(min(s.selected, len(s.filteredOptions)-1))
 				s.viewport.SetYOffset(clamp(s.selected, 0, len(s.filteredOptions)-s.viewport.Height))
 			}
 		}
 	}
+
+	s.pager, _ = s.pager.Update(msg)
+	s.updatePager()
 
 	return s, cmd
 }
@@ -508,9 +539,14 @@ func (s *Select[T]) updateViewportHeight() {
 		return
 	}
 
-	s.viewport.Height = max(minHeight, s.height-
-		lipgloss.Height(s.titleView())-
-		lipgloss.Height(s.descriptionView()))
+	viewHeight := s.height -
+		lipgloss.Height(s.titleView()) -
+		lipgloss.Height(s.descriptionView())
+	if s.pagination {
+		viewHeight -= lipgloss.Height(s.pager.View())
+	}
+	s.viewport.Height = max(minHeight, viewHeight)
+	s.pager.PerPage = s.viewport.Height
 }
 
 func (s *Select[T]) activeStyles() *FieldStyles {
@@ -581,11 +617,29 @@ func (s *Select[T]) optionsView() string {
 		}
 	}
 
+	if s.pagination && s.pager.OnLastPage() {
+		// Pad the last page with empty lines to make room for the footer.
+		pad := s.viewport.Height
+		if len(s.filteredOptions) > 0 {
+			pad = s.viewport.Height - (len(s.filteredOptions) % s.viewport.Height)
+		}
+		if pad > 0 {
+			sb.WriteString(strings.Repeat("\n", pad))
+		}
+	}
+
 	for i := len(s.filteredOptions); i < len(s.options.val)-1; i++ {
 		sb.WriteString("\n")
 	}
 
 	return sb.String()
+}
+
+func (s *Select[T]) footerView() string {
+	if !s.pagination || s.options.loading || s.pager.TotalPages <= 1 {
+		return ""
+	}
+	return s.pager.View()
 }
 
 // View renders the select field.
@@ -607,6 +661,14 @@ func (s *Select[T]) View() string {
 		}
 	}
 	sb.WriteString(s.viewport.View())
+	if s.pagination {
+		sb.WriteString("\n\n")
+		var footerView string
+		if s.pager.TotalPages > 1 {
+			footerView = s.footerView()
+		}
+		sb.WriteString(footerView)
+	}
 	return styles.Base.Render(sb.String())
 }
 
@@ -681,12 +743,21 @@ func (s *Select[T]) WithTheme(theme *Theme) Field {
 	s.filter.PromptStyle = theme.Focused.TextInput.Prompt
 	s.filter.TextStyle = theme.Focused.TextInput.Text
 	s.filter.PlaceholderStyle = theme.Focused.TextInput.Placeholder
+	if theme.Paginator.UseDots {
+		s.pager.Type = paginator.Dots
+	} else {
+		s.pager.Type = paginator.Arabic
+	}
+	s.pager.ActiveDot = theme.Paginator.ActiveDot.String()
+	s.pager.InactiveDot = theme.Paginator.InactiveDot.String()
+	s.pager.ArabicFormat = theme.Paginator.ArabicFormat.String()
 	s.updateViewportHeight()
 	return s
 }
 
 // WithKeyMap sets the keymap on a select field.
 func (s *Select[T]) WithKeyMap(k *KeyMap) Field {
+	s.customKeymap = true
 	s.keymap = k.Select
 	s.keymap.Left.SetEnabled(s.inline)
 	s.keymap.Right.SetEnabled(s.inline)
@@ -723,10 +794,31 @@ func (s *Select[T]) WithPosition(p FieldPosition) Field {
 	return s
 }
 
+// WithPagination sets whether the select field should show pagination.
+func (s *Select[T]) WithPagination(show bool) Field {
+	s.pagination = show
+	s.keymap.Left.SetEnabled(show)
+	s.keymap.Right.SetEnabled(show)
+	return s
+}
+
 // GetKey returns the key of the field.
 func (s *Select[T]) GetKey() string { return s.key }
 
 // GetValue returns the value of the field.
 func (s *Select[T]) GetValue() any {
 	return s.accessor.Get()
+}
+
+func (s *Select[T]) updatePager() {
+	if height := s.viewport.Height; height > 0 {
+		s.pager.Page = s.selected / height
+		s.pager.SetTotalPages(len(s.options.val))
+	}
+}
+
+func (s *Select[T]) setSelected(i int) {
+	s.selected = i
+	s.updatePager()
+	s.viewport.SetContent(s.optionsView())
 }

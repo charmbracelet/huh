@@ -42,7 +42,8 @@ func main() {
 					// simulate API call
 					time.Sleep(1000 * time.Millisecond)
 					return huh.NewOptions(s...)
-				}, &country /* only this function when `country` changes */),
+				}, &country /* only this function when `country` changes */).
+				WithPagination(true),
 		),
 	)
 

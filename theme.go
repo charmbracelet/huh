@@ -15,6 +15,20 @@ type Theme struct {
 	Blurred        FieldStyles
 	Focused        FieldStyles
 	Help           help.Styles
+	Paginator      PaginatorStyles
+}
+
+// PaginatorStyles are the styles for the paginator.
+type PaginatorStyles struct {
+	// UseDots determines if dots or Arabic numerals are used for the paginator.
+	UseDots bool
+	// ActiveDot is the symbol used for the active page.
+	ActiveDot lipgloss.Style
+	// InactivDot is the symbol used for inactive pages.
+	InactiveDot lipgloss.Style
+	// ArabicFormat is the format used for the paginator when UseDots is false
+	// (defaults to "%d/%d").
+	ArabicFormat lipgloss.Style
 }
 
 // FieldStyles are the styles for input fields.
@@ -104,6 +118,12 @@ func ThemeBase() *Theme {
 	t.Blurred.NextIndicator = lipgloss.NewStyle()
 	t.Blurred.PrevIndicator = lipgloss.NewStyle()
 
+	// Paginator styles.
+	t.Paginator.UseDots = true
+	t.Paginator.ActiveDot = lipgloss.NewStyle().SetString("•")
+	t.Paginator.InactiveDot = lipgloss.NewStyle().SetString("◦")
+	t.Paginator.ArabicFormat = lipgloss.NewStyle().SetString("%d/%d")
+
 	return &t
 }
 
@@ -148,6 +168,9 @@ func ThemeCharm() *Theme {
 	t.Blurred.Base = t.Focused.Base.BorderStyle(lipgloss.HiddenBorder())
 	t.Blurred.NextIndicator = lipgloss.NewStyle()
 	t.Blurred.PrevIndicator = lipgloss.NewStyle()
+
+	t.Paginator.ActiveDot = t.Paginator.ActiveDot.Foreground(lipgloss.AdaptiveColor{Light: "243", Dark: "248"})
+	t.Paginator.InactiveDot = t.Paginator.InactiveDot.Foreground(lipgloss.AdaptiveColor{Light: "188", Dark: "59"})
 
 	return t
 }
@@ -196,6 +219,9 @@ func ThemeDracula() *Theme {
 	t.Blurred.NextIndicator = lipgloss.NewStyle()
 	t.Blurred.PrevIndicator = lipgloss.NewStyle()
 
+	t.Paginator.ActiveDot = t.Paginator.ActiveDot.Foreground(background)
+	t.Paginator.InactiveDot = t.Paginator.InactiveDot.Foreground(selection)
+
 	return t
 }
 
@@ -235,6 +261,9 @@ func ThemeBase16() *Theme {
 
 	t.Blurred.NextIndicator = lipgloss.NewStyle()
 	t.Blurred.PrevIndicator = lipgloss.NewStyle()
+
+	t.Paginator.ActiveDot = t.Paginator.ActiveDot.Foreground(lipgloss.Color("8"))
+	t.Paginator.InactiveDot = t.Paginator.InactiveDot.Foreground(lipgloss.Color("15"))
 
 	return t
 }
@@ -292,6 +321,9 @@ func ThemeCatppuccin() *Theme {
 	t.Help.FullKey = t.Help.FullKey.Foreground(subtext0)
 	t.Help.FullDesc = t.Help.FullDesc.Foreground(overlay1)
 	t.Help.FullSeparator = t.Help.FullSeparator.Foreground(subtext0)
+
+	t.Paginator.ActiveDot = t.Paginator.ActiveDot.Foreground(overlay0)
+	t.Paginator.InactiveDot = t.Paginator.InactiveDot.Foreground(subtext0)
 
 	return t
 }
