@@ -259,12 +259,12 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case updateFieldMsg:
-		var cmds []tea.Cmd
+		var fieldCmds []tea.Cmd
 		if ok, hash := m.title.shouldUpdate(); ok {
 			m.title.bindingsHash = hash
 			if !m.title.loadFromCache() {
 				m.title.loading = true
-				cmds = append(cmds, func() tea.Msg {
+				fieldCmds = append(fieldCmds, func() tea.Msg {
 					return updateTitleMsg{id: m.id, title: m.title.fn(), hash: hash}
 				})
 			}
@@ -273,7 +273,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.description.bindingsHash = hash
 			if !m.description.loadFromCache() {
 				m.description.loading = true
-				cmds = append(cmds, func() tea.Msg {
+				fieldCmds = append(fieldCmds, func() tea.Msg {
 					return updateDescriptionMsg{id: m.id, description: m.description.fn(), hash: hash}
 				})
 			}
@@ -287,13 +287,13 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				m.options.loading = true
 				m.options.loadingStart = time.Now()
-				cmds = append(cmds, func() tea.Msg {
+				fieldCmds = append(fieldCmds, func() tea.Msg {
 					return updateOptionsMsg[T]{id: m.id, options: m.options.fn(), hash: hash}
 				}, m.spinner.Tick)
 			}
 		}
 
-		return m, tea.Batch(cmds...)
+		return m, tea.Batch(fieldCmds...)
 
 	case spinner.TickMsg:
 		if !m.options.loading {
