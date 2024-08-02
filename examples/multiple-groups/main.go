@@ -49,7 +49,7 @@ func main() {
 					huh.NewOption("O", "o").Selected(true),
 					huh.NewOption("P", "p"),
 				),
-		).WithHeight(3),
+		).WithHeight(10),
 		huh.NewGroup(
 			huh.NewSelect[string]().
 				Options(
