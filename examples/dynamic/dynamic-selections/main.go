@@ -7,10 +7,6 @@ import (
 	"github.com/charmbracelet/huh"
 )
 
-type Model struct {
-	form *huh.Form
-}
-
 var (
 	work time.Duration
 	rest time.Duration
