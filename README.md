@@ -1,7 +1,7 @@
 # Huh?
 
 <p>
-  <img alt="Hey there! I'm Glenn!" title="Hey there! I'm Glenn!" src="https://stuff.charm.sh/huh/glenn.png" width="400" />
+  <img alt="Hey there! I’m Glenn!" title="Hey there! I’m Glenn!" src="https://stuff.charm.sh/huh/glenn.png" width="400" />
   <br><br>
   <a href="https://github.com/charmbracelet/huh/releases"><img src="https://img.shields.io/github/release/charmbracelet/huh.svg" alt="Latest Release"></a>
   <a href="https://pkg.go.dev/github.com/charmbracelet/huh?tab=doc"><img src="https://godoc.org/github.com/golang/gddo?status.svg" alt="Go Docs"></a>
@@ -86,7 +86,7 @@ form := huh.NewForm(
     // Gather some final details about the order.
     huh.NewGroup(
         huh.NewInput().
-            Title("What's your name?").
+            Title("What’s your name?").
             Value(&name).
             // Validating fields is easy. The form will mark erroneous fields
             // and display error messages accordingly.
@@ -125,6 +125,9 @@ if !discount {
 And that’s it! For more info see [the full source][burgersource] for this
 example as well as [the docs][docs].
 
+If you need more dynamic forms that change based on input from previous fields,
+check out the [dynamic forms](#dynamic-forms) example.
+
 [burgersource]: ./examples/burger/main.go
 [docs]: https://pkg.go.dev/github.com/charmbracelet/huh?tab=doc
 
@@ -144,7 +147,7 @@ example as well as [the docs][docs].
 var name string
 
 huh.NewInput().
-    Title("What's your name?").
+    Title("What’s your name?").
     Value(&name).
     Run() // this is blocking...
 
@@ -159,7 +162,7 @@ Prompt the user for a single line of text.
 
 ```go
 huh.NewInput().
-    Title("What's for lunch?").
+    Title("What’s for lunch?").
     Prompt("?").
     Validate(isFood).
     Value(&lunch)
@@ -276,6 +279,78 @@ Themes can take advantage of the full range of
 [the docs](https://pkg.go.dev/github.com/charmbracelet/huh#Theme).
 
 [lipgloss]: https://github.com/charmbracelet/lipgloss
+
+## Dynamic Forms
+
+`huh?` forms can be as dynamic as your heart desires. Simply replace properties
+with their equivalent `Func` to recompute the properties value every time a
+different part of your form changes.
+
+Here’s how you would build a simple country + state / province picker.
+
+First, define some variables that we’ll use to store the user selection.
+
+```go
+var country string
+var state string
+```
+
+Define your country select as you normally would:
+
+```go
+huh.NewSelect[string]().
+    Options(huh.NewOptions("United States", "Canada", "Mexico")...).
+    Value(&country).
+    Title("Country").
+```
+
+Define your state select with `TitleFunc` and `OptionsFunc` instead of `Title`
+and `Options`. This will allow you to change the title and options based on the
+selection of the previous field, i.e. `country`.
+
+To do this, we provide a `func() string` and a `binding any` to `TitleFunc`. The
+function defines what to show for the title and the binding specifies what value
+needs to change for the function to recompute. So if `country` changes (e.g. the
+user changes the selection) we will recompute the function.
+
+For `OptionsFunc`, we provide a `func() []Option[string]` and a `binding any`.
+We’ll fetch the country’s states, provinces, or territories from an API. `huh`
+will automatically handle caching for you.
+
+> [!IMPORTANT]
+> We have to pass `&country` as the binding to recompute the function only when
+> `country` changes, otherwise we will hit the API too often.
+
+```go
+huh.NewSelect[string]().
+    Value(&state).
+    Height(8).
+    TitleFunc(func() string {
+        switch country {
+        case "United States":
+            return "State"
+        case "Canada":
+            return "Province"
+        default:
+            return "Territory"
+        }
+    }, &country).
+    OptionsFunc(func() []huh.Option[string] {
+        opts := fetchStatesForCountry(country)
+        return huh.NewOptions(opts...)
+    }, &country),
+```
+
+Lastly, run the `form` with these inputs.
+
+```go
+err := form.Run()
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+<img width="600" src="https://vhs.charm.sh/vhs-6FRmBjNi2aiRb4INPXwIjo.gif" alt="Country / State form with dynamic inputs running.">
 
 ## Bonus: Spinner
 
@@ -406,7 +481,7 @@ For some `Huh?` programs in production, see:
 
 ## Feedback
 
-We'd love to hear your thoughts on this project. Feel free to drop us a note!
+We’d love to hear your thoughts on this project. Feel free to drop us a note!
 
 - [Twitter](https://twitter.com/charmcli)
 - [The Fediverse](https://mastodon.social/@charmcli)
