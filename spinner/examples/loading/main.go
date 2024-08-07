@@ -9,8 +9,11 @@ import (
 
 func main() {
 	action := func() {
-		time.Sleep(2 * time.Second)
+		time.Sleep(1 * time.Second)
 	}
-	_ = spinner.New().Title("Preparing your burger...").Action(action).Run()
+	if err := spinner.New().Title("Preparing your burger...").Action(action).Run(); err != nil {
+		fmt.Println("Failed:", err)
+		return
+	}
 	fmt.Println("Order up!")
 }

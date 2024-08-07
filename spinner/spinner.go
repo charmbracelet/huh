@@ -1,12 +1,13 @@
 package spinner
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
@@ -23,12 +24,15 @@ import (
 // ⣾  Loading...
 type Spinner struct {
 	spinner    spinner.Model
-	action     func()
+	action     func(ctx context.Context, w io.Writer) error
 	ctx        context.Context
 	accessible bool
 	output     *termenv.Output
 	title      string
 	titleStyle lipgloss.Style
+
+	err error
+	buf bytes.Buffer
 }
 
 type Type spinner.Spinner
@@ -62,6 +66,15 @@ func (s *Spinner) Title(title string) *Spinner {
 
 // Action sets the action of the spinner.
 func (s *Spinner) Action(action func()) *Spinner {
+	s.action = func(context.Context, io.Writer) error {
+		action()
+		return nil
+	}
+	return s
+}
+
+// ActionErr sets the action of the spinner.
+func (s *Spinner) ActionErr(action func(ctx context.Context, w io.Writer) error) *Spinner {
 	s.action = action
 	return s
 }
@@ -98,24 +111,31 @@ func New() *Spinner {
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("#F780E2"))
 
 	return &Spinner{
-		action:     func() { time.Sleep(time.Second) },
 		spinner:    s,
+		ctx:        context.Background(),
 		title:      "Loading...",
 		titleStyle: lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#FFFDF5", Dark: "#FFFDF5"}),
 		output:     termenv.NewOutput(os.Stdout),
-		ctx:        nil,
+		buf:        bytes.Buffer{},
 	}
 }
 
 // Init initializes the spinner.
 func (s *Spinner) Init() tea.Cmd {
-	return s.spinner.Tick
+	return tea.Batch(s.spinner.Tick, func() tea.Msg {
+		if s.action != nil {
+			return doneMsg{err: s.action(s.ctx, &s.buf)}
+		}
+		return nil
+	})
 }
 
 // Update updates the spinner.
 func (s *Spinner) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case spinner.TickMsg:
+	case doneMsg:
+		s.err = msg.err
+		return s, tea.Quit
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c":
@@ -132,41 +152,30 @@ func (s *Spinner) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (s *Spinner) View() string {
 	var title string
 	if s.title != "" {
-		title = s.titleStyle.Render(s.title) + " "
+		title = s.titleStyle.Render(s.title)
 	}
-	return s.spinner.View() + title
+	return s.buf.String() + s.spinner.View() + title
 }
 
 // Run runs the spinner.
 func (s *Spinner) Run() error {
-	if s.accessible {
-		return s.runAccessible()
-	}
-
-	hasCtx := s.ctx != nil
-	hasCtxErr := hasCtx && s.ctx.Err() != nil
-
-	if hasCtxErr {
+	if s.ctx.Err() != nil {
 		if errors.Is(s.ctx.Err(), context.Canceled) {
 			return nil
 		}
 		return s.ctx.Err()
 	}
 
-	p := tea.NewProgram(s, tea.WithContext(s.ctx), tea.WithOutput(os.Stderr))
-	if s.ctx == nil {
-		go func() {
-			s.action()
-			p.Quit()
-		}()
+	if s.accessible {
+		return s.runAccessible()
 	}
 
-	_, err := p.Run()
-	if errors.Is(err, tea.ErrProgramKilled) {
-		return nil
-	} else {
-		return err
+	m, err := tea.NewProgram(s, tea.WithContext(s.ctx), tea.WithOutput(os.Stderr)).Run()
+	mm := m.(*Spinner)
+	if mm.err != nil {
+		return mm.err
 	}
+	return err
 }
 
 // runAccessible runs the spinner in an accessible mode (statically).
@@ -176,30 +185,30 @@ func (s *Spinner) runAccessible() error {
 	title := s.titleStyle.Render(strings.TrimSuffix(s.title, "..."))
 	fmt.Println(title + frame)
 
-	if s.ctx == nil {
-		s.action()
-		s.output.ShowCursor()
-		s.output.CursorBack(len(frame) + len(title))
-		return nil
+	actionDone := make(chan error)
+	if s.action != nil {
+		go func() {
+			actionDone <- s.action(s.ctx, os.Stdout)
+		}()
 	}
-
-	actionDone := make(chan struct{})
-
-	go func() {
-		s.action()
-		actionDone <- struct{}{}
-	}()
 
 	for {
 		select {
 		case <-s.ctx.Done():
 			s.output.ShowCursor()
 			s.output.CursorBack(len(frame) + len(title))
+			if errors.Is(s.ctx.Err(), context.Canceled) {
+				return nil
+			}
 			return s.ctx.Err()
-		case <-actionDone:
+		case err := <-actionDone:
 			s.output.ShowCursor()
 			s.output.CursorBack(len(frame) + len(title))
-			return nil
+			return err
 		}
 	}
+}
+
+type doneMsg struct {
+	err error
 }
