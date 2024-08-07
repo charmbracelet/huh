@@ -101,7 +101,7 @@ func New() *Spinner {
 		action:     func() { time.Sleep(time.Second) },
 		spinner:    s,
 		title:      "Loading...",
-		titleStyle: lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#FFFDF5", Dark: "#FFFDF5"}),
+		titleStyle: lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#00020A", Dark: "#FFFDF5"}),
 		output:     termenv.NewOutput(os.Stdout),
 		ctx:        nil,
 	}
