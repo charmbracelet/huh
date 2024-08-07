@@ -494,3 +494,8 @@ func (i *Input) GetKey() string { return i.key }
 func (i *Input) GetValue() any {
 	return i.accessor.Get()
 }
+
+// GetFocused returns if the input is focused.
+func (i *Input) GetFocused() bool {
+	return i.focused
+}
