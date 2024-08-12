@@ -172,7 +172,7 @@ func (m *MultiSelect[T]) Filtering(filtering bool) *MultiSelect[T] {
 // Limit sets the limit of the multi-select field.
 func (m *MultiSelect[T]) Limit(limit int) *MultiSelect[T] {
 	m.limit = limit
-	m.keymap.ToggleAll.SetEnabled(limit == 0)
+	m.setSelectAllHelp()
 	return m
 }
 
@@ -240,10 +240,9 @@ func (m *MultiSelect[T]) KeyBinds() []key.Binding {
 		m.keymap.Prev,
 		m.keymap.Submit,
 		m.keymap.Next,
+		m.keymap.SelectAll,
+		m.keymap.SelectNone,
 	)
-	if m.limit == 0 {
-		binds = append(binds, m.keymap.ToggleAll)
-	}
 	return binds
 }
 
@@ -263,17 +262,18 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	if m.filtering {
 		m.filter, cmd = m.filter.Update(msg)
+		m.setSelectAllHelp()
 		cmds = append(cmds, cmd)
 	}
 
 	switch msg := msg.(type) {
 	case updateFieldMsg:
-		var cmds []tea.Cmd
+		var fieldCmds []tea.Cmd
 		if ok, hash := m.title.shouldUpdate(); ok {
 			m.title.bindingsHash = hash
 			if !m.title.loadFromCache() {
 				m.title.loading = true
-				cmds = append(cmds, func() tea.Msg {
+				fieldCmds = append(fieldCmds, func() tea.Msg {
 					return updateTitleMsg{id: m.id, title: m.title.fn(), hash: hash}
 				})
 			}
@@ -282,7 +282,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.description.bindingsHash = hash
 			if !m.description.loadFromCache() {
 				m.description.loading = true
-				cmds = append(cmds, func() tea.Msg {
+				fieldCmds = append(fieldCmds, func() tea.Msg {
 					return updateDescriptionMsg{id: m.id, description: m.description.fn(), hash: hash}
 				})
 			}
@@ -296,13 +296,13 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				m.options.loading = true
 				m.options.loadingStart = time.Now()
-				cmds = append(cmds, func() tea.Msg {
+				fieldCmds = append(fieldCmds, func() tea.Msg {
 					return updateOptionsMsg[T]{id: m.id, options: m.options.fn(), hash: hash}
 				}, m.spinner.Tick)
 			}
 		}
 
-		return m, tea.Batch(cmds...)
+		return m, tea.Batch(fieldCmds...)
 
 	case spinner.TickMsg:
 		if !m.options.loading {
@@ -344,6 +344,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.filteredOptions = m.options.val
 			m.setFilter(false)
 		case key.Matches(msg, m.keymap.Up):
+			// FIXME: should use keys in keymap
 			if m.filtering && msg.String() == "k" {
 				break
 			}
@@ -353,6 +354,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.viewport.SetYOffset(m.cursor)
 			}
 		case key.Matches(msg, m.keymap.Down):
+			// FIXME: should use keys in keymap
 			if m.filtering && msg.String() == "j" {
 				break
 			}
@@ -390,8 +392,9 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.filteredOptions[m.cursor].selected = !selected
 				}
 			}
+			m.setSelectAllHelp()
 			m.updateValue()
-		case key.Matches(msg, m.keymap.ToggleAll) && m.limit == 0:
+		case key.Matches(msg, m.keymap.SelectAll, m.keymap.SelectNone) && m.limit <= 0:
 			selected := false
 
 			for _, option := range m.filteredOptions {
@@ -410,6 +413,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 				}
 			}
+			m.setSelectAllHelp()
 			m.updateValue()
 		case key.Matches(msg, m.keymap.Prev):
 			m.updateValue()
@@ -462,9 +466,22 @@ func (m *MultiSelect[T]) updateViewportHeight() {
 		lipgloss.Height(m.descriptionView()))
 }
 
+// numSelected returns the total number of selected options.
 func (m *MultiSelect[T]) numSelected() int {
 	var count int
 	for _, o := range m.options.val {
+		if o.selected {
+			count++
+		}
+	}
+	return count
+}
+
+// numFilteredOptionsSelected returns the number of selected options with the
+// current filter applied.
+func (m *MultiSelect[T]) numFilteredSelected() int {
+	var count int
+	for _, o := range m.filteredOptions {
 		if o.selected {
 			count++
 		}
@@ -611,6 +628,17 @@ func (m *MultiSelect[T]) filterFunc(option string) bool {
 	return strings.Contains(strings.ToLower(option), strings.ToLower(m.filter.Value()))
 }
 
+// setSelectAllHelp enables the appropriate select all or select none keybinding.
+func (m *MultiSelect[T]) setSelectAllHelp() {
+	if m.limit <= 0 {
+		noneSelected := m.numFilteredSelected() <= 0
+		allSelected := m.numFilteredSelected() > 0 && m.numFilteredSelected() < len(m.filteredOptions)
+		selectAll := noneSelected || allSelected
+		m.keymap.SelectAll.SetEnabled(selectAll)
+		m.keymap.SelectNone.SetEnabled(!selectAll)
+	}
+}
+
 // Run runs the multi-select field.
 func (m *MultiSelect[T]) Run() error {
 	if m.accessible {
@@ -706,9 +734,10 @@ func (m *MultiSelect[T]) WithWidth(width int) Field {
 	return m
 }
 
-// WithHeight sets the height of the multi-select field.
+// WithHeight sets the total height of the multi-select field. Including padding
+// and help menu heights.
 func (m *MultiSelect[T]) WithHeight(height int) Field {
-	m.height = height
+	m.Height(height)
 	return m
 }
 
