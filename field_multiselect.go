@@ -65,6 +65,7 @@ func NewMultiSelect[T comparable]() *MultiSelect[T] {
 		title:       Eval[string]{cache: make(map[uint64]string)},
 		description: Eval[string]{cache: make(map[uint64]string)},
 		spinner:     s,
+		filterable:  true,
 	}
 }
 
@@ -225,15 +226,23 @@ func (m *MultiSelect[T]) KeyBinds() []key.Binding {
 		m.keymap.Toggle,
 		m.keymap.Up,
 		m.keymap.Down,
-		m.keymap.Filter,
-		m.keymap.SetFilter,
-		m.keymap.ClearFilter,
+	}
+	if m.filterable {
+		binds = append(
+			binds,
+			m.keymap.Filter,
+			m.keymap.SetFilter,
+			m.keymap.ClearFilter,
+		)
+	}
+	binds = append(
+		binds,
 		m.keymap.Prev,
 		m.keymap.Submit,
 		m.keymap.Next,
 		m.keymap.SelectAll,
 		m.keymap.SelectNone,
-	}
+	)
 	return binds
 }
 
@@ -705,6 +714,11 @@ func (m *MultiSelect[T]) WithTheme(theme *Theme) Field {
 // WithKeyMap sets the keymap of the multi-select field.
 func (m *MultiSelect[T]) WithKeyMap(k *KeyMap) Field {
 	m.keymap = k.MultiSelect
+	if !m.filterable {
+		m.keymap.Filter.SetEnabled(false)
+		m.keymap.ClearFilter.SetEnabled(false)
+		m.keymap.SetFilter.SetEnabled(false)
+	}
 	return m
 }
 
