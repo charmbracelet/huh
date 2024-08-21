@@ -70,7 +70,7 @@ func (l *layoutColumns) View(f *Form) string {
 		return ""
 	}
 
-	var columns []string
+	columns := make([]string, 0, len(groups))
 	for _, group := range groups {
 		columns = append(columns, group.Content())
 	}
@@ -149,7 +149,7 @@ func (l *layoutGrid) View(f *Form) string {
 		return ""
 	}
 
-	var rows []string
+	rows := make([]string, 0, len(grid))
 	for _, row := range grid {
 		var columns []string
 		for _, group := range row {

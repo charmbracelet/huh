@@ -3,6 +3,7 @@ package huh
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"sync"
@@ -651,7 +652,7 @@ func (f *Form) run(ctx context.Context) error {
 	if errors.Is(err, tea.ErrProgramKilled) {
 		return ErrTimeout
 	}
-	return err
+	return fmt.Errorf("huh: %w", err)
 }
 
 // runAccessible runs the form in accessible mode.

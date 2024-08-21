@@ -54,8 +54,7 @@ func NewGroup(fields ...Field) *Group {
 	}
 
 	height := group.fullHeight()
-	//nolint:gomnd
-	v := viewport.New(80, height)
+	v := viewport.New(80, height) //nolint:mnd
 	group.viewport = v
 	group.height = height
 
