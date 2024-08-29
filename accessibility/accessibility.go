@@ -14,7 +14,7 @@ import (
 // Given invalid input (non-integers, integers outside of the range), the user
 // will continue to be reprompted until a valid input is given, ensuring that
 // the return value is always valid.
-func PromptInt(prompt string, min, max int) int {
+func PromptInt(prompt string, low, high int) int {
 	var (
 		input  string
 		choice int
@@ -22,7 +22,7 @@ func PromptInt(prompt string, min, max int) int {
 
 	validInt := func(s string) error {
 		i, err := strconv.Atoi(s)
-		if err != nil || i < min || i > max {
+		if err != nil || i < low || i > high {
 			return errors.New("invalid input. please try again")
 		}
 		return nil
