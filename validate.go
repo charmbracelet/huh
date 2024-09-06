@@ -16,32 +16,32 @@ func ValidateNotEmpty() func(s string) error {
 }
 
 // ValidateMinLength checks if the length of the input is at least min.
-func ValidateMinLength(min int) func(s string) error {
+func ValidateMinLength(v int) func(s string) error {
 	return func(s string) error {
-		if utf8.RuneCountInString(s) < min {
-			return fmt.Errorf("input must be at least %d characters long", min)
+		if utf8.RuneCountInString(s) < v {
+			return fmt.Errorf("input must be at least %d characters long", v)
 		}
 		return nil
 	}
 }
 
 // ValidateMaxLength checks if the length of the input is at most max.
-func ValidateMaxLength(max int) func(s string) error {
+func ValidateMaxLength(v int) func(s string) error {
 	return func(s string) error {
-		if utf8.RuneCountInString(s) > max {
-			return fmt.Errorf("input must be at most %d characters long", max)
+		if utf8.RuneCountInString(s) > v {
+			return fmt.Errorf("input must be at most %d characters long", v)
 		}
 		return nil
 	}
 }
 
 // ValidateLength checks if the length of the input is within the specified range.
-func ValidateLength(min, max int) func(s string) error {
+func ValidateLength(minl, maxl int) func(s string) error {
 	return func(s string) error {
-		if err := ValidateMinLength(min)(s); err != nil {
+		if err := ValidateMinLength(minl)(s); err != nil {
 			return err
 		}
-		return ValidateMaxLength(max)(s)
+		return ValidateMaxLength(maxl)(s)
 	}
 }
 
