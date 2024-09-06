@@ -54,8 +54,7 @@ func NewGroup(fields ...Field) *Group {
 	}
 
 	height := group.fullHeight()
-	//nolint:gomnd
-	v := viewport.New(80, height)
+	v := viewport.New(80, height) //nolint:mnd
 	group.viewport = v
 	group.height = height
 
@@ -269,7 +268,7 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		g.WithHeight(min(g.height, min(g.fullHeight(), msg.Height-1)))
+		g.WithHeight(max(g.height, min(g.fullHeight(), msg.Height-1)))
 	case nextFieldMsg:
 		cmds = append(cmds, g.nextField()...)
 	case prevFieldMsg:

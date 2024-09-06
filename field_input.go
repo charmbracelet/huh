@@ -36,7 +36,7 @@ type Input struct {
 
 	accessible bool
 	width      int
-	height     int
+	height     int // not really used anywhere
 
 	theme  *Theme
 	keymap InputKeyMap
