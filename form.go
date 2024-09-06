@@ -640,9 +640,9 @@ func (f *Form) run(ctx context.Context) error {
 	if f.timeout > 0 {
 		ctx, cancel := context.WithTimeout(ctx, f.timeout)
 		defer cancel()
-		f.teaOptions = append(f.teaOptions, tea.WithContext(ctx))
+		f.teaOptions = append(f.teaOptions, tea.WithContext(ctx), tea.WithReportFocus())
 	} else {
-		f.teaOptions = append(f.teaOptions, tea.WithContext(ctx))
+		f.teaOptions = append(f.teaOptions, tea.WithContext(ctx), tea.WithReportFocus())
 	}
 
 	m, err := tea.NewProgram(f, f.teaOptions...).Run()
