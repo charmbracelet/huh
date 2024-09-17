@@ -477,6 +477,7 @@ For some `Huh?` programs in production, see:
 * [freeze](https://github.com/charmbracelet/freeze): a tool for generating images of code and terminal output
 * [gum](https://github.com/charmbracelet/gum): a tool for glamorous shell scripts
 * [savvy](https://github.com/getsavvyinc/savvy-cli): the easiest way to create, share, and run runbooks in the terminal
+* [githuber](https://github.com/costa86/githuber): create, list and delete your github repos in the terminal
 
 
 ## Feedback
