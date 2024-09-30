@@ -6,7 +6,7 @@ import (
 	"github.com/charmbracelet/bubbles/v2/help"
 	"github.com/charmbracelet/bubbles/v2/viewport"
 	tea "github.com/charmbracelet/bubbletea/v2"
-	"github.com/charmbracelet/huh/internal/selector"
+	"github.com/charmbracelet/huh/v2/internal/selector"
 	"github.com/charmbracelet/lipgloss"
 )
 

@@ -9,7 +9,7 @@ import (
 	"github.com/charmbracelet/bubbles/v2/key"
 	"github.com/charmbracelet/bubbles/v2/textarea"
 	tea "github.com/charmbracelet/bubbletea/v2"
-	"github.com/charmbracelet/huh/accessibility"
+	"github.com/charmbracelet/huh/v2/accessibility"
 	"github.com/charmbracelet/lipgloss"
 )
 

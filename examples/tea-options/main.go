@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea/v2"
-	"github.com/charmbracelet/huh"
+	"github.com/charmbracelet/huh/v2"
 )
 
 func main() {
