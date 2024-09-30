@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "github.com/charmbracelet/bubbletea/v2"
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -106,8 +106,10 @@ func NewModel() Model {
 	return m
 }
 
-func (m Model) Init() tea.Cmd {
-	return m.form.Init()
+func (m Model) Init() (tea.Model, tea.Cmd) {
+	form, cmd := m.form.Init()
+	m.form = form.(*huh.Form)
+	return m, cmd
 }
 
 func min(x, y int) int {

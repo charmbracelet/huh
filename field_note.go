@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/key"
-	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/bubbles/v2/key"
+	tea "github.com/charmbracelet/bubbletea/v2"
 )
 
 // Note is a note field.
@@ -157,7 +157,7 @@ func (n *Note) KeyBinds() []key.Binding {
 }
 
 // Init initializes the note field.
-func (n *Note) Init() tea.Cmd { return nil }
+func (n *Note) Init() (tea.Model, tea.Cmd) { return n, nil }
 
 // Update updates the note field.
 func (n *Note) Update(msg tea.Msg) (tea.Model, tea.Cmd) {

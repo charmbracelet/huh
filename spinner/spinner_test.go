@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/charmbracelet/bubbles/spinner"
-	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/bubbles/v2/spinner"
+	tea "github.com/charmbracelet/bubbletea/v2"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -75,7 +75,7 @@ func TestSpinnerStyleMethods(t *testing.T) {
 
 func TestSpinnerInit(t *testing.T) {
 	s := New()
-	cmd := s.Init()
+	_, cmd := s.Init()
 
 	if cmd == nil {
 		t.Errorf("Init did not return a valid command")
@@ -84,7 +84,7 @@ func TestSpinnerInit(t *testing.T) {
 
 func TestSpinnerUpdate(t *testing.T) {
 	s := New()
-	cmd := s.Init()
+	_, cmd := s.Init()
 	if cmd == nil {
 		t.Errorf("Init did not return a valid command")
 	}
@@ -99,7 +99,10 @@ func TestSpinnerUpdate(t *testing.T) {
 	}
 
 	// Simulate key press
-	_, cmd = s.Update(tea.KeyMsg{Type: tea.KeyCtrlC})
+	_, cmd = s.Update(tea.KeyPressMsg(tea.Key{
+		Mod:  tea.ModCtrl,
+		Code: 'c',
+	}))
 	if cmd == nil {
 		t.Errorf("Update did not handle key press correctly")
 	}

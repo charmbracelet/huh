@@ -12,7 +12,7 @@ import (
 	"syscall"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "github.com/charmbracelet/bubbletea/v2"
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
@@ -102,11 +102,13 @@ type model struct {
 	loggedIn bool
 }
 
-func (m model) Init() tea.Cmd {
+func (m model) Init() (tea.Model, tea.Cmd) {
 	if m.form == nil {
-		return nil
+		return m, nil
 	}
-	return m.form.Init()
+	form, cmd := m.form.Init()
+	m.form = form.(*huh.Form)
+	return m, cmd
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/key"
-	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/bubbles/v2/key"
+	tea "github.com/charmbracelet/bubbletea/v2"
 	"github.com/charmbracelet/huh/accessibility"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -154,8 +154,8 @@ func (c *Confirm) KeyBinds() []key.Binding {
 }
 
 // Init initializes the confirm field.
-func (c *Confirm) Init() tea.Cmd {
-	return nil
+func (c *Confirm) Init() (tea.Model, tea.Cmd) {
+	return c, nil
 }
 
 // Update updates the confirm field.

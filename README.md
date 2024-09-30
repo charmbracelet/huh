@@ -436,8 +436,10 @@ func NewModel() Model {
     }
 }
 
-func (m Model) Init() tea.Cmd {
-    return m.form.Init()
+func (m Model) Init() (tea.Model, tea.Cmd) {
+	form, cmd := m.form.Init()
+	m.form = form.(*huh.Form)
+	return m, cmd
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -470,14 +472,14 @@ Tea example][example].
 [example]: https://github.com/charmbracelet/huh/blob/main/examples/bubbletea/main.go
 
 ## `Huh?` in the Wild
+
 For some `Huh?` programs in production, see:
 
-* [glyphs](https://github.com/maaslalani/glyphs): a unicode symbol picker
-* [meteor](https://github.com/stefanlogue/meteor): a highly customisable conventional commit message tool
-* [freeze](https://github.com/charmbracelet/freeze): a tool for generating images of code and terminal output
-* [gum](https://github.com/charmbracelet/gum): a tool for glamorous shell scripts
-* [savvy](https://github.com/getsavvyinc/savvy-cli): the easiest way to create, share, and run runbooks in the terminal
-
+- [glyphs](https://github.com/maaslalani/glyphs): a unicode symbol picker
+- [meteor](https://github.com/stefanlogue/meteor): a highly customisable conventional commit message tool
+- [freeze](https://github.com/charmbracelet/freeze): a tool for generating images of code and terminal output
+- [gum](https://github.com/charmbracelet/gum): a tool for glamorous shell scripts
+- [savvy](https://github.com/getsavvyinc/savvy-cli): the easiest way to create, share, and run runbooks in the terminal
 
 ## Feedback
 
