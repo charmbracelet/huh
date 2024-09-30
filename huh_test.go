@@ -142,7 +142,7 @@ func TestForm(t *testing.T) {
 	}
 
 	// Attempt to select hard shell and retrieve error.
-	m, _ := f.Update(keys('j'))
+	m, _ := f.Update(keypress('j'))
 	m, _ = m.Update(tea.KeyPressMsg(tea.Key{
 		Code: tea.KeyTab,
 	}))
@@ -153,7 +153,7 @@ func TestForm(t *testing.T) {
 		t.Error("Expected form to show out of hard shells error")
 	}
 
-	m, _ = m.Update(keys('k'))
+	m, _ = m.Update(keypress('k'))
 
 	m, cmd = m.Update(tea.KeyPressMsg(tea.Key{
 		Code: tea.KeyEnter,
@@ -206,8 +206,8 @@ func TestForm(t *testing.T) {
 		t.Error("Expected form to preselect tomatoes")
 	}
 
-	m, _ = m.Update(keys('j'))
-	m, _ = m.Update(keys('j'))
+	m, _ = m.Update(keypress('j'))
+	m, _ = m.Update(keypress('j'))
 	view = ansi.Strip(m.View())
 
 	if !strings.Contains(view, "> • Corn") {
@@ -215,7 +215,7 @@ func TestForm(t *testing.T) {
 		t.Error("Expected form to change selection to corn")
 	}
 
-	m, _ = m.Update(keys('x'))
+	m, _ = m.Update(keypress('x'))
 	view = ansi.Strip(m.View())
 
 	if !strings.Contains(view, "> ✓ Corn") {
@@ -258,8 +258,8 @@ func TestForm(t *testing.T) {
 	//
 	//   enter next • shift+tab back
 	//
-	for _, k := range []rune{'G', 'l', 'e', 'n'} {
-		m.Update(k)
+	for _, msg := range typeText("Glen") {
+		m.Update(msg)
 	}
 	view = ansi.Strip(m.View())
 	if !strings.Contains(view, "Glen") {
@@ -300,8 +300,8 @@ func TestInput(t *testing.T) {
 	}
 
 	// Type Huh in the form.
-	for _, k := range []rune{'H', 'u', 'h'} {
-		m, _ := f.Update(keys(k))
+	for _, msg := range typeText("Huh") {
+		m, _ := f.Update(msg)
 		f = m.(*Form)
 	}
 	view = ansi.Strip(f.View())
@@ -340,8 +340,8 @@ func TestInlineInput(t *testing.T) {
 	}
 
 	// Type Huh in the form.
-	for _, k := range []rune{'H', 'u', 'h'} {
-		m, _ := f.Update(keys(k))
+	for _, msg := range typeText("Huh") {
+		m, _ := f.Update(msg)
 		f = m.(*Form)
 	}
 	view = ansi.Strip(f.View())
@@ -373,8 +373,8 @@ func TestText(t *testing.T) {
 	f.Update(cmd)
 
 	// Type Huh in the form.
-	for _, k := range []rune{'H', 'u', 'h'} {
-		m, _ := f.Update(keys(k))
+	for _, msg := range typeText("Huh") {
+		m, _ := f.Update(msg)
 		f = m.(*Form)
 	}
 	view := ansi.Strip(f.View())
@@ -401,7 +401,7 @@ func TestConfirm(t *testing.T) {
 	f.Update(cmd)
 
 	// Type Huh in the form.
-	m, _ := f.Update(keys('H'))
+	m, _ := f.Update(keypress('H'))
 	f = m.(*Form)
 	view := ansi.Strip(f.View())
 
@@ -519,7 +519,7 @@ func TestMultiSelect(t *testing.T) {
 	}
 
 	// Move selection cursor down
-	m, _ := f.Update(keys('j'))
+	m, _ := f.Update(keypress('j'))
 	view = ansi.Strip(m.View())
 
 	if strings.Contains(view, "> • Foo") {
@@ -533,7 +533,7 @@ func TestMultiSelect(t *testing.T) {
 	}
 
 	// Toggle
-	m, _ = f.Update(keys('x'))
+	m, _ = f.Update(keypress('x'))
 	view = ansi.Strip(m.View())
 
 	if !strings.Contains(view, "> ✓ Bar") {
@@ -580,8 +580,11 @@ func TestMultiSelectFiltering(t *testing.T) {
 			_, cmd := f.Init()
 			f.Update(cmd)
 			// Filter for values starting with a 'B' only.
-			f.Update(keys('/'))
-			f.Update(keys('B'))
+			f.Update(tea.KeyPressMsg(tea.Key{
+				Code: '/',
+			}))
+			m, _ := f.Update(keypress('B'))
+			f = m.(*Form)
 
 			view := ansi.Strip(f.View())
 			// When we're filtering, the list should change.
@@ -651,14 +654,14 @@ func TestSelectPageNavigation(t *testing.T) {
 			t.Error("Wrong item selected")
 		}
 
-		m, _ := f.Update(keys('G'))
+		m, _ := f.Update(keypress('G'))
 		view = ansi.Strip(m.View())
 		if !reLast.MatchString(view) {
 			t.Log(pretty.Render(view))
 			t.Error("Wrong item selected")
 		}
 
-		m, _ = f.Update(keys('g'))
+		m, _ = f.Update(keypress('g'))
 		view = ansi.Strip(m.View())
 		if !reFirst.MatchString(view) {
 			t.Log(pretty.Render(view))
@@ -974,6 +977,18 @@ func batchUpdate(m tea.Model, cmd tea.Cmd) tea.Model {
 	return m
 }
 
-func keys(k rune) tea.KeyMsg {
-	return tea.KeyPressMsg(tea.Key{Code: k})
+func keypress(r rune) tea.KeyMsg {
+	return tea.KeyPressMsg(tea.Key{
+		Text:        string(r),
+		Code:        r,
+		ShiftedCode: r,
+	})
+}
+
+func typeText(s string) []tea.KeyMsg {
+	keys := make([]tea.KeyMsg, 0, len(s))
+	for _, r := range s {
+		keys = append(keys, keypress(r))
+	}
+	return keys
 }
