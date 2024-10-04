@@ -34,6 +34,7 @@ func (o Option[T]) Selected(selected bool) Option[T] {
 	return o
 }
 
+// IsSelected returns whether the option is currently selected.
 func (o Option[T]) IsSelected() bool {
 	return o.selected
 }
@@ -43,4 +44,5 @@ func (o Option[T]) String() string {
 	return o.Key
 }
 
+// OptionRenderer is a function that is responsible for rendering an option.
 type OptionRenderer[T comparable] func(option Option[T]) string
