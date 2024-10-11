@@ -424,13 +424,25 @@ func TestConfirm(t *testing.T) {
 	}
 
 	t.Run("Button alignment", func(t *testing.T) {
-		field := NewConfirm().
-			Title("This is a very long title. Are you sure you want to commit those changes?").
-			WithButtonAlignment(lipgloss.Left)
-		f := NewForm(NewGroup(field))
-		f.Update(f.Init())
+		tests := []struct {
+			name      string
+			alignment lipgloss.Position
+		}{
+			{"left align", lipgloss.Left},
+			{"center align", lipgloss.Center},
+			{"right align", lipgloss.Right},
+		}
+		for _, tc := range tests {
+			t.Run(tc.name, func(t *testing.T) {
+				field := NewConfirm().
+					Title("This is a very long title. Are you sure you want to commit those changes?").
+					WithButtonAlignment(tc.alignment)
+				f := NewForm(NewGroup(field))
+				f.Update(f.Init())
 
-		golden.RequireEqual(t, []byte(f.View()))
+				golden.RequireEqual(t, []byte(f.View()))
+			})
+		}
 	})
 }
 
