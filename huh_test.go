@@ -13,6 +13,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/x/ansi"
+	"github.com/charmbracelet/x/exp/golden"
 )
 
 var pretty = lipgloss.NewStyle().
@@ -421,6 +422,16 @@ func TestConfirm(t *testing.T) {
 	if field.GetValue() != false {
 		t.Error("Expected field value to be false")
 	}
+
+	t.Run("Button alignment", func(t *testing.T) {
+		field := NewConfirm().
+			Title("This is a very long title. Are you sure you want to commit those changes?").
+			WithButtonAlignment(lipgloss.Left)
+		f := NewForm(NewGroup(field))
+		f.Update(f.Init())
+
+		golden.RequireEqual(t, []byte(f.View()))
+	})
 }
 
 func TestSelect(t *testing.T) {
