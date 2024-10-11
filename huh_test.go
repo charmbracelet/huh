@@ -440,7 +440,7 @@ func TestConfirm(t *testing.T) {
 				f := NewForm(NewGroup(field))
 				f.Update(f.Init())
 
-				golden.RequireEqual(t, []byte(f.View()))
+				golden.RequireEqual(t, []byte(ansi.Strip(f.View())))
 			})
 		}
 	})
