@@ -30,24 +30,26 @@ type Confirm struct {
 	focused bool
 
 	// options
-	width      int
-	height     int
-	inline     bool
-	accessible bool
-	theme      *Theme
-	keymap     ConfirmKeyMap
+	width           int
+	height          int
+	inline          bool
+	accessible      bool
+	theme           *Theme
+	keymap          ConfirmKeyMap
+	buttonAlignment lipgloss.Position
 }
 
 // NewConfirm returns a new confirm field.
 func NewConfirm() *Confirm {
 	return &Confirm{
-		accessor:    &EmbeddedAccessor[bool]{},
-		id:          nextID(),
-		title:       Eval[string]{cache: make(map[uint64]string)},
-		description: Eval[string]{cache: make(map[uint64]string)},
-		affirmative: "Yes",
-		negative:    "No",
-		validate:    func(bool) error { return nil },
+		accessor:        &EmbeddedAccessor[bool]{},
+		id:              nextID(),
+		title:           Eval[string]{cache: make(map[uint64]string)},
+		description:     Eval[string]{cache: make(map[uint64]string)},
+		affirmative:     "Yes",
+		negative:        "No",
+		validate:        func(bool) error { return nil },
+		buttonAlignment: lipgloss.Center,
 	}
 }
 
@@ -268,7 +270,7 @@ func (c *Confirm) View() string {
 
 	c.keymap.Accept.SetHelp("y", c.affirmative)
 
-	buttonsRow := lipgloss.JoinHorizontal(lipgloss.Center, affirmative, negative)
+	buttonsRow := lipgloss.JoinHorizontal(c.buttonAlignment, affirmative, negative)
 
 	promptWidth := lipgloss.Width(sb.String())
 	buttonsWidth := lipgloss.Width(buttonsRow)
@@ -278,7 +280,7 @@ func (c *Confirm) View() string {
 		renderWidth = buttonsWidth
 	}
 
-	style := lipgloss.NewStyle().Width(renderWidth).Align(lipgloss.Center)
+	style := lipgloss.NewStyle().Width(renderWidth).Align(c.buttonAlignment)
 
 	sb.WriteString(style.Render(buttonsRow))
 	return styles.Base.Render(sb.String())
@@ -347,6 +349,12 @@ func (c *Confirm) WithPosition(p FieldPosition) Field {
 	c.keymap.Prev.SetEnabled(!p.IsFirst())
 	c.keymap.Next.SetEnabled(!p.IsLast())
 	c.keymap.Submit.SetEnabled(p.IsLast())
+	return c
+}
+
+// WithButtonAlignment sets the button position of the confirm field.
+func (c *Confirm) WithButtonAlignment(p lipgloss.Position) *Confirm {
+	c.buttonAlignment = p
 	return c
 }
 
