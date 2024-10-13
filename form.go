@@ -9,10 +9,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/bubbles/key"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/internal/selector"
+	"github.com/charmbracelet/bubbles/v2/help"
+	"github.com/charmbracelet/bubbles/v2/key"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/huh/v2/internal/selector"
 )
 
 const defaultWidth = 80
@@ -130,7 +130,7 @@ func NewForm(groups ...*Group) *Form {
 // Each field implements the Bubble Tea Model interface.
 type Field interface {
 	// Bubble Tea Model
-	Init() tea.Cmd
+	Init() (tea.Model, tea.Cmd)
 	Update(tea.Msg) (tea.Model, tea.Cmd)
 	View() string
 
@@ -480,13 +480,13 @@ func (f *Form) PrevField() tea.Cmd {
 }
 
 // Init initializes the form.
-func (f *Form) Init() tea.Cmd {
+func (f *Form) Init() (tea.Model, tea.Cmd) {
 	cmds := make([]tea.Cmd, f.selector.Total())
 	f.selector.Range(func(i int, group *Group) bool {
 		if i == 0 {
 			group.active = true
 		}
-		cmds[i] = group.Init()
+		_, cmds[i] = group.Init()
 		return true
 	})
 
@@ -494,7 +494,7 @@ func (f *Form) Init() tea.Cmd {
 		cmds = append(cmds, nextGroup)
 	}
 
-	return tea.Batch(cmds...)
+	return f, tea.Batch(cmds...)
 }
 
 // Update updates the form.
@@ -566,7 +566,8 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 		f.selector.Selected().active = true
-		return f, f.selector.Selected().Init()
+		_, cmd := f.selector.Selected().Init()
+		return f, cmd
 
 	case prevGroupMsg:
 		if len(group.Errors()) > 0 {
@@ -581,7 +582,8 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		f.selector.Selected().active = true
-		return f, f.selector.Selected().Init()
+		_, cmd := f.selector.Selected().Init()
+		return f, cmd
 	}
 
 	m, cmd := group.Update(msg)

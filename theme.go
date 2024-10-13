@@ -2,7 +2,7 @@ package huh
 
 import (
 	catppuccin "github.com/catppuccin/go"
-	"github.com/charmbracelet/bubbles/help"
+	"github.com/charmbracelet/bubbles/v2/help"
 	"github.com/charmbracelet/lipgloss"
 )
 

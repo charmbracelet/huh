@@ -3,11 +3,11 @@ module examples
 go 1.22
 
 require (
-	github.com/charmbracelet/bubbles v0.20.0
-	github.com/charmbracelet/bubbletea v1.1.1
+	github.com/charmbracelet/bubbles/v2 v2.0.0-alpha.1
+	github.com/charmbracelet/bubbletea/v2 v2.0.0-alpha.1
 	github.com/charmbracelet/glamour v0.8.0
-	github.com/charmbracelet/huh v0.0.0-00010101000000-000000000000
-	github.com/charmbracelet/huh/spinner v0.0.0-00010101000000-000000000000
+	github.com/charmbracelet/huh/v2 v2.0.0-00010101000000-000000000000
+	github.com/charmbracelet/huh/v2/spinner v0.0.0-00010101000000-000000000000
 	github.com/charmbracelet/lipgloss v0.13.0
 	github.com/charmbracelet/log v0.4.0
 	github.com/charmbracelet/ssh v0.0.0-20240725163421-eb71b85b27aa
@@ -22,6 +22,7 @@ require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/catppuccin/go v0.2.0 // indirect
+	github.com/charmbracelet/bubbletea v1.1.1 // indirect
 	github.com/charmbracelet/harmonica v0.2.0 // indirect
 	github.com/charmbracelet/keygen v0.5.1 // indirect
 	github.com/charmbracelet/x/ansi v0.3.2 // indirect
@@ -30,6 +31,7 @@ require (
 	github.com/charmbracelet/x/input v0.2.0 // indirect
 	github.com/charmbracelet/x/term v0.2.0 // indirect
 	github.com/charmbracelet/x/termios v0.1.0 // indirect
+	github.com/charmbracelet/x/windows v0.2.0 // indirect
 	github.com/creack/pty v1.1.21 // indirect
 	github.com/dlclark/regexp2 v1.11.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
@@ -59,6 +61,6 @@ require (
 	golang.org/x/text v0.18.0 // indirect
 )
 
-replace github.com/charmbracelet/huh => ../
+replace github.com/charmbracelet/huh/v2 => ../
 
-replace github.com/charmbracelet/huh/spinner => ../spinner
+replace github.com/charmbracelet/huh/v2/spinner => ../spinner

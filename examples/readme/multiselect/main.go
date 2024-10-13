@@ -1,6 +1,6 @@
 package main
 
-import "github.com/charmbracelet/huh"
+import "github.com/charmbracelet/huh/v2"
 
 func main() {
 	var toppings []string

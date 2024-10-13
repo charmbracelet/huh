@@ -5,8 +5,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/charmbracelet/huh"
-	"github.com/charmbracelet/huh/spinner"
+	"github.com/charmbracelet/huh/v2"
+	"github.com/charmbracelet/huh/v2/spinner"
 	"github.com/charmbracelet/lipgloss"
 )
 

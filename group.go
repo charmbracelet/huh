@@ -3,10 +3,10 @@ package huh
 import (
 	"strings"
 
-	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/internal/selector"
+	"github.com/charmbracelet/bubbles/v2/help"
+	"github.com/charmbracelet/bubbles/v2/viewport"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/huh/v2/internal/selector"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -187,7 +187,7 @@ func PrevField() tea.Msg {
 }
 
 // Init initializes the group.
-func (g *Group) Init() tea.Cmd {
+func (g *Group) Init() (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	if g.selector.Selected().Skip() {
@@ -196,7 +196,7 @@ func (g *Group) Init() tea.Cmd {
 		} else if g.selector.OnFirst() {
 			cmds = append(cmds, g.nextField()...)
 		}
-		return tea.Batch(cmds...)
+		return g, tea.Batch(cmds...)
 	}
 
 	if g.active {
@@ -204,7 +204,7 @@ func (g *Group) Init() tea.Cmd {
 		cmds = append(cmds, cmd)
 	}
 	g.buildView()
-	return tea.Batch(cmds...)
+	return g, tea.Batch(cmds...)
 }
 
 // nextField moves to the next field.

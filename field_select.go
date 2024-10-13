@@ -5,12 +5,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/spinner"
-	"github.com/charmbracelet/bubbles/textinput"
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/accessibility"
+	"github.com/charmbracelet/bubbles/v2/key"
+	"github.com/charmbracelet/bubbles/v2/spinner"
+	"github.com/charmbracelet/bubbles/v2/textinput"
+	"github.com/charmbracelet/bubbles/v2/viewport"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/huh/v2/accessibility"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -298,8 +298,8 @@ func (s *Select[T]) KeyBinds() []key.Binding {
 }
 
 // Init initializes the select field.
-func (s *Select[T]) Init() tea.Cmd {
-	return nil
+func (s *Select[T]) Init() (tea.Model, tea.Cmd) {
+	return s, nil
 }
 
 // Update updates the select field.

@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/charmbracelet/bubbles/spinner"
-	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/bubbles/v2/spinner"
+	tea "github.com/charmbracelet/bubbletea/v2"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/muesli/termenv"
 )
@@ -108,8 +108,8 @@ func New() *Spinner {
 }
 
 // Init initializes the spinner.
-func (s *Spinner) Init() tea.Cmd {
-	return s.spinner.Tick
+func (s *Spinner) Init() (tea.Model, tea.Cmd) {
+	return s, s.spinner.Tick
 }
 
 // Update updates the spinner.

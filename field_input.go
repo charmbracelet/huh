@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/textinput"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/accessibility"
+	"github.com/charmbracelet/bubbles/v2/key"
+	"github.com/charmbracelet/bubbles/v2/textinput"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/huh/v2/accessibility"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -263,9 +263,9 @@ func (i *Input) KeyBinds() []key.Binding {
 }
 
 // Init initializes the input field.
-func (i *Input) Init() tea.Cmd {
+func (i *Input) Init() (tea.Model, tea.Cmd) {
 	i.textinput.Blur()
-	return nil
+	return i, nil
 }
 
 // Update updates the input field.

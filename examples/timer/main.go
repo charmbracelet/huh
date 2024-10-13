@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/charmbracelet/bubbles/progress"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh"
+	"github.com/charmbracelet/bubbles/v2/progress"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/huh/v2"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -50,8 +50,10 @@ type Model struct {
 	progress progress.Model
 }
 
-func (m Model) Init() tea.Cmd {
-	return m.form.Init()
+func (m Model) Init() (tea.Model, tea.Cmd) {
+	form, cmd := m.form.Init()
+	m.form = form.(*huh.Form)
+	return m, cmd
 }
 
 const tickInterval = time.Second / 2

@@ -8,10 +8,10 @@ import (
 
 	xstrings "github.com/charmbracelet/x/exp/strings"
 
-	"github.com/charmbracelet/bubbles/filepicker"
-	"github.com/charmbracelet/bubbles/key"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/accessibility"
+	"github.com/charmbracelet/bubbles/v2/filepicker"
+	"github.com/charmbracelet/bubbles/v2/key"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/huh/v2/accessibility"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -47,7 +47,7 @@ func NewFilePicker() *FilePicker {
 	fp.ShowSize = false
 	fp.AutoHeight = false
 
-	if cmd := fp.Init(); cmd != nil {
+	if _, cmd := fp.Init(); cmd != nil {
 		fp, _ = fp.Update(cmd())
 	}
 
@@ -61,7 +61,7 @@ func NewFilePicker() *FilePicker {
 // CurrentDirectory sets the directory of the file field.
 func (f *FilePicker) CurrentDirectory(directory string) *FilePicker {
 	f.picker.CurrentDirectory = directory
-	if cmd := f.picker.Init(); cmd != nil {
+	if _, cmd := f.picker.Init(); cmd != nil {
 		f.picker, _ = f.picker.Update(cmd())
 	}
 	return f
@@ -179,7 +179,9 @@ func (f *FilePicker) Zoom() bool {
 // Focus focuses the file field.
 func (f *FilePicker) Focus() tea.Cmd {
 	f.focused = true
-	return f.picker.Init()
+	var cmd tea.Cmd
+	f.picker, cmd = f.picker.Init()
+	return cmd
 }
 
 // Blur blurs the file field.
@@ -196,8 +198,10 @@ func (f *FilePicker) KeyBinds() []key.Binding {
 }
 
 // Init initializes the file field.
-func (f *FilePicker) Init() tea.Cmd {
-	return f.picker.Init()
+func (f *FilePicker) Init() (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
+	f.picker, cmd = f.picker.Init()
+	return f, cmd
 }
 
 // Update updates the file field.
@@ -212,7 +216,9 @@ func (f *FilePicker) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				break
 			}
 			f.setPicking(true)
-			return f, f.picker.Init()
+			var cmd tea.Cmd
+			f.picker, cmd = f.picker.Init()
+			return f, cmd
 		case key.Matches(msg, f.keymap.Close):
 			f.setPicking(false)
 			return f, NextField

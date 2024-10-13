@@ -6,10 +6,10 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/textarea"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/accessibility"
+	"github.com/charmbracelet/bubbles/v2/key"
+	"github.com/charmbracelet/bubbles/v2/textarea"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/huh/v2/accessibility"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -243,9 +243,9 @@ func (t *Text) KeyBinds() []key.Binding {
 type updateValueMsg []byte
 
 // Init initializes the text field.
-func (t *Text) Init() tea.Cmd {
+func (t *Text) Init() (tea.Model, tea.Cmd) {
 	t.textarea.Blur()
-	return nil
+	return t, nil
 }
 
 // Update updates the text field.
