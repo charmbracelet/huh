@@ -8,7 +8,7 @@ require (
 	github.com/charmbracelet/glamour v0.8.0
 	github.com/charmbracelet/huh v0.0.0-00010101000000-000000000000
 	github.com/charmbracelet/huh/spinner v0.0.0-00010101000000-000000000000
-	github.com/charmbracelet/lipgloss v0.13.0
+	github.com/charmbracelet/lipgloss v0.13.1
 	github.com/charmbracelet/log v0.4.0
 	github.com/charmbracelet/ssh v0.0.0-20240725163421-eb71b85b27aa
 	github.com/charmbracelet/wish v1.4.3
