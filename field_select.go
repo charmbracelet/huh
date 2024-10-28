@@ -50,8 +50,9 @@ type Select[T comparable] struct {
 	width      int
 	height     int
 	accessible bool
-	theme      *Theme
+	theme      Theme
 	keymap     SelectKeyMap
+	hasDarkBg  bool
 }
 
 // NewSelect creates a new select field.
@@ -317,6 +318,8 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	switch msg := msg.(type) {
+	case tea.BackgroundColorMsg:
+		s.hasDarkBg = msg.IsDark()
 	case updateFieldMsg:
 		var cmds []tea.Cmd
 		if ok, hash := s.title.shouldUpdate(); ok {
@@ -516,12 +519,12 @@ func (s *Select[T]) updateViewportHeight() {
 func (s *Select[T]) activeStyles() *FieldStyles {
 	theme := s.theme
 	if theme == nil {
-		theme = ThemeCharm()
+		theme = ThemeFunc(ThemeCharm)
 	}
 	if s.focused {
-		return &theme.Focused
+		return &theme.Theme(s.hasDarkBg).Focused
 	}
-	return &theme.Blurred
+	return &theme.Theme(s.hasDarkBg).Blurred
 }
 
 func (s *Select[T]) titleView() string {
@@ -671,16 +674,17 @@ func (s *Select[T]) runAccessible() error {
 }
 
 // WithTheme sets the theme of the select field.
-func (s *Select[T]) WithTheme(theme *Theme) Field {
+func (s *Select[T]) WithTheme(theme Theme) Field {
 	if s.theme != nil {
 		return s
 	}
 	s.theme = theme
-	s.filter.Cursor.Style = theme.Focused.TextInput.Cursor
-	s.filter.Cursor.TextStyle = theme.Focused.TextInput.CursorText
-	s.filter.PromptStyle = theme.Focused.TextInput.Prompt
-	s.filter.TextStyle = theme.Focused.TextInput.Text
-	s.filter.PlaceholderStyle = theme.Focused.TextInput.Placeholder
+	t := theme.Theme(s.hasDarkBg)
+	s.filter.Cursor.Style = t.Focused.TextInput.Cursor
+	s.filter.Cursor.TextStyle = t.Focused.TextInput.CursorText
+	s.filter.PromptStyle = t.Focused.TextInput.Prompt
+	s.filter.TextStyle = t.Focused.TextInput.Text
+	s.filter.PlaceholderStyle = t.Focused.TextInput.Placeholder
 	s.updateViewportHeight()
 	return s
 }

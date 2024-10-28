@@ -155,7 +155,7 @@ type Field interface {
 	KeyBinds() []key.Binding
 
 	// WithTheme sets the theme on a field.
-	WithTheme(*Theme) Field
+	WithTheme(Theme) Field
 
 	// WithAccessible sets whether the field should run in accessible mode.
 	WithAccessible(bool) Field
@@ -256,7 +256,7 @@ func (f *Form) WithShowErrors(v bool) *Form {
 // This allows all groups and fields to be themed consistently, however themes
 // can be applied to each group and field individually for more granular
 // control.
-func (f *Form) WithTheme(theme *Theme) *Form {
+func (f *Form) WithTheme(theme Theme) *Form {
 	if theme == nil {
 		return f
 	}

@@ -38,8 +38,9 @@ type Input struct {
 	width      int
 	height     int // not really used anywhere
 
-	theme  *Theme
-	keymap InputKeyMap
+	theme     Theme
+	keymap    InputKeyMap
+	hasDarkBg bool
 }
 
 // NewInput creates a new input field.
@@ -274,6 +275,8 @@ func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
+	case tea.BackgroundColorMsg:
+		i.hasDarkBg = msg.IsDark()
 	case updateFieldMsg:
 		var cmds []tea.Cmd
 		if ok, hash := i.title.shouldUpdate(); ok {
@@ -368,12 +371,12 @@ func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (i *Input) activeStyles() *FieldStyles {
 	theme := i.theme
 	if theme == nil {
-		theme = ThemeCharm()
+		theme = ThemeFunc(ThemeCharm)
 	}
 	if i.focused {
-		return &theme.Focused
+		return &theme.Theme(i.hasDarkBg).Focused
 	}
-	return &theme.Blurred
+	return &theme.Theme(i.hasDarkBg).Blurred
 }
 
 // View renders the input field.
@@ -449,7 +452,7 @@ func (i *Input) WithAccessible(accessible bool) Field {
 }
 
 // WithTheme sets the theme of the input field.
-func (i *Input) WithTheme(theme *Theme) Field {
+func (i *Input) WithTheme(theme Theme) Field {
 	if i.theme != nil {
 		return i
 	}

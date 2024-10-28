@@ -44,8 +44,9 @@ type MultiSelect[T comparable] struct {
 	// options
 	width      int
 	accessible bool
-	theme      *Theme
+	theme      Theme
 	keymap     MultiSelectKeyMap
+	hasDarkBg  bool
 }
 
 // NewMultiSelect returns a new multi-select field.
@@ -267,6 +268,8 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	switch msg := msg.(type) {
+	case tea.BackgroundColorMsg:
+		m.hasDarkBg = msg.IsDark()
 	case updateFieldMsg:
 		var fieldCmds []tea.Cmd
 		if ok, hash := m.title.shouldUpdate(); ok {
@@ -503,12 +506,12 @@ func (m *MultiSelect[T]) updateValue() {
 func (m *MultiSelect[T]) activeStyles() *FieldStyles {
 	theme := m.theme
 	if theme == nil {
-		theme = ThemeCharm()
+		theme = ThemeFunc(ThemeCharm)
 	}
 	if m.focused {
-		return &theme.Focused
+		return &theme.Theme(m.hasDarkBg).Focused
 	}
-	return &theme.Blurred
+	return &theme.Theme(m.hasDarkBg).Blurred
 }
 
 func (m *MultiSelect[T]) titleView() string {
@@ -697,16 +700,17 @@ func (m *MultiSelect[T]) runAccessible() error {
 }
 
 // WithTheme sets the theme of the multi-select field.
-func (m *MultiSelect[T]) WithTheme(theme *Theme) Field {
+func (m *MultiSelect[T]) WithTheme(theme Theme) Field {
 	if m.theme != nil {
 		return m
 	}
 	m.theme = theme
-	m.filter.Cursor.Style = theme.Focused.TextInput.Cursor
-	m.filter.Cursor.TextStyle = theme.Focused.TextInput.CursorText
-	m.filter.PromptStyle = theme.Focused.TextInput.Prompt
-	m.filter.TextStyle = theme.Focused.TextInput.Text
-	m.filter.PlaceholderStyle = theme.Focused.TextInput.Placeholder
+	t := theme.Theme(m.hasDarkBg)
+	m.filter.Cursor.Style = t.Focused.TextInput.Cursor
+	m.filter.Cursor.TextStyle = t.Focused.TextInput.CursorText
+	m.filter.PromptStyle = t.Focused.TextInput.Prompt
+	m.filter.TextStyle = t.Focused.TextInput.Text
+	m.filter.PlaceholderStyle = t.Focused.TextInput.Placeholder
 	m.updateViewportHeight()
 	return m
 }

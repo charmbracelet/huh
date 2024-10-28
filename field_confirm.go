@@ -34,8 +34,9 @@ type Confirm struct {
 	height     int
 	inline     bool
 	accessible bool
-	theme      *Theme
+	theme      Theme
 	keymap     ConfirmKeyMap
+	hasDarkBg  bool
 }
 
 // NewConfirm returns a new confirm field.
@@ -163,6 +164,8 @@ func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
+	case tea.BackgroundColorMsg:
+		c.hasDarkBg = msg.IsDark()
 	case updateFieldMsg:
 		if ok, hash := c.title.shouldUpdate(); ok {
 			c.title.bindingsHash = hash
@@ -220,12 +223,12 @@ func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (c *Confirm) activeStyles() *FieldStyles {
 	theme := c.theme
 	if theme == nil {
-		theme = ThemeCharm()
+		theme = ThemeFunc(ThemeCharm)
 	}
 	if c.focused {
-		return &theme.Focused
+		return &theme.Theme(c.hasDarkBg).Focused
 	}
-	return &theme.Blurred
+	return &theme.Theme(c.hasDarkBg).Blurred
 }
 
 // View renders the confirm field.
@@ -310,7 +313,7 @@ func (c *Confirm) String() string {
 }
 
 // WithTheme sets the theme of the confirm field.
-func (c *Confirm) WithTheme(theme *Theme) Field {
+func (c *Confirm) WithTheme(theme Theme) Field {
 	if c.theme != nil {
 		return c
 	}

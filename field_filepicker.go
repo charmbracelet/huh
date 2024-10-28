@@ -37,8 +37,9 @@ type FilePicker struct {
 	width      int
 	height     int
 	accessible bool
-	theme      *Theme
+	theme      Theme
 	keymap     FilePickerKeyMap
+	hasDarkBg  bool
 }
 
 // NewFilePicker returns a new file field.
@@ -209,6 +210,8 @@ func (f *FilePicker) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	f.err = nil
 
 	switch msg := msg.(type) {
+	case tea.BackgroundColorMsg:
+		f.hasDarkBg = msg.IsDark()
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, f.keymap.Open):
@@ -251,12 +254,12 @@ func (f *FilePicker) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (f *FilePicker) activeStyles() *FieldStyles {
 	theme := f.theme
 	if theme == nil {
-		theme = ThemeCharm()
+		theme = ThemeFunc(ThemeCharm)
 	}
 	if f.focused {
-		return &theme.Focused
+		return &theme.Theme(f.hasDarkBg).Focused
 	}
-	return &theme.Blurred
+	return &theme.Theme(f.hasDarkBg).Blurred
 }
 
 // View renders the file field.
@@ -340,25 +343,26 @@ func (f *FilePicker) runAccessible() error {
 }
 
 // WithTheme sets the theme of the file field.
-func (f *FilePicker) WithTheme(theme *Theme) Field {
+func (f *FilePicker) WithTheme(theme Theme) Field {
 	if f.theme != nil || theme == nil {
 		return f
 	}
 	f.theme = theme
+	t := theme.Theme(f.hasDarkBg)
 
 	// XXX: add specific themes
 	f.picker.Styles = filepicker.Styles{
 		DisabledCursor:   lipgloss.Style{},
-		Cursor:           theme.Focused.TextInput.Prompt,
+		Cursor:           t.Focused.TextInput.Prompt,
 		Symlink:          lipgloss.NewStyle(),
-		Directory:        theme.Focused.Directory,
-		File:             theme.Focused.File,
-		DisabledFile:     theme.Focused.TextInput.Placeholder,
-		Permission:       theme.Focused.TextInput.Placeholder,
-		Selected:         theme.Focused.SelectedOption,
-		DisabledSelected: theme.Focused.TextInput.Placeholder,
-		FileSize:         theme.Focused.TextInput.Placeholder,
-		EmptyDirectory:   theme.Focused.TextInput.Placeholder.SetString("No files found."),
+		Directory:        t.Focused.Directory,
+		File:             t.Focused.File,
+		DisabledFile:     t.Focused.TextInput.Placeholder,
+		Permission:       t.Focused.TextInput.Placeholder,
+		Selected:         t.Focused.SelectedOption,
+		DisabledSelected: t.Focused.TextInput.Placeholder,
+		FileSize:         t.Focused.TextInput.Placeholder,
+		EmptyDirectory:   t.Focused.TextInput.Placeholder.SetString("No files found."),
 	}
 
 	return f

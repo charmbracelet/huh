@@ -40,8 +40,9 @@ type Text struct {
 	accessible bool
 	width      int
 
-	theme  *Theme
-	keymap TextKeyMap
+	theme     Theme
+	keymap    TextKeyMap
+	hasDarkBg bool
 }
 
 // NewText creates a new text field.
@@ -53,7 +54,7 @@ func NewText() *Text {
 	text := textarea.New()
 	text.ShowLineNumbers = false
 	text.Prompt = ""
-	text.FocusedStyle.CursorLine = lipgloss.NewStyle()
+	text.Styles.Focused.CursorLine = lipgloss.NewStyle()
 
 	editorCmd, editorArgs := getEditor()
 
@@ -254,6 +255,8 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
+	case tea.BackgroundColorMsg:
+		t.hasDarkBg = msg.IsDark()
 	case updateValueMsg:
 		t.textarea.SetValue(string(msg))
 		t.textarea, cmd = t.textarea.Update(msg)
@@ -343,23 +346,23 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (t *Text) activeStyles() *FieldStyles {
 	theme := t.theme
-	if theme == nil {
-		theme = ThemeCharm()
+	if t.theme == nil {
+		theme = ThemeFunc(ThemeCharm)
 	}
 	if t.focused {
-		return &theme.Focused
+		return &theme.Theme(t.hasDarkBg).Focused
 	}
-	return &theme.Blurred
+	return &theme.Theme(t.hasDarkBg).Blurred
 }
 
-func (t *Text) activeTextAreaStyles() *textarea.Style {
+func (t *Text) activeTextAreaStyles() *textarea.StyleState {
 	if t.theme == nil {
-		return &t.textarea.BlurredStyle
+		return &t.textarea.Styles.Blurred
 	}
 	if t.focused {
-		return &t.textarea.FocusedStyle
+		return &t.textarea.Styles.Focused
 	}
-	return &t.textarea.BlurredStyle
+	return &t.textarea.Styles.Blurred
 }
 
 // View renders the text field.
@@ -374,8 +377,6 @@ func (t *Text) View() string {
 	textareaStyles.Text = styles.TextInput.Text
 	textareaStyles.Prompt = styles.TextInput.Prompt
 	textareaStyles.CursorLine = styles.TextInput.Text
-	t.textarea.Cursor.Style = styles.TextInput.Cursor
-	t.textarea.Cursor.TextStyle = styles.TextInput.CursorText
 
 	var sb strings.Builder
 	if t.title.val != "" || t.title.fn != nil {
@@ -423,7 +424,7 @@ func (t *Text) runAccessible() error {
 }
 
 // WithTheme sets the theme on a text field.
-func (t *Text) WithTheme(theme *Theme) Field {
+func (t *Text) WithTheme(theme Theme) Field {
 	if t.theme != nil {
 		return t
 	}

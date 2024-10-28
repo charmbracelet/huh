@@ -35,11 +35,12 @@ type Group struct {
 	showErrors bool
 
 	// group options
-	width  int
-	height int
-	keymap *KeyMap
-	hide   func() bool
-	active bool
+	width     int
+	height    int
+	keymap    *KeyMap
+	hide      func() bool
+	active    bool
+	hasDarkBg bool
 }
 
 // NewGroup returns a new group with the given fields.
@@ -86,8 +87,8 @@ func (g *Group) WithShowErrors(show bool) *Group {
 }
 
 // WithTheme sets the theme on a group.
-func (g *Group) WithTheme(t *Theme) *Group {
-	g.help.Styles = t.Help
+func (g *Group) WithTheme(t Theme) *Group {
+	g.help.Styles = t.Theme(g.hasDarkBg).Help
 	g.selector.Range(func(_ int, field Field) bool {
 		field.WithTheme(t)
 		return true
@@ -267,6 +268,8 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	})
 
 	switch msg := msg.(type) {
+	case tea.BackgroundColorMsg:
+		g.hasDarkBg = msg.IsDark()
 	case tea.WindowSizeMsg:
 		g.WithHeight(max(g.height, min(g.fullHeight(), msg.Height-1)))
 	case nextFieldMsg:
@@ -346,7 +349,7 @@ func (g *Group) Footer() string {
 	}
 	if g.showErrors {
 		for _, err := range errors {
-			view.WriteString(ThemeCharm().Focused.ErrorMessage.Render(err.Error()))
+			view.WriteString(ThemeCharm(true).Focused.ErrorMessage.Render(err.Error()))
 		}
 	}
 	return view.String()
