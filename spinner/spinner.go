@@ -10,7 +10,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/v2/spinner"
 	tea "github.com/charmbracelet/bubbletea/v2"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss/v2"
 	"github.com/muesli/termenv"
 )
 
@@ -101,7 +101,7 @@ func New() *Spinner {
 		action:     func() { time.Sleep(time.Second) },
 		spinner:    s,
 		title:      "Loading...",
-		titleStyle: lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#00020A", Dark: "#FFFDF5"}),
+		titleStyle: lipgloss.NewStyle(),
 		output:     termenv.NewOutput(os.Stdout),
 		ctx:        nil,
 	}
