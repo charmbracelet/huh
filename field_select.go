@@ -11,7 +11,7 @@ import (
 	"github.com/charmbracelet/bubbles/v2/viewport"
 	tea "github.com/charmbracelet/bubbletea/v2"
 	"github.com/charmbracelet/huh/v2/accessibility"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss/v2"
 )
 
 const (
@@ -312,7 +312,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		s.filter, cmd = s.filter.Update(msg)
 
 		// Keep the selected item in view.
-		if s.selected < s.viewport.YOffset || s.selected >= s.viewport.YOffset+s.viewport.Height {
+		if s.selected < s.viewport.YOffset || s.selected >= s.viewport.YOffset+s.viewport.Height() {
 			s.viewport.SetYOffset(s.selected)
 		}
 	}
@@ -428,11 +428,11 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			s.selected = len(s.filteredOptions) - 1
 			s.viewport.GotoBottom()
 		case key.Matches(msg, s.keymap.HalfPageUp):
-			s.selected = max(s.selected-s.viewport.Height/2, 0)
+			s.selected = max(s.selected-s.viewport.Height()/2, 0)
 			s.viewport.HalfViewUp()
 			s.updateValue()
 		case key.Matches(msg, s.keymap.HalfPageDown):
-			s.selected = min(s.selected+s.viewport.Height/2, len(s.filteredOptions)-1)
+			s.selected = min(s.selected+s.viewport.Height()/2, len(s.filteredOptions)-1)
 			s.viewport.HalfViewDown()
 			s.updateValue()
 		case key.Matches(msg, s.keymap.Down, s.keymap.Right):
@@ -447,7 +447,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				s.selected = 0
 				s.viewport.GotoTop()
 			}
-			if s.selected >= s.viewport.YOffset+s.viewport.Height {
+			if s.selected >= s.viewport.YOffset+s.viewport.Height() {
 				s.viewport.LineDown(1)
 			}
 			s.updateValue()
@@ -488,7 +488,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			if len(s.filteredOptions) > 0 {
 				s.selected = min(s.selected, len(s.filteredOptions)-1)
-				s.viewport.SetYOffset(clamp(s.selected, 0, len(s.filteredOptions)-s.viewport.Height))
+				s.viewport.SetYOffset(clamp(s.selected, 0, len(s.filteredOptions)-s.viewport.Height()))
 			}
 		}
 	}
@@ -507,13 +507,13 @@ func (s *Select[T]) updateValue() {
 func (s *Select[T]) updateViewportHeight() {
 	// If no height is set size the viewport to the number of options.
 	if s.height <= 0 {
-		s.viewport.Height = len(s.options.val)
+		s.viewport.SetHeight(len(s.options.val))
 		return
 	}
 
-	s.viewport.Height = max(minHeight, s.height-
+	s.viewport.SetHeight(max(minHeight, s.height-
 		lipgloss.Height(s.titleView())-
-		lipgloss.Height(s.descriptionView()))
+		lipgloss.Height(s.descriptionView())))
 }
 
 func (s *Select[T]) activeStyles() *FieldStyles {
@@ -623,7 +623,7 @@ func (s *Select[T]) clearFilter() {
 // setFiltering sets the filter of the select field.
 func (s *Select[T]) setFiltering(filtering bool) {
 	if s.inline && filtering {
-		s.filter.Width = lipgloss.Width(s.titleView()) - 1 - 1
+		s.filter.SetWidth(lipgloss.Width(s.titleView()) - 1 - 1)
 	}
 	s.filtering = filtering
 	s.keymap.SetFilter.SetEnabled(filtering)

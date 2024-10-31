@@ -8,7 +8,7 @@ import (
 	"github.com/charmbracelet/bubbles/v2/textinput"
 	tea "github.com/charmbracelet/bubbletea/v2"
 	"github.com/charmbracelet/huh/v2/accessibility"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss/v2"
 )
 
 // Input is a input field.
@@ -394,7 +394,7 @@ func (i *Input) View() string {
 
 	// Adjust text input size to its char limit if it fit in its width
 	if i.textinput.CharLimit > 0 {
-		i.textinput.Width = min(i.textinput.CharLimit, i.textinput.Width)
+		i.textinput.SetWidth(min(i.textinput.CharLimit, i.textinput.Width()))
 	}
 
 	var sb strings.Builder
@@ -468,11 +468,12 @@ func (i *Input) WithWidth(width int) Field {
 	promptWidth := lipgloss.Width(i.textinput.PromptStyle.Render(i.textinput.Prompt))
 	titleWidth := lipgloss.Width(styles.Title.Render(i.title.val))
 	descriptionWidth := lipgloss.Width(styles.Description.Render(i.description.val))
-	i.textinput.Width = width - frameSize - promptWidth - 1
+	tiwidth := width - frameSize - promptWidth - 1
 	if i.inline {
-		i.textinput.Width -= titleWidth
-		i.textinput.Width -= descriptionWidth
+		tiwidth -= titleWidth
+		tiwidth -= descriptionWidth
 	}
+	i.textinput.SetWidth(tiwidth)
 	return i
 }
 

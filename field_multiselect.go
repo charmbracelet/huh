@@ -11,7 +11,7 @@ import (
 	"github.com/charmbracelet/bubbles/v2/viewport"
 	tea "github.com/charmbracelet/bubbletea/v2"
 	"github.com/charmbracelet/huh/v2/accessibility"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss/v2"
 )
 
 // MultiSelect is a form multi-select field.
@@ -363,7 +363,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			m.cursor = min(m.cursor+1, len(m.filteredOptions)-1)
-			if m.cursor >= m.viewport.YOffset+m.viewport.Height {
+			if m.cursor >= m.viewport.YOffset+m.viewport.Height() {
 				m.viewport.LineDown(1)
 			}
 		case key.Matches(msg, m.keymap.GotoTop):
@@ -379,10 +379,10 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.cursor = len(m.filteredOptions) - 1
 			m.viewport.GotoBottom()
 		case key.Matches(msg, m.keymap.HalfPageUp):
-			m.cursor = max(m.cursor-m.viewport.Height/2, 0)
+			m.cursor = max(m.cursor-m.viewport.Height()/2, 0)
 			m.viewport.HalfViewUp()
 		case key.Matches(msg, m.keymap.HalfPageDown):
-			m.cursor = min(m.cursor+m.viewport.Height/2, len(m.filteredOptions)-1)
+			m.cursor = min(m.cursor+m.viewport.Height()/2, len(m.filteredOptions)-1)
 			m.viewport.HalfViewDown()
 		case key.Matches(msg, m.keymap.Toggle) && !m.filtering:
 			for i, option := range m.options.val {
@@ -446,7 +446,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			if len(m.filteredOptions) > 0 {
 				m.cursor = min(m.cursor, len(m.filteredOptions)-1)
-				m.viewport.SetYOffset(clamp(m.cursor, 0, len(m.filteredOptions)-m.viewport.Height))
+				m.viewport.SetYOffset(clamp(m.cursor, 0, len(m.filteredOptions)-m.viewport.Height()))
 			}
 		}
 	}
@@ -459,14 +459,14 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m *MultiSelect[T]) updateViewportHeight() {
 	// If no height is set size the viewport to the number of options.
 	if m.height <= 0 {
-		m.viewport.Height = len(m.options.val)
+		m.viewport.SetHeight(len(m.options.val))
 		return
 	}
 
 	const minHeight = 1
-	m.viewport.Height = max(minHeight, m.height-
+	m.viewport.SetHeight(max(minHeight, m.height-
 		lipgloss.Height(m.titleView())-
-		lipgloss.Height(m.descriptionView()))
+		lipgloss.Height(m.descriptionView())))
 }
 
 // numSelected returns the total number of selected options.

@@ -7,7 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/v2/viewport"
 	tea "github.com/charmbracelet/bubbletea/v2"
 	"github.com/charmbracelet/huh/v2/internal/selector"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss/v2"
 )
 
 // Group is a collection of fields that are displayed together with a page of
@@ -55,7 +55,7 @@ func NewGroup(fields ...Field) *Group {
 	}
 
 	height := group.fullHeight()
-	v := viewport.New(80, height) //nolint:mnd
+	v := viewport.New(viewport.WithWidth(80), viewport.WithHeight(height)) //nolint:mnd
 	group.viewport = v
 	group.height = height
 
@@ -112,7 +112,7 @@ func (g *Group) WithKeyMap(k *KeyMap) *Group {
 // WithWidth sets the width on a group.
 func (g *Group) WithWidth(width int) *Group {
 	g.width = width
-	g.viewport.Width = width
+	g.viewport.SetWidth(width)
 	g.selector.Range(func(_ int, field Field) bool {
 		field.WithWidth(width)
 		return true
@@ -123,7 +123,7 @@ func (g *Group) WithWidth(width int) *Group {
 // WithHeight sets the height on a group.
 func (g *Group) WithHeight(height int) *Group {
 	g.height = height
-	g.viewport.Height = height
+	g.viewport.SetHeight(height)
 	g.selector.Range(func(_ int, field Field) bool {
 		// A field height must not exceed the form height.
 		if height-1 <= lipgloss.Height(field.View()) {

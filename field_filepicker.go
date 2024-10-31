@@ -12,7 +12,7 @@ import (
 	"github.com/charmbracelet/bubbles/v2/key"
 	tea "github.com/charmbracelet/bubbletea/v2"
 	"github.com/charmbracelet/huh/v2/accessibility"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss/v2"
 )
 
 // FilePicker is a form file file field.
@@ -151,7 +151,7 @@ func (f *FilePicker) Height(height int) *FilePicker {
 	if f.description != "" {
 		adjust++
 	}
-	f.picker.Height = height - adjust
+	f.picker.SetHeight(height - adjust)
 	f.picker.AutoHeight = false
 	return f
 }
