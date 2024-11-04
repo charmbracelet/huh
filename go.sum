@@ -14,6 +14,8 @@ github.com/charmbracelet/colorprofile v0.1.6 h1:nMMqCns0c0DfCwNGdagBh6SxutFqkltS
 github.com/charmbracelet/colorprofile v0.1.6/go.mod h1:3EMXDxwRDJl0c17eJ1jX99MhtlP9OxE/9Qw0C5lvyUg=
 github.com/charmbracelet/lipgloss/v2 v2.0.0-20241031200334-0208749f2aee h1:0dnfSKE3Iohjc0QzntjFSceZJdrC0s0QtT/pXYILe6s=
 github.com/charmbracelet/lipgloss/v2 v2.0.0-20241031200334-0208749f2aee/go.mod h1:M8oXIuQtauwIZFuFREK6cYi+2fu0YNiBFnmCP7N8c2c=
+github.com/charmbracelet/lipgloss/v2 v2.0.0-20241101153040-904e60506df7 h1:od3rYcqNPhFzECY/xWPnHgSJF7WJdkB3inncDXpUCZ8=
+github.com/charmbracelet/lipgloss/v2 v2.0.0-20241101153040-904e60506df7/go.mod h1:M8oXIuQtauwIZFuFREK6cYi+2fu0YNiBFnmCP7N8c2c=
 github.com/charmbracelet/x/ansi v0.4.2 h1:0JM6Aj/g/KC154/gOP4vfxun0ff6itogDYk41kof+qk=
 github.com/charmbracelet/x/ansi v0.4.2/go.mod h1:dk73KoMTT5AX5BsX0KrqhsTqAnhZZoCBjs7dGWp4Ktw=
 github.com/charmbracelet/x/exp/golden v0.0.0-20241011142426-46044092ad91 h1:payRxjMjKgx2PaCWLZ4p3ro9y97+TVLZNaRZgJwSVDQ=

@@ -6,7 +6,7 @@ require (
 	github.com/catppuccin/go v0.2.0
 	github.com/charmbracelet/bubbles/v2 v2.0.0-alpha.1.0.20241031195835-cc9a7270283d
 	github.com/charmbracelet/bubbletea/v2 v2.0.0-alpha.1.0.20241031200731-4f70d4c680b8
-	github.com/charmbracelet/lipgloss/v2 v2.0.0-20241031200334-0208749f2aee
+	github.com/charmbracelet/lipgloss/v2 v2.0.0-20241101153040-904e60506df7
 	github.com/charmbracelet/x/ansi v0.4.2
 	github.com/charmbracelet/x/exp/strings v0.0.0-20240722160745-212f7b056ed0
 	github.com/mitchellh/hashstructure/v2 v2.0.2
