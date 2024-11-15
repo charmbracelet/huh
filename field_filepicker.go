@@ -67,6 +67,12 @@ func (f *FilePicker) CurrentDirectory(directory string) *FilePicker {
 	return f
 }
 
+// Cursor sets the cursor of the file field.
+func (f *FilePicker) Cursor(cursor string) *FilePicker {
+	f.picker.Cursor = cursor
+	return f
+}
+
 // Picking sets whether the file picker should be in the picking files state.
 func (f *FilePicker) Picking(v bool) *FilePicker {
 	f.setPicking(v)
