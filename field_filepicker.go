@@ -45,7 +45,6 @@ type FilePicker struct {
 func NewFilePicker() *FilePicker {
 	fp := filepicker.New()
 	fp.ShowSize = false
-	fp.AutoHeight = false
 
 	if cmd := fp.Init(); cmd != nil {
 		fp, _ = fp.Update(cmd())
@@ -157,7 +156,6 @@ func (f *FilePicker) Height(height int) *FilePicker {
 		adjust++
 	}
 	f.picker.Height = height - adjust
-	f.picker.AutoHeight = false
 	return f
 }
 
