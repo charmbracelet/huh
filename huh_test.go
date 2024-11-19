@@ -307,6 +307,19 @@ func TestInput(t *testing.T) {
 	}
 }
 
+func TestInputInitValue(t *testing.T) {
+	field := NewInput().InitValue("prefilled")
+	f := NewForm(NewGroup(field))
+	f.Update(f.Init())
+
+	view := ansi.Strip(f.View())
+
+	if !strings.Contains(view, "> prefilled") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to be prefilled with an initial value but was not.")
+	}
+}
+
 func TestInlineInput(t *testing.T) {
 	field := NewInput().
 		Title("Input ").

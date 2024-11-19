@@ -70,6 +70,11 @@ func (i *Input) Value(value *string) *Input {
 	return i.Accessor(NewPointerAccessor(value))
 }
 
+// InitValue sets the initial value of the input field.
+func (i *Input) InitValue(value string) *Input {
+	return i.Accessor(NewPointerAccessor(&value))
+}
+
 // Accessor sets the accessor of the input field.
 func (i *Input) Accessor(accessor Accessor[string]) *Input {
 	i.accessor = accessor
