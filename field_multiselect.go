@@ -268,9 +268,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		rendered := m.View()
-		m.WithHeight(max(m.height, min(lipgloss.Height(rendered), msg.Height-1)))
-		m.WithWidth(max(m.width, min(lipgloss.Width(rendered), msg.Width-1)))
+		m.updateViewportHeight()
 	case updateFieldMsg:
 		var fieldCmds []tea.Cmd
 		if ok, hash := m.title.shouldUpdate(); ok {
@@ -560,7 +558,7 @@ func (m *MultiSelect[T]) optionsView() string {
 			sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)))
 		}
 		prefixWidth := lipgloss.Width(styles.SelectedPrefix.String())
-		contentWidth := m.width - prefixWidth
+		contentWidth := m.width - prefixWidth - lipgloss.Width(c)
 
 		if m.filteredOptions[i].selected {
 			// add a prefix after each newline except the last one.
