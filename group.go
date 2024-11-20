@@ -269,6 +269,7 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		g.WithHeight(max(g.height, min(g.fullHeight(), msg.Height-1)))
+		g.WithWidth(max(g.width, min(g.fullWidth(), msg.Width-1)))
 	case nextFieldMsg:
 		cmds = append(cmds, g.nextField()...)
 	case prevFieldMsg:
@@ -288,6 +289,16 @@ func (g *Group) fullHeight() int {
 		return true
 	})
 	return height
+}
+
+// width returns the full width of the group.
+func (g *Group) fullWidth() int {
+	width := g.selector.Total()
+	g.selector.Range(func(_ int, field Field) bool {
+		width += lipgloss.Width(field.View())
+		return true
+	})
+	return width
 }
 
 func (g *Group) getContent() (int, string) {
