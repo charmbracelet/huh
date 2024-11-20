@@ -267,6 +267,10 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		rendered := m.View()
+		m.WithHeight(max(m.height, min(lipgloss.Height(rendered), msg.Height-1)))
+		m.WithWidth(max(m.width, min(lipgloss.Width(rendered), msg.Width-1)))
 	case updateFieldMsg:
 		var fieldCmds []tea.Cmd
 		if ok, hash := m.title.shouldUpdate(); ok {
@@ -456,7 +460,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m *MultiSelect[T]) updateViewportHeight() {
 	// If no height is set size the viewport to the number of options.
 	if m.height <= 0 {
-		m.viewport.Height = len(m.options.val)
+		m.viewport.Height = lipgloss.Height(m.optionsView())
 		return
 	}
 
