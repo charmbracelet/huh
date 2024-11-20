@@ -534,7 +534,7 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return f, f.CancelCmd
 		}
 
-	case nextFieldMsg:
+	case NextFieldMsg:
 		// Form is progressing to the next field, let's save the value of the current field.
 		field := group.selector.Selected()
 		f.results[field.GetKey()] = field.GetValue()

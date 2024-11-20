@@ -165,7 +165,7 @@ func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
-	case updateFieldMsg:
+	case UpdateFieldMsg:
 		if ok, hash := c.title.shouldUpdate(); ok {
 			c.title.bindingsHash = hash
 			if !c.title.loadFromCache() {

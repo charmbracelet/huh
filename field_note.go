@@ -162,7 +162,7 @@ func (n *Note) Init() tea.Cmd { return nil }
 // Update updates the note field.
 func (n *Note) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case updateFieldMsg:
+	case UpdateFieldMsg:
 		var cmds []tea.Cmd
 		if ok, hash := n.title.shouldUpdate(); ok {
 			n.title.bindingsHash = hash
