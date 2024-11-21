@@ -555,15 +555,17 @@ func (m *MultiSelect[T]) optionsView() string {
 		} else {
 			sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)))
 		}
-		prefixWidth := lipgloss.Width(styles.SelectedPrefix.String())
+		prefixWidth := max(lipgloss.Width(styles.SelectedPrefix.String()), lipgloss.Width(styles.UnselectedPrefix.String()))
 		contentWidth := m.width - prefixWidth - lipgloss.Width(c)
 
 		if m.filteredOptions[i].selected {
 			// add a prefix after each newline except the last one.
+			sb.WriteString(styles.SelectedPrefix.String())
 			content := styles.SelectedOption.Width(contentWidth).Render(option.Key)
 			strings.Replace(content, "\n", "\n"+styles.SelectedPrefix.String(), strings.Count(content, "\n")-1)
 			sb.WriteString(content)
 		} else {
+			sb.WriteString(styles.UnselectedPrefix.String())
 			content := styles.UnselectedOption.Width(contentWidth).Render(option.Key)
 			strings.Replace(content, "\n", "\n"+styles.UnselectedPrefix.String(), strings.Count(content, "\n")-1)
 			sb.WriteString(content)
