@@ -267,8 +267,6 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	switch msg := msg.(type) {
-	case tea.WindowSizeMsg:
-		m.updateViewportHeight()
 	case updateFieldMsg:
 		var fieldCmds []tea.Cmd
 		if ok, hash := m.title.shouldUpdate(); ok {
