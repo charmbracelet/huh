@@ -511,6 +511,10 @@ func (m *MultiSelect[T]) activeStyles() *FieldStyles {
 	return &theme.Blurred
 }
 
+func (m *MultiSelect[T]) calculateWrapping() int {
+	return m.width - m.activeStyles().Base.GetHorizontalFrameSize()
+}
+
 func (m *MultiSelect[T]) titleView() string {
 	if m.title.val == "" {
 		return ""
@@ -522,9 +526,9 @@ func (m *MultiSelect[T]) titleView() string {
 	if m.filtering {
 		sb.WriteString(m.filter.View())
 	} else if m.filter.Value() != "" {
-		sb.WriteString(styles.Title.Render(m.title.val) + styles.Description.Render("/"+m.filter.Value()))
+		sb.WriteString(styles.Title.Width(m.calculateWrapping()).Render(m.title.val) + styles.Description.Render("/"+m.filter.Value()))
 	} else {
-		sb.WriteString(styles.Title.Render(m.title.val))
+		sb.WriteString(styles.Title.Width(m.calculateWrapping()).Render(m.title.val))
 	}
 	if m.err != nil {
 		sb.WriteString(styles.ErrorIndicator.String())
@@ -533,7 +537,7 @@ func (m *MultiSelect[T]) titleView() string {
 }
 
 func (m *MultiSelect[T]) descriptionView() string {
-	return m.activeStyles().Description.Render(m.description.val)
+	return m.activeStyles().Description.Width(m.calculateWrapping()).Render(m.description.val)
 }
 
 func (m *MultiSelect[T]) optionsView() string {
@@ -556,9 +560,7 @@ func (m *MultiSelect[T]) optionsView() string {
 			sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)))
 		}
 		// Calculate width constraints.
-		prefixWidth := max(lipgloss.Width(styles.SelectedPrefix.String()), lipgloss.Width(styles.UnselectedPrefix.String()))
-		frameSize := styles.Base.GetHorizontalFrameSize()
-		contentWidth := m.width - frameSize - lipgloss.Width(c) - prefixWidth
+		contentWidth := m.calculateWrapping() - lipgloss.Width(c) - max(lipgloss.Width(styles.SelectedPrefix.String()), lipgloss.Width(styles.UnselectedPrefix.String()))
 
 		if m.filteredOptions[i].selected {
 			sb.WriteString(styles.SelectedPrefix.String())
