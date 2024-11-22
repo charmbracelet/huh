@@ -303,18 +303,19 @@ func (g *Group) fullWidth() int {
 
 func (g *Group) getContent() (int, string) {
 	var fields strings.Builder
-	offset := 0
+	var offset int
 	gap := "\n\n"
 
-	// if the focused field is requesting it be zoomed, only show that field.
+	// If the focused field is requesting it be zoomed, only show that field.
 	if g.selector.Selected().Zoom() {
 		g.selector.Selected().WithHeight(g.height - 1)
 		fields.WriteString(g.selector.Selected().View())
 	} else {
 		g.selector.Range(func(i int, field Field) bool {
 			fields.WriteString(field.View())
-			if i == g.selector.Index() {
-				offset = lipgloss.Height(fields.String()) - lipgloss.Height(field.View())
+			// Set the offset to the height of the previous field(s).
+			if i < g.selector.Index() {
+				offset += lipgloss.Height(field.View())
 			}
 			if i < g.selector.Total()-1 {
 				fields.WriteString(gap)
