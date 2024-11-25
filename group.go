@@ -113,7 +113,9 @@ func (g *Group) WithWidth(width int) *Group {
 	g.width = width
 	g.viewport.Width = width
 	g.selector.Range(func(_ int, field Field) bool {
-		field.WithWidth(width)
+		// TODO can I do this? All themes should have the same horizontal frame size anyway...
+		// If not, should the active theme be loaded per form rather than per field?
+		field.WithWidth(width - ThemeCharm().Focused.Base.GetHorizontalFrameSize())
 		return true
 	})
 	return g
