@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/catppuccin/go v0.2.0
 	github.com/charmbracelet/bubbles v0.20.0
-	github.com/charmbracelet/bubbletea v1.2.2
+	github.com/charmbracelet/bubbletea v1.2.4
 	github.com/charmbracelet/lipgloss v1.0.0
 	github.com/charmbracelet/x/ansi v0.4.5
 	github.com/charmbracelet/x/exp/strings v0.0.0-20240722160745-212f7b056ed0
