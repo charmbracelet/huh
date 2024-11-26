@@ -254,13 +254,24 @@ func (c *Confirm) View() string {
 
 	var negative string
 	var affirmative string
+
+	// Calculate padding to make buttons equal. The narrowest button has padding
+	// added to its right.
+	negativePad := styles.BlurredButton.GetHorizontalPadding() / 2
+	affirmativePad := styles.BlurredButton.GetHorizontalPadding() / 2
+	if lipgloss.Width(c.negative) < lipgloss.Width(c.affirmative) {
+		negativePad += (lipgloss.Width(c.affirmative) - lipgloss.Width(c.negative))
+	} else if lipgloss.Width(c.affirmative) < lipgloss.Width(c.negative) {
+		affirmativePad += (lipgloss.Width(c.negative) - lipgloss.Width(c.affirmative))
+	}
+
 	if c.negative != "" {
 		if c.accessor.Get() {
-			affirmative = styles.FocusedButton.Render(c.affirmative)
-			negative = styles.BlurredButton.Render(c.negative)
+			affirmative = styles.FocusedButton.PaddingRight(affirmativePad).Render(c.affirmative)
+			negative = styles.BlurredButton.PaddingRight(negativePad).Render(c.negative)
 		} else {
-			affirmative = styles.BlurredButton.Render(c.affirmative)
-			negative = styles.FocusedButton.Render(c.negative)
+			affirmative = styles.BlurredButton.PaddingRight(affirmativePad).Render(c.affirmative)
+			negative = styles.FocusedButton.PaddingRight(negativePad).Render(c.negative)
 		}
 		c.keymap.Reject.SetHelp("n", c.negative)
 	} else {
@@ -269,20 +280,13 @@ func (c *Confirm) View() string {
 	}
 
 	c.keymap.Accept.SetHelp("y", c.affirmative)
-
 	buttonsRow := lipgloss.JoinHorizontal(c.buttonAlignment, affirmative, negative)
-
-	promptWidth := lipgloss.Width(sb.String())
-	buttonsWidth := lipgloss.Width(buttonsRow)
-
-	renderWidth := promptWidth
-	if buttonsWidth > renderWidth {
-		renderWidth = buttonsWidth
+	// Align the buttons vertically if the window is too narrow.
+	if c.width < lipgloss.Width(buttonsRow) {
+		buttonsRow = lipgloss.JoinVertical(lipgloss.Left, affirmative, negative)
 	}
 
-	style := lipgloss.NewStyle().Width(renderWidth).Align(c.buttonAlignment)
-
-	sb.WriteString(style.Render(buttonsRow))
+	sb.WriteString(buttonsRow)
 	return styles.Base.Render(sb.String())
 }
 
