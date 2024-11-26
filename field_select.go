@@ -538,7 +538,9 @@ func (s *Select[T]) titleView() string {
 	if s.filtering {
 		sb.WriteString(s.filter.View())
 	} else if s.filter.Value() != "" && !s.inline {
-		sb.WriteString(styles.Title.Width(s.width).Render(s.title.val) + styles.Description.Render("/"+s.filter.Value()))
+		sb.WriteString(styles.Title.Width(s.width).Render(s.title.val) + styles.Description.Width(s.width).Render("/"+s.filter.Value()))
+	} else if s.inline {
+		sb.WriteString(styles.Title.Render(s.title.val))
 	} else {
 		sb.WriteString(styles.Title.Width(s.width).Render(s.title.val))
 	}
@@ -549,6 +551,9 @@ func (s *Select[T]) titleView() string {
 }
 
 func (s *Select[T]) descriptionView() string {
+	if s.inline {
+		return s.activeStyles().Description.Render(s.description.val)
+	}
 	return s.activeStyles().Description.Width(s.width).Render(s.description.val)
 }
 
@@ -569,9 +574,9 @@ func (s *Select[T]) optionsView() string {
 	if s.inline {
 		sb.WriteString(styles.PrevIndicator.Faint(s.selected <= 0).String())
 		if len(s.filteredOptions) > 0 {
-			sb.WriteString(styles.SelectedOption.Width(width).Render(s.filteredOptions[s.selected].Key))
+			sb.WriteString(styles.SelectedOption.Render(s.filteredOptions[s.selected].Key))
 		} else {
-			sb.WriteString(styles.TextInput.Placeholder.Width(width).Render("No matches"))
+			sb.WriteString(styles.TextInput.Placeholder.Render("No matches"))
 		}
 		sb.WriteString(styles.NextIndicator.Faint(s.selected == len(s.filteredOptions)-1).String())
 		return sb.String()

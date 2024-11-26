@@ -241,21 +241,25 @@ func (c *Confirm) View() string {
 	styles := c.activeStyles()
 
 	var sb strings.Builder
-	sb.WriteString(styles.Title.Width(c.width).Render(c.title.val))
+	if c.inline {
+		sb.WriteString(styles.Title.Render(c.title.val))
+	} else {
+		sb.WriteString(styles.Title.Width(c.width).Render(c.title.val))
+	}
+
 	if c.err != nil {
 		sb.WriteString(styles.ErrorIndicator.String())
 	}
 
-	description := styles.Description.Width(c.width).Render(c.description.val)
-
 	if !c.inline && (c.description.val != "" || c.description.fn != nil) {
 		sb.WriteString("\n")
 	}
-	sb.WriteString(description)
-
 	if !c.inline {
+		sb.WriteString(styles.Description.Width(c.width).Render(c.description.val))
 		sb.WriteString("\n")
 		sb.WriteString("\n")
+	} else {
+		sb.WriteString(styles.Description.Render(c.description.val))
 	}
 
 	var negative string

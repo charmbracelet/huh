@@ -402,15 +402,19 @@ func (i *Input) View() string {
 
 	var sb strings.Builder
 	if i.title.val != "" || i.title.fn != nil {
-		sb.WriteString(styles.Title.Width(i.width).Render(i.title.val))
 		if !i.inline {
+			sb.WriteString(styles.Title.Width(i.width).Render(i.title.val))
 			sb.WriteString("\n")
+		} else {
+			sb.WriteString(styles.Title.Render(i.title.val))
 		}
 	}
 	if i.description.val != "" || i.description.fn != nil {
-		sb.WriteString(styles.Description.Width(i.width).Render(i.description.val))
 		if !i.inline {
+			sb.WriteString(styles.Description.Width(i.width).Render(i.description.val))
 			sb.WriteString("\n")
+		} else {
+			sb.WriteString(styles.Description.Render(i.description.val))
 		}
 	}
 	sb.WriteString(i.textinput.View())
