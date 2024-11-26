@@ -10,6 +10,8 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+const gap string = "\n\n"
+
 // Group is a collection of fields that are displayed together with a page of
 // the form. While a group is displayed the form completer can switch between
 // fields in the group.
@@ -286,6 +288,7 @@ func (g *Group) fullHeight() int {
 	height := g.selector.Total()
 	g.selector.Range(func(_ int, field Field) bool {
 		height += lipgloss.Height(field.View())
+		height += lipgloss.Height(gap)
 		return true
 	})
 	return height
@@ -294,7 +297,6 @@ func (g *Group) fullHeight() int {
 func (g *Group) getContent() (int, string) {
 	var fields strings.Builder
 	var offset int
-	gap := "\n\n"
 
 	// If the focused field is requesting it be zoomed, only show that field.
 	if g.selector.Selected().Zoom() {
