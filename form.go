@@ -154,6 +154,9 @@ type Field interface {
 	// KeyBinds returns help keybindings.
 	KeyBinds() []key.Binding
 
+	// Theme returns the theme on a field.
+	Theme() *Theme
+
 	// WithTheme sets the theme on a field.
 	WithTheme(*Theme) Field
 
