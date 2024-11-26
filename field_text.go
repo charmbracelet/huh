@@ -342,14 +342,20 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (t *Text) activeStyles() *FieldStyles {
-	theme := t.theme
-	if theme == nil {
-		theme = ThemeCharm()
-	}
+	theme := t.Theme()
 	if t.focused {
 		return &theme.Focused
 	}
 	return &theme.Blurred
+}
+
+// Theme returns the theme of the field.
+func (t *Text) Theme() *Theme {
+	theme := t.theme
+	if theme == nil {
+		theme = ThemeCharm()
+	}
+	return theme
 }
 
 func (t *Text) activeTextAreaStyles() *textarea.Style {

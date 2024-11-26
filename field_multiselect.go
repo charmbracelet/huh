@@ -501,14 +501,20 @@ func (m *MultiSelect[T]) updateValue() {
 }
 
 func (m *MultiSelect[T]) activeStyles() *FieldStyles {
-	theme := m.theme
-	if theme == nil {
-		theme = ThemeCharm()
-	}
+	theme := m.Theme()
 	if m.focused {
 		return &theme.Focused
 	}
 	return &theme.Blurred
+}
+
+// Theme returns the theme of the field.
+func (m *MultiSelect[T]) Theme() *Theme {
+	theme := m.theme
+	if theme == nil {
+		theme = ThemeCharm()
+	}
+	return theme
 }
 
 func (m *MultiSelect[T]) titleView() string {

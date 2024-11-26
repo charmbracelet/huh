@@ -247,14 +247,20 @@ func (f *FilePicker) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (f *FilePicker) activeStyles() *FieldStyles {
-	theme := f.theme
-	if theme == nil {
-		theme = ThemeCharm()
-	}
+	theme := f.Theme()
 	if f.focused {
 		return &theme.Focused
 	}
 	return &theme.Blurred
+}
+
+// Theme returns the theme of the field.
+func (f *FilePicker) Theme() *Theme {
+	theme := f.theme
+	if theme == nil {
+		theme = ThemeCharm()
+	}
+	return theme
 }
 
 // View renders the file field.

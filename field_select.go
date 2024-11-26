@@ -514,14 +514,20 @@ func (s *Select[T]) updateViewportHeight() {
 }
 
 func (s *Select[T]) activeStyles() *FieldStyles {
-	theme := s.theme
-	if theme == nil {
-		theme = ThemeCharm()
-	}
+	theme := s.Theme()
 	if s.focused {
 		return &theme.Focused
 	}
 	return &theme.Blurred
+}
+
+// Theme returns the theme of the field.
+func (s *Select[T]) Theme() *Theme {
+	theme := s.theme
+	if theme == nil {
+		theme = ThemeCharm()
+	}
+	return theme
 }
 
 func (s *Select[T]) titleView() string {

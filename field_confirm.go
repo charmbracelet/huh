@@ -220,14 +220,20 @@ func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (c *Confirm) activeStyles() *FieldStyles {
-	theme := c.theme
-	if theme == nil {
-		theme = ThemeCharm()
-	}
+	theme := c.Theme()
 	if c.focused {
 		return &theme.Focused
 	}
 	return &theme.Blurred
+}
+
+// Theme returns the theme of the field.
+func (c *Confirm) Theme() *Theme {
+	theme := c.theme
+	if theme == nil {
+		theme = ThemeCharm()
+	}
+	return theme
 }
 
 // View renders the confirm field.
