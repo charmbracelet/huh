@@ -456,7 +456,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m *MultiSelect[T]) updateViewportHeight() {
 	// If no height is set size the viewport to the number of options.
 	if m.height <= 0 {
-		m.viewport.Height = len(m.options.val)
+		m.viewport.Height = lipgloss.Height(m.optionsView())
 		return
 	}
 
@@ -501,14 +501,20 @@ func (m *MultiSelect[T]) updateValue() {
 }
 
 func (m *MultiSelect[T]) activeStyles() *FieldStyles {
-	theme := m.theme
-	if theme == nil {
-		theme = ThemeCharm()
-	}
+	theme := m.Theme()
 	if m.focused {
 		return &theme.Focused
 	}
 	return &theme.Blurred
+}
+
+// Theme returns the theme of the field.
+func (m *MultiSelect[T]) Theme() *Theme {
+	theme := m.theme
+	if theme == nil {
+		theme = ThemeCharm()
+	}
+	return theme
 }
 
 func (m *MultiSelect[T]) titleView() string {
@@ -522,9 +528,9 @@ func (m *MultiSelect[T]) titleView() string {
 	if m.filtering {
 		sb.WriteString(m.filter.View())
 	} else if m.filter.Value() != "" {
-		sb.WriteString(styles.Title.Render(m.title.val) + styles.Description.Render("/"+m.filter.Value()))
+		sb.WriteString(styles.Title.Width(m.width).Render(m.title.val) + styles.Description.Render("/"+m.filter.Value()))
 	} else {
-		sb.WriteString(styles.Title.Render(m.title.val))
+		sb.WriteString(styles.Title.Width(m.width).Render(m.title.val))
 	}
 	if m.err != nil {
 		sb.WriteString(styles.ErrorIndicator.String())
@@ -533,7 +539,7 @@ func (m *MultiSelect[T]) titleView() string {
 }
 
 func (m *MultiSelect[T]) descriptionView() string {
-	return m.activeStyles().Description.Render(m.description.val)
+	return m.activeStyles().Description.Width(m.width).Render(m.description.val)
 }
 
 func (m *MultiSelect[T]) optionsView() string {
@@ -555,13 +561,15 @@ func (m *MultiSelect[T]) optionsView() string {
 		} else {
 			sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)))
 		}
+		// Calculate width constraints.
+		contentWidth := m.width - lipgloss.Width(c) - max(lipgloss.Width(styles.SelectedPrefix.String()), lipgloss.Width(styles.UnselectedPrefix.String()))
 
 		if m.filteredOptions[i].selected {
 			sb.WriteString(styles.SelectedPrefix.String())
-			sb.WriteString(styles.SelectedOption.Render(option.Key))
+			sb.WriteString(styles.SelectedOption.Width(contentWidth).Render(option.Key))
 		} else {
 			sb.WriteString(styles.UnselectedPrefix.String())
-			sb.WriteString(styles.UnselectedOption.Render(option.Key))
+			sb.WriteString(styles.UnselectedOption.Width(contentWidth).Render(option.Key))
 		}
 		if i < len(m.options.val)-1 {
 			sb.WriteString("\n")

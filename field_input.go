@@ -361,14 +361,20 @@ func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (i *Input) activeStyles() *FieldStyles {
-	theme := i.theme
-	if theme == nil {
-		theme = ThemeCharm()
-	}
+	theme := i.Theme()
 	if i.focused {
 		return &theme.Focused
 	}
 	return &theme.Blurred
+}
+
+// Theme returns the theme of the field.
+func (i *Input) Theme() *Theme {
+	theme := i.theme
+	if theme == nil {
+		theme = ThemeCharm()
+	}
+	return theme
 }
 
 // View renders the input field.
@@ -391,15 +397,19 @@ func (i *Input) View() string {
 
 	var sb strings.Builder
 	if i.title.val != "" || i.title.fn != nil {
-		sb.WriteString(styles.Title.Render(i.title.val))
 		if !i.inline {
+			sb.WriteString(styles.Title.Width(i.width).Render(i.title.val))
 			sb.WriteString("\n")
+		} else {
+			sb.WriteString(styles.Title.Render(i.title.val))
 		}
 	}
 	if i.description.val != "" || i.description.fn != nil {
-		sb.WriteString(styles.Description.Render(i.description.val))
 		if !i.inline {
+			sb.WriteString(styles.Description.Width(i.width).Render(i.description.val))
 			sb.WriteString("\n")
+		} else {
+			sb.WriteString(styles.Description.Render(i.description.val))
 		}
 	}
 	sb.WriteString(i.textinput.View())

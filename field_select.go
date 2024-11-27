@@ -504,7 +504,7 @@ func (s *Select[T]) updateValue() {
 func (s *Select[T]) updateViewportHeight() {
 	// If no height is set size the viewport to the number of options.
 	if s.height <= 0 {
-		s.viewport.Height = len(s.options.val)
+		s.viewport.Height = lipgloss.Height(s.optionsView())
 		return
 	}
 
@@ -514,14 +514,20 @@ func (s *Select[T]) updateViewportHeight() {
 }
 
 func (s *Select[T]) activeStyles() *FieldStyles {
-	theme := s.theme
-	if theme == nil {
-		theme = ThemeCharm()
-	}
+	theme := s.Theme()
 	if s.focused {
 		return &theme.Focused
 	}
 	return &theme.Blurred
+}
+
+// Theme returns the theme of the field.
+func (s *Select[T]) Theme() *Theme {
+	theme := s.theme
+	if theme == nil {
+		theme = ThemeCharm()
+	}
+	return theme
 }
 
 func (s *Select[T]) titleView() string {
@@ -532,9 +538,11 @@ func (s *Select[T]) titleView() string {
 	if s.filtering {
 		sb.WriteString(s.filter.View())
 	} else if s.filter.Value() != "" && !s.inline {
-		sb.WriteString(styles.Title.Render(s.title.val) + styles.Description.Render("/"+s.filter.Value()))
-	} else {
+		sb.WriteString(styles.Title.Width(s.width).Render(s.title.val) + styles.Description.Width(s.width).Render("/"+s.filter.Value()))
+	} else if s.inline {
 		sb.WriteString(styles.Title.Render(s.title.val))
+	} else {
+		sb.WriteString(styles.Title.Width(s.width).Render(s.title.val))
 	}
 	if s.err != nil {
 		sb.WriteString(styles.ErrorIndicator.String())
@@ -543,7 +551,10 @@ func (s *Select[T]) titleView() string {
 }
 
 func (s *Select[T]) descriptionView() string {
-	return s.activeStyles().Description.Render(s.description.val)
+	if s.inline {
+		return s.activeStyles().Description.Render(s.description.val)
+	}
+	return s.activeStyles().Description.Width(s.width).Render(s.description.val)
 }
 
 func (s *Select[T]) optionsView() string {
@@ -552,6 +563,7 @@ func (s *Select[T]) optionsView() string {
 		c      = styles.SelectSelector.String()
 		sb     strings.Builder
 	)
+	width := s.width - lipgloss.Width(c) - max(lipgloss.Width(styles.SelectedOption.String()), lipgloss.Width(styles.UnselectedOption.String()))
 
 	if s.options.loading && time.Since(s.options.loadingStart) > spinnerShowThreshold {
 		s.spinner.Style = s.activeStyles().MultiSelectSelector.UnsetString()
@@ -572,9 +584,9 @@ func (s *Select[T]) optionsView() string {
 
 	for i, option := range s.filteredOptions {
 		if s.selected == i {
-			sb.WriteString(c + styles.SelectedOption.Render(option.Key))
+			sb.WriteString(c + styles.SelectedOption.Width(width).Render(option.Key))
 		} else {
-			sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)) + styles.UnselectedOption.Render(option.Key))
+			sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)) + styles.UnselectedOption.Width(width).Render(option.Key))
 		}
 		if i < len(s.options.val)-1 {
 			sb.WriteString("\n")
