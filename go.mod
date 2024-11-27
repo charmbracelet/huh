@@ -5,8 +5,8 @@ go 1.21
 require (
 	github.com/catppuccin/go v0.2.0
 	github.com/charmbracelet/bubbles/v2 v2.0.0-alpha.2.0.20241121172047-bd415b4ebae8
-	github.com/charmbracelet/bubbletea/v2 v2.0.0-alpha.2.0.20241121191216-1b7743e51209
-	github.com/charmbracelet/lipgloss/v2 v2.0.0-alpha.2.0.20241121164047-8448a9be4804
+	github.com/charmbracelet/bubbletea/v2 v2.0.0-alpha.2.0.20241126192050-a8ed96118b08
+	github.com/charmbracelet/lipgloss/v2 v2.0.0-alpha.2.0.20241122170046-8f4aab7ecfa3
 	github.com/charmbracelet/x/ansi v0.5.1
 	github.com/charmbracelet/x/exp/strings v0.0.0-20240722160745-212f7b056ed0
 	github.com/mitchellh/hashstructure/v2 v2.0.2

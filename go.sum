@@ -12,10 +12,14 @@ github.com/charmbracelet/bubbles/v2 v2.0.0-alpha.2.0.20241121172047-bd415b4ebae8
 github.com/charmbracelet/bubbles/v2 v2.0.0-alpha.2.0.20241121172047-bd415b4ebae8/go.mod h1:fKcC1zxdgRjgg21XbRIf/bkSELpd9D9XKlHRCrhR1Tk=
 github.com/charmbracelet/bubbletea/v2 v2.0.0-alpha.2.0.20241121191216-1b7743e51209 h1:5JapCCMZM6FBT3yr+6nAsJi2qVlHVua6sz4T7XwGl3E=
 github.com/charmbracelet/bubbletea/v2 v2.0.0-alpha.2.0.20241121191216-1b7743e51209/go.mod h1:BbC4R+6e9TLjbskxrjISt/DDCn4OiB6v+ArqfYiPyyg=
+github.com/charmbracelet/bubbletea/v2 v2.0.0-alpha.2.0.20241126192050-a8ed96118b08 h1:8hwULvCHjF6JjaeosebMGbB06oCv46d4s+Lbs5ytAT4=
+github.com/charmbracelet/bubbletea/v2 v2.0.0-alpha.2.0.20241126192050-a8ed96118b08/go.mod h1:BbC4R+6e9TLjbskxrjISt/DDCn4OiB6v+ArqfYiPyyg=
 github.com/charmbracelet/colorprofile v0.1.8 h1:PywDeXsiAzlPtkiiKgMEVLvb6nlEuKrMj9+FJBtj4jU=
 github.com/charmbracelet/colorprofile v0.1.8/go.mod h1:+jpmObxZl1Dab3H3IMVIPSZTsKcFpjJUv97G0dLqM60=
 github.com/charmbracelet/lipgloss/v2 v2.0.0-alpha.2.0.20241121164047-8448a9be4804 h1:7CYjb9YMZA4kMhLgGdtlXvq+nu1oyENpMyMQlTvqSFw=
 github.com/charmbracelet/lipgloss/v2 v2.0.0-alpha.2.0.20241121164047-8448a9be4804/go.mod h1:F/6E/LGdH3eHCJf2rG8/O3CjlW8cZFL5YJCknJs1GkI=
+github.com/charmbracelet/lipgloss/v2 v2.0.0-alpha.2.0.20241122170046-8f4aab7ecfa3 h1:pkDBCqxm/wqYGlcb/YsteEFwm+eaQ/1mkJoe3JwjBaA=
+github.com/charmbracelet/lipgloss/v2 v2.0.0-alpha.2.0.20241122170046-8f4aab7ecfa3/go.mod h1:F/6E/LGdH3eHCJf2rG8/O3CjlW8cZFL5YJCknJs1GkI=
 github.com/charmbracelet/x/ansi v0.5.1 h1:+mg6abP9skvsu/JQZrIJ9Z/4O1YDnLVkpfutar3dUnc=
 github.com/charmbracelet/x/ansi v0.5.1/go.mod h1:KBUFw1la39nl0dLl10l5ORDAqGXaeurTQmwyyVKse/Q=
 github.com/charmbracelet/x/cellbuf v0.0.6 h1:pJUWN/G1jbt1Nj/+ILfC2/ABQoZzWu1vG73yHQEYELI=
