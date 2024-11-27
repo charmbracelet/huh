@@ -42,7 +42,9 @@ func parseBool(s string) (bool, error) {
 		}
 	}
 
-	for _, n := range []string{"n", "no"} {
+	// As a special case, we default to "" to no since the usage of this
+	// function suggests N is the default.
+	for _, n := range []string{"", "n", "no"} {
 		if n == s {
 			return false, nil
 		}
