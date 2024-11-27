@@ -78,7 +78,12 @@ func PromptString(prompt string, validator func(input string) error) string {
 
 	for !valid {
 		fmt.Print(prompt)
-		_ = scanner.Scan()
+		if !scanner.Scan() {
+			// no way to bubble up errors or signal cancellation
+			// but the program is probably not continuing if
+			// stdin sent EOF
+			break
+		}
 		input = scanner.Text()
 
 		err := validator(input)
