@@ -622,7 +622,7 @@ func (f *Form) Run() error {
 // RunWithContext runs the form with the given context.
 func (f *Form) RunWithContext(ctx context.Context) error {
 	f.SubmitCmd = tea.Quit
-	f.CancelCmd = tea.Quit
+	f.CancelCmd = tea.Interrupt
 
 	if f.selector.Total() == 0 {
 		return nil
@@ -646,7 +646,7 @@ func (f *Form) run(ctx context.Context) error {
 	}
 
 	m, err := tea.NewProgram(f, f.teaOptions...).Run()
-	if m.(*Form).aborted {
+	if m.(*Form).aborted || errors.Is(err, tea.ErrInterrupted) {
 		return ErrUserAborted
 	}
 	if errors.Is(err, tea.ErrProgramKilled) {
