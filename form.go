@@ -154,6 +154,9 @@ type Field interface {
 	// KeyBinds returns help keybindings.
 	KeyBinds() []key.Binding
 
+	// Theme returns the theme on a field.
+	Theme() *Theme
+
 	// WithTheme sets the theme on a field.
 	WithTheme(*Theme) Field
 
@@ -521,7 +524,7 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		f.selector.Range(func(_ int, group *Group) bool {
 			if group.fullHeight() > msg.Height {
-				group.WithHeight(msg.Height)
+				group.WithHeight(msg.Height - 1)
 			}
 			return true
 		})
