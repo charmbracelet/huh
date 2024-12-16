@@ -128,17 +128,24 @@ func (m *MultiSelect[T]) Options(options ...Option[T]) *MultiSelect[T] {
 		return m
 	}
 
+	minSelected := len(options) - 1
 	for i, o := range options {
-		for _, v := range m.accessor.Get() {
-			if o.Value == v {
-				options[i].selected = true
-				break
+		if o.selected {
+			options[i].selected = true
+			if i < minSelected {
+				minSelected = i
 			}
+			break
 		}
+	}
+	// No selected items... Start cursor at the beginning.
+	if minSelected == len(options)-1 {
+		minSelected = 0
 	}
 	m.options.val = options
 	m.filteredOptions = options
 	m.updateViewportHeight()
+	m.cursor = minSelected
 	return m
 }
 
@@ -575,11 +582,20 @@ func (m *MultiSelect[T]) optionsView() string {
 	return sb.String()
 }
 
+// centerYOffsetToSelected sets the YOffset so the selected element is in the
+// middle of the list.
+func (m *MultiSelect[T]) centerYOffsetToSelected() {
+	if m.cursor > m.viewport.YOffset+m.viewport.Height {
+		// Start with the selected value in the middle of the viewport.
+		m.viewport.SetYOffset(m.cursor - (m.viewport.Height+m.viewport.YOffset)/2)
+	}
+}
+
 // View renders the multi-select field.
 func (m *MultiSelect[T]) View() string {
 	styles := m.activeStyles()
-
 	m.viewport.SetContent(m.optionsView())
+	m.centerYOffsetToSelected()
 
 	var sb strings.Builder
 	if m.title.val != "" || m.title.fn != nil {
