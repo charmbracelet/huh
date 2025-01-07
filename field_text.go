@@ -464,6 +464,12 @@ func (t *Text) WithHeight(height int) Field {
 	return t
 }
 
+// WithMaxHeight sets the max height of the text field.
+func (t *Text) WithMaxHeight(maxHeight int) Field {
+	t.textarea.MaxHeight = maxHeight
+	return t
+}
+
 // WithPosition sets the position information of the text field.
 func (t *Text) WithPosition(p FieldPosition) Field {
 	t.keymap.Prev.SetEnabled(!p.IsFirst())

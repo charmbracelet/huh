@@ -353,6 +353,8 @@ func TestText(t *testing.T) {
 	field := NewText()
 	f := NewForm(NewGroup(field))
 	f.Update(f.Init())
+	field.WithMaxHeight(5)
+	field.ShowLineNumbers(true)
 
 	// Type Huh in the form.
 	m, _ := f.Update(keys('H', 'u', 'h'))
@@ -371,6 +373,14 @@ func TestText(t *testing.T) {
 
 	if field.GetValue() != "Huh" {
 		t.Error("Expected field value to be Huh")
+	}
+
+	m, _ = f.Update(keys('\n', '2', '\n', '3', '\n', '4', '\n', '5', '\n', '6', '\n'))
+	view = ansi.Strip(f.View())
+
+	if strings.Contains(view, "6") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected MaxHeight to be 5 but 6th line was found.")
 	}
 }
 
