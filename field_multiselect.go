@@ -510,11 +510,10 @@ func (m *MultiSelect[T]) activeStyles() *FieldStyles {
 
 // Theme returns the theme of the field.
 func (m *MultiSelect[T]) Theme() *Theme {
-	theme := m.theme
-	if theme == nil {
-		theme = ThemeCharm()
+	if m.theme != nil {
+		return m.theme
 	}
-	return theme
+	return ThemeCharm()
 }
 
 func (m *MultiSelect[T]) titleView() string {

@@ -523,11 +523,10 @@ func (s *Select[T]) activeStyles() *FieldStyles {
 
 // Theme returns the theme of the field.
 func (s *Select[T]) Theme() *Theme {
-	theme := s.theme
-	if theme == nil {
-		theme = ThemeCharm()
+	if s.theme != nil {
+		return s.theme
 	}
-	return theme
+	return ThemeCharm()
 }
 
 func (s *Select[T]) titleView() string {

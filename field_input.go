@@ -370,11 +370,10 @@ func (i *Input) activeStyles() *FieldStyles {
 
 // Theme returns the theme of the field.
 func (i *Input) Theme() *Theme {
-	theme := i.theme
-	if theme == nil {
-		theme = ThemeCharm()
+	if i.theme != nil {
+		return i.theme
 	}
-	return theme
+	return ThemeCharm()
 }
 
 // View renders the input field.

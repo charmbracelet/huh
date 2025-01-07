@@ -256,11 +256,10 @@ func (f *FilePicker) activeStyles() *FieldStyles {
 
 // Theme returns the theme of the field.
 func (f *FilePicker) Theme() *Theme {
-	theme := f.theme
-	if theme == nil {
-		theme = ThemeCharm()
+	if f.theme != nil {
+		return f.theme
 	}
-	return theme
+	return ThemeCharm()
 }
 
 // View renders the file field.

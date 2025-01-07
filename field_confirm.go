@@ -229,11 +229,10 @@ func (c *Confirm) activeStyles() *FieldStyles {
 
 // Theme returns the theme of the field.
 func (c *Confirm) Theme() *Theme {
-	theme := c.theme
-	if theme == nil {
-		theme = ThemeCharm()
+	if c.theme != nil {
+		return c.theme
 	}
-	return theme
+	return ThemeCharm()
 }
 
 // View renders the confirm field.

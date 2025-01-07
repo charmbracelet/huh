@@ -351,11 +351,10 @@ func (t *Text) activeStyles() *FieldStyles {
 
 // Theme returns the theme of the field.
 func (t *Text) Theme() *Theme {
-	theme := t.theme
-	if theme == nil {
-		theme = ThemeCharm()
+	if t.theme != nil {
+		return t.theme
 	}
-	return theme
+	return ThemeCharm()
 }
 
 func (t *Text) activeTextAreaStyles() *textarea.Style {

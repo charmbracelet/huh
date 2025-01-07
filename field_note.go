@@ -213,11 +213,10 @@ func (n *Note) activeStyles() *FieldStyles {
 
 // Theme returns the theme of the field.
 func (n *Note) Theme() *Theme {
-	theme := n.theme
-	if theme == nil {
-		theme = ThemeCharm()
+	if n.theme != nil {
+		return n.theme
 	}
-	return theme
+	return ThemeCharm()
 }
 
 // View renders the note field.
