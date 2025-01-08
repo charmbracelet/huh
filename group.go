@@ -297,7 +297,6 @@ func (g *Group) fullHeight() int {
 func (g *Group) getContent() (int, string) {
 	var fields strings.Builder
 	offset := 0
-	gap := "\n\n"
 
 	// if the focused field is requesting it be zoomed, only show that field.
 	if g.selector.Selected().Zoom() {
