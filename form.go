@@ -524,7 +524,7 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		f.selector.Range(func(_ int, group *Group) bool {
 			if group.fullHeight() > msg.Height {
-				group.WithHeight(msg.Height - 1)
+				group.WithHeight(msg.Height - 1) // subtracts help height
 			}
 			return true
 		})
