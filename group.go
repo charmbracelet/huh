@@ -10,7 +10,10 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-const gap string = "\n\n"
+const (
+	gap            string = "\n\n"
+	helpMenuHeight int    = 1
+)
 
 // Group is a collection of fields that are displayed together with a page of
 // the form. While a group is displayed the form completer can switch between
@@ -270,7 +273,7 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		g.WithHeight(min(g.fullHeight(), msg.Height-1))
+		g.WithHeight(min(g.fullHeight(), msg.Height-helpMenuHeight))
 		g.WithWidth(msg.Width)
 	case nextFieldMsg:
 		cmds = append(cmds, g.nextField()...)
