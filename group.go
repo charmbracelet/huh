@@ -274,7 +274,6 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		g.WithHeight(min(g.fullHeight(), msg.Height-helpMenuHeight))
-		g.WithWidth(msg.Width)
 	case nextFieldMsg:
 		cmds = append(cmds, g.nextField()...)
 	case prevFieldMsg:
