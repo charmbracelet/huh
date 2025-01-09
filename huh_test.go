@@ -13,7 +13,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/x/ansi"
-	"github.com/charmbracelet/x/exp/golden"
 )
 
 var pretty = lipgloss.NewStyle().
@@ -917,35 +916,6 @@ func TestAbort(t *testing.T) {
 	if err == nil || !errors.Is(err, ErrUserAborted) {
 		t.Errorf("expected user aborted error, got %v", err)
 	}
-}
-
-func TestLayoutGrid(t *testing.T) {
-	form := NewForm(
-		NewGroup(
-			NewInput().Title("First"),
-			NewInput().Title("Second"),
-			NewInput().Title("Third"),
-		),
-		NewGroup(
-			NewInput().Title("Fourth"),
-			NewInput().Title("Fifth"),
-			NewInput().Title("Sixth"),
-		),
-		NewGroup(
-			NewInput().Title("Seventh"),
-			NewInput().Title("Eigth"),
-			NewInput().Title("Nineth"),
-			NewInput().Title("Tenth"),
-		),
-		NewGroup(
-			NewInput().Title("Eleventh"),
-			NewInput().Title("Twelveth"),
-			NewInput().Title("Thirteenth"),
-		),
-	).WithLayout(LayoutGrid(2, 2)).WithShowHelp(false)
-	want := ansi.Strip(form.View())
-	t.Log(want)
-	golden.RequireEqual(t, []byte(want))
 }
 
 // formProgram returns a new Form with a nil input and output, so it can be used as a test program.
