@@ -11,8 +11,7 @@ import (
 )
 
 const (
-	gap            string = "\n\n"
-	helpMenuHeight int    = 1
+	gap string = "\n\n"
 )
 
 // Group is a collection of fields that are displayed together with a page of
@@ -273,7 +272,7 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		g.WithHeight(min(g.fullHeight(), msg.Height-helpMenuHeight))
+		g.WithHeight(min(g.fullHeight(), msg.Height-1)) // subtracts help height
 	case nextFieldMsg:
 		cmds = append(cmds, g.nextField()...)
 	case prevFieldMsg:
