@@ -7,7 +7,7 @@ import (
 
 	"github.com/charmbracelet/huh/v2"
 	"github.com/charmbracelet/huh/v2/spinner"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss/v2"
 )
 
 type Action int

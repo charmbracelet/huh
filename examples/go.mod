@@ -3,12 +3,12 @@ module examples
 go 1.22
 
 require (
-	github.com/charmbracelet/bubbles/v2 v2.0.0-alpha.2.0.20241121172047-bd415b4ebae8
-	github.com/charmbracelet/bubbletea/v2 v2.0.0-alpha.2.0.20241126192050-a8ed96118b08
+	github.com/charmbracelet/bubbles/v2 v2.0.0-alpha.2.0.20250114183437-fbe642df174c
+	github.com/charmbracelet/bubbletea/v2 v2.0.0-alpha.2.0.20250114183556-4f0e1e15a2b2
 	github.com/charmbracelet/glamour v0.8.0
 	github.com/charmbracelet/huh/v2 v2.0.0-00010101000000-000000000000
 	github.com/charmbracelet/huh/v2/spinner v0.0.0-00010101000000-000000000000
-	github.com/charmbracelet/lipgloss v0.13.2-0.20241023173701-23b08d1d3588
+	github.com/charmbracelet/lipgloss/v2 v2.0.0-alpha.2.0.20250114171829-b67eb015d607
 	github.com/charmbracelet/log v0.4.0
 	github.com/charmbracelet/ssh v0.0.0-20240725163421-eb71b85b27aa
 	github.com/charmbracelet/wish v1.4.3
@@ -22,16 +22,16 @@ require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/catppuccin/go v0.2.0 // indirect
-	github.com/charmbracelet/bubbletea v1.1.1 // indirect
+	github.com/charmbracelet/bubbletea v1.0.0 // indirect
 	github.com/charmbracelet/colorprofile v0.1.8 // indirect
 	github.com/charmbracelet/harmonica v0.2.0 // indirect
 	github.com/charmbracelet/keygen v0.5.1 // indirect
-	github.com/charmbracelet/lipgloss/v2 v2.0.0-alpha.2.0.20241122170046-8f4aab7ecfa3 // indirect
-	github.com/charmbracelet/x/ansi v0.5.1 // indirect
+	github.com/charmbracelet/lipgloss v0.13.0 // indirect
+	github.com/charmbracelet/x/ansi v0.7.0 // indirect
 	github.com/charmbracelet/x/cellbuf v0.0.6 // indirect
 	github.com/charmbracelet/x/conpty v0.1.0 // indirect
 	github.com/charmbracelet/x/errors v0.0.0-20240508181413-e8d8b6e2de86 // indirect
-	github.com/charmbracelet/x/input v0.2.0 // indirect
+	github.com/charmbracelet/x/input v0.3.0 // indirect
 	github.com/charmbracelet/x/term v0.2.1 // indirect
 	github.com/charmbracelet/x/termios v0.1.0 // indirect
 	github.com/charmbracelet/x/vt v0.0.0-20241121165045-a3720547cbb4 // indirect
@@ -60,8 +60,8 @@ require (
 	golang.org/x/crypto v0.26.0 // indirect
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d // indirect
 	golang.org/x/net v0.27.0 // indirect
-	golang.org/x/sync v0.9.0 // indirect
-	golang.org/x/sys v0.27.0 // indirect
+	golang.org/x/sync v0.10.0 // indirect
+	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/term v0.23.0 // indirect
 	golang.org/x/text v0.20.0 // indirect
 )

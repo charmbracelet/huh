@@ -10,7 +10,7 @@ import (
 
 	"github.com/charmbracelet/huh/v2"
 	"github.com/charmbracelet/huh/v2/spinner"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss/v2"
 	xstrings "github.com/charmbracelet/x/exp/strings"
 )
 
@@ -51,7 +51,7 @@ type Burger struct {
 
 func main() {
 	var burger Burger
-	var order = Order{Burger: burger}
+	order := Order{Burger: burger}
 
 	// Should we run in accessible mode?
 	accessible, _ := strconv.ParseBool(os.Getenv("ACCESSIBLE"))
@@ -152,7 +152,6 @@ func main() {
 	).WithAccessible(accessible)
 
 	err := form.Run()
-
 	if err != nil {
 		fmt.Println("Uh oh:", err)
 		os.Exit(1)
