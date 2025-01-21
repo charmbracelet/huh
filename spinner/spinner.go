@@ -79,7 +79,7 @@ func (s *Spinner) Action(action func()) *Spinner {
 
 // ActionWithErr sets the action of the spinner.
 //
-// This is just like [Action], but allows the action to use a `context.Context`
+// This is just like [Spinner.Action], but allows the action to use a `context.Context`
 // and to return an error.
 func (s *Spinner) ActionWithErr(action func(context.Context) error) *Spinner {
 	s.action = action
