@@ -1,11 +1,9 @@
 package spinner
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"strings"
 
@@ -24,15 +22,13 @@ import (
 // ⣾  Loading...
 type Spinner struct {
 	spinner    spinner.Model
-	action     func(ctx context.Context, w io.Writer) error
+	action     func(ctx context.Context) error
 	ctx        context.Context
 	accessible bool
 	output     *termenv.Output
 	title      string
 	titleStyle lipgloss.Style
-
-	err error
-	buf bytes.Buffer
+	err        error
 }
 
 type Type spinner.Spinner
@@ -66,7 +62,7 @@ func (s *Spinner) Title(title string) *Spinner {
 
 // Action sets the action of the spinner.
 func (s *Spinner) Action(action func()) *Spinner {
-	s.action = func(context.Context, io.Writer) error {
+	s.action = func(context.Context) error {
 		action()
 		return nil
 	}
@@ -74,7 +70,10 @@ func (s *Spinner) Action(action func()) *Spinner {
 }
 
 // ActionErr sets the action of the spinner.
-func (s *Spinner) ActionErr(action func(ctx context.Context, w io.Writer) error) *Spinner {
+//
+// This is just like [Action], but allows the action to use a `context.Context`
+// and to return an error.
+func (s *Spinner) ActionErr(action func(context.Context) error) *Spinner {
 	s.action = action
 	return s
 }
@@ -116,7 +115,6 @@ func New() *Spinner {
 		title:      "Loading...",
 		titleStyle: lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#FFFDF5", Dark: "#FFFDF5"}),
 		output:     termenv.NewOutput(os.Stdout),
-		buf:        bytes.Buffer{},
 	}
 }
 
@@ -124,7 +122,7 @@ func New() *Spinner {
 func (s *Spinner) Init() tea.Cmd {
 	return tea.Batch(s.spinner.Tick, func() tea.Msg {
 		if s.action != nil {
-			return doneMsg{err: s.action(s.ctx, &s.buf)}
+			return doneMsg{err: s.action(s.ctx)}
 		}
 		return nil
 	})
@@ -154,7 +152,7 @@ func (s *Spinner) View() string {
 	if s.title != "" {
 		title = s.titleStyle.Render(s.title)
 	}
-	return s.buf.String() + s.spinner.View() + title
+	return s.spinner.View() + title
 }
 
 // Run runs the spinner.
@@ -188,7 +186,7 @@ func (s *Spinner) runAccessible() error {
 	actionDone := make(chan error)
 	if s.action != nil {
 		go func() {
-			actionDone <- s.action(s.ctx, os.Stdout)
+			actionDone <- s.action(s.ctx)
 		}()
 	}
 
