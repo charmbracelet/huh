@@ -15,8 +15,8 @@ func main() {
 
 	err := spinner.New().
 		Context(ctx).
-		ActionErr(func(context.Context) error {
-			time.Sleep(time.Second * 5)
+		ActionWithErr(func(context.Context) error {
+			time.Sleep(5 * time.Second)
 			return nil
 		}).
 		Accessible(false).

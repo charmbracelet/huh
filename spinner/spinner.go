@@ -2,7 +2,6 @@ package spinner
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -69,7 +68,7 @@ func (s *Spinner) Action(action func()) *Spinner {
 	return s
 }
 
-// ActionErr sets the action of the spinner.
+// ActionWithErr sets the action of the spinner.
 //
 // This is just like [Action], but allows the action to use a `context.Context`
 // and to return an error.
@@ -122,7 +121,8 @@ func New() *Spinner {
 func (s *Spinner) Init() tea.Cmd {
 	return tea.Batch(s.spinner.Tick, func() tea.Msg {
 		if s.action != nil {
-			return doneMsg{err: s.action(s.ctx)}
+			err := s.action(s.ctx)
+			return doneMsg{err}
 		}
 		return nil
 	})
@@ -157,11 +157,8 @@ func (s *Spinner) View() string {
 
 // Run runs the spinner.
 func (s *Spinner) Run() error {
-	if s.ctx.Err() != nil {
-		if errors.Is(s.ctx.Err(), context.Canceled) {
-			return nil
-		}
-		return s.ctx.Err()
+	if err := s.ctx.Err(); err != nil {
+		return err
 	}
 
 	if s.accessible {
@@ -195,9 +192,6 @@ func (s *Spinner) runAccessible() error {
 		case <-s.ctx.Done():
 			s.output.ShowCursor()
 			s.output.CursorBack(len(frame) + len(title))
-			if errors.Is(s.ctx.Err(), context.Canceled) {
-				return nil
-			}
 			return s.ctx.Err()
 		case err := <-actionDone:
 			s.output.ShowCursor()

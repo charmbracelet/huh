@@ -2,9 +2,11 @@ package spinner
 
 import (
 	"context"
+	"errors"
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
@@ -45,15 +47,23 @@ func TestSpinnerView(t *testing.T) {
 }
 
 func TestSpinnerContextCancellation(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
+	exercise(t, func() *Spinner {
+		ctx, cancel := context.WithCancel(context.Background())
+		s := New().Context(ctx)
+		cancel() // Cancel before running
+		return s
+	}, requireContextCanceled)
+}
 
-	s := New().Context(ctx)
-	cancel() // Cancel before running
-
-	err := s.Run()
-	if err != nil {
-		t.Errorf("Run() returned an error after context cancellation: %v", err)
-	}
+func TestSpinnerContextCancellationWhileRunning(t *testing.T) {
+	exercise(t, func() *Spinner {
+		ctx, cancel := context.WithCancel(context.Background())
+		go func() {
+			time.Sleep(100 * time.Millisecond)
+			cancel()
+		}()
+		return New().Accessible(true).Context(ctx)
+	}, requireContextCanceled)
 }
 
 func TestSpinnerStyleMethods(t *testing.T) {
@@ -105,10 +115,57 @@ func TestSpinnerUpdate(t *testing.T) {
 	}
 }
 
-func TestAccessibleSpinner(t *testing.T) {
-	s := New().Accessible(true).Action(func() {})
-	err := s.Run()
+func TestSpinnerSimple(t *testing.T) {
+	exercise(t, func() *Spinner {
+		return New().Action(func() {})
+	}, requireNoError)
+}
+
+func TestSpinnerWithContextAndAction(t *testing.T) {
+	exercise(t, func() *Spinner {
+		ctx := context.Background()
+		return New().Context(ctx).Action(func() {})
+	}, requireNoError)
+}
+
+func TestSpinnerWithActionError(t *testing.T) {
+	fake := errors.New("fake")
+	exercise(t, func() *Spinner {
+		return New().ActionWithErr(func(context.Context) error { return fake })
+	}, requireErrorIs(fake))
+}
+
+func exercise(t *testing.T, factory func() *Spinner, checker func(tb testing.TB, err error)) {
+	t.Helper()
+	t.Run("accessible", func(t *testing.T) {
+		err := factory().Accessible(true).Run()
+		checker(t, err)
+	})
+	t.Run("regular", func(t *testing.T) {
+		err := factory().Accessible(false).Run()
+		checker(t, err)
+	})
+}
+
+func requireNoError(tb testing.TB, err error) {
+	tb.Helper()
 	if err != nil {
-		t.Errorf("Run() in accessible mode returned an error: %v", err)
+		tb.Errorf("expected no error, got %v", err)
+	}
+}
+
+func requireErrorIs(target error) func(tb testing.TB, err error) {
+	return func(tb testing.TB, err error) {
+		tb.Helper()
+		if !errors.Is(err, target) {
+			tb.Errorf("expected error to be %v, got %v", target, err)
+		}
+	}
+}
+
+func requireContextCanceled(tb testing.TB, err error) {
+	tb.Helper()
+	if !errors.Is(err, context.Canceled) && !errors.Is(err, tea.ErrProgramKilled) {
+		tb.Errorf("expected to get a context canceled error, got %v", err)
 	}
 }
