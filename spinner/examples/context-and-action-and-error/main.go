@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"io"
 	"log"
 	"time"
 
@@ -16,7 +15,7 @@ func main() {
 
 	err := spinner.New().
 		Context(ctx).
-		ActionErr(func(context.Context, io.Writer) error {
+		ActionErr(func(context.Context) error {
 			time.Sleep(time.Minute)
 			return nil
 		}).
