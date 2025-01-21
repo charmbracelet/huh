@@ -3,8 +3,8 @@ module examples
 go 1.22
 
 require (
-	github.com/charmbracelet/bubbles/v2 v2.0.0-alpha.2.0.20250114183437-fbe642df174c
-	github.com/charmbracelet/bubbletea/v2 v2.0.0-alpha.2.0.20250114183556-4f0e1e15a2b2
+	github.com/charmbracelet/bubbles/v2 v2.0.0-alpha.2.0.20250115152509-0c83e6f4c8d3
+	github.com/charmbracelet/bubbletea/v2 v2.0.0-alpha.2.0.20250115153415-046a5ddf5b4a
 	github.com/charmbracelet/glamour v0.8.0
 	github.com/charmbracelet/huh/v2 v2.0.0-00010101000000-000000000000
 	github.com/charmbracelet/huh/v2/spinner v0.0.0-00010101000000-000000000000
@@ -23,18 +23,17 @@ require (
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/catppuccin/go v0.2.0 // indirect
 	github.com/charmbracelet/bubbletea v1.0.0 // indirect
-	github.com/charmbracelet/colorprofile v0.1.8 // indirect
+	github.com/charmbracelet/colorprofile v0.1.9 // indirect
 	github.com/charmbracelet/harmonica v0.2.0 // indirect
 	github.com/charmbracelet/keygen v0.5.1 // indirect
 	github.com/charmbracelet/lipgloss v0.13.0 // indirect
 	github.com/charmbracelet/x/ansi v0.7.0 // indirect
-	github.com/charmbracelet/x/cellbuf v0.0.6 // indirect
+	github.com/charmbracelet/x/cellbuf v0.0.7-0.20250113065325-800d48271e72 // indirect
 	github.com/charmbracelet/x/conpty v0.1.0 // indirect
 	github.com/charmbracelet/x/errors v0.0.0-20240508181413-e8d8b6e2de86 // indirect
 	github.com/charmbracelet/x/input v0.3.0 // indirect
 	github.com/charmbracelet/x/term v0.2.1 // indirect
 	github.com/charmbracelet/x/termios v0.1.0 // indirect
-	github.com/charmbracelet/x/vt v0.0.0-20241121165045-a3720547cbb4 // indirect
 	github.com/charmbracelet/x/wcwidth v0.0.0-20241113152101-0af7d04e9f32 // indirect
 	github.com/charmbracelet/x/windows v0.2.0 // indirect
 	github.com/creack/pty v1.1.21 // indirect
@@ -61,7 +60,7 @@ require (
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d // indirect
 	golang.org/x/net v0.27.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
+	golang.org/x/sys v0.29.0 // indirect
 	golang.org/x/term v0.23.0 // indirect
 	golang.org/x/text v0.20.0 // indirect
 )
