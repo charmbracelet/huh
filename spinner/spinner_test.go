@@ -106,7 +106,7 @@ func TestSpinnerUpdate(t *testing.T) {
 }
 
 func TestAccessibleSpinner(t *testing.T) {
-	s := New().Accessible(true)
+	s := New().Accessible(true).Action(func() {})
 	err := s.Run()
 	if err != nil {
 		t.Errorf("Run() in accessible mode returned an error: %v", err)
