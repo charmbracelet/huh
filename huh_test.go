@@ -12,7 +12,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/x/exp/term/ansi"
+	"github.com/charmbracelet/x/ansi"
 )
 
 var pretty = lipgloss.NewStyle().
@@ -541,6 +541,49 @@ func TestMultiSelect(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestMultiSelectFiltering(t *testing.T) {
+	tests := []struct {
+		name      string
+		filtering bool
+	}{
+		{"Filtering off", false},
+		{"Filtering on", true},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			field := NewMultiSelect[string]().Options(NewOptions("Foo", "Bar", "Baz")...).Title("Which one?").Filterable(tc.filtering)
+			f := NewForm(NewGroup(field))
+			f.Update(f.Init())
+			// Filter for values starting with a 'B' only.
+			f.Update(keys('/'))
+			f.Update(keys('B'))
+
+			view := ansi.Strip(f.View())
+			// When we're filtering, the list should change.
+			if tc.filtering && strings.Contains(view, "Foo") {
+				t.Log(pretty.Render(view))
+				t.Error("Foo should not in filtered list.")
+			}
+			// When we're not filtering, the list shouldn't change.
+			if !tc.filtering && !strings.Contains(view, "Foo") {
+				t.Log(pretty.Render(view))
+				t.Error("Expected list to contain Foo.")
+			}
+		})
+	}
+	t.Run("Remove filter option from help menu.", func(t *testing.T) {
+		field := NewMultiSelect[string]().Options(NewOptions("Foo", "Bar", "Baz")...).Title("Which one?").Filterable(false)
+		f := NewForm(NewGroup(field))
+		f.Update(f.Init())
+		view := ansi.Strip(f.View())
+		if strings.Contains(view, "filter") {
+			t.Log(pretty.Render(view))
+			t.Error("Expected list to hide filtering in help menu.")
+		}
+	})
 }
 
 func TestSelectPageNavigation(t *testing.T) {

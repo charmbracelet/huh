@@ -16,7 +16,7 @@ func main() {
 		),
 		huh.NewGroup(
 			huh.NewInput().Title("Seventh"),
-			huh.NewInput().Title("Eigth"),
+			huh.NewInput().Title("Eighth"),
 			huh.NewInput().Title("Nineth"),
 			huh.NewInput().Title("Tenth"),
 		),

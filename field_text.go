@@ -310,8 +310,8 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, t.keymap.Editor):
 			ext := strings.TrimPrefix(t.editorExtension, ".")
 			tmpFile, _ := os.CreateTemp(os.TempDir(), "*."+ext)
-			cmd := exec.Command(t.editorCmd, append(t.editorArgs, tmpFile.Name())...) //nolint
-			_ = os.WriteFile(tmpFile.Name(), []byte(t.textarea.Value()), 0600)
+			cmd := exec.Command(t.editorCmd, append(t.editorArgs, tmpFile.Name())...) //nolint:gosec
+			_ = os.WriteFile(tmpFile.Name(), []byte(t.textarea.Value()), 0o644)       //nolint:mnd,gosec
 			cmds = append(cmds, tea.ExecProcess(cmd, func(error) tea.Msg {
 				content, _ := os.ReadFile(tmpFile.Name())
 				_ = os.Remove(tmpFile.Name())
@@ -364,8 +364,8 @@ func (t *Text) activeTextAreaStyles() *textarea.Style {
 
 // View renders the text field.
 func (t *Text) View() string {
-	var styles = t.activeStyles()
-	var textareaStyles = t.activeTextAreaStyles()
+	styles := t.activeStyles()
+	textareaStyles := t.activeTextAreaStyles()
 
 	// NB: since the method is on a pointer receiver these are being mutated.
 	// Because this runs on every render this shouldn't matter in practice,

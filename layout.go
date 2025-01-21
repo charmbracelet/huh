@@ -31,7 +31,7 @@ func LayoutGrid(rows int, columns int) Layout {
 type layoutDefault struct{}
 
 func (l *layoutDefault) View(f *Form) string {
-	return f.groups[f.paginator.Page].View()
+	return f.selector.Selected().View()
 }
 
 func (l *layoutDefault) GroupWidth(_ *Form, _ *Group, w int) int {
@@ -43,15 +43,25 @@ type layoutColumns struct {
 }
 
 func (l *layoutColumns) visibleGroups(f *Form) []*Group {
-	segmentIndex := f.paginator.Page / l.columns
+	segmentIndex := f.selector.Index() / l.columns
 	start := segmentIndex * l.columns
 	end := start + l.columns
 
-	if end > len(f.groups) {
-		end = len(f.groups)
+	total := f.selector.Total()
+	if end > total {
+		end = total
 	}
 
-	return f.groups[start:end]
+	var groups []*Group
+	f.selector.Range(func(i int, group *Group) bool {
+		if i >= start && i < end {
+			groups = append(groups, group)
+			return true
+		}
+		return false
+	})
+
+	return groups
 }
 
 func (l *layoutColumns) View(f *Form) string {
@@ -60,11 +70,11 @@ func (l *layoutColumns) View(f *Form) string {
 		return ""
 	}
 
-	var columns []string
+	columns := make([]string, 0, len(groups))
 	for _, group := range groups {
 		columns = append(columns, group.Content())
 	}
-	footer := f.groups[f.paginator.Page].Footer()
+	footer := f.selector.Selected().Footer()
 
 	return lipgloss.JoinVertical(lipgloss.Left,
 		lipgloss.JoinHorizontal(lipgloss.Top, columns...),
@@ -80,10 +90,11 @@ type layoutStack struct{}
 
 func (l *layoutStack) View(f *Form) string {
 	var columns []string
-	for _, group := range f.groups {
+	f.selector.Range(func(_ int, group *Group) bool {
 		columns = append(columns, group.Content())
-	}
-	footer := f.groups[f.paginator.Page].Footer()
+		return true
+	})
+	footer := f.selector.Selected().Footer()
 
 	var view strings.Builder
 	view.WriteString(strings.Join(columns, "\n"))
@@ -101,15 +112,22 @@ type layoutGrid struct {
 
 func (l *layoutGrid) visibleGroups(f *Form) [][]*Group {
 	total := l.rows * l.columns
-	segmentIndex := f.paginator.Page / total
+	segmentIndex := f.selector.Index() / total
 	start := segmentIndex * total
 	end := start + total
 
-	if end > len(f.groups) {
-		end = len(f.groups)
+	if glen := f.selector.Total(); end > glen {
+		end = glen
 	}
 
-	visible := f.groups[start:end]
+	var visible []*Group
+	f.selector.Range(func(i int, group *Group) bool {
+		if i >= start && i < end {
+			visible = append(visible, group)
+			return true
+		}
+		return false
+	})
 	grid := make([][]*Group, l.rows)
 	for i := 0; i < l.rows; i++ {
 		startRow := i * l.columns
@@ -131,7 +149,7 @@ func (l *layoutGrid) View(f *Form) string {
 		return ""
 	}
 
-	var rows []string
+	rows := make([]string, 0, len(grid))
 	for _, row := range grid {
 		var columns []string
 		for _, group := range row {
@@ -139,7 +157,7 @@ func (l *layoutGrid) View(f *Form) string {
 		}
 		rows = append(rows, lipgloss.JoinHorizontal(lipgloss.Top, columns...))
 	}
-	footer := f.groups[f.paginator.Page].Footer()
+	footer := f.selector.Selected().Footer()
 
 	return lipgloss.JoinVertical(lipgloss.Left, strings.Join(rows, "\n"), footer)
 }

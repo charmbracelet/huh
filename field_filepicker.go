@@ -45,7 +45,6 @@ type FilePicker struct {
 func NewFilePicker() *FilePicker {
 	fp := filepicker.New()
 	fp.ShowSize = false
-	fp.AutoHeight = false
 
 	if cmd := fp.Init(); cmd != nil {
 		fp, _ = fp.Update(cmd())
@@ -64,6 +63,12 @@ func (f *FilePicker) CurrentDirectory(directory string) *FilePicker {
 	if cmd := f.picker.Init(); cmd != nil {
 		f.picker, _ = f.picker.Update(cmd())
 	}
+	return f
+}
+
+// Cursor sets the cursor of the file field.
+func (f *FilePicker) Cursor(cursor string) *FilePicker {
+	f.picker.Cursor = cursor
 	return f
 }
 
@@ -151,7 +156,6 @@ func (f *FilePicker) Height(height int) *FilePicker {
 		adjust++
 	}
 	f.picker.Height = height - adjust
-	f.picker.AutoHeight = false
 	return f
 }
 
@@ -333,6 +337,12 @@ func (f *FilePicker) runAccessible() error {
 	return nil
 }
 
+// copied from bubbles' filepicker
+const (
+	fileSizeWidth = 7
+	paddingLeft   = 2
+)
+
 // WithTheme sets the theme of the file field.
 func (f *FilePicker) WithTheme(theme *Theme) Field {
 	if f.theme != nil || theme == nil {
@@ -351,8 +361,8 @@ func (f *FilePicker) WithTheme(theme *Theme) Field {
 		Permission:       theme.Focused.TextInput.Placeholder,
 		Selected:         theme.Focused.SelectedOption,
 		DisabledSelected: theme.Focused.TextInput.Placeholder,
-		FileSize:         theme.Focused.TextInput.Placeholder,
-		EmptyDirectory:   theme.Focused.TextInput.Placeholder.SetString("No files found."),
+		FileSize:         theme.Focused.TextInput.Placeholder.Width(fileSizeWidth).Align(lipgloss.Right),
+		EmptyDirectory:   theme.Focused.TextInput.Placeholder.PaddingLeft(paddingLeft).SetString("No files found."),
 	}
 
 	return f

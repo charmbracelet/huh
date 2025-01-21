@@ -85,7 +85,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case "ctrl+c":
 			m.quitting = true
-			return m, tea.Quit
+			return m, tea.Interrupt
 		default:
 			if m.mode == Paused {
 				m.mode = Breaking

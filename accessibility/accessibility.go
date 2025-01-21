@@ -14,7 +14,7 @@ import (
 // Given invalid input (non-integers, integers outside of the range), the user
 // will continue to be reprompted until a valid input is given, ensuring that
 // the return value is always valid.
-func PromptInt(prompt string, min, max int) int {
+func PromptInt(prompt string, low, high int) int {
 	var (
 		input  string
 		choice int
@@ -22,7 +22,7 @@ func PromptInt(prompt string, min, max int) int {
 
 	validInt := func(s string) error {
 		i, err := strconv.Atoi(s)
-		if err != nil || i < min || i > max {
+		if err != nil || i < low || i > high {
 			return errors.New("invalid input. please try again")
 		}
 		return nil
@@ -42,7 +42,9 @@ func parseBool(s string) (bool, error) {
 		}
 	}
 
-	for _, n := range []string{"n", "no"} {
+	// As a special case, we default to "" to no since the usage of this
+	// function suggests N is the default.
+	for _, n := range []string{"", "n", "no"} {
 		if n == s {
 			return false, nil
 		}
@@ -78,7 +80,12 @@ func PromptString(prompt string, validator func(input string) error) string {
 
 	for !valid {
 		fmt.Print(prompt)
-		_ = scanner.Scan()
+		if !scanner.Scan() {
+			// no way to bubble up errors or signal cancellation
+			// but the program is probably not continuing if
+			// stdin sent EOF
+			break
+		}
 		input = scanner.Text()
 
 		err := validator(input)

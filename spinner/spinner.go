@@ -113,7 +113,7 @@ func New() *Spinner {
 		spinner:    s,
 		ctx:        context.Background(),
 		title:      "Loading...",
-		titleStyle: lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#FFFDF5", Dark: "#FFFDF5"}),
+		titleStyle: lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#00020A", Dark: "#FFFDF5"}),
 		output:     termenv.NewOutput(os.Stdout),
 	}
 }
@@ -137,7 +137,7 @@ func (s *Spinner) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c":
-			return s, tea.Quit
+			return s, tea.Interrupt
 		}
 	}
 
