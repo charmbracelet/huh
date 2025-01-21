@@ -60,10 +60,10 @@ func TestSpinnerContextCancellationWhileRunning(t *testing.T) {
 	exercise(t, func() *Spinner {
 		ctx, cancel := context.WithCancel(context.Background())
 		go func() {
-			time.Sleep(100 * time.Millisecond)
+			time.Sleep(250 * time.Millisecond)
 			cancel()
 		}()
-		return New().Accessible(true).Context(ctx)
+		return New().Context(ctx)
 	}, requireContextCanceled)
 }
 
