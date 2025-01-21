@@ -12,7 +12,6 @@ import (
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/muesli/termenv"
 )
 
 func TestNewSpinner(t *testing.T) {
@@ -140,15 +139,17 @@ func TestSpinnerWithActionError(t *testing.T) {
 func exercise(t *testing.T, factory func() *Spinner, checker func(tb testing.TB, err error)) {
 	t.Helper()
 	t.Run("accessible", func(t *testing.T) {
-		s := factory().Accessible(true)
-		s.output = termenv.NewOutput(io.Discard)
-		err := s.Run()
+		err := factory().
+			Accessible(true).
+			Output(io.Discard).
+			Run()
 		checker(t, err)
 	})
 	t.Run("regular", func(t *testing.T) {
-		s := factory().Accessible(false)
-		s.output = termenv.NewOutput(io.Discard)
-		err := s.Run()
+		err := factory().
+			Accessible(false).
+			Output(io.Discard).
+			Run()
 		checker(t, err)
 	})
 }

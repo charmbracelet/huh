@@ -1,8 +1,10 @@
 package spinner
 
 import (
+	"cmp"
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -24,9 +26,9 @@ type Spinner struct {
 	action     func(ctx context.Context) error
 	ctx        context.Context
 	accessible bool
-	output     *termenv.Output
 	title      string
 	titleStyle lipgloss.Style
+	output     io.Writer
 	err        error
 }
 
@@ -56,6 +58,13 @@ func (s *Spinner) Type(t Type) *Spinner {
 // Title sets the title of the spinner.
 func (s *Spinner) Title(title string) *Spinner {
 	s.title = title
+	return s
+}
+
+// Output set the output for the spinner.
+// Default is STDOUT when [Accessible], STDERR otherwise.
+func (s *Spinner) Output(w io.Writer) *Spinner {
+	s.output = w
 	return s
 }
 
@@ -110,10 +119,8 @@ func New() *Spinner {
 
 	return &Spinner{
 		spinner:    s,
-		ctx:        context.Background(),
 		title:      "Loading...",
 		titleStyle: lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#00020A", Dark: "#FFFDF5"}),
-		output:     termenv.NewOutput(os.Stdout),
 	}
 }
 
@@ -157,6 +164,12 @@ func (s *Spinner) View() string {
 
 // Run runs the spinner.
 func (s *Spinner) Run() error {
+	if s.ctx == nil && s.action == nil {
+		return nil
+	}
+	if s.ctx == nil {
+		s.ctx = context.Background()
+	}
 	if err := s.ctx.Err(); err != nil {
 		return err
 	}
@@ -165,7 +178,12 @@ func (s *Spinner) Run() error {
 		return s.runAccessible()
 	}
 
-	m, err := tea.NewProgram(s, tea.WithContext(s.ctx), tea.WithOutput(os.Stderr)).Run()
+	m, err := tea.NewProgram(
+		s,
+		tea.WithContext(s.ctx),
+		tea.WithOutput(s.output),
+		tea.WithInput(nil),
+	).Run()
 	mm := m.(*Spinner)
 	if mm.err != nil {
 		return mm.err
@@ -175,10 +193,17 @@ func (s *Spinner) Run() error {
 
 // runAccessible runs the spinner in an accessible mode (statically).
 func (s *Spinner) runAccessible() error {
-	s.output.HideCursor()
+	tty := cmp.Or[io.Writer](s.output, os.Stdout)
+	output := termenv.NewOutput(tty)
+	output.HideCursor()
 	frame := s.spinner.Style.Render("...")
 	title := s.titleStyle.Render(strings.TrimSuffix(s.title, "..."))
 	fmt.Println(title + frame)
+
+	defer func() {
+		output.ShowCursor()
+		output.CursorBack(len(frame) + len(title))
+	}()
 
 	actionDone := make(chan error)
 	if s.action != nil {
@@ -190,12 +215,8 @@ func (s *Spinner) runAccessible() error {
 	for {
 		select {
 		case <-s.ctx.Done():
-			s.output.ShowCursor()
-			s.output.CursorBack(len(frame) + len(title))
 			return s.ctx.Err()
 		case err := <-actionDone:
-			s.output.ShowCursor()
-			s.output.CursorBack(len(frame) + len(title))
 			return err
 		}
 	}
