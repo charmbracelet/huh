@@ -62,7 +62,7 @@ func (s *Spinner) Title(title string) *Spinner {
 }
 
 // Output set the output for the spinner.
-// Default is STDOUT when [Accessible], STDERR otherwise.
+// Default is STDOUT when [Spinner.Accessible], STDERR otherwise.
 func (s *Spinner) Output(w io.Writer) *Spinner {
 	s.output = w
 	return s
