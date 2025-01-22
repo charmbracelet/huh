@@ -172,7 +172,11 @@ func requireErrorIs(target error) func(tb testing.TB, err error) {
 
 func requireContextCanceled(tb testing.TB, err error) {
 	tb.Helper()
-	if !errors.Is(err, context.Canceled) && !errors.Is(err, tea.ErrProgramKilled) {
-		tb.Errorf("expected to get a context canceled error, got %v", err)
-	}
+	switch {
+		case errors.Is(err, context.Canceled):
+		case errors.Is(err, tea.ErrProgramKilled):
+
+		default:
+			tb.Errorf("expected to get a context canceled error, got %v", err)
+ 	}
 }
