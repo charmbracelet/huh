@@ -592,7 +592,7 @@ func (s *Select[T]) optionsView() string {
 }
 
 // View renders the select field.
-func (s *Select[T]) View() string {
+func (s *Select[T]) View() fmt.Stringer {
 	styles := s.activeStyles()
 	s.viewport.SetContent(s.optionsView())
 
@@ -610,7 +610,11 @@ func (s *Select[T]) View() string {
 		}
 	}
 	sb.WriteString(s.viewport.View())
-	return styles.Base.Render(sb.String())
+
+	var v strings.Builder
+	v.WriteString(styles.Base.Render(sb.String()))
+
+	return &v
 }
 
 // clearFilter clears the value of the filter.

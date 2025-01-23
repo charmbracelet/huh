@@ -579,7 +579,7 @@ func (m *MultiSelect[T]) optionsView() string {
 }
 
 // View renders the multi-select field.
-func (m *MultiSelect[T]) View() string {
+func (m *MultiSelect[T]) View() fmt.Stringer {
 	styles := m.activeStyles()
 
 	m.viewport.SetContent(m.optionsView())
@@ -593,7 +593,11 @@ func (m *MultiSelect[T]) View() string {
 		sb.WriteString(m.descriptionView() + "\n")
 	}
 	sb.WriteString(m.viewport.View())
-	return styles.Base.Render(sb.String())
+
+	var s strings.Builder
+	s.WriteString(styles.Base.Render(sb.String()))
+
+	return &s
 }
 
 func (m *MultiSelect[T]) printOptions() {

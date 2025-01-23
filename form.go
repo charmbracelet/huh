@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -132,7 +133,7 @@ type Field interface {
 	// Bubble Tea Model
 	Init() (tea.Model, tea.Cmd)
 	Update(tea.Msg) (tea.Model, tea.Cmd)
-	View() string
+	View() fmt.Stringer
 
 	// Bubble Tea Events
 	Blur() tea.Cmd
@@ -608,12 +609,14 @@ func (f *Form) isGroupHidden(group *Group) bool {
 }
 
 // View renders the form.
-func (f *Form) View() string {
+func (f *Form) View() fmt.Stringer {
+	var s strings.Builder
 	if f.quitting {
-		return ""
+		return &s
 	}
 
-	return f.layout.View(f)
+	s.WriteString(f.layout.View(f).String())
+	return &s
 }
 
 // Run runs the form.

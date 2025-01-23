@@ -18,12 +18,12 @@ github.com/aymerick/douceur v0.2.0 h1:Mv+mAeH1Q+n9Fr+oyamOlAkUNPWPlA8PPGR0QAaYuP
 github.com/aymerick/douceur v0.2.0/go.mod h1:wlT5vV2O3h55X9m7iVYN0TBM0NH/MmbLnd30/FjWUq4=
 github.com/catppuccin/go v0.2.0 h1:ktBeIrIP42b/8FGiScP9sgrWOss3lw0Z5SktRoithGA=
 github.com/catppuccin/go v0.2.0/go.mod h1:8IHJuMGaUUjQM82qBrGNBv7LFq6JI3NnQCF6MOlZjpc=
-github.com/charmbracelet/bubbles/v2 v2.0.0-alpha.2.0.20250115152509-0c83e6f4c8d3 h1:d34W4yDQm49VapRWrk8vB57CD0miZEYr/93xGvQMH20=
-github.com/charmbracelet/bubbles/v2 v2.0.0-alpha.2.0.20250115152509-0c83e6f4c8d3/go.mod h1:QbWYWg5Y3UBTNDoTIPIgLHiGsTbBBO2D6q53lG7IR8M=
+github.com/charmbracelet/bubbles/v2 v2.0.0-alpha.2.0.20250123213707-518ff7d0d016 h1:qLul2uRoupbiXXjixWPE3yk5tMKEhWEmTHOGZpewFqs=
+github.com/charmbracelet/bubbles/v2 v2.0.0-alpha.2.0.20250123213707-518ff7d0d016/go.mod h1:DBfWo/ohdtbvjyDk/Q4UffdRd/rRKfYTwTqHdPFVHT8=
 github.com/charmbracelet/bubbletea v1.0.0 h1:BlNvkVed3DADQlV+W79eioNUOrnMUY25EEVdFUoDoGA=
 github.com/charmbracelet/bubbletea v1.0.0/go.mod h1:xc4gm5yv+7tbniEvQ0naiG9P3fzYhk16cTgDZQQW6YE=
-github.com/charmbracelet/bubbletea/v2 v2.0.0-alpha.2.0.20250115153415-046a5ddf5b4a h1:Wct67LI3+EoDcAs3ujwWhTp8NNZUlkBAeOLgjyc2rOE=
-github.com/charmbracelet/bubbletea/v2 v2.0.0-alpha.2.0.20250115153415-046a5ddf5b4a/go.mod h1:hT2875Ank3ylgW13kqu6cjDc9XIk9sE5JsOFYdl09b8=
+github.com/charmbracelet/bubbletea/v2 v2.0.0-alpha.2.0.20250123211610-443afa6fa0c1 h1:tktnM4YimEWSYd58iZlPDB3Xz25/r94VYZZsHK5zWL0=
+github.com/charmbracelet/bubbletea/v2 v2.0.0-alpha.2.0.20250123211610-443afa6fa0c1/go.mod h1:hT2875Ank3ylgW13kqu6cjDc9XIk9sE5JsOFYdl09b8=
 github.com/charmbracelet/colorprofile v0.1.9 h1:5JnfvX+I9D6rRNu8xK3pgIqknaBVTXHU9pGu1jkZxLw=
 github.com/charmbracelet/colorprofile v0.1.9/go.mod h1:+jpmObxZl1Dab3H3IMVIPSZTsKcFpjJUv97G0dLqM60=
 github.com/charmbracelet/glamour v0.8.0 h1:tPrjL3aRcQbn++7t18wOpgLyl8wrOHUEDS7IZ68QtZs=

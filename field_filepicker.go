@@ -263,7 +263,7 @@ func (f *FilePicker) activeStyles() *FieldStyles {
 }
 
 // View renders the file field.
-func (f *FilePicker) View() string {
+func (f *FilePicker) View() fmt.Stringer {
 	styles := f.activeStyles()
 
 	var sb strings.Builder
@@ -282,7 +282,11 @@ func (f *FilePicker) View() string {
 			sb.WriteString(styles.TextInput.Placeholder.Render("No file selected."))
 		}
 	}
-	return styles.Base.Render(sb.String())
+
+	var s strings.Builder
+	s.WriteString(styles.Base.Render(sb.String()))
+
+	return &s
 }
 
 func (f *FilePicker) setPicking(v bool) {

@@ -1,6 +1,7 @@
 package huh
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/v2/help"
@@ -126,7 +127,7 @@ func (g *Group) WithHeight(height int) *Group {
 	g.viewport.SetHeight(height)
 	g.selector.Range(func(_ int, field Field) bool {
 		// A field height must not exceed the form height.
-		if height-1 <= lipgloss.Height(field.View()) {
+		if height-1 <= lipgloss.Height(field.View().String()) {
 			field.WithHeight(height)
 		}
 		return true
@@ -287,7 +288,7 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (g *Group) fullHeight() int {
 	height := g.selector.Total()
 	g.selector.Range(func(_ int, field Field) bool {
-		height += lipgloss.Height(field.View())
+		height += lipgloss.Height(field.View().String())
 		return true
 	})
 	return height
@@ -301,12 +302,12 @@ func (g *Group) getContent() (int, string) {
 	// if the focused field is requesting it be zoomed, only show that field.
 	if g.selector.Selected().Zoom() {
 		g.selector.Selected().WithHeight(g.height - 1)
-		fields.WriteString(g.selector.Selected().View())
+		fields.WriteString(g.selector.Selected().View().String())
 	} else {
 		g.selector.Range(func(i int, field Field) bool {
-			fields.WriteString(field.View())
+			fields.WriteString(field.View().String())
 			if i == g.selector.Index() {
-				offset = lipgloss.Height(fields.String()) - lipgloss.Height(field.View())
+				offset = lipgloss.Height(fields.String()) - lipgloss.Height(field.View().String())
 			}
 			if i < g.selector.Total()-1 {
 				fields.WriteString(gap)
@@ -326,11 +327,11 @@ func (g *Group) buildView() {
 }
 
 // View renders the group.
-func (g *Group) View() string {
+func (g *Group) View() fmt.Stringer {
 	var view strings.Builder
 	view.WriteString(g.viewport.View())
 	view.WriteString(g.Footer())
-	return view.String()
+	return &view
 }
 
 // Content renders the group's content only (no footer).
