@@ -380,7 +380,7 @@ func (i *Input) activeStyles() *FieldStyles {
 }
 
 // View renders the input field.
-func (i *Input) View() string {
+func (i *Input) View() fmt.Stringer {
 	styles := i.activeStyles()
 
 	// NB: since the method is on a pointer receiver these are being mutated.
@@ -412,7 +412,10 @@ func (i *Input) View() string {
 	}
 	sb.WriteString(i.textinput.View())
 
-	return styles.Base.Render(sb.String())
+	var s strings.Builder
+	s.WriteString(styles.Base.Render(sb.String()))
+
+	return &s
 }
 
 // Run runs the input field in accessible mode.

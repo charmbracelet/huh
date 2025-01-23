@@ -366,7 +366,7 @@ func (t *Text) activeTextAreaStyles() *textarea.StyleState {
 }
 
 // View renders the text field.
-func (t *Text) View() string {
+func (t *Text) View() fmt.Stringer {
 	styles := t.activeStyles()
 	textareaStyles := t.activeTextAreaStyles()
 
@@ -392,7 +392,10 @@ func (t *Text) View() string {
 	}
 	sb.WriteString(t.textarea.View())
 
-	return styles.Base.Render(sb.String())
+	var v strings.Builder
+	v.WriteString(styles.Base.Render(sb.String()))
+
+	return &v
 }
 
 // Run runs the text field.

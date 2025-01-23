@@ -232,7 +232,7 @@ func (c *Confirm) activeStyles() *FieldStyles {
 }
 
 // View renders the confirm field.
-func (c *Confirm) View() string {
+func (c *Confirm) View() fmt.Stringer {
 	styles := c.activeStyles()
 
 	var sb strings.Builder
@@ -284,7 +284,11 @@ func (c *Confirm) View() string {
 	style := lipgloss.NewStyle().Width(renderWidth).Align(lipgloss.Center)
 
 	sb.WriteString(style.Render(buttonsRow))
-	return styles.Base.Render(sb.String())
+
+	var s strings.Builder
+	s.WriteString(styles.Base.Render(sb.String()))
+
+	return &s
 }
 
 // Run runs the confirm field in accessible mode.

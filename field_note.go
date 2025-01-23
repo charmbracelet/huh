@@ -218,7 +218,7 @@ func (n *Note) activeStyles() *FieldStyles {
 }
 
 // View renders the note field.
-func (n *Note) View() string {
+func (n *Note) View() fmt.Stringer {
 	styles := n.activeStyles()
 	sb := strings.Builder{}
 
@@ -232,7 +232,11 @@ func (n *Note) View() string {
 	if n.showNextButton {
 		sb.WriteString(styles.Next.Render(n.nextLabel))
 	}
-	return styles.Card.Height(n.height).Render(sb.String())
+
+	var s strings.Builder
+	s.WriteString(styles.Card.Height(n.height).Render(sb.String()))
+
+	return &s
 }
 
 // Run runs the note field.
