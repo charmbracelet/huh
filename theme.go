@@ -30,6 +30,11 @@ type Styles struct {
 	Help           help.Styles
 }
 
+// Theme implements the Theme interface.
+func (t *Styles) Theme(bool) *Styles {
+	return t
+}
+
 // FieldStyles are the styles for input fields.
 type FieldStyles struct {
 	Base           lipgloss.Style

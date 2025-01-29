@@ -155,12 +155,12 @@ func (c *Confirm) KeyBinds() []key.Binding {
 }
 
 // Init initializes the confirm field.
-func (c *Confirm) Init() (tea.Model, tea.Cmd) {
+func (c *Confirm) Init() (Field, tea.Cmd) {
 	return c, nil
 }
 
 // Update updates the confirm field.
-func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (c *Confirm) Update(msg tea.Msg) (Field, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {

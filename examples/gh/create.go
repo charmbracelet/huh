@@ -26,7 +26,7 @@ func main() {
 	spinnerStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("4"))
 
 	repo := "charmbracelet/huh"
-	theme := huh.ThemeBase16()
+	theme := huh.ThemeBase16(true)
 	theme.FieldSeparator = lipgloss.NewStyle().SetString("\n")
 	theme.Help.FullKey.MarginTop(1)
 

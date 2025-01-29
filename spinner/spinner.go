@@ -108,12 +108,12 @@ func New() *Spinner {
 }
 
 // Init initializes the spinner.
-func (s *Spinner) Init() (tea.Model, tea.Cmd) {
+func (s *Spinner) Init() (*Spinner, tea.Cmd) {
 	return s, s.spinner.Tick
 }
 
 // Update updates the spinner.
-func (s *Spinner) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (s *Spinner) Update(msg tea.Msg) (*Spinner, tea.Cmd) {
 	switch msg := msg.(type) {
 	case spinner.TickMsg:
 	case tea.KeyMsg:
@@ -129,12 +129,12 @@ func (s *Spinner) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 // View returns the spinner view.
-func (s *Spinner) View() string {
+func (s *Spinner) View() fmt.Stringer {
 	var title string
 	if s.title != "" {
 		title = s.titleStyle.Render(s.title) + " "
 	}
-	return s.spinner.View() + title
+	return tea.View(s.spinner.View() + title)
 }
 
 // Run runs the spinner.
@@ -153,7 +153,13 @@ func (s *Spinner) Run() error {
 		return s.ctx.Err()
 	}
 
-	p := tea.NewProgram(s, tea.WithContext(s.ctx), tea.WithOutput(os.Stderr))
+	p := tea.NewProgram[*Spinner](s)
+	p.Output = os.Stderr
+	go func() {
+		<-s.ctx.Done()
+		p.Quit()
+	}()
+
 	if s.ctx == nil {
 		go func() {
 			s.action()
@@ -161,7 +167,7 @@ func (s *Spinner) Run() error {
 		}()
 	}
 
-	_, err := p.Run()
+	err := p.Run()
 	if errors.Is(err, tea.ErrProgramKilled) {
 		return nil
 	} else {

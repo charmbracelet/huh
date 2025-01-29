@@ -81,13 +81,17 @@ type Form struct {
 	aborted  bool
 
 	// options
-	width      int
-	height     int
-	keymap     *KeyMap
-	timeout    time.Duration
-	teaOptions []tea.ProgramOption
+	width   int
+	height  int
+	keymap  *KeyMap
+	timeout time.Duration
 
 	layout Layout
+
+	// i/o
+	input  io.Reader
+	output io.Writer
+	opts   []func(*tea.Program[*Form])
 }
 
 // NewForm returns a form with the given groups and default themes and
@@ -103,9 +107,8 @@ func NewForm(groups ...*Group) *Form {
 		keymap:   NewDefaultKeyMap(),
 		results:  make(map[string]any),
 		layout:   LayoutDefault,
-		teaOptions: []tea.ProgramOption{
-			tea.WithOutput(os.Stderr),
-		},
+		input:    os.Stdin,
+		output:   os.Stderr,
 	}
 
 	// NB: If dynamic forms come into play this will need to be applied when
@@ -131,8 +134,8 @@ func NewForm(groups ...*Group) *Form {
 // Each field implements the Bubble Tea Model interface.
 type Field interface {
 	// Bubble Tea Model
-	Init() (tea.Model, tea.Cmd)
-	Update(tea.Msg) (tea.Model, tea.Cmd)
+	Init() (Field, tea.Cmd)
+	Update(tea.Msg) (Field, tea.Cmd)
 	View() fmt.Stringer
 
 	// Bubble Tea Events
@@ -317,13 +320,13 @@ func (f *Form) WithHeight(height int) *Form {
 
 // WithOutput sets the io.Writer to output the form.
 func (f *Form) WithOutput(w io.Writer) *Form {
-	f.teaOptions = append(f.teaOptions, tea.WithOutput(w))
+	f.output = w
 	return f
 }
 
 // WithInput sets the io.Reader to the input form.
 func (f *Form) WithInput(r io.Reader) *Form {
-	f.teaOptions = append(f.teaOptions, tea.WithInput(r))
+	f.input = r
 	return f
 }
 
@@ -334,8 +337,8 @@ func (f *Form) WithTimeout(t time.Duration) *Form {
 }
 
 // WithProgramOptions sets the tea options of the form.
-func (f *Form) WithProgramOptions(opts ...tea.ProgramOption) *Form {
-	f.teaOptions = opts
+func (f *Form) WithProgramOptions(opts ...func(*tea.Program[*Form])) *Form {
+	f.opts = opts
 	return f
 }
 
@@ -481,13 +484,19 @@ func (f *Form) PrevField() tea.Cmd {
 }
 
 // Init initializes the form.
-func (f *Form) Init() (tea.Model, tea.Cmd) {
-	cmds := make([]tea.Cmd, f.selector.Total())
+func (f *Form) Init() (*Form, tea.Cmd) {
+	cmds := make([]tea.Cmd, 0, f.selector.Total()+1)
+	cmds = append(cmds, tea.EnableReportFocus)
 	f.selector.Range(func(i int, group *Group) bool {
 		if i == 0 {
 			group.active = true
 		}
-		_, cmds[i] = group.Init()
+		var cmd tea.Cmd
+		group, cmd = group.Init()
+		if cmd != nil {
+			cmds = append(cmds, cmd)
+		}
+		f.selector.Set(i, group)
 		return true
 	})
 
@@ -499,7 +508,7 @@ func (f *Form) Init() (tea.Model, tea.Cmd) {
 }
 
 // Update updates the form.
-func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (f *Form) Update(msg tea.Msg) (*Form, tea.Cmd) {
 	// If the form is aborted or completed there's no need to update it.
 	if f.State != StateNormal {
 		return f, nil
@@ -545,7 +554,7 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return f, nil
 		}
 
-		submit := func() (tea.Model, tea.Cmd) {
+		submit := func() (*Form, tea.Cmd) {
 			f.quitting = true
 			f.State = StateCompleted
 			return f, f.SubmitCmd
@@ -588,7 +597,7 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	m, cmd := group.Update(msg)
-	f.selector.Set(f.selector.Index(), m.(*Group))
+	f.selector.Set(f.selector.Index(), m)
 
 	// A user input a key, this could hide or show other groups,
 	// let's update all of their positions.
@@ -642,16 +651,21 @@ func (f *Form) RunWithContext(ctx context.Context) error {
 
 // run runs the form in normal mode.
 func (f *Form) run(ctx context.Context) error {
+	p := tea.NewProgram(f)
+	p.Output = os.Stderr
 	if f.timeout > 0 {
-		ctx, cancel := context.WithTimeout(ctx, f.timeout)
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, f.timeout)
 		defer cancel()
-		f.teaOptions = append(f.teaOptions, tea.WithContext(ctx), tea.WithReportFocus())
-	} else {
-		f.teaOptions = append(f.teaOptions, tea.WithContext(ctx), tea.WithReportFocus())
 	}
 
-	m, err := tea.NewProgram(f, f.teaOptions...).Run()
-	if m.(*Form).aborted {
+	go func() {
+		<-ctx.Done()
+		p.Quit()
+	}()
+
+	err := p.Run()
+	if p.Model.aborted {
 		return ErrUserAborted
 	}
 	if errors.Is(err, tea.ErrProgramKilled) {
