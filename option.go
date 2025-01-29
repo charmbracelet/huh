@@ -1,6 +1,8 @@
 package huh
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // Option is an option for select fields.
 type Option[T comparable] struct {
@@ -32,7 +34,15 @@ func (o Option[T]) Selected(selected bool) Option[T] {
 	return o
 }
 
+// IsSelected returns whether the option is currently selected.
+func (o Option[T]) IsSelected() bool {
+	return o.selected
+}
+
 // String returns the key of the option.
 func (o Option[T]) String() string {
 	return o.Key
 }
+
+// OptionRenderer is a function that is responsible for rendering an option.
+type OptionRenderer[T comparable] func(option Option[T]) string
