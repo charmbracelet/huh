@@ -92,6 +92,7 @@ type Form struct {
 	input  io.Reader
 	output io.Writer
 	opts   []func(*tea.Program[*Form])
+	cmds   []tea.Cmd
 }
 
 // NewForm returns a form with the given groups and default themes and
@@ -342,6 +343,18 @@ func (f *Form) WithProgramOptions(opts ...func(*tea.Program[*Form])) *Form {
 	return f
 }
 
+// WithCommands returns a form with the given commands sent to the program when
+// it starts.
+//
+// Example:
+//
+//	// Start the form in alt-screen mode.
+//	f := huh.NewForm(...).WithCommands(tea.EnterAltScreen)
+func (f *Form) WithCommands(cmds ...tea.Cmd) *Form {
+	f.cmds = append(f.cmds, cmds...)
+	return f
+}
+
 // WithLayout sets the layout on a form.
 //
 // This allows customization of the form group layout.
@@ -504,7 +517,7 @@ func (f *Form) Init() (*Form, tea.Cmd) {
 		cmds = append(cmds, nextGroup)
 	}
 
-	return f, tea.Batch(cmds...)
+	return f, tea.Batch(append(f.cmds, cmds...)...)
 }
 
 // Update updates the form.
