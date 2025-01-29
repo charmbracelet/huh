@@ -158,10 +158,10 @@ func (n *Note) KeyBinds() []key.Binding {
 }
 
 // Init initializes the note field.
-func (n *Note) Init() (tea.Model, tea.Cmd) { return n, nil }
+func (n *Note) Init() (Field, tea.Cmd) { return n, nil }
 
 // Update updates the note field.
-func (n *Note) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (n *Note) Update(msg tea.Msg) (Field, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.BackgroundColorMsg:
 		n.hasDarkBg = msg.IsDark()

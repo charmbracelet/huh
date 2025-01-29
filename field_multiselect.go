@@ -248,12 +248,12 @@ func (m *MultiSelect[T]) KeyBinds() []key.Binding {
 }
 
 // Init initializes the multi-select field.
-func (m *MultiSelect[T]) Init() (tea.Model, tea.Cmd) {
+func (m *MultiSelect[T]) Init() (Field, tea.Cmd) {
 	return m, nil
 }
 
 // Update updates the multi-select field.
-func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *MultiSelect[T]) Update(msg tea.Msg) (Field, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	// Enforce height on the viewport during update as we need themes to

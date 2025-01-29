@@ -199,14 +199,14 @@ func (f *FilePicker) KeyBinds() []key.Binding {
 }
 
 // Init initializes the file field.
-func (f *FilePicker) Init() (tea.Model, tea.Cmd) {
+func (f *FilePicker) Init() (Field, tea.Cmd) {
 	var cmd tea.Cmd
 	f.picker, cmd = f.picker.Init()
 	return f, cmd
 }
 
 // Update updates the file field.
-func (f *FilePicker) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (f *FilePicker) Update(msg tea.Msg) (Field, tea.Cmd) {
 	f.err = nil
 
 	switch msg := msg.(type) {

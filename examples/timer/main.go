@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -11,15 +12,15 @@ import (
 	"github.com/charmbracelet/lipgloss/v2"
 )
 
-const (
-	focusColor = "#2EF8BB"
-	breakColor = "#FF5F87"
+var (
+	focusColor = lipgloss.Color("#2EF8BB")
+	breakColor = lipgloss.Color("#FF5F87")
 )
 
 var (
-	focusTitleStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(focusColor)).MarginRight(1).SetString("Focus Mode")
-	breakTitleStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(breakColor)).MarginRight(1).SetString("Break Mode")
-	pausedStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color(breakColor)).MarginRight(1).SetString("Continue?")
+	focusTitleStyle = lipgloss.NewStyle().Foreground(focusColor).MarginRight(1).SetString("Focus Mode")
+	breakTitleStyle = lipgloss.NewStyle().Foreground(breakColor).MarginRight(1).SetString("Break Mode")
+	pausedStyle     = lipgloss.NewStyle().Foreground(breakColor).MarginRight(1).SetString("Continue?")
 	helpStyle       = lipgloss.NewStyle().Foreground(lipgloss.Color("240")).MarginTop(2)
 	sidebarStyle    = lipgloss.NewStyle().MarginLeft(3).Padding(1, 3).Border(lipgloss.RoundedBorder()).BorderForeground(helpStyle.GetForeground())
 )
@@ -50,9 +51,9 @@ type Model struct {
 	progress progress.Model
 }
 
-func (m Model) Init() (tea.Model, tea.Cmd) {
-	form, cmd := m.form.Init()
-	m.form = form.(*huh.Form)
+func (m Model) Init() (Model, tea.Cmd) {
+	var cmd tea.Cmd
+	m.form, cmd = m.form.Init()
 	return m, cmd
 }
 
@@ -64,7 +65,7 @@ func tickCmd(t time.Time) tea.Msg {
 	return tickMsg(t)
 }
 
-func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
@@ -97,8 +98,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	// Update form
-	f, cmd := m.form.Update(msg)
-	m.form = f.(*huh.Form)
+	var cmd tea.Cmd
+	m.form, cmd = m.form.Update(msg)
 	cmds = append(cmds, cmd)
 	if m.form.State != huh.StateCompleted {
 		return m, tea.Batch(cmds...)
@@ -130,9 +131,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m Model) View() string {
+func (m Model) View() fmt.Stringer {
 	if m.quitting {
-		return ""
+		return tea.View("")
 	}
 
 	if m.form.State != huh.StateCompleted {
@@ -164,14 +165,14 @@ func (m Model) View() string {
 		s.WriteString(helpStyle.Render("press 'q' to quit"))
 	}
 
-	return baseTimerStyle.Render(s.String())
+	return tea.View(baseTimerStyle.Render(s.String()))
 }
 
 func NewModel() Model {
-	theme := huh.ThemeCharm()
+	theme := huh.ThemeCharm(true)
 	theme.Focused.Base.Border(lipgloss.HiddenBorder())
-	theme.Focused.Title.Foreground(lipgloss.Color(focusColor))
-	theme.Focused.SelectSelector.Foreground(lipgloss.Color(focusColor))
+	theme.Focused.Title.Foreground(focusColor)
+	theme.Focused.SelectSelector.Foreground(focusColor)
 	theme.Focused.SelectedOption.Foreground(lipgloss.Color("15"))
 	theme.Focused.Option.Foreground(lipgloss.Color("7"))
 
@@ -212,9 +213,8 @@ func NewModel() Model {
 
 func main() {
 	m := NewModel()
-	mm, err := tea.NewProgram(&m).Run()
-	m = mm.(Model)
-	if err != nil {
+	p := tea.NewProgram(&m)
+	if err := p.Run(); err != nil {
 		log.Fatal(err)
 	}
 }

@@ -301,8 +301,7 @@ func TestInput(t *testing.T) {
 
 	// Type Huh in the form.
 	for _, msg := range typeText("Huh") {
-		m, _ := f.Update(msg)
-		f = m.(*Form)
+		f, _ = f.Update(msg)
 	}
 	view = ansi.Strip(f.View().String())
 
@@ -341,8 +340,7 @@ func TestInlineInput(t *testing.T) {
 
 	// Type Huh in the form.
 	for _, msg := range typeText("Huh") {
-		m, _ := f.Update(msg)
-		f = m.(*Form)
+		f, _ = f.Update(msg)
 	}
 	view = ansi.Strip(f.View().String())
 
@@ -374,8 +372,7 @@ func TestText(t *testing.T) {
 
 	// Type Huh in the form.
 	for _, msg := range typeText("Huh") {
-		m, _ := f.Update(msg)
-		f = m.(*Form)
+		f, _ = f.Update(msg)
 	}
 	view := ansi.Strip(f.View().String())
 
@@ -401,8 +398,7 @@ func TestConfirm(t *testing.T) {
 	f.Update(cmd)
 
 	// Type Huh in the form.
-	m, _ := f.Update(keypress('H'))
-	f = m.(*Form)
+	f, _ = f.Update(keypress('H'))
 	view := ansi.Strip(f.View().String())
 
 	if !strings.Contains(view, "Yes") {
@@ -466,8 +462,7 @@ func TestSelect(t *testing.T) {
 	}
 
 	// Move selection cursor down
-	m, _ := f.Update(tea.KeyPressMsg(tea.Key{Code: tea.KeyDown}))
-	f = m.(*Form)
+	f, _ = f.Update(tea.KeyPressMsg(tea.Key{Code: tea.KeyDown}))
 
 	view = ansi.Strip(f.View().String())
 
@@ -487,8 +482,7 @@ func TestSelect(t *testing.T) {
 	}
 
 	// Submit
-	m, _ = f.Update(tea.KeyPressMsg(tea.Key{Code: tea.KeyEnter}))
-	_ = m.(*Form)
+	_, _ = f.Update(tea.KeyPressMsg(tea.Key{Code: tea.KeyEnter}))
 
 	if field.GetValue() != "Bar" {
 		t.Error("Expected field value to be Bar")
@@ -547,8 +541,7 @@ func TestMultiSelect(t *testing.T) {
 	}
 
 	// Submit
-	m, _ = f.Update(tea.KeyPressMsg(tea.Key{Code: tea.KeyEnter}))
-	_ = m.(*Form)
+	_, _ = f.Update(tea.KeyPressMsg(tea.Key{Code: tea.KeyEnter}))
 
 	value := field.GetValue()
 	if value, ok := value.([]string); !ok {
@@ -583,8 +576,7 @@ func TestMultiSelectFiltering(t *testing.T) {
 			f.Update(tea.KeyPressMsg(tea.Key{
 				Code: '/',
 			}))
-			m, _ := f.Update(keypress('B'))
-			f = m.(*Form)
+			f, _ = f.Update(keypress('B'))
 
 			view := ansi.Strip(f.View().String())
 			// When we're filtering, the list should change.
@@ -732,7 +724,7 @@ func TestHideGroup(t *testing.T) {
 
 	_, cmd := f.Init()
 	f.Update(cmd)
-	f = batchUpdate(f, cmd).(*Form)
+	f = batchUpdate(f, cmd)
 
 	if v := f.View(); !strings.Contains(v.String(), "Bar") {
 		t.Log(pretty.Render(v.String()))
@@ -776,7 +768,7 @@ func TestHideGroupLastAndFirstGroupsNotHidden(t *testing.T) {
 
 	_, cmd := f.Init()
 	f.Update(cmd)
-	f = batchUpdate(f, cmd).(*Form)
+	f = batchUpdate(f, cmd)
 
 	if v := ansi.Strip(f.View().String()); !strings.Contains(v, "Bar") {
 		t.Log(pretty.Render(v))
@@ -814,7 +806,7 @@ func TestPrevGroup(t *testing.T) {
 
 	_, cmd := f.Init()
 	f.Update(cmd)
-	f = batchUpdate(f, cmd).(*Form)
+	f = batchUpdate(f, cmd)
 	f.Update(nextGroup())
 	f.Update(nextGroup())
 	f.Update(prevGroup())
@@ -891,7 +883,7 @@ func TestSkip(t *testing.T) {
 
 	_, cmd := f.Init()
 	f.Update(cmd)
-	f = batchUpdate(f, cmd).(*Form)
+	f = batchUpdate(f, cmd)
 	view := ansi.Strip(f.View().String())
 
 	if !strings.Contains(view, "┃ First") {
@@ -935,7 +927,7 @@ func TestTimeout(t *testing.T) {
 	// Test that the form times out after 1ms and returns a timeout error.
 	err := f.WithTimeout(1 * time.Millisecond).Run()
 	if err == nil || !errors.Is(err, ErrTimeout) {
-		t.Errorf("expected timeout error, got %v", err)
+		t.Fatalf("expected timeout error, got %v", err)
 	}
 }
 
@@ -963,18 +955,26 @@ func formProgram() *Form {
 		WithAccessible(false)
 }
 
-func batchUpdate(m tea.Model, cmd tea.Cmd) tea.Model {
+func batchUpdate(f *Form, cmd tea.Cmd) *Form {
 	if cmd == nil {
-		return m
+		return f
 	}
 	msg := cmd()
-	m, cmd = m.Update(msg)
+	if batch, ok := msg.(tea.BatchMsg); ok {
+		for _, m := range batch {
+			if m != nil {
+				f, cmd = f.Update(m())
+			}
+		}
+	} else {
+		f, cmd = f.Update(msg)
+	}
 	if cmd == nil {
-		return m
+		return f
 	}
 	msg = cmd()
-	m, _ = m.Update(msg)
-	return m
+	f, _ = f.Update(msg)
+	return f
 }
 
 func keypress(r rune) tea.KeyMsg {

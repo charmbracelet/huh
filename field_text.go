@@ -244,13 +244,13 @@ func (t *Text) KeyBinds() []key.Binding {
 type updateValueMsg []byte
 
 // Init initializes the text field.
-func (t *Text) Init() (tea.Model, tea.Cmd) {
+func (t *Text) Init() (Field, tea.Cmd) {
 	t.textarea.Blur()
 	return t, nil
 }
 
 // Update updates the text field.
-func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (t *Text) Update(msg tea.Msg) (Field, tea.Cmd) {
 	var cmds []tea.Cmd
 	var cmd tea.Cmd
 

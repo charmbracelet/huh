@@ -299,12 +299,12 @@ func (s *Select[T]) KeyBinds() []key.Binding {
 }
 
 // Init initializes the select field.
-func (s *Select[T]) Init() (tea.Model, tea.Cmd) {
+func (s *Select[T]) Init() (Field, tea.Cmd) {
 	return s, nil
 }
 
 // Update updates the select field.
-func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (s *Select[T]) Update(msg tea.Msg) (Field, tea.Cmd) {
 	s.updateViewportHeight()
 
 	var cmd tea.Cmd

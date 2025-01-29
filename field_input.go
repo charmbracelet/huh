@@ -264,13 +264,13 @@ func (i *Input) KeyBinds() []key.Binding {
 }
 
 // Init initializes the input field.
-func (i *Input) Init() (tea.Model, tea.Cmd) {
+func (i *Input) Init() (Field, tea.Cmd) {
 	i.textinput.Blur()
 	return i, nil
 }
 
 // Update updates the input field.
-func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (i *Input) Update(msg tea.Msg) (Field, tea.Cmd) {
 	var cmds []tea.Cmd
 	var cmd tea.Cmd
 

@@ -39,7 +39,7 @@ func TestSpinnerView(t *testing.T) {
 	s := New().Title("Test")
 	view := s.View()
 
-	if !strings.Contains(view, "Test") {
+	if !strings.Contains(view.String(), "Test") {
 		t.Errorf("Expected view to contain title 'Test', got '%s'", view)
 	}
 }
