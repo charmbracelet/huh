@@ -11,7 +11,7 @@ func main() {
 	var name string
 	form := huh.NewForm(
 		huh.NewGroup(huh.NewInput().Description("What should we call you?").Value(&name)),
-	).WithProgramOptions(tea.WithAltScreen())
+	).WithCommands(tea.EnterAltScreen)
 
 	err := form.Run()
 	if err != nil {
