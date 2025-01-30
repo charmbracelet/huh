@@ -479,6 +479,11 @@ func (f *Form) PrevField() tea.Cmd {
 	return cmd
 }
 
+// GetFocusedField returns the focused form field.
+func (f *Form) GetFocusedField() Field {
+	return f.selector.Selected().selector.Selected()
+}
+
 // Init initializes the form.
 func (f *Form) Init() tea.Cmd {
 	cmds := make([]tea.Cmd, f.selector.Total())
