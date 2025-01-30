@@ -1,6 +1,6 @@
 module github.com/charmbracelet/huh
 
-go 1.21
+go 1.22
 
 require (
 	github.com/catppuccin/go v0.2.0
