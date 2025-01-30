@@ -90,6 +90,12 @@ func (s *Spinner) Accessible(accessible bool) *Spinner {
 	return s
 }
 
+// Output sets the output of the spinner.
+func (s *Spinner) Output(output *termenv.Output) *Spinner {
+	s.output = output
+	return s
+}
+
 // New creates a new spinner.
 func New() *Spinner {
 	s := spinner.New()
@@ -174,7 +180,7 @@ func (s *Spinner) runAccessible() error {
 	s.output.HideCursor()
 	frame := s.spinner.Style.Render("...")
 	title := s.titleStyle.Render(strings.TrimSuffix(s.title, "..."))
-	fmt.Println(title + frame)
+	fmt.Fprintln(s.output, title+frame)
 
 	if s.ctx == nil {
 		s.action()
