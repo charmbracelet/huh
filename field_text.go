@@ -342,14 +342,19 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (t *Text) activeStyles() *FieldStyles {
-	theme := t.theme
-	if theme == nil {
-		theme = ThemeCharm()
-	}
+	theme := t.Theme()
 	if t.focused {
 		return &theme.Focused
 	}
 	return &theme.Blurred
+}
+
+// Theme returns the theme of the field.
+func (t *Text) Theme() *Theme {
+	if t.theme != nil {
+		return t.theme
+	}
+	return ThemeCharm()
 }
 
 func (t *Text) activeTextAreaStyles() *textarea.Style {
@@ -379,14 +384,14 @@ func (t *Text) View() string {
 
 	var sb strings.Builder
 	if t.title.val != "" || t.title.fn != nil {
-		sb.WriteString(styles.Title.Render(t.title.val))
+		sb.WriteString(styles.Title.Width(t.width).Render(t.title.val))
 		if t.err != nil {
 			sb.WriteString(styles.ErrorIndicator.String())
 		}
 		sb.WriteString("\n")
 	}
 	if t.description.val != "" || t.description.fn != nil {
-		sb.WriteString(styles.Description.Render(t.description.val))
+		sb.WriteString(styles.Description.Width(t.width).Render(t.description.val))
 		sb.WriteString("\n")
 	}
 	sb.WriteString(t.textarea.View())

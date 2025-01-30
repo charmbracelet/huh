@@ -10,6 +10,10 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+const (
+	gap string = "\n\n"
+)
+
 // Group is a collection of fields that are displayed together with a page of
 // the form. While a group is displayed the form completer can switch between
 // fields in the group.
@@ -113,7 +117,7 @@ func (g *Group) WithWidth(width int) *Group {
 	g.width = width
 	g.viewport.Width = width
 	g.selector.Range(func(_ int, field Field) bool {
-		field.WithWidth(width)
+		field.WithWidth(width - field.Theme().Focused.Base.GetHorizontalFrameSize())
 		return true
 	})
 	return g
@@ -268,7 +272,7 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		g.WithHeight(max(g.height, min(g.fullHeight(), msg.Height-1)))
+		g.WithHeight(min(g.fullHeight(), msg.Height-1)) // subtracts help height
 	case nextFieldMsg:
 		cmds = append(cmds, g.nextField()...)
 	case prevFieldMsg:
@@ -285,6 +289,7 @@ func (g *Group) fullHeight() int {
 	height := g.selector.Total()
 	g.selector.Range(func(_ int, field Field) bool {
 		height += lipgloss.Height(field.View())
+		height += lipgloss.Height(gap)
 		return true
 	})
 	return height
