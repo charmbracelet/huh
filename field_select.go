@@ -317,7 +317,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	switch msg := msg.(type) {
-	case updateFieldMsg:
+	case UpdateFieldMsg:
 		var cmds []tea.Cmd
 		if ok, hash := s.title.shouldUpdate(); ok {
 			s.title.bindingsHash = hash
