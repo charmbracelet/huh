@@ -588,10 +588,20 @@ func (s *Select[T]) optionsView() string {
 	return sb.String()
 }
 
+// centerYOffsetToSelected sets the YOffset so the selected element is in the
+// middle of the list.
+func (s *Select[T]) centerYOffsetToSelected() {
+	if s.selected > s.viewport.YOffset+s.viewport.Height {
+		// Start with the selected value in the middle of the viewport.
+		s.viewport.SetYOffset(s.selected - (s.viewport.Height+s.viewport.YOffset)/2)
+	}
+}
+
 // View renders the select field.
 func (s *Select[T]) View() string {
 	styles := s.activeStyles()
 	s.viewport.SetContent(s.optionsView())
+	s.centerYOffsetToSelected()
 
 	var sb strings.Builder
 	if s.title.val != "" || s.title.fn != nil {
