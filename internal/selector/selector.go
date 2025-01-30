@@ -52,7 +52,7 @@ func (s *Selector[T]) Index() int {
 	return s.index
 }
 
-// Totoal returns the total number of items.
+// Total returns the total number of items.
 func (s *Selector[T]) Total() int {
 	return len(s.items)
 }
