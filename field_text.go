@@ -244,9 +244,9 @@ func (t *Text) KeyBinds() []key.Binding {
 type updateValueMsg []byte
 
 // Init initializes the text field.
-func (t *Text) Init() (tea.Model, tea.Cmd) {
+func (t *Text) Init() tea.Cmd {
 	t.textarea.Blur()
-	return t, nil
+	return nil
 }
 
 // Update updates the text field.
@@ -366,7 +366,7 @@ func (t *Text) activeTextAreaStyles() *textarea.StyleState {
 }
 
 // View renders the text field.
-func (t *Text) View() fmt.Stringer {
+func (t *Text) View() string {
 	styles := t.activeStyles()
 	textareaStyles := t.activeTextAreaStyles()
 
@@ -395,7 +395,7 @@ func (t *Text) View() fmt.Stringer {
 	var v strings.Builder
 	v.WriteString(styles.Base.Render(sb.String()))
 
-	return &v
+	return v.String()
 }
 
 // Run runs the text field.

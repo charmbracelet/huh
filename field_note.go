@@ -158,7 +158,7 @@ func (n *Note) KeyBinds() []key.Binding {
 }
 
 // Init initializes the note field.
-func (n *Note) Init() (tea.Model, tea.Cmd) { return n, nil }
+func (n *Note) Init() tea.Cmd { return nil }
 
 // Update updates the note field.
 func (n *Note) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -218,7 +218,7 @@ func (n *Note) activeStyles() *FieldStyles {
 }
 
 // View renders the note field.
-func (n *Note) View() fmt.Stringer {
+func (n *Note) View() string {
 	styles := n.activeStyles()
 	sb := strings.Builder{}
 
@@ -236,7 +236,7 @@ func (n *Note) View() fmt.Stringer {
 	var s strings.Builder
 	s.WriteString(styles.Card.Height(n.height).Render(sb.String()))
 
-	return &s
+	return s.String()
 }
 
 // Run runs the note field.

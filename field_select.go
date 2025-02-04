@@ -299,8 +299,8 @@ func (s *Select[T]) KeyBinds() []key.Binding {
 }
 
 // Init initializes the select field.
-func (s *Select[T]) Init() (tea.Model, tea.Cmd) {
-	return s, nil
+func (s *Select[T]) Init() tea.Cmd {
+	return nil
 }
 
 // Update updates the select field.
@@ -592,7 +592,7 @@ func (s *Select[T]) optionsView() string {
 }
 
 // View renders the select field.
-func (s *Select[T]) View() fmt.Stringer {
+func (s *Select[T]) View() string {
 	styles := s.activeStyles()
 	s.viewport.SetContent(s.optionsView())
 
@@ -614,7 +614,7 @@ func (s *Select[T]) View() fmt.Stringer {
 	var v strings.Builder
 	v.WriteString(styles.Base.Render(sb.String()))
 
-	return &v
+	return v.String()
 }
 
 // clearFilter clears the value of the filter.

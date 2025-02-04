@@ -1,7 +1,6 @@
 package huh
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/v2/help"
@@ -127,7 +126,7 @@ func (g *Group) WithHeight(height int) *Group {
 	g.viewport.SetHeight(height)
 	g.selector.Range(func(_ int, field Field) bool {
 		// A field height must not exceed the form height.
-		if height-1 <= lipgloss.Height(field.View().String()) {
+		if height-1 <= lipgloss.Height(field.View()) {
 			field.WithHeight(height)
 		}
 		return true
@@ -189,7 +188,7 @@ func PrevField() tea.Msg {
 }
 
 // Init initializes the group.
-func (g *Group) Init() (tea.Model, tea.Cmd) {
+func (g *Group) Init() tea.Cmd {
 	var cmds []tea.Cmd
 
 	if g.selector.Selected().Skip() {
@@ -198,7 +197,7 @@ func (g *Group) Init() (tea.Model, tea.Cmd) {
 		} else if g.selector.OnFirst() {
 			cmds = append(cmds, g.nextField()...)
 		}
-		return g, tea.Batch(cmds...)
+		return tea.Batch(cmds...)
 	}
 
 	if g.active {
@@ -206,7 +205,7 @@ func (g *Group) Init() (tea.Model, tea.Cmd) {
 		cmds = append(cmds, cmd)
 	}
 	g.buildView()
-	return g, tea.Batch(cmds...)
+	return tea.Batch(cmds...)
 }
 
 // nextField moves to the next field.
@@ -288,7 +287,7 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (g *Group) fullHeight() int {
 	height := g.selector.Total()
 	g.selector.Range(func(_ int, field Field) bool {
-		height += lipgloss.Height(field.View().String())
+		height += lipgloss.Height(field.View())
 		return true
 	})
 	return height
@@ -302,12 +301,12 @@ func (g *Group) getContent() (int, string) {
 	// if the focused field is requesting it be zoomed, only show that field.
 	if g.selector.Selected().Zoom() {
 		g.selector.Selected().WithHeight(g.height - 1)
-		fields.WriteString(g.selector.Selected().View().String())
+		fields.WriteString(g.selector.Selected().View())
 	} else {
 		g.selector.Range(func(i int, field Field) bool {
-			fields.WriteString(field.View().String())
+			fields.WriteString(field.View())
 			if i == g.selector.Index() {
-				offset = lipgloss.Height(fields.String()) - lipgloss.Height(field.View().String())
+				offset = lipgloss.Height(fields.String()) - lipgloss.Height(field.View())
 			}
 			if i < g.selector.Total()-1 {
 				fields.WriteString(gap)
@@ -327,11 +326,11 @@ func (g *Group) buildView() {
 }
 
 // View renders the group.
-func (g *Group) View() fmt.Stringer {
+func (g *Group) View() string {
 	var view strings.Builder
 	view.WriteString(g.viewport.View())
 	view.WriteString(g.Footer())
-	return &view
+	return view.String()
 }
 
 // Content renders the group's content only (no footer).

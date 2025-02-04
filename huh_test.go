@@ -106,10 +106,10 @@ func TestForm(t *testing.T) {
 		),
 	)
 
-	_, cmd := f.Init()
+	cmd := f.Init()
 	f.Update(cmd)
 
-	view := ansi.Strip(f.View().String())
+	view := ansi.Strip(f.View())
 
 	//
 	//  ┃ Shell?
@@ -146,7 +146,7 @@ func TestForm(t *testing.T) {
 	m, _ = m.Update(tea.KeyPressMsg(tea.Key{
 		Code: tea.KeyTab,
 	}))
-	view = ansi.Strip(m.View().String())
+	view = ansi.Strip(m.View())
 
 	if !strings.Contains(view, "* we're out of hard shells, sorry") {
 		t.Log(pretty.Render(view))
@@ -160,7 +160,7 @@ func TestForm(t *testing.T) {
 	}))
 	m = batchUpdate(m, cmd)
 
-	view = ansi.Strip(m.View().String())
+	view = ansi.Strip(m.View())
 
 	if !strings.Contains(view, "┃ > Chicken") {
 		t.Log(pretty.Render(view))
@@ -172,7 +172,7 @@ func TestForm(t *testing.T) {
 		Code: tea.KeyEnter,
 	}))
 	m = batchUpdate(m, cmd)
-	view = ansi.Strip(m.View().String())
+	view = ansi.Strip(m.View())
 
 	//
 	// ┃ Toppings
@@ -208,7 +208,7 @@ func TestForm(t *testing.T) {
 
 	m, _ = m.Update(keypress('j'))
 	m, _ = m.Update(keypress('j'))
-	view = ansi.Strip(m.View().String())
+	view = ansi.Strip(m.View())
 
 	if !strings.Contains(view, "> • Corn") {
 		t.Log(pretty.Render(view))
@@ -216,7 +216,7 @@ func TestForm(t *testing.T) {
 	}
 
 	m, _ = m.Update(keypress('x'))
-	view = ansi.Strip(m.View().String())
+	view = ansi.Strip(m.View())
 
 	if !strings.Contains(view, "> ✓ Corn") {
 		t.Log(pretty.Render(view))
@@ -226,7 +226,7 @@ func TestForm(t *testing.T) {
 	m = batchUpdate(m.Update(tea.KeyPressMsg(tea.Key{
 		Code: tea.KeyEnter,
 	})))
-	view = ansi.Strip(m.View().String())
+	view = ansi.Strip(m.View())
 
 	if !strings.Contains(view, "What's your name?") {
 		t.Log(pretty.Render(view))
@@ -261,7 +261,7 @@ func TestForm(t *testing.T) {
 	for _, msg := range typeText("Glen") {
 		m.Update(msg)
 	}
-	view = ansi.Strip(m.View().String())
+	view = ansi.Strip(m.View())
 	if !strings.Contains(view, "Glen") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected form to accept user input")
@@ -289,10 +289,10 @@ func TestForm(t *testing.T) {
 func TestInput(t *testing.T) {
 	field := NewInput()
 	f := NewForm(NewGroup(field))
-	_, cmd := f.Init()
+	cmd := f.Init()
 	f.Update(cmd)
 
-	view := ansi.Strip(f.View().String())
+	view := ansi.Strip(f.View())
 
 	if !strings.Contains(view, ">") {
 		t.Log(pretty.Render(view))
@@ -304,7 +304,7 @@ func TestInput(t *testing.T) {
 		m, _ := f.Update(msg)
 		f = m.(*Form)
 	}
-	view = ansi.Strip(f.View().String())
+	view = ansi.Strip(f.View())
 
 	if !strings.Contains(view, "Huh") {
 		t.Log(pretty.Render(view))
@@ -329,10 +329,10 @@ func TestInlineInput(t *testing.T) {
 		Inline(true)
 
 	f := NewForm(NewGroup(field)).WithWidth(40)
-	_, cmd := f.Init()
+	cmd := f.Init()
 	f.Update(cmd)
 
-	view := ansi.Strip(f.View().String())
+	view := ansi.Strip(f.View())
 
 	if !strings.Contains(view, "┃ Input Description:") {
 		t.Log(pretty.Render(view))
@@ -344,7 +344,7 @@ func TestInlineInput(t *testing.T) {
 		m, _ := f.Update(msg)
 		f = m.(*Form)
 	}
-	view = ansi.Strip(f.View().String())
+	view = ansi.Strip(f.View())
 
 	if !strings.Contains(view, "Huh") {
 		t.Log(pretty.Render(view))
@@ -369,7 +369,7 @@ func TestInlineInput(t *testing.T) {
 func TestText(t *testing.T) {
 	field := NewText()
 	f := NewForm(NewGroup(field))
-	_, cmd := f.Init()
+	cmd := f.Init()
 	f.Update(cmd)
 
 	// Type Huh in the form.
@@ -377,7 +377,7 @@ func TestText(t *testing.T) {
 		m, _ := f.Update(msg)
 		f = m.(*Form)
 	}
-	view := ansi.Strip(f.View().String())
+	view := ansi.Strip(f.View())
 
 	if !strings.Contains(view, "Huh") {
 		t.Log(pretty.Render(view))
@@ -397,13 +397,13 @@ func TestText(t *testing.T) {
 func TestConfirm(t *testing.T) {
 	field := NewConfirm().Title("Are you sure?")
 	f := NewForm(NewGroup(field))
-	_, cmd := f.Init()
+	cmd := f.Init()
 	f.Update(cmd)
 
 	// Type Huh in the form.
 	m, _ := f.Update(keypress('H'))
 	f = m.(*Form)
-	view := ansi.Strip(f.View().String())
+	view := ansi.Strip(f.View())
 
 	if !strings.Contains(view, "Yes") {
 		t.Log(pretty.Render(view))
@@ -445,10 +445,10 @@ func TestConfirm(t *testing.T) {
 func TestSelect(t *testing.T) {
 	field := NewSelect[string]().Options(NewOptions("Foo", "Bar", "Baz")...).Title("Which one?")
 	f := NewForm(NewGroup(field))
-	_, cmd := f.Init()
+	cmd := f.Init()
 	f.Update(cmd)
 
-	view := ansi.Strip(f.View().String())
+	view := ansi.Strip(f.View())
 
 	if !strings.Contains(view, "Foo") {
 		t.Log(pretty.Render(view))
@@ -469,7 +469,7 @@ func TestSelect(t *testing.T) {
 	m, _ := f.Update(tea.KeyPressMsg(tea.Key{Code: tea.KeyDown}))
 	f = m.(*Form)
 
-	view = ansi.Strip(f.View().String())
+	view = ansi.Strip(f.View())
 
 	if strings.Contains(view, "> Foo") {
 		t.Log(pretty.Render(view))
@@ -498,10 +498,10 @@ func TestSelect(t *testing.T) {
 func TestMultiSelect(t *testing.T) {
 	field := NewMultiSelect[string]().Options(NewOptions("Foo", "Bar", "Baz")...).Title("Which one?")
 	f := NewForm(NewGroup(field))
-	_, cmd := f.Init()
+	cmd := f.Init()
 	f.Update(cmd)
 
-	view := ansi.Strip(f.View().String())
+	view := ansi.Strip(f.View())
 
 	if !strings.Contains(view, "Foo") {
 		t.Log(pretty.Render(view))
@@ -520,7 +520,7 @@ func TestMultiSelect(t *testing.T) {
 
 	// Move selection cursor down
 	m, _ := f.Update(keypress('j'))
-	view = ansi.Strip(m.View().String())
+	view = ansi.Strip(m.View())
 
 	if strings.Contains(view, "> • Foo") {
 		t.Log(pretty.Render(view))
@@ -534,7 +534,7 @@ func TestMultiSelect(t *testing.T) {
 
 	// Toggle
 	m, _ = f.Update(keypress('x'))
-	view = ansi.Strip(m.View().String())
+	view = ansi.Strip(m.View())
 
 	if !strings.Contains(view, "> ✓ Bar") {
 		t.Log(pretty.Render(view))
@@ -577,7 +577,7 @@ func TestMultiSelectFiltering(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			field := NewMultiSelect[string]().Options(NewOptions("Foo", "Bar", "Baz")...).Title("Which one?").Filterable(tc.filtering)
 			f := NewForm(NewGroup(field))
-			_, cmd := f.Init()
+			cmd := f.Init()
 			f.Update(cmd)
 			// Filter for values starting with a 'B' only.
 			f.Update(tea.KeyPressMsg(tea.Key{
@@ -586,7 +586,7 @@ func TestMultiSelectFiltering(t *testing.T) {
 			m, _ := f.Update(keypress('B'))
 			f = m.(*Form)
 
-			view := ansi.Strip(f.View().String())
+			view := ansi.Strip(f.View())
 			// When we're filtering, the list should change.
 			if tc.filtering && strings.Contains(view, "Foo") {
 				t.Log(pretty.Render(view))
@@ -602,9 +602,9 @@ func TestMultiSelectFiltering(t *testing.T) {
 	t.Run("Remove filter option from help menu.", func(t *testing.T) {
 		field := NewMultiSelect[string]().Options(NewOptions("Foo", "Bar", "Baz")...).Title("Which one?").Filterable(false)
 		f := NewForm(NewGroup(field))
-		_, cmd := f.Init()
+		cmd := f.Init()
 		f.Update(cmd)
-		view := ansi.Strip(f.View().String())
+		view := ansi.Strip(f.View())
 		if strings.Contains(view, "filter") {
 			t.Log(pretty.Render(view))
 			t.Error("Expected list to hide filtering in help menu.")
@@ -645,31 +645,31 @@ func TestSelectPageNavigation(t *testing.T) {
 		NewSelect[string]().Options(opts...).Title("Choose"),
 	} {
 		f := NewForm(NewGroup(field)).WithHeight(10)
-		_, cmd := f.Init()
+		cmd := f.Init()
 		f.Update(cmd)
 
-		view := ansi.Strip(f.View().String())
+		view := ansi.Strip(f.View())
 		if !reFirst.MatchString(view) {
 			t.Log(pretty.Render(view))
 			t.Error("Wrong item selected")
 		}
 
 		m, _ := f.Update(keypress('G'))
-		view = ansi.Strip(m.View().String())
+		view = ansi.Strip(m.View())
 		if !reLast.MatchString(view) {
 			t.Log(pretty.Render(view))
 			t.Error("Wrong item selected")
 		}
 
 		m, _ = f.Update(keypress('g'))
-		view = ansi.Strip(m.View().String())
+		view = ansi.Strip(m.View())
 		if !reFirst.MatchString(view) {
 			t.Log(pretty.Render(view))
 			t.Error("Wrong item selected")
 		}
 
 		m, _ = f.Update(tea.KeyPressMsg(tea.Key{Mod: tea.ModCtrl, Code: 'd'}))
-		view = ansi.Strip(m.View().String())
+		view = ansi.Strip(m.View())
 		if !reHalfDown.MatchString(view) {
 			t.Log(pretty.Render(view))
 			t.Error("Wrong item selected")
@@ -679,7 +679,7 @@ func TestSelectPageNavigation(t *testing.T) {
 		f.Update(tea.KeyPressMsg(tea.Key{Mod: tea.ModCtrl, Code: 'u'}))
 		f.Update(tea.KeyPressMsg(tea.Key{Mod: tea.ModCtrl, Code: 'u'}))
 		m, _ = f.Update(tea.KeyPressMsg(tea.Key{Mod: tea.ModCtrl, Code: 'u'}))
-		view = ansi.Strip(m.View().String())
+		view = ansi.Strip(m.View())
 		if !reFirst.MatchString(view) {
 			t.Log(pretty.Render(view))
 			t.Error("Wrong item selected")
@@ -692,7 +692,7 @@ func TestSelectPageNavigation(t *testing.T) {
 		f.Update(tea.KeyPressMsg(tea.Key{Mod: tea.ModCtrl, Code: 'd'}))
 		f.Update(tea.KeyPressMsg(tea.Key{Mod: tea.ModCtrl, Code: 'd'}))
 		m, _ = f.Update(tea.KeyPressMsg(tea.Key{Mod: tea.ModCtrl, Code: 'd'}))
-		view = ansi.Strip(m.View().String())
+		view = ansi.Strip(m.View())
 		if !reLast.MatchString(view) {
 			t.Log(pretty.Render(view))
 			t.Error("Wrong item selected")
@@ -702,11 +702,11 @@ func TestSelectPageNavigation(t *testing.T) {
 
 func TestFile(t *testing.T) {
 	field := NewFilePicker().Title("Which file?")
-	_, cmd := field.Init()
+	cmd := field.Init()
 	field.Update(cmd)
 	field.Update(cmd())
 
-	view := ansi.Strip(field.View().String())
+	view := ansi.Strip(field.View())
 
 	if !strings.Contains(view, "No file selected") {
 		t.Log(pretty.Render(view))
@@ -730,34 +730,34 @@ func TestHideGroup(t *testing.T) {
 			WithHide(true),
 	)
 
-	_, cmd := f.Init()
+	cmd := f.Init()
 	f.Update(cmd)
 	f = batchUpdate(f, cmd).(*Form)
 
-	if v := f.View(); !strings.Contains(v.String(), "Bar") {
-		t.Log(pretty.Render(v.String()))
+	if v := f.View(); !strings.Contains(v, "Bar") {
+		t.Log(pretty.Render(v))
 		t.Error("expected Bar to not be hidden")
 	}
 
 	// should have no effect as previous group is hidden
 	f.Update(prevGroup())
 
-	if v := f.View(); !strings.Contains(v.String(), "Bar") {
-		t.Log(pretty.Render(v.String()))
+	if v := f.View(); !strings.Contains(v, "Bar") {
+		t.Log(pretty.Render(v))
 		t.Error("expected Bar to not be hidden")
 	}
 
 	f.Update(nextGroup())
 
-	if v := f.View(); !strings.Contains(v.String(), "Baz") {
-		t.Log(pretty.Render(v.String()))
+	if v := f.View(); !strings.Contains(v, "Baz") {
+		t.Log(pretty.Render(v))
 		t.Error("expected Baz to not be hidden")
 	}
 
 	f.Update(nextGroup())
 
-	if v := f.View(); strings.Contains(v.String(), "Qux") {
-		t.Log(pretty.Render(v.String()))
+	if v := f.View(); strings.Contains(v, "Qux") {
+		t.Log(pretty.Render(v))
 		t.Error("expected Qux to be hidden")
 	}
 
@@ -774,11 +774,11 @@ func TestHideGroupLastAndFirstGroupsNotHidden(t *testing.T) {
 		NewGroup(NewNote().Description("Baz")),
 	)
 
-	_, cmd := f.Init()
+	cmd := f.Init()
 	f.Update(cmd)
 	f = batchUpdate(f, cmd).(*Form)
 
-	if v := ansi.Strip(f.View().String()); !strings.Contains(v, "Bar") {
+	if v := ansi.Strip(f.View()); !strings.Contains(v, "Bar") {
 		t.Log(pretty.Render(v))
 		t.Error("expected Bar to not be hidden")
 	}
@@ -786,14 +786,14 @@ func TestHideGroupLastAndFirstGroupsNotHidden(t *testing.T) {
 	// should have no effect as there isn't any
 	f.Update(prevGroup())
 
-	if v := f.View(); !strings.Contains(v.String(), "Bar") {
-		t.Log(pretty.Render(v.String()))
+	if v := f.View(); !strings.Contains(v, "Bar") {
+		t.Log(pretty.Render(v))
 		t.Error("expected Bar to not be hidden")
 	}
 
 	f.Update(nextGroup())
 
-	if v := ansi.Strip(f.View().String()); !strings.Contains(v, "Baz") {
+	if v := ansi.Strip(f.View()); !strings.Contains(v, "Baz") {
 		t.Log(pretty.Render(v))
 		t.Error("expected Baz to not be hidden")
 	}
@@ -812,7 +812,7 @@ func TestPrevGroup(t *testing.T) {
 		NewGroup(NewNote().Description("Baz")),
 	)
 
-	_, cmd := f.Init()
+	cmd := f.Init()
 	f.Update(cmd)
 	f = batchUpdate(f, cmd).(*Form)
 	f.Update(nextGroup())
@@ -820,7 +820,7 @@ func TestPrevGroup(t *testing.T) {
 	f.Update(prevGroup())
 	f.Update(prevGroup())
 
-	if v := ansi.Strip(f.View().String()); !strings.Contains(v, "Bar") {
+	if v := ansi.Strip(f.View()); !strings.Contains(v, "Bar") {
 		t.Log(pretty.Render(v))
 		t.Error("expected Bar to not be hidden")
 	}
@@ -829,10 +829,10 @@ func TestPrevGroup(t *testing.T) {
 func TestNote(t *testing.T) {
 	field := NewNote().Title("Taco").Description("How may we take your order?").Next(true)
 	f := NewForm(NewGroup(field))
-	_, cmd := f.Init()
+	cmd := f.Init()
 	f.Update(cmd)
 
-	view := ansi.Strip(f.View().String())
+	view := ansi.Strip(f.View())
 
 	if !strings.Contains(view, "Taco") {
 		t.Log(view)
@@ -863,10 +863,10 @@ func TestDynamicHelp(t *testing.T) {
 			NewInput().Title("Dynamic Help"),
 		),
 	)
-	_, cmd := f.Init()
+	cmd := f.Init()
 	f.Update(cmd)
 
-	view := ansi.Strip(f.View().String())
+	view := ansi.Strip(f.View())
 
 	if !strings.Contains(view, "Dynamic Help") {
 		t.Log(pretty.Render(view))
@@ -889,10 +889,10 @@ func TestSkip(t *testing.T) {
 		),
 	).WithWidth(25)
 
-	_, cmd := f.Init()
+	cmd := f.Init()
 	f.Update(cmd)
 	f = batchUpdate(f, cmd).(*Form)
-	view := ansi.Strip(f.View().String())
+	view := ansi.Strip(f.View())
 
 	if !strings.Contains(view, "┃ First") {
 		t.Log(pretty.Render(view))
@@ -901,7 +901,7 @@ func TestSkip(t *testing.T) {
 
 	// next field should skip both of the notes and proceed to the last input.
 	f.Update(NextField())
-	view = ansi.Strip(f.View().String())
+	view = ansi.Strip(f.View())
 
 	if strings.Contains(view, "┃ First") {
 		t.Log(pretty.Render(view))
@@ -915,7 +915,7 @@ func TestSkip(t *testing.T) {
 
 	// previous field should skip both of the notes and focus the first input.
 	f.Update(PrevField())
-	view = ansi.Strip(f.View().String())
+	view = ansi.Strip(f.View())
 
 	if strings.Contains(view, "┃ Second") {
 		t.Log(pretty.Render(view))

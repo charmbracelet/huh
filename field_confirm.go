@@ -155,8 +155,8 @@ func (c *Confirm) KeyBinds() []key.Binding {
 }
 
 // Init initializes the confirm field.
-func (c *Confirm) Init() (tea.Model, tea.Cmd) {
-	return c, nil
+func (c *Confirm) Init() tea.Cmd {
+	return nil
 }
 
 // Update updates the confirm field.
@@ -232,7 +232,7 @@ func (c *Confirm) activeStyles() *FieldStyles {
 }
 
 // View renders the confirm field.
-func (c *Confirm) View() fmt.Stringer {
+func (c *Confirm) View() string {
 	styles := c.activeStyles()
 
 	var sb strings.Builder
@@ -288,7 +288,7 @@ func (c *Confirm) View() fmt.Stringer {
 	var s strings.Builder
 	s.WriteString(styles.Base.Render(sb.String()))
 
-	return &s
+	return s.String()
 }
 
 // Run runs the confirm field in accessible mode.

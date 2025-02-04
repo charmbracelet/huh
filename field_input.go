@@ -264,9 +264,9 @@ func (i *Input) KeyBinds() []key.Binding {
 }
 
 // Init initializes the input field.
-func (i *Input) Init() (tea.Model, tea.Cmd) {
+func (i *Input) Init() tea.Cmd {
 	i.textinput.Blur()
-	return i, nil
+	return nil
 }
 
 // Update updates the input field.
@@ -380,7 +380,7 @@ func (i *Input) activeStyles() *FieldStyles {
 }
 
 // View renders the input field.
-func (i *Input) View() fmt.Stringer {
+func (i *Input) View() string {
 	styles := i.activeStyles()
 
 	// NB: since the method is on a pointer receiver these are being mutated.
@@ -415,7 +415,7 @@ func (i *Input) View() fmt.Stringer {
 	var s strings.Builder
 	s.WriteString(styles.Base.Render(sb.String()))
 
-	return &s
+	return s.String()
 }
 
 // Run runs the input field in accessible mode.

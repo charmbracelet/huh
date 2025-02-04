@@ -248,8 +248,8 @@ func (m *MultiSelect[T]) KeyBinds() []key.Binding {
 }
 
 // Init initializes the multi-select field.
-func (m *MultiSelect[T]) Init() (tea.Model, tea.Cmd) {
-	return m, nil
+func (m *MultiSelect[T]) Init() tea.Cmd {
+	return nil
 }
 
 // Update updates the multi-select field.
@@ -579,7 +579,7 @@ func (m *MultiSelect[T]) optionsView() string {
 }
 
 // View renders the multi-select field.
-func (m *MultiSelect[T]) View() fmt.Stringer {
+func (m *MultiSelect[T]) View() string {
 	styles := m.activeStyles()
 
 	m.viewport.SetContent(m.optionsView())
@@ -597,7 +597,7 @@ func (m *MultiSelect[T]) View() fmt.Stringer {
 	var s strings.Builder
 	s.WriteString(styles.Base.Render(sb.String()))
 
-	return &s
+	return s.String()
 }
 
 func (m *MultiSelect[T]) printOptions() {

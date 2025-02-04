@@ -1,7 +1,6 @@
 package huh
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss/v2"
@@ -9,7 +8,7 @@ import (
 
 // A Layout is responsible for laying out groups in a form.
 type Layout interface {
-	View(f *Form) fmt.Stringer
+	View(f *Form) string
 	GroupWidth(f *Form, g *Group, w int) int
 }
 
@@ -31,7 +30,7 @@ func LayoutGrid(rows int, columns int) Layout {
 
 type layoutDefault struct{}
 
-func (l *layoutDefault) View(f *Form) fmt.Stringer {
+func (l *layoutDefault) View(f *Form) string {
 	return f.selector.Selected().View()
 }
 
@@ -65,11 +64,11 @@ func (l *layoutColumns) visibleGroups(f *Form) []*Group {
 	return groups
 }
 
-func (l *layoutColumns) View(f *Form) fmt.Stringer {
+func (l *layoutColumns) View(f *Form) string {
 	var s strings.Builder
 	groups := l.visibleGroups(f)
 	if len(groups) == 0 {
-		return &s
+		return s.String()
 	}
 
 	columns := make([]string, 0, len(groups))
@@ -82,7 +81,7 @@ func (l *layoutColumns) View(f *Form) fmt.Stringer {
 		lipgloss.JoinHorizontal(lipgloss.Top, columns...),
 		footer,
 	))
-	return &s
+	return s.String()
 }
 
 func (l *layoutColumns) GroupWidth(_ *Form, _ *Group, w int) int {
@@ -91,7 +90,7 @@ func (l *layoutColumns) GroupWidth(_ *Form, _ *Group, w int) int {
 
 type layoutStack struct{}
 
-func (l *layoutStack) View(f *Form) fmt.Stringer {
+func (l *layoutStack) View(f *Form) string {
 	var columns []string
 	f.selector.Range(func(_ int, group *Group) bool {
 		columns = append(columns, group.Content())
@@ -102,7 +101,7 @@ func (l *layoutStack) View(f *Form) fmt.Stringer {
 	var view strings.Builder
 	view.WriteString(strings.Join(columns, "\n"))
 	view.WriteString(footer)
-	return &view
+	return view.String()
 }
 
 func (l *layoutStack) GroupWidth(_ *Form, _ *Group, w int) int {
@@ -146,11 +145,11 @@ func (l *layoutGrid) visibleGroups(f *Form) [][]*Group {
 	return grid
 }
 
-func (l *layoutGrid) View(f *Form) fmt.Stringer {
+func (l *layoutGrid) View(f *Form) string {
 	var s strings.Builder
 	grid := l.visibleGroups(f)
 	if len(grid) == 0 {
-		return &s
+		return s.String()
 	}
 
 	rows := make([]string, 0, len(grid))
@@ -164,7 +163,7 @@ func (l *layoutGrid) View(f *Form) fmt.Stringer {
 	footer := f.selector.Selected().Footer()
 
 	s.WriteString(lipgloss.JoinVertical(lipgloss.Left, strings.Join(rows, "\n"), footer))
-	return &s
+	return s.String()
 }
 
 func (l *layoutGrid) GroupWidth(_ *Form, _ *Group, w int) int {

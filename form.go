@@ -131,9 +131,7 @@ func NewForm(groups ...*Group) *Form {
 // Each field implements the Bubble Tea Model interface.
 type Field interface {
 	// Bubble Tea Model
-	Init() (tea.Model, tea.Cmd)
-	Update(tea.Msg) (tea.Model, tea.Cmd)
-	View() fmt.Stringer
+	tea.Model
 
 	// Bubble Tea Events
 	Blur() tea.Cmd
@@ -481,13 +479,13 @@ func (f *Form) PrevField() tea.Cmd {
 }
 
 // Init initializes the form.
-func (f *Form) Init() (tea.Model, tea.Cmd) {
+func (f *Form) Init() tea.Cmd {
 	cmds := make([]tea.Cmd, f.selector.Total())
 	f.selector.Range(func(i int, group *Group) bool {
 		if i == 0 {
 			group.active = true
 		}
-		_, cmds[i] = group.Init()
+		cmds[i] = group.Init()
 		return true
 	})
 
@@ -495,7 +493,7 @@ func (f *Form) Init() (tea.Model, tea.Cmd) {
 		cmds = append(cmds, nextGroup)
 	}
 
-	return f, tea.Batch(cmds...)
+	return tea.Batch(cmds...)
 }
 
 // Update updates the form.
@@ -567,7 +565,7 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 		f.selector.Selected().active = true
-		_, cmd := f.selector.Selected().Init()
+		cmd := f.selector.Selected().Init()
 		return f, cmd
 
 	case prevGroupMsg:
@@ -583,7 +581,7 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		f.selector.Selected().active = true
-		_, cmd := f.selector.Selected().Init()
+		cmd := f.selector.Selected().Init()
 		return f, cmd
 	}
 
@@ -609,14 +607,14 @@ func (f *Form) isGroupHidden(group *Group) bool {
 }
 
 // View renders the form.
-func (f *Form) View() fmt.Stringer {
+func (f *Form) View() string {
 	var s strings.Builder
 	if f.quitting {
-		return &s
+		return s.String()
 	}
 
-	s.WriteString(f.layout.View(f).String())
-	return &s
+	s.WriteString(f.layout.View(f))
+	return s.String()
 }
 
 // Run runs the form.

@@ -48,7 +48,7 @@ func NewFilePicker() *FilePicker {
 	fp.ShowSize = false
 	fp.AutoHeight = false
 
-	if _, cmd := fp.Init(); cmd != nil {
+	if cmd := fp.Init(); cmd != nil {
 		fp, _ = fp.Update(cmd())
 	}
 
@@ -62,7 +62,7 @@ func NewFilePicker() *FilePicker {
 // CurrentDirectory sets the directory of the file field.
 func (f *FilePicker) CurrentDirectory(directory string) *FilePicker {
 	f.picker.CurrentDirectory = directory
-	if _, cmd := f.picker.Init(); cmd != nil {
+	if cmd := f.picker.Init(); cmd != nil {
 		f.picker, _ = f.picker.Update(cmd())
 	}
 	return f
@@ -180,9 +180,7 @@ func (f *FilePicker) Zoom() bool {
 // Focus focuses the file field.
 func (f *FilePicker) Focus() tea.Cmd {
 	f.focused = true
-	var cmd tea.Cmd
-	f.picker, cmd = f.picker.Init()
-	return cmd
+	return f.picker.Init()
 }
 
 // Blur blurs the file field.
@@ -199,10 +197,8 @@ func (f *FilePicker) KeyBinds() []key.Binding {
 }
 
 // Init initializes the file field.
-func (f *FilePicker) Init() (tea.Model, tea.Cmd) {
-	var cmd tea.Cmd
-	f.picker, cmd = f.picker.Init()
-	return f, cmd
+func (f *FilePicker) Init() tea.Cmd {
+	return f.picker.Init()
 }
 
 // Update updates the file field.
@@ -219,8 +215,7 @@ func (f *FilePicker) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				break
 			}
 			f.setPicking(true)
-			var cmd tea.Cmd
-			f.picker, cmd = f.picker.Init()
+			cmd := f.picker.Init()
 			return f, cmd
 		case key.Matches(msg, f.keymap.Close):
 			f.setPicking(false)
@@ -263,7 +258,7 @@ func (f *FilePicker) activeStyles() *FieldStyles {
 }
 
 // View renders the file field.
-func (f *FilePicker) View() fmt.Stringer {
+func (f *FilePicker) View() string {
 	styles := f.activeStyles()
 
 	var sb strings.Builder
@@ -286,7 +281,7 @@ func (f *FilePicker) View() fmt.Stringer {
 	var s strings.Builder
 	s.WriteString(styles.Base.Render(sb.String()))
 
-	return &s
+	return s.String()
 }
 
 func (f *FilePicker) setPicking(v bool) {
