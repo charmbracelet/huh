@@ -730,3 +730,8 @@ func (s *Select[T]) GetKey() string { return s.key }
 func (s *Select[T]) GetValue() any {
 	return s.accessor.Get()
 }
+
+// GetFiltering returns the filtering state of the field.
+func (s *Select[T]) GetFiltering() bool {
+	return s.filtering
+}

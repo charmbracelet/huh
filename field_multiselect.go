@@ -761,3 +761,8 @@ func (m *MultiSelect[T]) GetKey() string {
 func (m *MultiSelect[T]) GetValue() any {
 	return m.accessor.Get()
 }
+
+// GetFiltering returns whether the multi-select is filtering.
+func (m *MultiSelect[T]) GetFiltering() bool {
+	return m.filtering
+}
