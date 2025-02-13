@@ -918,6 +918,24 @@ func TestAbort(t *testing.T) {
 	}
 }
 
+func TestGetFocusedField(t *testing.T) {
+	f := NewForm(
+		NewGroup(
+			NewInput().Title("First").Key("First"),
+			NewInput().Title("Second").Key("Second"),
+			NewInput().Title("Third").Key("Third"),
+		),
+	).WithWidth(25)
+	f = batchUpdate(f, f.Init()).(*Form)
+
+	f.NextField()
+	field := f.GetFocusedField()
+
+	if field.GetKey() != "Second" {
+		t.Error("Expected Second field to be focused but was '" + field.GetKey() + "'")
+	}
+}
+
 // formProgram returns a new Form with a nil input and output, so it can be used as a test program.
 func formProgram() *Form {
 	return NewForm(NewGroup(NewInput().Title("Foo"))).
