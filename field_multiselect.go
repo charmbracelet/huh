@@ -24,6 +24,7 @@ type MultiSelect[T comparable] struct {
 	title           Eval[string]
 	description     Eval[string]
 	options         Eval[[]Option[T]]
+	renderOptionsFn OptionRenderer[T]
 	filterable      bool
 	filteredOptions []Option[T]
 	limit           int
@@ -153,6 +154,12 @@ func (m *MultiSelect[T]) OptionsFunc(f func() []Option[T], bindings any) *MultiS
 		m.height = defaultHeight
 		m.updateViewportHeight()
 	}
+	return m
+}
+
+// OptionsRenderFunc sets the function to render the options.
+func (m *MultiSelect[T]) OptionsRenderFunc(f OptionRenderer[T]) *MultiSelect[T] {
+	m.renderOptionsFn = f
 	return m
 }
 
@@ -556,7 +563,9 @@ func (m *MultiSelect[T]) optionsView() string {
 			sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)))
 		}
 
-		if m.filteredOptions[i].selected {
+		if m.renderOptionsFn != nil {
+			sb.WriteString(m.renderOptionsFn(option))
+		} else if m.filteredOptions[i].selected {
 			sb.WriteString(styles.SelectedPrefix.String())
 			sb.WriteString(styles.SelectedOption.Render(option.Key))
 		} else {
