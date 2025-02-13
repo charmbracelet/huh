@@ -1,6 +1,9 @@
 package huh
 
-import "github.com/charmbracelet/bubbles/key"
+import (
+	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/bubbles/table"
+)
 
 // KeyMap is the keybindings to navigate the form.
 type KeyMap struct {
@@ -13,6 +16,7 @@ type KeyMap struct {
 	Note        NoteKeyMap
 	Select      SelectKeyMap
 	Text        TextKeyMap
+	Table       TableKeyMap
 }
 
 // InputKeyMap is the keybindings for input fields.
@@ -48,6 +52,14 @@ type SelectKeyMap struct {
 	SetFilter    key.Binding
 	ClearFilter  key.Binding
 	Submit       key.Binding
+}
+
+// SelectKeyMap is the keybindings for table fields.
+type TableKeyMap struct {
+	table.KeyMap
+	Next   key.Binding
+	Prev   key.Binding
+	Submit key.Binding
 }
 
 // MultiSelectKeyMap is the keybindings for multi-select fields.
@@ -168,6 +180,12 @@ func NewDefaultKeyMap() *KeyMap {
 			GotoBottom:   key.NewBinding(key.WithKeys("end", "G"), key.WithHelp("G/end", "go to end")),
 			SelectAll:    key.NewBinding(key.WithKeys("ctrl+a"), key.WithHelp("ctrl+a", "select all")),
 			SelectNone:   key.NewBinding(key.WithKeys("ctrl+a"), key.WithHelp("ctrl+a", "select none"), key.WithDisabled()),
+		},
+		Table: TableKeyMap{
+			KeyMap: table.DefaultKeyMap(),
+			Prev:   key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),
+			Next:   key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "confirm")),
+			Submit: key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "submit")),
 		},
 		Note: NoteKeyMap{
 			Prev:   key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),

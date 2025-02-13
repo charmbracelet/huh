@@ -82,3 +82,9 @@ type updateOptionsMsg[T comparable] struct {
 	hash    uint64
 	options []Option[T]
 }
+
+type updateTableOptionsMsg[T any, K comparable] struct {
+	id      int
+	hash    uint64
+	options []TableOption[T, K]
+}
