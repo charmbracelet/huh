@@ -190,6 +190,8 @@ func PrevField() tea.Msg {
 func (g *Group) Init() tea.Cmd {
 	var cmds []tea.Cmd
 
+	cmds = append(cmds, func() tea.Msg { return updateFieldMsg{} })
+
 	if g.selector.Selected().Skip() {
 		if g.selector.OnLast() {
 			cmds = append(cmds, g.prevField()...)
