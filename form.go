@@ -80,11 +80,12 @@ type Form struct {
 	aborted  bool
 
 	// options
-	width      int
-	height     int
-	keymap     *KeyMap
-	timeout    time.Duration
-	teaOptions []tea.ProgramOption
+	width                   int
+	height                  int
+	keymap                  *KeyMap
+	timeout                 time.Duration
+	teaOptions              []tea.ProgramOption
+	strictGroupBacktracking bool
 
 	layout Layout
 }
@@ -105,6 +106,7 @@ func NewForm(groups ...*Group) *Form {
 		teaOptions: []tea.ProgramOption{
 			tea.WithOutput(os.Stderr),
 		},
+		strictGroupBacktracking: true,
 	}
 
 	// NB: If dynamic forms come into play this will need to be applied when
@@ -346,6 +348,14 @@ func (f *Form) WithLayout(layout Layout) *Form {
 	return f
 }
 
+// With StrictBacktracking sets the form backtracking strictness.
+//
+// When set to false allows backtracking to previous groups through errors
+func (f *Form) WithStrictGroupBactracking(strict bool) *Form {
+	f.strictGroupBacktracking = strict
+	return f
+}
+
 // UpdateFieldPositions sets the position on all the fields.
 func (f *Form) UpdateFieldPositions() *Form {
 	firstGroup := 0
@@ -461,7 +471,7 @@ func (f *Form) NextGroup() tea.Cmd {
 	return cmd
 }
 
-// PrevGroup moves the form to the next group.
+// PrevGroup moves the form to the previous group.
 func (f *Form) PrevGroup() tea.Cmd {
 	_, cmd := f.Update(prevGroup())
 	return cmd
@@ -473,7 +483,7 @@ func (f *Form) NextField() tea.Cmd {
 	return cmd
 }
 
-// NextField moves the form to the next field.
+// PrevField moves the form to the previous field.
 func (f *Form) PrevField() tea.Cmd {
 	_, cmd := f.Update(PrevField())
 	return cmd
@@ -569,7 +579,7 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return f, f.selector.Selected().Init()
 
 	case prevGroupMsg:
-		if len(group.Errors()) > 0 {
+		if f.strictGroupBacktracking && len(group.Errors()) > 0 {
 			return f, nil
 		}
 
