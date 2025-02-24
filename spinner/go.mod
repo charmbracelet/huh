@@ -6,7 +6,7 @@ require (
 	github.com/charmbracelet/bubbles v0.20.0
 	github.com/charmbracelet/bubbletea v1.3.3
 	github.com/charmbracelet/lipgloss v1.0.0
-	github.com/muesli/termenv v0.15.2
+	github.com/muesli/termenv v0.16.0
 )
 
 require (
