@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/charmbracelet/bubbles/cursor"
 	"io"
 	"regexp"
 	"strings"
@@ -273,6 +274,86 @@ func TestForm(t *testing.T) {
 	}
 
 	// TODO: Finish and submit form.
+}
+
+func TestFormNotQuiting(t *testing.T) {
+	t.Run("Quit form after submission", func(t *testing.T) {
+		f := NewForm(NewGroup(NewInput()))
+		f.Update(f.Init())
+
+		f = submitForm(f)
+
+		view := ansi.Strip(f.View())
+
+		if strings.Contains(view, ">") {
+			t.Log(pretty.Render(view))
+			t.Error("Expected form to have quit but was visible.")
+		}
+	})
+
+	t.Run("Form stays alive after submission", func(t *testing.T) {
+		f := NewForm(NewGroup(NewInput()))
+		f.QuitAfterSubmit = false
+		f.Update(f.Init())
+
+		submitForm(f)
+
+		view := ansi.Strip(f.View())
+
+		if !strings.Contains(view, ">") {
+			t.Log(pretty.Render(view))
+			t.Error("Expected form to be visible but has quit.")
+		}
+	})
+
+	t.Run("Grouped form stays alive after submission", func(t *testing.T) {
+		f := NewForm(NewGroup(NewInput()), NewGroup(NewInput()))
+		f.QuitAfterSubmit = false
+		f.Update(f.Init())
+
+		submitForm(f)
+		submitForm(f)
+
+		view := ansi.Strip(f.View())
+
+		if !strings.Contains(view, ">") {
+			t.Log(pretty.Render(view))
+			t.Error("Expected grouped form to be visible but has quit.")
+		}
+	})
+
+	t.Run("Hide group help when frozen", func(t *testing.T) {
+		f := NewForm(NewGroup(NewInput()))
+		f.QuitAfterSubmit = false
+		f.Update(f.Init())
+
+		submitForm(f)
+		submitForm(f)
+
+		view := ansi.Strip(f.View())
+
+		if strings.Contains(view, "enter submit") {
+			t.Log(pretty.Render(view))
+			t.Error("Expected help to be hidden but was visible.")
+		}
+	})
+
+	t.Run("Reset previous group help state after re-initialization", func(t *testing.T) {
+		f := NewForm(NewGroup(NewInput()).WithShowHelp(true))
+		f.QuitAfterSubmit = false
+		f.Update(f.Init())
+
+		submitForm(f)
+		submitForm(f)
+		f.Init()
+
+		view := ansi.Strip(f.View())
+
+		if !strings.Contains(view, "enter submit") {
+			t.Log(pretty.Render(view))
+			t.Error("Expected help visible but was not.")
+		}
+	})
 }
 
 func TestInput(t *testing.T) {
@@ -923,6 +1004,23 @@ func formProgram() *Form {
 	return NewForm(NewGroup(NewInput().Title("Foo"))).
 		WithInput(nil).WithOutput(io.Discard).
 		WithAccessible(false)
+}
+
+func submitForm(f *Form) *Form {
+	m, cmd := f.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	f = m.(*Form)
+	for {
+		if cmd != nil {
+			msg := cmd()
+			_, cmd = f.Update(msg)
+			if _, ok := msg.(cursor.BlinkMsg); ok {
+				break
+			}
+		} else {
+			break
+		}
+	}
+	return f
 }
 
 func batchUpdate(m tea.Model, cmd tea.Cmd) tea.Model {
