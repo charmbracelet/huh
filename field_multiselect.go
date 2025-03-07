@@ -682,15 +682,11 @@ func (m *MultiSelect[T]) runAccessible() error {
 	}
 
 	var values []string
-
-	value := m.accessor.Get()
 	for _, option := range m.options.val {
 		if option.selected {
-			value = append(value, option.Value)
 			values = append(values, option.Key)
 		}
 	}
-	m.accessor.Set(value)
 
 	fmt.Println(styles.SelectedOption.Render("Selected:", strings.Join(values, ", ")+"\n"))
 	return nil
