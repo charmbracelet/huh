@@ -936,6 +936,150 @@ func TestGetFocusedField(t *testing.T) {
 	}
 }
 
+func TestTitleRowRender(t *testing.T) {
+	t.Run("Confirm", func(t *testing.T) {
+		withTitle := NewConfirm().Title("A Title")
+		noTitle := NewConfirm().Title("")
+		got := lipgloss.Height(ansi.Strip(noTitle.View()))
+		want := lipgloss.Height(ansi.Strip(withTitle.View())) - 1
+		if got != want {
+			t.Fatalf("got != want; height should be %d, got %d", want, got)
+		}
+	})
+
+	t.Run("FilePicker", func(t *testing.T) {
+		withTitle := NewFilePicker().Title("A Title")
+		noTitle := NewFilePicker().Title("")
+		got := lipgloss.Height(ansi.Strip(noTitle.View()))
+		want := lipgloss.Height(ansi.Strip(withTitle.View())) - 1
+		if got != want {
+			t.Fatalf("got != want; height should be %d, got %d", want, got)
+		}
+	})
+
+	t.Run("Input", func(t *testing.T) {
+		withTitle := NewInput().Title("A Title")
+		noTitle := NewInput().Title("")
+		got := lipgloss.Height(ansi.Strip(noTitle.View()))
+		want := lipgloss.Height(ansi.Strip(withTitle.View())) - 1
+		if got != want {
+			t.Fatalf("got != want; height should be %d, got %d", want, got)
+		}
+	})
+
+	t.Run("MultiSelect[string]", func(t *testing.T) {
+		withTitle := NewMultiSelect[string]().Title("A Title")
+		noTitle := NewMultiSelect[string]().Title("")
+		got := lipgloss.Height(ansi.Strip(noTitle.View()))
+		want := lipgloss.Height(ansi.Strip(withTitle.View())) - 1
+		if got != want {
+			t.Fatalf("got != want; height should be %d, got %d", want, got)
+		}
+	})
+
+	t.Run("Note", func(t *testing.T) {
+		withTitle := NewNote().Title("A Title")
+		noTitle := NewNote().Title("")
+		got := lipgloss.Height(ansi.Strip(noTitle.View()))
+		want := lipgloss.Height(ansi.Strip(withTitle.View())) - 1
+		if got != want {
+			t.Fatalf("got != want; height should be %d, got %d", want, got)
+		}
+	})
+
+	t.Run("Select[string]", func(t *testing.T) {
+		withTitle := NewSelect[string]().Title("A Title")
+		noTitle := NewSelect[string]().Title("")
+		got := lipgloss.Height(ansi.Strip(noTitle.View()))
+		want := lipgloss.Height(ansi.Strip(withTitle.View())) - 1
+		if got != want {
+			t.Fatalf("got != want; height should be %d, got %d", want, got)
+		}
+	})
+
+	t.Run("Text", func(t *testing.T) {
+		withTitle := NewText().Title("A Title")
+		noTitle := NewText().Title("")
+		got := lipgloss.Height(ansi.Strip(noTitle.View()))
+		want := lipgloss.Height(ansi.Strip(withTitle.View())) - 1
+		if got != want {
+			t.Fatalf("got != want; height should be %d, got %d", want, got)
+		}
+	})
+}
+
+func TestDescriptionRowRender(t *testing.T) {
+	t.Run("Confirm", func(t *testing.T) {
+		withDescription := NewConfirm().Description("A Description")
+		noDescription := NewConfirm().Description("")
+		got := lipgloss.Height(ansi.Strip(noDescription.View()))
+		want := lipgloss.Height(ansi.Strip(withDescription.View())) - 1
+		if got != want {
+			t.Fatalf("got != want; height should be %d, got %d", want, got)
+		}
+	})
+
+	t.Run("FilePicker", func(t *testing.T) {
+		withDescription := NewFilePicker().Description("A Description")
+		noDescription := NewFilePicker().Description("")
+		got := lipgloss.Height(ansi.Strip(noDescription.View()))
+		want := lipgloss.Height(ansi.Strip(withDescription.View())) - 1
+		if got != want {
+			t.Fatalf("got != want; height should be %d, got %d", want, got)
+		}
+	})
+
+	t.Run("Input", func(t *testing.T) {
+		withDescription := NewInput().Description("A Description")
+		noDescription := NewInput().Description("")
+		got := lipgloss.Height(ansi.Strip(noDescription.View()))
+		want := lipgloss.Height(ansi.Strip(withDescription.View())) - 1
+		if got != want {
+			t.Fatalf("got != want; height should be %d, got %d", want, got)
+		}
+	})
+
+	t.Run("MultiSelect[string]", func(t *testing.T) {
+		withDescription := NewMultiSelect[string]().Description("A Description")
+		noDescription := NewMultiSelect[string]().Description("")
+		got := lipgloss.Height(ansi.Strip(noDescription.View()))
+		want := lipgloss.Height(ansi.Strip(withDescription.View())) - 1
+		if got != want {
+			t.Fatalf("got != want; height should be %d, got %d", want, got)
+		}
+	})
+
+	t.Run("Note", func(t *testing.T) {
+		withDescription := NewNote().Description("A Description")
+		noDescription := NewNote().Description("")
+		got := lipgloss.Height(ansi.Strip(noDescription.View()))
+		want := lipgloss.Height(ansi.Strip(withDescription.View())) - 1
+		if got != want {
+			t.Fatalf("got != want; height should be %d, got %d", want, got)
+		}
+	})
+
+	t.Run("Select[string]", func(t *testing.T) {
+		withDescription := NewSelect[string]().Description("A Description")
+		noDescription := NewSelect[string]().Description("")
+		got := lipgloss.Height(ansi.Strip(noDescription.View()))
+		want := lipgloss.Height(ansi.Strip(withDescription.View())) - 1
+		if got != want {
+			t.Fatalf("got != want; height should be %d, got %d", want, got)
+		}
+	})
+
+	t.Run("Text", func(t *testing.T) {
+		withDescription := NewText().Description("A Description")
+		noDescription := NewText().Description("")
+		got := lipgloss.Height(ansi.Strip(noDescription.View()))
+		want := lipgloss.Height(ansi.Strip(withDescription.View())) - 1
+		if got != want {
+			t.Fatalf("got != want; height should be %d, got %d", want, got)
+		}
+	})
+}
+
 // formProgram returns a new Form with a nil input and output, so it can be used as a test program.
 func formProgram() *Form {
 	return NewForm(NewGroup(NewInput().Title("Foo"))).
