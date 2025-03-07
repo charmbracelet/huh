@@ -125,10 +125,12 @@ func (g *Group) WithWidth(width int) *Group {
 // WithHeight sets the height on a group.
 func (g *Group) WithHeight(height int) *Group {
 	g.height = height
-	g.viewport.Height = height - lipgloss.Height(g.Footer()) - lipgloss.Height(g.Header())
+	g.viewport.Height = g.height - lipgloss.Height(g.Footer()+g.Header())
 	g.selector.Range(func(_ int, field Field) bool {
 		// A field height must not exceed the form height.
-		field.WithHeight(min(height, lipgloss.Height(field.View())))
+		if g.height < lipgloss.Height(field.View()) {
+			field.WithHeight(g.height)
+		}
 		return true
 	})
 	return g
@@ -270,6 +272,7 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		g.WithHeight(max(g.height, min(g.fullHeight(), msg.Height)))
+		g.WithWidth(max(g.width, msg.Width))
 	case nextFieldMsg:
 		cmds = append(cmds, g.nextField()...)
 	case prevFieldMsg:
@@ -283,7 +286,7 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // height returns the full height of the group.
 func (g *Group) fullHeight() int {
-	height := g.selector.Total()
+	height := lipgloss.Height(g.Header() + g.Footer())
 	g.selector.Range(func(_ int, field Field) bool {
 		height += lipgloss.Height(field.View())
 		return true
@@ -298,7 +301,7 @@ func (g *Group) getContent() (int, string) {
 
 	// if the focused field is requesting it be zoomed, only show that field.
 	if g.selector.Selected().Zoom() {
-		g.selector.Selected().WithHeight(g.height - 1)
+		g.selector.Selected().WithHeight(g.height - 1) // why this -1?
 		fields.WriteString(g.selector.Selected().View())
 	} else {
 		g.selector.Range(func(i int, field Field) bool {
@@ -346,6 +349,7 @@ func (g *Group) View() string {
 	var view strings.Builder
 	view.WriteString(g.Header())
 	view.WriteString(g.viewport.View())
+	view.WriteRune('\n')
 	view.WriteString(g.Footer())
 	return view.String()
 }
@@ -359,7 +363,6 @@ func (g *Group) Content() string {
 // Footer renders the group's footer only (no content).
 func (g *Group) Footer() string {
 	var view strings.Builder
-	view.WriteRune('\n')
 	errors := g.Errors()
 	if g.showHelp && len(errors) <= 0 {
 		view.WriteString(g.help.ShortHelpView(g.selector.Selected().KeyBinds()))
