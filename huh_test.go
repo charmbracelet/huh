@@ -374,6 +374,31 @@ func TestText(t *testing.T) {
 	}
 }
 
+func TestTextExternalEditorHidden(t *testing.T) {
+	field := NewText().ExternalEditor(false)
+	f := NewForm(NewGroup(field))
+	f.Update(f.Init())
+
+	// Type Huh in the form.
+	m, _ := f.Update(keys('H', 'u', 'h'))
+	f = m.(*Form)
+	view := ansi.Strip(f.View())
+
+	if !strings.Contains(view, "Huh") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to contain Huh.")
+	}
+
+	if strings.Contains(view, "ctrl+e open editor") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to contain help without ctrl+e.")
+	}
+
+	if field.GetValue() != "Huh" {
+		t.Error("Expected field value to be Huh")
+	}
+}
+
 func TestConfirm(t *testing.T) {
 	field := NewConfirm().Title("Are you sure?")
 	f := NewForm(NewGroup(field))
