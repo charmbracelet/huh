@@ -74,9 +74,12 @@ func (l *layoutColumns) View(f *Form) string {
 	for _, group := range groups {
 		columns = append(columns, group.Content())
 	}
+
+	header := f.selector.Selected().Header()
 	footer := f.selector.Selected().Footer()
 
 	return lipgloss.JoinVertical(lipgloss.Left,
+		header,
 		lipgloss.JoinHorizontal(lipgloss.Top, columns...),
 		footer,
 	)
