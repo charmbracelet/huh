@@ -17,8 +17,8 @@ type Theme struct {
 	Help           help.Styles
 }
 
+// GroupStyles are the styles for a group.
 type GroupStyles struct {
-	Base        lipgloss.Style
 	Title       lipgloss.Style
 	Description lipgloss.Style
 }
@@ -155,8 +155,8 @@ func ThemeCharm() *Theme {
 	t.Blurred.NextIndicator = lipgloss.NewStyle()
 	t.Blurred.PrevIndicator = lipgloss.NewStyle()
 
-	t.Group.Title = t.Focused.Title.Foreground(indigo).Bold(true)
-	t.Group.Description = t.Focused.Description.Foreground(lipgloss.AdaptiveColor{Light: "", Dark: "243"})
+	t.Group.Title = t.Focused.Title
+	t.Group.Description = t.Focused.Description
 	return t
 }
 
@@ -204,8 +204,8 @@ func ThemeDracula() *Theme {
 	t.Blurred.NextIndicator = lipgloss.NewStyle()
 	t.Blurred.PrevIndicator = lipgloss.NewStyle()
 
-	t.Group.Title = t.Focused.Title.Foreground(purple)
-	t.Group.Description = t.Focused.Description.Foreground(comment)
+	t.Group.Title = t.Focused.Title
+	t.Group.Description = t.Focused.Description
 	return t
 }
 
@@ -246,8 +246,8 @@ func ThemeBase16() *Theme {
 	t.Blurred.NextIndicator = lipgloss.NewStyle()
 	t.Blurred.PrevIndicator = lipgloss.NewStyle()
 
-	t.Group.Title = t.Focused.Title.Foreground(lipgloss.Color("6"))
-	t.Group.Description = t.Focused.Description.Foreground(lipgloss.Color("8"))
+	t.Group.Title = t.Focused.Title
+	t.Group.Description = t.Focused.Description
 
 	return t
 }
@@ -306,7 +306,7 @@ func ThemeCatppuccin() *Theme {
 	t.Help.FullDesc = t.Help.FullDesc.Foreground(overlay1)
 	t.Help.FullSeparator = t.Help.FullSeparator.Foreground(subtext0)
 
-	t.Group.Title = t.Focused.Title.Foreground(mauve)
-	t.Group.Description = t.Focused.Description.Foreground(subtext0)
+	t.Group.Title = t.Focused.Title
+	t.Group.Description = t.Focused.Description
 	return t
 }
