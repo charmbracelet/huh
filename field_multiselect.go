@@ -220,6 +220,17 @@ func (m *MultiSelect[T]) Blur() tea.Cmd {
 	return nil
 }
 
+// Hovered returns the value of the option under the cursor, and a bool
+// indicating whether one was found. If there are no visible options, returns
+// a zero-valued T and false.
+func (m *MultiSelect[T]) Hovered() (T, bool) {
+	if len(m.filteredOptions) == 0 || m.cursor >= len(m.filteredOptions) {
+		var zero T
+		return zero, false
+	}
+	return m.filteredOptions[m.cursor].Value, true
+}
+
 // KeyBinds returns the help message for the multi-select field.
 func (m *MultiSelect[T]) KeyBinds() []key.Binding {
 	binds := []key.Binding{
