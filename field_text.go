@@ -183,8 +183,8 @@ func (t *Text) Validate(validate func(string) error) *Text {
 }
 
 // ExternalEditor sets whether option to launch an editor is available.
-func (t *Text) ExternalEditor(editor bool) *Text {
-	t.externalEditor = editor
+func (t *Text) ExternalEditor(enabled bool) *Text {
+	t.externalEditor = enabled
 	return t
 }
 
