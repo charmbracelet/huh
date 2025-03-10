@@ -27,6 +27,7 @@ type Text struct {
 	description Eval[string]
 	placeholder Eval[string]
 
+	externalEditor  bool
 	editorCmd       string
 	editorArgs      []string
 	editorExtension string
@@ -62,6 +63,7 @@ func NewText() *Text {
 		id:              nextID(),
 		textarea:        text,
 		validate:        func(string) error { return nil },
+		externalEditor:  true,
 		editorCmd:       editorCmd,
 		editorArgs:      editorArgs,
 		editorExtension: "md",
@@ -180,6 +182,12 @@ func (t *Text) Validate(validate func(string) error) *Text {
 	return t
 }
 
+// ExternalEditor sets whether option to launch an editor is available.
+func (t *Text) ExternalEditor(enabled bool) *Text {
+	t.externalEditor = enabled
+	return t
+}
+
 const defaultEditor = "nano"
 
 // getEditor returns the editor command and arguments.
@@ -237,6 +245,7 @@ func (t *Text) Blur() tea.Cmd {
 
 // KeyBinds returns the help message for the text field.
 func (t *Text) KeyBinds() []key.Binding {
+	t.keymap.Editor.SetEnabled(t.externalEditor)
 	return []key.Binding{t.keymap.NewLine, t.keymap.Editor, t.keymap.Prev, t.keymap.Submit, t.keymap.Next}
 }
 

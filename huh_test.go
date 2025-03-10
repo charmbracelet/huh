@@ -374,6 +374,31 @@ func TestText(t *testing.T) {
 	}
 }
 
+func TestTextExternalEditorHidden(t *testing.T) {
+	field := NewText().ExternalEditor(false)
+	f := NewForm(NewGroup(field))
+	f.Update(f.Init())
+
+	// Type Huh in the form.
+	m, _ := f.Update(keys('H', 'u', 'h'))
+	f = m.(*Form)
+	view := ansi.Strip(f.View())
+
+	if !strings.Contains(view, "Huh") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to contain Huh.")
+	}
+
+	if strings.Contains(view, "ctrl+e open editor") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to contain help without ctrl+e.")
+	}
+
+	if field.GetValue() != "Huh" {
+		t.Error("Expected field value to be Huh")
+	}
+}
+
 func TestConfirm(t *testing.T) {
 	field := NewConfirm().Title("Are you sure?")
 	f := NewForm(NewGroup(field))
@@ -1016,6 +1041,24 @@ func TestDescriptionRowRender(t *testing.T) {
 				t.Error("Expected description to be visible")
 			}
 		})
+	}
+}
+
+func TestGetFocusedField(t *testing.T) {
+	f := NewForm(
+		NewGroup(
+			NewInput().Title("First").Key("First"),
+			NewInput().Title("Second").Key("Second"),
+			NewInput().Title("Third").Key("Third"),
+		),
+	).WithWidth(25)
+	f = batchUpdate(f, f.Init()).(*Form)
+
+	f.NextField()
+	field := f.GetFocusedField()
+
+	if field.GetKey() != "Second" {
+		t.Error("Expected Second field to be focused but was '" + field.GetKey() + "'")
 	}
 }
 
