@@ -295,7 +295,7 @@ func (g *Group) fullHeight() int {
 	return height
 }
 
-func (g *Group) style() GroupStyles {
+func (g *Group) styles() GroupStyles {
 	theme := g.theme
 	if theme == nil {
 		theme = ThemeCharm()
@@ -381,5 +381,5 @@ func (g *Group) Footer() string {
 			view.WriteString(ThemeCharm().Focused.ErrorMessage.Render(err.Error()))
 		}
 	}
-	return g.style().Base.Render(view.String())
+	return g.styles().Base.Render(view.String())
 }

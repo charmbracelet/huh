@@ -9,12 +9,17 @@ import (
 // Theme is a collection of styles for components of the form.
 // Themes can be applied to a form using the WithTheme option.
 type Theme struct {
-	Form           lipgloss.Style
+	Form           FormStyles
 	Group          GroupStyles
 	FieldSeparator lipgloss.Style
 	Blurred        FieldStyles
 	Focused        FieldStyles
 	Help           help.Styles
+}
+
+// FormStyles are the styles for a form.
+type FormStyles struct {
+	Base lipgloss.Style
 }
 
 // GroupStyles are the styles for a group.
@@ -81,7 +86,7 @@ const (
 func ThemeBase() *Theme {
 	var t Theme
 
-	t.Form = lipgloss.NewStyle()
+	t.Form.Base = lipgloss.NewStyle()
 	t.Group.Base = lipgloss.NewStyle()
 	t.FieldSeparator = lipgloss.NewStyle().SetString("\n\n")
 
