@@ -3,6 +3,7 @@ package huh
 import (
 	catppuccin "github.com/catppuccin/go"
 	"github.com/charmbracelet/bubbles/help"
+	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -59,6 +60,9 @@ type FieldStyles struct {
 	Card      lipgloss.Style
 	NoteTitle lipgloss.Style
 	Next      lipgloss.Style
+
+	// Table styles.
+	Table table.Styles
 }
 
 // TextInputStyles are the styles for text inputs.
@@ -100,6 +104,7 @@ func ThemeBase() *Theme {
 	t.Focused.FocusedButton = button.Foreground(lipgloss.Color("0")).Background(lipgloss.Color("7"))
 	t.Focused.BlurredButton = button.Foreground(lipgloss.Color("7")).Background(lipgloss.Color("0"))
 	t.Focused.TextInput.Placeholder = lipgloss.NewStyle().Foreground(lipgloss.Color("8"))
+	t.Focused.Table = table.DefaultStyles()
 
 	t.Help = help.New().Styles
 
@@ -109,6 +114,7 @@ func ThemeBase() *Theme {
 	t.Blurred.MultiSelectSelector = lipgloss.NewStyle().SetString("  ")
 	t.Blurred.NextIndicator = lipgloss.NewStyle()
 	t.Blurred.PrevIndicator = lipgloss.NewStyle()
+	t.Blurred.Table = table.DefaultStyles()
 
 	return &t
 }
