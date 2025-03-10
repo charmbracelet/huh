@@ -920,6 +920,34 @@ func TestAbort(t *testing.T) {
 	}
 }
 
+func TestGroupTitleAndDescription(t *testing.T) {
+	f := NewForm(
+		NewGroup(
+			NewConfirm().Title("Confirm?"),
+		).
+			Title("Group title").
+			Description("Group description"),
+	)
+	f.Update(f.Init())
+
+	view := ansi.Strip(f.View())
+
+	if !strings.Contains(view, "title") {
+		t.Log(view)
+		t.Error("Expected field to contain group title.")
+	}
+
+	if !strings.Contains(view, "Confirm") {
+		t.Log(view)
+		t.Error("Expected field to contain confirmation")
+	}
+
+	if !strings.Contains(view, "enter submit") {
+		t.Log(view)
+		t.Error("Expected field to contain help.")
+	}
+}
+
 // formProgram returns a new Form with a nil input and output, so it can be used as a test program.
 func formProgram() *Form {
 	return NewForm(NewGroup(NewInput().Title("Foo"))).
