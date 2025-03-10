@@ -920,24 +920,69 @@ func TestAbort(t *testing.T) {
 	}
 }
 
+const (
+	title       = "A Title"
+	description = "A Description"
+)
+
+var titleAndDescTests = map[string]struct {
+	Title       interface{ View() string }
+	Description interface{ View() string }
+}{
+	"Group": {
+		NewGroup(NewConfirm()).Title(title),
+		NewGroup(NewConfirm()).Description(description),
+	},
+	"Confirm": {
+		NewConfirm().Title(title),
+		NewConfirm().Description(description),
+	},
+	"FilePicker": {
+		NewFilePicker().Title(title),
+		NewFilePicker().Description(description),
+	},
+	"Input": {
+		NewInput().Title(title),
+		NewInput().Description(description),
+	},
+	"Note": {
+		NewNote().Title(title),
+		NewNote().Description(description),
+	},
+	"Text": {
+		NewText().Title(title),
+		NewText().Description(description),
+	},
+	"Select": {
+		NewSelect[string]().Title(title),
+		NewSelect[string]().Description(description),
+	},
+	"MultiSelect": {
+		NewMultiSelect[string]().Title(title),
+		NewMultiSelect[string]().Description(description),
+	},
+}
+
 func TestTitleRowRender(t *testing.T) {
-	t.Run("Group", func(t *testing.T) {
-		c := NewGroup(NewConfirm()).Title("A Title")
-		if view := c.View(); !strings.Contains(view, "A Title") {
-			t.Log(pretty.Render(view))
-			t.Error("Expected title to be visible")
-		}
-	})
+	for name, tt := range titleAndDescTests {
+		t.Run(name, func(t *testing.T) {
+			if view := tt.Title.View(); !strings.Contains(view, title) {
+				t.Log(pretty.Render(view))
+				t.Error("Expected title to be visible")
+			}
+		})
+	}
 }
 
 func TestDescriptionRowRender(t *testing.T) {
-	t.Run("Group", func(t *testing.T) {
-		c := NewGroup(NewConfirm()).Description("A Description")
-		if view := c.View(); !strings.Contains(view, "A Description") {
-			t.Log(pretty.Render(view))
-			t.Error("Expected description to be visible")
-		}
-	})
+	for name, tt := range titleAndDescTests {
+		t.Run(name, func(t *testing.T) {
+			if view := tt.Description.View(); !strings.Contains(view, description) {
+				t.Log(pretty.Render(view))
+				t.Error("Expected description to be visible")
+			}
+		})
+	}
 }
 
 // formProgram returns a new Form with a nil input and output, so it can be used as a test program.
