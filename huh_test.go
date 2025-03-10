@@ -920,32 +920,24 @@ func TestAbort(t *testing.T) {
 	}
 }
 
-func TestGroupTitleAndDescription(t *testing.T) {
-	f := NewForm(
-		NewGroup(
-			NewConfirm().Title("Confirm?"),
-		).
-			Title("Group title").
-			Description("Group description"),
-	)
-	f.Update(f.Init())
+func TestTitleRowRender(t *testing.T) {
+	t.Run("Group", func(t *testing.T) {
+		c := NewGroup(NewConfirm()).Title("A Title")
+		if view := c.View(); !strings.Contains(view, "A Title") {
+			t.Log(pretty.Render(view))
+			t.Error("Expected title to be visible")
+		}
+	})
+}
 
-	view := ansi.Strip(f.View())
-
-	if !strings.Contains(view, "title") {
-		t.Log(view)
-		t.Error("Expected field to contain group title.")
-	}
-
-	if !strings.Contains(view, "Confirm") {
-		t.Log(view)
-		t.Error("Expected field to contain confirmation")
-	}
-
-	if !strings.Contains(view, "enter submit") {
-		t.Log(view)
-		t.Error("Expected field to contain help.")
-	}
+func TestDescriptionRowRender(t *testing.T) {
+	t.Run("Group", func(t *testing.T) {
+		c := NewGroup(NewConfirm()).Description("A Description")
+		if view := c.View(); !strings.Contains(view, "A Description") {
+			t.Log(pretty.Render(view))
+			t.Error("Expected description to be visible")
+		}
+	})
 }
 
 // formProgram returns a new Form with a nil input and output, so it can be used as a test program.
