@@ -639,62 +639,64 @@ func TestSelectPageNavigation(t *testing.T) {
 	reLast := regexp.MustCompile(`>( •)? Ping`)
 	reHalfDown := regexp.MustCompile(`>( •)? Baz`)
 
-	for _, field := range []Field{
-		NewMultiSelect[string]().Options(opts...).Title("Choose"),
-		NewSelect[string]().Options(opts...).Title("Choose"),
+	for name, field := range map[string]Field{
+		"multiselect": NewMultiSelect[string]().Options(opts...).Title("Choose"),
+		"select":      NewSelect[string]().Options(opts...).Title("Choose"),
 	} {
-		f := NewForm(NewGroup(field)).WithHeight(10)
-		f.Update(f.Init())
+		t.Run(name, func(t *testing.T) {
+			f := NewForm(NewGroup(field)).WithHeight(10)
+			f.Update(f.Init())
 
-		view := ansi.Strip(f.View())
-		if !reFirst.MatchString(view) {
-			t.Log(pretty.Render(view))
-			t.Error("Wrong item selected")
-		}
+			view := ansi.Strip(f.View())
+			if !reFirst.MatchString(view) {
+				t.Log(pretty.Render(view))
+				t.Errorf("Wrong item selected, should have matched %q (first item)", reFirst.String())
+			}
 
-		m, _ := f.Update(keys('G'))
-		view = ansi.Strip(m.View())
-		if !reLast.MatchString(view) {
-			t.Log(pretty.Render(view))
-			t.Error("Wrong item selected")
-		}
+			m, _ := f.Update(keys('G'))
+			view = ansi.Strip(m.View())
+			if !reLast.MatchString(view) {
+				t.Log(pretty.Render(view))
+				t.Errorf("Wrong item selected, should have matched %q (last item)", reLast.String())
+			}
 
-		m, _ = f.Update(keys('g'))
-		view = ansi.Strip(m.View())
-		if !reFirst.MatchString(view) {
-			t.Log(pretty.Render(view))
-			t.Error("Wrong item selected")
-		}
+			m, _ = f.Update(keys('g'))
+			view = ansi.Strip(m.View())
+			if !reFirst.MatchString(view) {
+				t.Log(pretty.Render(view))
+				t.Errorf("Wrong item selected, should have matched %q (first item)", reFirst.String())
+			}
 
-		m, _ = f.Update(tea.KeyMsg{Type: tea.KeyCtrlD})
-		view = ansi.Strip(m.View())
-		if !reHalfDown.MatchString(view) {
-			t.Log(pretty.Render(view))
-			t.Error("Wrong item selected")
-		}
+			m, _ = f.Update(tea.KeyMsg{Type: tea.KeyCtrlD})
+			view = ansi.Strip(m.View())
+			if !reHalfDown.MatchString(view) {
+				t.Log(pretty.Render(view))
+				t.Errorf("Wrong item selected, should have matched %q (half down item)", reHalfDown.String())
+			}
 
-		// sends multiple to verify it stays within boundaries
-		f.Update(tea.KeyMsg{Type: tea.KeyCtrlU})
-		f.Update(tea.KeyMsg{Type: tea.KeyCtrlU})
-		m, _ = f.Update(tea.KeyMsg{Type: tea.KeyCtrlU})
-		view = ansi.Strip(m.View())
-		if !reFirst.MatchString(view) {
-			t.Log(pretty.Render(view))
-			t.Error("Wrong item selected")
-		}
+			// sends multiple to verify it stays within boundaries
+			f.Update(tea.KeyMsg{Type: tea.KeyCtrlU})
+			f.Update(tea.KeyMsg{Type: tea.KeyCtrlU})
+			m, _ = f.Update(tea.KeyMsg{Type: tea.KeyCtrlU})
+			view = ansi.Strip(m.View())
+			if !reFirst.MatchString(view) {
+				t.Log(pretty.Render(view))
+				t.Errorf("Wrong item selected, should have matched %q (first item)", reFirst.String())
+			}
 
-		// verify it stays within boundaries
-		f.Update(tea.KeyMsg{Type: tea.KeyCtrlD})
-		f.Update(tea.KeyMsg{Type: tea.KeyCtrlD})
-		f.Update(tea.KeyMsg{Type: tea.KeyCtrlD})
-		f.Update(tea.KeyMsg{Type: tea.KeyCtrlD})
-		f.Update(tea.KeyMsg{Type: tea.KeyCtrlD})
-		m, _ = f.Update(tea.KeyMsg{Type: tea.KeyCtrlD})
-		view = ansi.Strip(m.View())
-		if !reLast.MatchString(view) {
-			t.Log(pretty.Render(view))
-			t.Error("Wrong item selected")
-		}
+			// verify it stays within boundaries
+			f.Update(tea.KeyMsg{Type: tea.KeyCtrlD})
+			f.Update(tea.KeyMsg{Type: tea.KeyCtrlD})
+			f.Update(tea.KeyMsg{Type: tea.KeyCtrlD})
+			f.Update(tea.KeyMsg{Type: tea.KeyCtrlD})
+			f.Update(tea.KeyMsg{Type: tea.KeyCtrlD})
+			m, _ = f.Update(tea.KeyMsg{Type: tea.KeyCtrlD})
+			view = ansi.Strip(m.View())
+			if !reLast.MatchString(view) {
+				t.Log(pretty.Render(view))
+				t.Errorf("Wrong item selected, should have matched %q (last item)", reLast.String())
+			}
+		})
 	}
 }
 
@@ -940,6 +942,105 @@ func TestAbort(t *testing.T) {
 	err := f.RunWithContext(ctx)
 	if err == nil || !errors.Is(err, ErrUserAborted) {
 		t.Errorf("expected user aborted error, got %v", err)
+	}
+}
+
+const (
+	title       = "A Title"
+	description = "A Description"
+)
+
+var titleAndDescTests = map[string]struct {
+	Empty       interface{ View() string }
+	EmptyHeight int
+	Title       interface{ View() string }
+	Description interface{ View() string }
+}{
+	"Group": {
+		NewGroup(NewInput()),
+		3, // \n> \n
+		NewGroup(NewInput()).Title(title),
+		NewGroup(NewInput()).Description(description),
+	},
+	"Confirm": {
+		NewConfirm(),
+		1, // yes | no
+		NewConfirm().Title(title),
+		NewConfirm().Description(description),
+	},
+	"FilePicker": {
+		NewFilePicker(),
+		1, // "no file selected"
+		NewFilePicker().Title(title),
+		NewFilePicker().Description(description),
+	},
+	"Input": {
+		NewInput(),
+		1, // >
+		NewInput().Title(title),
+		NewInput().Description(description),
+	},
+	"Note": {
+		NewNote(),
+		1, // |
+		NewNote().Title(title),
+		NewNote().Description(description),
+	},
+	"Text": {
+		NewText(),
+		6, // textarea
+		NewText().Title(title),
+		NewText().Description(description),
+	},
+	"Select": {
+		NewSelect[string](),
+		1, // >
+		NewSelect[string]().Title(title),
+		NewSelect[string]().Description(description),
+	},
+	"MultiSelect": {
+		NewMultiSelect[string](),
+		1, // >
+		NewMultiSelect[string]().Title(title),
+		NewMultiSelect[string]().Description(description),
+	},
+}
+
+func TestNoTitleOrDescription(t *testing.T) {
+	for name, tt := range titleAndDescTests {
+		t.Run(name, func(t *testing.T) {
+			view := tt.Empty.View()
+			got := lipgloss.Height(ansi.Strip(view))
+			want := tt.EmptyHeight
+			if got != want {
+				t.Log(pretty.Render(view))
+				t.Fatalf("got != want; height should be %d, got %d", want, got)
+			}
+		})
+	}
+}
+
+func TestTitleRowRender(t *testing.T) {
+	for name, tt := range titleAndDescTests {
+		t.Run(name, func(t *testing.T) {
+			view := tt.Title.View()
+			if !strings.Contains(view, title) {
+				t.Log(pretty.Render(view))
+				t.Error("Expected title to be visible")
+			}
+		})
+	}
+}
+
+func TestDescriptionRowRender(t *testing.T) {
+	for name, tt := range titleAndDescTests {
+		t.Run(name, func(t *testing.T) {
+			view := tt.Description.View()
+			if !strings.Contains(view, description) {
+				t.Log(pretty.Render(view))
+				t.Error("Expected description to be visible")
+			}
+		})
 	}
 }
 

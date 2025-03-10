@@ -234,20 +234,27 @@ func (c *Confirm) activeStyles() *FieldStyles {
 func (c *Confirm) View() string {
 	styles := c.activeStyles()
 
+	var wroteHeader bool
 	var sb strings.Builder
-	sb.WriteString(styles.Title.Render(c.title.val))
+	if c.title.val != "" {
+		sb.WriteString(styles.Title.Render(c.title.val))
+		wroteHeader = true
+	}
 	if c.err != nil {
 		sb.WriteString(styles.ErrorIndicator.String())
+		wroteHeader = true
 	}
 
-	description := styles.Description.Render(c.description.val)
-
-	if !c.inline && (c.description.val != "" || c.description.fn != nil) {
-		sb.WriteString("\n")
+	if c.description.val != "" {
+		description := styles.Description.Render(c.description.val)
+		if !c.inline && (c.description.val != "" || c.description.fn != nil) {
+			sb.WriteString("\n")
+		}
+		sb.WriteString(description)
+		wroteHeader = true
 	}
-	sb.WriteString(description)
 
-	if !c.inline {
+	if !c.inline && wroteHeader {
 		sb.WriteString("\n")
 		sb.WriteString("\n")
 	}
@@ -297,8 +304,10 @@ func (c *Confirm) Run() error {
 // runAccessible runs the confirm field in accessible mode.
 func (c *Confirm) runAccessible() error {
 	styles := c.activeStyles()
-	fmt.Println(styles.Title.Render(c.title.val))
-	fmt.Println()
+	if c.title.val != "" {
+		fmt.Println(styles.Title.Render(c.title.val))
+		fmt.Println()
+	}
 	c.accessor.Set(accessibility.PromptBool())
 	fmt.Println(styles.SelectedOption.Render("Chose: "+c.String()) + "\n")
 	return nil

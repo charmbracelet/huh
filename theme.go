@@ -10,11 +10,17 @@ import (
 // Themes can be applied to a form using the WithTheme option.
 type Theme struct {
 	Form           lipgloss.Style
-	Group          lipgloss.Style
+	Group          GroupStyles
 	FieldSeparator lipgloss.Style
 	Blurred        FieldStyles
 	Focused        FieldStyles
 	Help           help.Styles
+}
+
+// GroupStyles are the styles for a group.
+type GroupStyles struct {
+	Title       lipgloss.Style
+	Description lipgloss.Style
 }
 
 // FieldStyles are the styles for input fields.
@@ -149,6 +155,8 @@ func ThemeCharm() *Theme {
 	t.Blurred.NextIndicator = lipgloss.NewStyle()
 	t.Blurred.PrevIndicator = lipgloss.NewStyle()
 
+	t.Group.Title = t.Focused.Title
+	t.Group.Description = t.Focused.Description
 	return t
 }
 
@@ -196,6 +204,8 @@ func ThemeDracula() *Theme {
 	t.Blurred.NextIndicator = lipgloss.NewStyle()
 	t.Blurred.PrevIndicator = lipgloss.NewStyle()
 
+	t.Group.Title = t.Focused.Title
+	t.Group.Description = t.Focused.Description
 	return t
 }
 
@@ -235,6 +245,9 @@ func ThemeBase16() *Theme {
 
 	t.Blurred.NextIndicator = lipgloss.NewStyle()
 	t.Blurred.PrevIndicator = lipgloss.NewStyle()
+
+	t.Group.Title = t.Focused.Title
+	t.Group.Description = t.Focused.Description
 
 	return t
 }
@@ -293,5 +306,7 @@ func ThemeCatppuccin() *Theme {
 	t.Help.FullDesc = t.Help.FullDesc.Foreground(overlay1)
 	t.Help.FullSeparator = t.Help.FullSeparator.Foreground(subtext0)
 
+	t.Group.Title = t.Focused.Title
+	t.Group.Description = t.Focused.Description
 	return t
 }
