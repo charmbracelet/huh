@@ -729,11 +729,11 @@ func TestHideGroup(t *testing.T) {
 			WithHide(true),
 	)
 
-	f = batchUpdate(f, f.Init()).(*Form)
+	f = batchUpdate(f, f.NextGroup()).(*Form)
 
 	if v := f.View(); !strings.Contains(v, "Bar") {
 		t.Log(pretty.Render(v))
-		t.Error("expected Bar to not be hidden")
+		t.Error("expected Bar to be visible")
 	}
 
 	// should have no effect as previous group is hidden
@@ -741,14 +741,14 @@ func TestHideGroup(t *testing.T) {
 
 	if v := f.View(); !strings.Contains(v, "Bar") {
 		t.Log(pretty.Render(v))
-		t.Error("expected Bar to not be hidden")
+		t.Error("expected Bar to be visible")
 	}
 
 	f.Update(nextGroup())
 
 	if v := f.View(); !strings.Contains(v, "Baz") {
 		t.Log(pretty.Render(v))
-		t.Error("expected Baz to not be hidden")
+		t.Error("expected Baz to be visible")
 	}
 
 	f.Update(nextGroup())
@@ -1079,7 +1079,7 @@ func batchUpdate(m tea.Model, cmd tea.Cmd) tea.Model {
 		return m
 	}
 	msg = cmd()
-	m, cmd = m.Update(msg)
+	m, _ = m.Update(msg)
 	return m
 }
 
