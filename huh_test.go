@@ -926,47 +926,80 @@ const (
 )
 
 var titleAndDescTests = map[string]struct {
+	Empty       interface{ View() string }
+	EmptyHeight int
 	Title       interface{ View() string }
 	Description interface{ View() string }
 }{
 	"Group": {
-		NewGroup(NewConfirm()).Title(title),
-		NewGroup(NewConfirm()).Description(description),
+		NewGroup(NewInput()),
+		3, // \n> \n
+		NewGroup(NewInput()).Title(title),
+		NewGroup(NewInput()).Description(description),
 	},
 	"Confirm": {
+		NewConfirm(),
+		1, // yes | no
 		NewConfirm().Title(title),
 		NewConfirm().Description(description),
 	},
 	"FilePicker": {
+		NewFilePicker(),
+		1, // "no file selected"
 		NewFilePicker().Title(title),
 		NewFilePicker().Description(description),
 	},
 	"Input": {
+		NewInput(),
+		1, // >
 		NewInput().Title(title),
 		NewInput().Description(description),
 	},
 	"Note": {
+		NewNote(),
+		1, // |
 		NewNote().Title(title),
 		NewNote().Description(description),
 	},
 	"Text": {
+		NewText(),
+		6, // textarea
 		NewText().Title(title),
 		NewText().Description(description),
 	},
 	"Select": {
+		NewSelect[string](),
+		1, // >
 		NewSelect[string]().Title(title),
 		NewSelect[string]().Description(description),
 	},
 	"MultiSelect": {
+		NewMultiSelect[string](),
+		1, // >
 		NewMultiSelect[string]().Title(title),
 		NewMultiSelect[string]().Description(description),
 	},
 }
 
+func TestNoTitleOrDescription(t *testing.T) {
+	for name, tt := range titleAndDescTests {
+		t.Run(name, func(t *testing.T) {
+			view := tt.Empty.View()
+			got := lipgloss.Height(ansi.Strip(view))
+			want := tt.EmptyHeight
+			if got != want {
+				t.Log(pretty.Render(view))
+				t.Fatalf("got != want; height should be %d, got %d", want, got)
+			}
+		})
+	}
+}
+
 func TestTitleRowRender(t *testing.T) {
 	for name, tt := range titleAndDescTests {
 		t.Run(name, func(t *testing.T) {
-			if view := tt.Title.View(); !strings.Contains(view, title) {
+			view := tt.Title.View()
+			if !strings.Contains(view, title) {
 				t.Log(pretty.Render(view))
 				t.Error("Expected title to be visible")
 			}
@@ -977,7 +1010,8 @@ func TestTitleRowRender(t *testing.T) {
 func TestDescriptionRowRender(t *testing.T) {
 	for name, tt := range titleAndDescTests {
 		t.Run(name, func(t *testing.T) {
-			if view := tt.Description.View(); !strings.Contains(view, description) {
+			view := tt.Description.View()
+			if !strings.Contains(view, description) {
 				t.Log(pretty.Render(view))
 				t.Error("Expected description to be visible")
 			}
