@@ -476,7 +476,7 @@ func TestSelect(t *testing.T) {
 
 	view = ansi.Strip(f.View())
 
-	if got, ok := field.Hovered(); !ok || got != "Foo" {
+	if got, ok := field.Hovered(); !ok || got != "Bar" {
 		t.Log(pretty.Render(view))
 		t.Error("Expected cursor to be on Bar.")
 	}
@@ -531,7 +531,7 @@ func TestMultiSelect(t *testing.T) {
 	m, _ := f.Update(keys('j'))
 	view = ansi.Strip(m.View())
 
-	if got, ok := field.Hovered(); !ok || got != "Foo" {
+	if got, ok := field.Hovered(); !ok || got != "Bar" {
 		t.Log(pretty.Render(view))
 		t.Error("Expected cursor to be on Bar.")
 	}
