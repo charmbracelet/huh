@@ -580,16 +580,16 @@ func (s *Select[T]) optionsView() (string, int, int) {
 		return sb.String(), -1, 1
 	}
 
-	var selectOffset int
-	var selectedHeight int
+	var cursorOffset int
+	var cursorHeight int
 	for i, option := range s.filteredOptions {
 		selected := s.selected == i
 		line := s.renderOption(option, selected)
 		if i < s.selected {
-			selectOffset += lipgloss.Height(line)
+			cursorOffset += lipgloss.Height(line)
 		}
 		if selected {
-			selectedHeight = lipgloss.Height(line)
+			cursorHeight = lipgloss.Height(line)
 		}
 
 		sb.WriteString(line)
@@ -602,7 +602,7 @@ func (s *Select[T]) optionsView() (string, int, int) {
 		sb.WriteString("\n")
 	}
 
-	return sb.String(), selectOffset, selectedHeight
+	return sb.String(), cursorOffset, cursorHeight
 }
 
 func (s *Select[T]) renderOption(option Option[T], selected bool) string {
