@@ -36,6 +36,7 @@ type Select[T comparable] struct {
 	description     Eval[string]
 	options         Eval[[]Option[T]]
 	filteredOptions []Option[T]
+	renderOptionsFn OptionRenderer[T]
 
 	validate func(T) error
 	err      error
@@ -224,6 +225,11 @@ func (s *Select[T]) OptionsFunc(f func() []Option[T], bindings any) *Select[T] {
 		s.height = defaultHeight
 		s.updateViewportHeight()
 	}
+	return s
+}
+
+func (s *Select[T]) OptionsRenderFunc(f OptionRenderer[T]) *Select[T] {
+	s.renderOptionsFn = f
 	return s
 }
 
@@ -573,7 +579,11 @@ func (s *Select[T]) optionsView() string {
 	if s.inline {
 		sb.WriteString(styles.PrevIndicator.Faint(s.selected <= 0).String())
 		if len(s.filteredOptions) > 0 {
-			sb.WriteString(styles.SelectedOption.Render(s.filteredOptions[s.selected].Key))
+			if s.renderOptionsFn != nil {
+				sb.WriteString(s.renderOptionsFn(s.filteredOptions[s.selected]))
+			} else {
+				sb.WriteString(styles.SelectedOption.Render(s.filteredOptions[s.selected].Key))
+			}
 		} else {
 			sb.WriteString(styles.TextInput.Placeholder.Render("No matches"))
 		}
@@ -582,7 +592,9 @@ func (s *Select[T]) optionsView() string {
 	}
 
 	for i, option := range s.filteredOptions {
-		if s.selected == i {
+		if s.renderOptionsFn != nil {
+			sb.WriteString(s.renderOptionsFn(option))
+		} else if s.selected == i {
 			sb.WriteString(c + styles.SelectedOption.Render(option.Key))
 		} else {
 			sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)) + styles.UnselectedOption.Render(option.Key))

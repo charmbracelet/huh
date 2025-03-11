@@ -505,6 +505,76 @@ func TestSelect(t *testing.T) {
 	}
 }
 
+func TestSelectWithCustomOptionRendererFunc(t *testing.T) {
+	customOptionRenderer := func(option Option[string]) string {
+		return fmt.Sprintf("%s (%s)", option.Key, option.Value)
+	}
+
+	field := NewSelect[string]().
+		Options(NewOptions("Foo", "Bar", "Baz")...).
+		Title("Which one?").
+		OptionsRenderFunc(customOptionRenderer)
+
+	f := NewForm(NewGroup(field))
+	f.Update(f.Init())
+
+	view := ansi.Strip(f.View())
+
+	if !strings.Contains(view, "Foo (Foo)") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to contain Foo (Foo).")
+	}
+
+	if !strings.Contains(view, "Bar (Bar)") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to contain Bar (Bar).")
+	}
+
+	if !strings.Contains(view, "Baz (Baz)") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to contain Baz (Baz).")
+	}
+}
+
+func TestSelectWithCustomOptionRendererFuncInline(t *testing.T) {
+	customOptionRenderer := func(option Option[string]) string {
+		return fmt.Sprintf("%s (%s)", option.Key, option.Value)
+	}
+
+	field := NewSelect[string]().
+		Options(NewOptions("Foo", "Bar", "Baz")...).
+		Title("Which one?").
+		OptionsRenderFunc(customOptionRenderer).
+		Inline(true)
+
+	f := NewForm(NewGroup(field))
+	f.Update(f.Init())
+
+	view := ansi.Strip(f.View())
+
+	if !strings.Contains(view, "Foo (Foo)") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to contain Foo (Foo).")
+	}
+
+	m, _ := f.Update(tea.KeyMsg{Type: tea.KeyRight})
+
+	view = ansi.Strip(m.View())
+
+	if !strings.Contains(view, "Bar (Bar)") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to contain Bar (Bar).")
+	}
+
+	m, _ = f.Update(tea.KeyMsg{Type: tea.KeyRight})
+
+	view = ansi.Strip(m.View())
+	if !strings.Contains(view, "Baz (Baz)") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to contain Baz (Baz).")
+	}
+}
+
 func TestMultiSelect(t *testing.T) {
 	field := NewMultiSelect[string]().Options(NewOptions("Foo", "Bar", "Baz")...).Title("Which one?")
 	f := NewForm(NewGroup(field))
@@ -575,6 +645,45 @@ func TestMultiSelect(t *testing.T) {
 				t.Error("Expected first field value length to be Bar")
 			}
 		}
+	}
+}
+
+func TestMultiSelectWithCustomOptionRendererFunc(t *testing.T) {
+	customOptionRenderer := func(option Option[string]) string {
+		icon := "[✓]"
+		if !option.IsSelected() {
+			icon = "[ ]"
+		}
+		return fmt.Sprintf("%s %s (%s)", icon, option.Key, option.Value)
+	}
+
+	field := NewMultiSelect[string]().
+		Options(
+			NewOption("Foo", "Foo").Selected(true),
+			NewOption("Bar", "Bar"),
+			NewOption("Baz", "Baz").Selected(true),
+		).
+		Title("Which one?").
+		OptionsRenderFunc(customOptionRenderer)
+
+	f := NewForm(NewGroup(field))
+	f.Update(f.Init())
+
+	view := ansi.Strip(f.View())
+
+	if !strings.Contains(view, "[✓] Foo (Foo)") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to contain Foo (Foo).")
+	}
+
+	if !strings.Contains(view, "[ ] Bar (Bar)") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to contain Bar (Bar).")
+	}
+
+	if !strings.Contains(view, "[✓] Baz (Baz)") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to contain Baz (Baz).")
 	}
 }
 
