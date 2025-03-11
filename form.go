@@ -82,6 +82,7 @@ type Form struct {
 	// options
 	width      int
 	height     int
+	theme      *Theme
 	keymap     *KeyMap
 	timeout    time.Duration
 	teaOptions []tea.ProgramOption
@@ -260,6 +261,7 @@ func (f *Form) WithTheme(theme *Theme) *Form {
 	if theme == nil {
 		return f
 	}
+	f.theme = theme
 	f.selector.Range(func(_ int, group *Group) bool {
 		group.WithTheme(theme)
 		return true
@@ -610,13 +612,21 @@ func (f *Form) isGroupHidden(group *Group) bool {
 	return hide()
 }
 
+func (f *Form) styles() FormStyles {
+	theme := f.theme
+	if theme == nil {
+		theme = ThemeCharm()
+	}
+	return theme.Form
+}
+
 // View renders the form.
 func (f *Form) View() string {
 	if f.quitting {
 		return ""
 	}
 
-	return f.layout.View(f)
+	return f.styles().Base.Render(f.layout.View(f))
 }
 
 // Run runs the form.
