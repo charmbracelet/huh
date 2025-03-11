@@ -223,10 +223,12 @@ func (n *Note) View() string {
 		sb.WriteString(styles.NoteTitle.Render(n.title.val))
 	}
 	if n.description.val != "" || n.description.fn != nil {
-		sb.WriteString("\n")
+		sb.WriteRune('\n')
 		sb.WriteString(render(n.description.val))
+		sb.WriteRune('\n')
 	}
 	if n.showNextButton {
+		sb.WriteRune('\n')
 		sb.WriteString(styles.Next.Render(n.nextLabel))
 	}
 	return styles.Card.Height(n.height).Render(sb.String())

@@ -830,7 +830,10 @@ func TestPrevGroup(t *testing.T) {
 }
 
 func TestNote(t *testing.T) {
-	field := NewNote().Title("Taco").Description("How may we take your order?").Next(true)
+	field := NewNote().
+		Title("Taco").
+		Description("How may we take your order?").
+		Next(true)
 	f := NewForm(NewGroup(field))
 	f.Update(f.Init())
 
@@ -849,6 +852,12 @@ func TestNote(t *testing.T) {
 	if !strings.Contains(view, "Next") {
 		t.Log(view)
 		t.Error("Expected field to contain next button")
+	}
+
+	const expect = 7
+	if h := lipgloss.Height(ansi.Strip(view)); h != expect {
+		t.Log(view)
+		t.Errorf("Expected field to have height %d, got %d", expect, h)
 	}
 
 	if !strings.Contains(view, "enter submit") {
