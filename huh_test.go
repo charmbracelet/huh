@@ -434,14 +434,14 @@ func TestConfirm(t *testing.T) {
 	}
 
 	// Toggle left
-	m, _ = f.Update(tea.KeyMsg{Type: tea.KeyLeft})
+	f.Update(tea.KeyMsg{Type: tea.KeyLeft})
 
 	if field.GetValue() != true {
 		t.Error("Expected field value to be true")
 	}
 
 	// Toggle right
-	m, _ = f.Update(tea.KeyMsg{Type: tea.KeyRight})
+	f.Update(tea.KeyMsg{Type: tea.KeyRight})
 
 	if field.GetValue() != false {
 		t.Error("Expected field value to be false")
@@ -449,8 +449,15 @@ func TestConfirm(t *testing.T) {
 }
 
 func TestSelect(t *testing.T) {
-	field := NewSelect[string]().Options(NewOptions("Foo", "Bar", "Baz")...).Title("Which one?")
-	f := NewForm(NewGroup(field))
+	field := NewSelect[string]().
+		Options(NewOptions(
+			"Foo\nLine 2",
+			"Bar\nLine 2",
+			"Baz\nLine 2",
+			"Ban\nLine 2",
+		)...).
+		Title("Which one?")
+	f := NewForm(NewGroup(field)).WithHeight(5)
 	f.Update(f.Init())
 
 	view := ansi.Strip(f.View())
@@ -476,7 +483,7 @@ func TestSelect(t *testing.T) {
 
 	view = ansi.Strip(f.View())
 
-	if got, ok := field.Hovered(); !ok || got != "Bar" {
+	if got, ok := field.Hovered(); !ok || got != "Bar\nLine 2" {
 		t.Log(pretty.Render(view))
 		t.Error("Expected cursor to be on Bar.")
 	}
@@ -497,17 +504,24 @@ func TestSelect(t *testing.T) {
 	}
 
 	// Submit
-	m, _ = f.Update(tea.KeyMsg{Type: tea.KeyEnter})
-	f = m.(*Form)
+	f.Update(tea.KeyMsg{Type: tea.KeyEnter})
 
-	if field.GetValue() != "Bar" {
+	if field.GetValue() != "Bar\nLine 2" {
 		t.Error("Expected field value to be Bar")
 	}
 }
 
 func TestMultiSelect(t *testing.T) {
-	field := NewMultiSelect[string]().Options(NewOptions("Foo", "Bar", "Baz")...).Title("Which one?")
-	f := NewForm(NewGroup(field))
+	field := NewMultiSelect[string]().
+		Options(NewOptions(
+			"Foo\nLine2",
+			"Bar\nLine2",
+			"Baz\nLine2",
+			"Ban\nLine2",
+		)...).
+		Title("Which one?")
+	f := NewForm(NewGroup(field)).
+		WithHeight(5)
 	f.Update(f.Init())
 
 	view := ansi.Strip(f.View())
@@ -531,7 +545,7 @@ func TestMultiSelect(t *testing.T) {
 	m, _ := f.Update(keys('j'))
 	view = ansi.Strip(m.View())
 
-	if got, ok := field.Hovered(); !ok || got != "Bar" {
+	if got, ok := field.Hovered(); !ok || got != "Bar\nLine2" {
 		t.Log(pretty.Render(view))
 		t.Error("Expected cursor to be on Bar.")
 	}
@@ -561,8 +575,7 @@ func TestMultiSelect(t *testing.T) {
 	}
 
 	// Submit
-	m, _ = f.Update(tea.KeyMsg{Type: tea.KeyEnter})
-	f = m.(*Form)
+	f.Update(tea.KeyMsg{Type: tea.KeyEnter})
 
 	value := field.GetValue()
 	if value, ok := value.([]string); !ok {
@@ -571,8 +584,8 @@ func TestMultiSelect(t *testing.T) {
 		if len(value) != 1 {
 			t.Error("Expected field value length to be 1")
 		} else {
-			if value[0] != "Bar" {
-				t.Error("Expected first field value length to be Bar")
+			if value[0] != "Bar\nLine2" {
+				t.Error("Expected first field value to be Bar")
 			}
 		}
 	}
