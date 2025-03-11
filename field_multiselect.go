@@ -454,8 +454,11 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			if len(m.filteredOptions) > 0 {
 				m.cursor = min(m.cursor, len(m.filteredOptions)-1)
-				m.viewport.SetYOffset(clamp(m.cursor, 0, len(m.filteredOptions)-m.viewport.Height))
 			}
+		}
+		_, offset, height := m.optionsView()
+		if offset > -1 && height > 0 && (offset < m.viewport.YOffset || height+offset >= m.viewport.YOffset+m.viewport.Height) {
+			m.viewport.SetYOffset(offset)
 		}
 	}
 
@@ -465,9 +468,10 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // updateViewportHeight updates the viewport size according to the Height setting
 // on this multi-select field.
 func (m *MultiSelect[T]) updateViewportHeight() {
-	// If no height is set size the viewport to the number of options.
+	// If no height is set size the viewport to the height of the options.
 	if m.height <= 0 {
-		m.viewport.Height = len(m.options.val)
+		s, _, _ := m.optionsView()
+		m.viewport.Height = lipgloss.Height(s)
 		return
 	}
 
@@ -547,33 +551,45 @@ func (m *MultiSelect[T]) descriptionView() string {
 	return m.activeStyles().Description.Render(m.description.val)
 }
 
-func (m *MultiSelect[T]) optionsView() string {
-	var (
-		styles = m.activeStyles()
-		c      = styles.MultiSelectSelector.String()
-		sb     strings.Builder
-	)
+func (m *MultiSelect[T]) renderOption(option Option[T], cursor, selected bool) string {
+	styles := m.activeStyles()
+	var parts []string
+	if cursor {
+		parts = append(parts, styles.MultiSelectSelector.String())
+	} else {
+		parts = append(parts, strings.Repeat(" ", lipgloss.Width(styles.MultiSelectSelector.String())))
+	}
+	if selected {
+		parts = append(parts, styles.SelectedPrefix.String())
+		parts = append(parts, styles.SelectedOption.Render(option.Key))
+	} else {
+		parts = append(parts, styles.UnselectedPrefix.String())
+		parts = append(parts, styles.UnselectedOption.Render(option.Key))
+	}
+	return lipgloss.JoinHorizontal(lipgloss.Top, parts...)
+}
+
+func (m *MultiSelect[T]) optionsView() (string, int, int) {
+	var sb strings.Builder
 
 	if m.options.loading && time.Since(m.options.loadingStart) > spinnerShowThreshold {
 		m.spinner.Style = m.activeStyles().MultiSelectSelector.UnsetString()
 		sb.WriteString(m.spinner.View() + " Loading...")
-		return sb.String()
+		return sb.String(), -1, 1
 	}
 
+	var cursorOffset int
+	var cursorHeight int
 	for i, option := range m.filteredOptions {
-		if m.cursor == i {
-			sb.WriteString(c)
-		} else {
-			sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)))
+		cursor := m.cursor == i
+		line := m.renderOption(option, cursor, m.filteredOptions[i].selected)
+		if i < m.cursor {
+			cursorOffset += lipgloss.Height(line)
 		}
-
-		if m.filteredOptions[i].selected {
-			sb.WriteString(styles.SelectedPrefix.String())
-			sb.WriteString(styles.SelectedOption.Render(option.Key))
-		} else {
-			sb.WriteString(styles.UnselectedPrefix.String())
-			sb.WriteString(styles.UnselectedOption.Render(option.Key))
+		if cursor {
+			cursorHeight = lipgloss.Height(line)
 		}
+		sb.WriteString(line)
 		if i < len(m.options.val)-1 {
 			sb.WriteString("\n")
 		}
@@ -583,14 +599,15 @@ func (m *MultiSelect[T]) optionsView() string {
 		sb.WriteString("\n")
 	}
 
-	return sb.String()
+	return sb.String(), cursorOffset, cursorHeight
 }
 
 // View renders the multi-select field.
 func (m *MultiSelect[T]) View() string {
 	styles := m.activeStyles()
 
-	m.viewport.SetContent(m.optionsView())
+	vpc, _, _ := m.optionsView()
+	m.viewport.SetContent(vpc)
 
 	var sb strings.Builder
 	if m.title.val != "" || m.title.fn != nil {

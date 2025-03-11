@@ -320,11 +320,6 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	if s.filtering {
 		s.filter, cmd = s.filter.Update(msg)
-
-		// Keep the selected item in view.
-		if s.selected < s.viewport.YOffset || s.selected >= s.viewport.YOffset+s.viewport.Height {
-			s.viewport.SetYOffset(s.selected)
-		}
 	}
 
 	switch msg := msg.(type) {
@@ -496,8 +491,12 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			if len(s.filteredOptions) > 0 {
 				s.selected = min(s.selected, len(s.filteredOptions)-1)
-				s.viewport.SetYOffset(clamp(s.selected, 0, len(s.filteredOptions)-s.viewport.Height))
 			}
+		}
+
+		_, offset, height := s.optionsView()
+		if offset > -1 && height > 0 && (offset < s.viewport.YOffset || height+offset >= s.viewport.YOffset+s.viewport.Height) {
+			s.viewport.SetYOffset(offset)
 		}
 	}
 
@@ -515,7 +514,8 @@ func (s *Select[T]) updateValue() {
 func (s *Select[T]) updateViewportHeight() {
 	// If no height is set size the viewport to the number of options.
 	if s.height <= 0 {
-		s.viewport.Height = len(s.options.val)
+		v, _, _ := s.optionsView()
+		s.viewport.Height = lipgloss.Height(v)
 		return
 	}
 
@@ -557,17 +557,16 @@ func (s *Select[T]) descriptionView() string {
 	return s.activeStyles().Description.Render(s.description.val)
 }
 
-func (s *Select[T]) optionsView() string {
+func (s *Select[T]) optionsView() (string, int, int) {
 	var (
 		styles = s.activeStyles()
-		c      = styles.SelectSelector.String()
 		sb     strings.Builder
 	)
 
 	if s.options.loading && time.Since(s.options.loadingStart) > spinnerShowThreshold {
 		s.spinner.Style = s.activeStyles().MultiSelectSelector.UnsetString()
 		sb.WriteString(s.spinner.View() + " Loading...")
-		return sb.String()
+		return sb.String(), -1, 1
 	}
 
 	if s.inline {
@@ -578,15 +577,22 @@ func (s *Select[T]) optionsView() string {
 			sb.WriteString(styles.TextInput.Placeholder.Render("No matches"))
 		}
 		sb.WriteString(styles.NextIndicator.Faint(s.selected == len(s.filteredOptions)-1).String())
-		return sb.String()
+		return sb.String(), -1, 1
 	}
 
+	var cursorOffset int
+	var cursorHeight int
 	for i, option := range s.filteredOptions {
-		if s.selected == i {
-			sb.WriteString(c + styles.SelectedOption.Render(option.Key))
-		} else {
-			sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)) + styles.UnselectedOption.Render(option.Key))
+		selected := s.selected == i
+		line := s.renderOption(option, selected)
+		if i < s.selected {
+			cursorOffset += lipgloss.Height(line)
 		}
+		if selected {
+			cursorHeight = lipgloss.Height(line)
+		}
+
+		sb.WriteString(line)
 		if i < len(s.options.val)-1 {
 			sb.WriteString("\n")
 		}
@@ -596,13 +602,34 @@ func (s *Select[T]) optionsView() string {
 		sb.WriteString("\n")
 	}
 
-	return sb.String()
+	return sb.String(), cursorOffset, cursorHeight
+}
+
+func (s *Select[T]) renderOption(option Option[T], selected bool) string {
+	var (
+		styles = s.activeStyles()
+		cursor = styles.SelectSelector.String()
+	)
+
+	if selected {
+		return lipgloss.JoinHorizontal(
+			lipgloss.Top,
+			cursor,
+			styles.SelectedOption.Render(option.Key),
+		)
+	}
+	return lipgloss.JoinHorizontal(
+		lipgloss.Top,
+		strings.Repeat(" ", lipgloss.Width(cursor)),
+		styles.UnselectedOption.Render(option.Key),
+	)
 }
 
 // View renders the select field.
 func (s *Select[T]) View() string {
 	styles := s.activeStyles()
-	s.viewport.SetContent(s.optionsView())
+	vpc, _, _ := s.optionsView()
+	s.viewport.SetContent(vpc)
 
 	var sb strings.Builder
 	if s.title.val != "" || s.title.fn != nil {
