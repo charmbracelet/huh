@@ -514,7 +514,8 @@ func (s *Select[T]) updateValue() {
 func (s *Select[T]) updateViewportHeight() {
 	// If no height is set size the viewport to the number of options.
 	if s.height <= 0 {
-		s.viewport.Height = len(s.options.val)
+		v, _, _ := s.optionsView()
+		s.viewport.Height = lipgloss.Height(v)
 		return
 	}
 
