@@ -470,8 +470,8 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m *MultiSelect[T]) updateViewportHeight() {
 	// If no height is set size the viewport to the height of the options.
 	if m.height <= 0 {
-		s, _, _ := m.optionsView()
-		m.viewport.Height = lipgloss.Height(s)
+		v, _, _ := m.optionsView()
+		m.viewport.Height = lipgloss.Height(v)
 		return
 	}
 
@@ -537,9 +537,10 @@ func (m *MultiSelect[T]) titleView() string {
 	if m.filtering {
 		sb.WriteString(m.filter.View())
 	} else if m.filter.Value() != "" {
-		sb.WriteString(styles.Title.Render(m.title.val) + styles.Description.Render("/"+m.filter.Value()))
+		sb.WriteString(styles.Title.Render(wrap(m.title.val, m.width)))
+		sb.WriteString(styles.Description.Render("/" + m.filter.Value()))
 	} else {
-		sb.WriteString(styles.Title.Render(m.title.val))
+		sb.WriteString(styles.Title.Render(wrap(m.title.val, m.width)))
 	}
 	if m.err != nil {
 		sb.WriteString(styles.ErrorIndicator.String())
@@ -548,7 +549,7 @@ func (m *MultiSelect[T]) titleView() string {
 }
 
 func (m *MultiSelect[T]) descriptionView() string {
-	return m.activeStyles().Description.Render(m.description.val)
+	return m.activeStyles().Description.Render(wrap(m.description.val, m.width))
 }
 
 func (m *MultiSelect[T]) renderOption(option Option[T], cursor, selected bool) string {
@@ -624,7 +625,7 @@ func (m *MultiSelect[T]) View() string {
 func (m *MultiSelect[T]) printOptions() {
 	styles := m.activeStyles()
 	var sb strings.Builder
-	sb.WriteString(styles.Title.Render(m.title.val))
+	sb.WriteString(styles.Title.Render(wrap(m.title.val, m.width)))
 	sb.WriteString("\n")
 
 	for i, option := range m.options.val {

@@ -263,10 +263,10 @@ func (f *FilePicker) View() string {
 
 	var sb strings.Builder
 	if f.title != "" {
-		sb.WriteString(styles.Title.Render(f.title) + "\n")
+		sb.WriteString(styles.Title.Render(wrap(f.title, f.width)))
 	}
 	if f.description != "" {
-		sb.WriteString(styles.Description.Render(f.description) + "\n")
+		sb.WriteString(styles.Title.Render(wrap(f.description, f.width)) + "\n")
 	}
 	if f.picking {
 		sb.WriteString(strings.TrimSuffix(f.picker.View(), "\n"))

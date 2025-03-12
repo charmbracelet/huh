@@ -8,6 +8,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh/internal/selector"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/x/ansi"
 )
 
 // Group is a collection of fields that are displayed together with a page of
@@ -54,8 +55,9 @@ func NewGroup(fields ...Field) *Group {
 		active:     false,
 	}
 
+	group.width = 80
 	height := group.fullHeight()
-	v := viewport.New(80, height) //nolint:mnd
+	v := viewport.New(group.width, height) //nolint:mnd
 	group.viewport = v
 	group.height = height
 
@@ -272,8 +274,8 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		g.WithHeight(max(g.height, min(g.fullHeight(), msg.Height)))
 		g.WithWidth(max(g.width, msg.Width))
+		g.WithHeight(max(g.height, min(g.fullHeight(), msg.Height)))
 	case nextFieldMsg:
 		cmds = append(cmds, g.nextField()...)
 	case prevFieldMsg:
@@ -287,9 +289,13 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // height returns the full height of the group.
 func (g *Group) fullHeight() int {
-	height := lipgloss.Height(g.Header() + g.Footer())
+	w := g.width
+	height := lipgloss.Height(
+		ansi.Wrap(g.Header(), w, "") +
+			ansi.Wrap(g.Footer(), w, ""),
+	)
 	g.selector.Range(func(_ int, field Field) bool {
-		height += lipgloss.Height(field.View())
+		height += lipgloss.Height(ansi.Wrap(field.View(), w, ""))
 		return true
 	})
 	return height
@@ -343,11 +349,11 @@ func (g *Group) Header() string {
 	}
 	var view strings.Builder
 	if g.title != "" {
-		view.WriteString(theme.Group.Title.Render(g.title))
+		view.WriteString(theme.Group.Title.Render(wrap(g.title, g.width)))
 		view.WriteRune('\n')
 	}
 	if g.description != "" {
-		view.WriteString(theme.Group.Description.Render(g.description))
+		view.WriteString(theme.Group.Description.Render(wrap(g.description, g.width)))
 		view.WriteRune('\n')
 	}
 	return view.String()
