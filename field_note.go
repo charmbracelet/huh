@@ -224,7 +224,7 @@ func (n *Note) View() string {
 	}
 	if n.description.val != "" || n.description.fn != nil {
 		sb.WriteRune('\n')
-		sb.WriteString(render(n.description.val))
+		sb.WriteString(wrap(render(n.description.val), n.width))
 		sb.WriteRune('\n')
 	}
 	if n.showNextButton {
