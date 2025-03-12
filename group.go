@@ -8,7 +8,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh/internal/selector"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/x/ansi"
 )
 
 // Group is a collection of fields that are displayed together with a page of
@@ -289,13 +288,9 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // height returns the full height of the group.
 func (g *Group) fullHeight() int {
-	w := g.width
-	height := lipgloss.Height(
-		ansi.Wrap(g.Header(), w, "") +
-			ansi.Wrap(g.Footer(), w, ""),
-	)
+	height := lipgloss.Height(g.Header() + g.Footer())
 	g.selector.Range(func(_ int, field Field) bool {
-		height += lipgloss.Height(ansi.Wrap(field.View(), w, ""))
+		height += lipgloss.Height(field.View())
 		return true
 	})
 	return height
