@@ -1,8 +1,7 @@
 package huh
 
-import "github.com/charmbracelet/x/ansi"
+import "github.com/charmbracelet/x/cellbuf"
 
-// TODO: replace with cellbuf.Wrap?
 func wrap(s string, limit int) string {
-	return ansi.Wrap(s, limit, ",.-; ")
+	return cellbuf.Wrap(s, limit, ",.-; ")
 }
