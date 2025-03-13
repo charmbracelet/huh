@@ -608,21 +608,24 @@ func (s *Select[T]) optionsView() (string, int, int) {
 
 func (s *Select[T]) renderOption(option Option[T], selected bool) string {
 	var (
-		styles = s.activeStyles()
-		cursor = styles.SelectSelector.String()
+		styles  = s.activeStyles()
+		cursor  = styles.SelectSelector.String()
+		cursorW = lipgloss.Width(cursor)
 	)
+
+	key := wrap(option.Key, s.width-cursorW)
 
 	if selected {
 		return lipgloss.JoinHorizontal(
 			lipgloss.Top,
 			cursor,
-			styles.SelectedOption.Render(option.Key),
+			styles.SelectedOption.Render(key),
 		)
 	}
 	return lipgloss.JoinHorizontal(
 		lipgloss.Top,
-		strings.Repeat(" ", lipgloss.Width(cursor)),
-		styles.UnselectedOption.Render(option.Key),
+		strings.Repeat(" ", cursorW),
+		styles.UnselectedOption.Render(key),
 	)
 }
 
