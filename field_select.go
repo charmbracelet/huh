@@ -543,9 +543,10 @@ func (s *Select[T]) titleView() string {
 	if s.filtering {
 		sb.WriteString(s.filter.View())
 	} else if s.filter.Value() != "" && !s.inline {
-		sb.WriteString(styles.Title.Render(s.title.val) + styles.Description.Render("/"+s.filter.Value()))
+		sb.WriteString(styles.Title.Render(wrap(s.title.val, s.width)))
+		sb.WriteString(styles.Description.Render("/" + s.filter.Value()))
 	} else {
-		sb.WriteString(styles.Title.Render(s.title.val))
+		sb.WriteString(styles.Title.Render(wrap(s.title.val, s.width)))
 	}
 	if s.err != nil {
 		sb.WriteString(styles.ErrorIndicator.String())
@@ -554,7 +555,7 @@ func (s *Select[T]) titleView() string {
 }
 
 func (s *Select[T]) descriptionView() string {
-	return s.activeStyles().Description.Render(s.description.val)
+	return s.activeStyles().Description.Render(wrap(s.description.val, s.width))
 }
 
 func (s *Select[T]) optionsView() (string, int, int) {

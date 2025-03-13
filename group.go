@@ -54,8 +54,9 @@ func NewGroup(fields ...Field) *Group {
 		active:     false,
 	}
 
+	group.width = 80
 	height := group.fullHeight()
-	v := viewport.New(80, height) //nolint:mnd
+	v := viewport.New(group.width, height) //nolint:mnd
 	group.viewport = v
 	group.height = height
 
@@ -272,8 +273,8 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		g.WithHeight(max(g.height, min(g.fullHeight(), msg.Height)))
 		g.WithWidth(max(g.width, msg.Width))
+		g.WithHeight(max(g.height, min(g.fullHeight(), msg.Height)))
 	case nextFieldMsg:
 		cmds = append(cmds, g.nextField()...)
 	case prevFieldMsg:
@@ -343,11 +344,11 @@ func (g *Group) Header() string {
 	}
 	var view strings.Builder
 	if g.title != "" {
-		view.WriteString(theme.Group.Title.Render(g.title))
+		view.WriteString(theme.Group.Title.Render(wrap(g.title, g.width)))
 		view.WriteRune('\n')
 	}
 	if g.description != "" {
-		view.WriteString(theme.Group.Description.Render(g.description))
+		view.WriteString(theme.Group.Description.Render(wrap(g.description, g.width)))
 		view.WriteRune('\n')
 	}
 	return view.String()

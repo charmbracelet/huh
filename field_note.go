@@ -220,11 +220,11 @@ func (n *Note) View() string {
 	sb := strings.Builder{}
 
 	if n.title.val != "" || n.title.fn != nil {
-		sb.WriteString(styles.NoteTitle.Render(n.title.val))
+		sb.WriteString(styles.NoteTitle.Render(wrap(n.title.val, n.width)))
 	}
 	if n.description.val != "" || n.description.fn != nil {
 		sb.WriteRune('\n')
-		sb.WriteString(render(n.description.val))
+		sb.WriteString(wrap(render(n.description.val), n.width))
 		sb.WriteRune('\n')
 	}
 	if n.showNextButton {

@@ -237,7 +237,7 @@ func (c *Confirm) View() string {
 	var wroteHeader bool
 	var sb strings.Builder
 	if c.title.val != "" {
-		sb.WriteString(styles.Title.Render(c.title.val))
+		sb.WriteString(styles.Title.Render(wrap(c.title.val, c.width)))
 		wroteHeader = true
 	}
 	if c.err != nil {
@@ -246,7 +246,7 @@ func (c *Confirm) View() string {
 	}
 
 	if c.description.val != "" {
-		description := styles.Description.Render(c.description.val)
+		description := styles.Description.Render(wrap(c.description.val, c.width))
 		if !c.inline && (c.description.val != "" || c.description.fn != nil) {
 			sb.WriteString("\n")
 		}

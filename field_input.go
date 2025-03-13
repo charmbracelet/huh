@@ -391,13 +391,13 @@ func (i *Input) View() string {
 
 	var sb strings.Builder
 	if i.title.val != "" || i.title.fn != nil {
-		sb.WriteString(styles.Title.Render(i.title.val))
+		sb.WriteString(styles.Title.Render(wrap(i.title.val, i.width)))
 		if !i.inline {
 			sb.WriteString("\n")
 		}
 	}
 	if i.description.val != "" || i.description.fn != nil {
-		sb.WriteString(styles.Description.Render(i.description.val))
+		sb.WriteString(styles.Description.Render(wrap(i.description.val, i.width)))
 		if !i.inline {
 			sb.WriteString("\n")
 		}

@@ -388,14 +388,14 @@ func (t *Text) View() string {
 
 	var sb strings.Builder
 	if t.title.val != "" || t.title.fn != nil {
-		sb.WriteString(styles.Title.Render(t.title.val))
+		sb.WriteString(styles.Title.Render(wrap(t.title.val, t.width)))
 		if t.err != nil {
 			sb.WriteString(styles.ErrorIndicator.String())
 		}
 		sb.WriteString("\n")
 	}
 	if t.description.val != "" || t.description.fn != nil {
-		sb.WriteString(styles.Description.Render(t.description.val))
+		sb.WriteString(styles.Description.Render(wrap(t.description.val, t.width)))
 		sb.WriteString("\n")
 	}
 	sb.WriteString(t.textarea.View())
