@@ -523,15 +523,27 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			group.WithWidth(width)
 			return true
 		})
+
 		if f.height > 0 {
 			break
 		}
+
+		// get the max allowed height, and use it, so all groups have the same
+		// height.
+		normalizedHeight := 0
 		f.selector.Range(func(_ int, group *Group) bool {
-			if group.fullHeight() > msg.Height {
-				group.WithHeight(msg.Height)
+			gh := max(group.height, min(group.rawHeight(), msg.Height))
+			if gh > normalizedHeight {
+				normalizedHeight = gh
 			}
 			return true
 		})
+
+		f.selector.Range(func(_ int, group *Group) bool {
+			group.WithHeight(normalizedHeight)
+			return true
+		})
+
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, f.keymap.Quit):

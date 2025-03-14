@@ -55,7 +55,7 @@ func NewGroup(fields ...Field) *Group {
 	}
 
 	group.width = 80
-	height := group.fullHeight()
+	height := group.rawHeight()
 	v := viewport.New(group.width, height) //nolint:mnd
 	group.viewport = v
 	group.height = height
@@ -96,7 +96,7 @@ func (g *Group) WithTheme(t *Theme) *Group {
 		return true
 	})
 	if g.height <= 0 {
-		g.WithHeight(g.fullHeight())
+		g.WithHeight(g.rawHeight())
 	}
 	return g
 }
@@ -271,10 +271,7 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return true
 	})
 
-	switch msg := msg.(type) {
-	case tea.WindowSizeMsg:
-		g.WithWidth(max(g.width, msg.Width))
-		g.WithHeight(max(g.height, min(g.fullHeight(), msg.Height)))
+	switch msg.(type) {
 	case nextFieldMsg:
 		cmds = append(cmds, g.nextField()...)
 	case prevFieldMsg:
@@ -284,16 +281,6 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	g.buildView()
 
 	return g, tea.Batch(cmds...)
-}
-
-// height returns the full height of the group.
-func (g *Group) fullHeight() int {
-	height := lipgloss.Height(g.Header() + g.Footer())
-	g.selector.Range(func(_ int, field Field) bool {
-		height += lipgloss.Height(field.View())
-		return true
-	})
-	return height
 }
 
 func (g *Group) getTheme() *Theme {
@@ -312,7 +299,7 @@ func (g *Group) getContent() (int, string) {
 
 	// if the focused field is requesting it be zoomed, only show that field.
 	if g.selector.Selected().Zoom() {
-		g.selector.Selected().WithHeight(g.height - 1) // why this -1?
+		g.selector.Selected().WithHeight(g.height)
 		fields.WriteString(g.selector.Selected().View())
 	} else {
 		g.selector.Range(func(i int, field Field) bool {
@@ -327,7 +314,7 @@ func (g *Group) getContent() (int, string) {
 		})
 	}
 
-	return offset, fields.String() + "\n"
+	return offset, fields.String()
 }
 
 func (g *Group) buildView() {
@@ -348,6 +335,19 @@ func (g *Group) Header() string {
 		parts = append(parts, styles.Description.Render(wrap(g.description, g.width)))
 	}
 	return lipgloss.JoinVertical(lipgloss.Top, parts...)
+}
+
+// height returns the full height of the group, without using a viewport.
+func (g *Group) rawHeight() int {
+	var parts []string
+	if s := g.Header(); s != "" {
+		parts = append(parts, s)
+	}
+	parts = append(parts, g.Content())
+	if s := g.Footer(); s != "" {
+		parts = append(parts, s)
+	}
+	return lipgloss.Height(lipgloss.JoinVertical(lipgloss.Top, parts...))
 }
 
 // View renders the group.
@@ -371,15 +371,23 @@ func (g *Group) Content() string {
 
 // Footer renders the group's footer only (no content).
 func (g *Group) Footer() string {
-	var view strings.Builder
+	var parts []string
 	errors := g.Errors()
 	if g.showHelp && len(errors) <= 0 {
-		view.WriteString(g.help.ShortHelpView(g.selector.Selected().KeyBinds()))
+		parts = append(parts, g.help.ShortHelpView(g.selector.Selected().KeyBinds()))
 	}
 	if g.showErrors {
 		for _, err := range errors {
-			view.WriteString(g.getTheme().Focused.ErrorMessage.Render(err.Error()))
+			parts = append(parts, g.getTheme().Focused.ErrorMessage.Render(err.Error()))
 		}
 	}
-	return g.styles().Base.Render(wrap(view.String(), g.width))
+	return g.styles().Base.Render(
+		wrap(
+			lipgloss.JoinVertical(
+				lipgloss.Top,
+				parts...,
+			),
+			g.width,
+		),
+	)
 }
