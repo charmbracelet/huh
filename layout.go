@@ -1,8 +1,6 @@
 package huh
 
 import (
-	"strings"
-
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -97,12 +95,11 @@ func (l *layoutStack) View(f *Form) string {
 		columns = append(columns, group.Content())
 		return true
 	})
-	footer := f.selector.Selected().Footer()
 
-	var view strings.Builder
-	view.WriteString(strings.Join(columns, "\n"))
-	view.WriteString(footer)
-	return view.String()
+	if footer := f.selector.Selected().Footer(); footer != "" {
+		columns = append(columns, footer)
+	}
+	return lipgloss.JoinVertical(lipgloss.Top, columns...)
 }
 
 func (l *layoutStack) GroupWidth(_ *Form, _ *Group, w int) int {
@@ -162,7 +159,10 @@ func (l *layoutGrid) View(f *Form) string {
 	}
 	footer := f.selector.Selected().Footer()
 
-	return lipgloss.JoinVertical(lipgloss.Left, strings.Join(rows, "\n"), footer)
+	return lipgloss.JoinVertical(
+		lipgloss.Top,
+		append(rows, footer)...,
+	)
 }
 
 func (l *layoutGrid) GroupWidth(_ *Form, _ *Group, w int) int {

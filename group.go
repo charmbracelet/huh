@@ -115,6 +115,7 @@ func (g *Group) WithKeyMap(k *KeyMap) *Group {
 func (g *Group) WithWidth(width int) *Group {
 	g.width = width
 	g.viewport.Width = width
+	g.help.Width = width
 	g.selector.Range(func(_ int, field Field) bool {
 		field.WithWidth(width)
 		return true
@@ -378,16 +379,14 @@ func (g *Group) Footer() string {
 	}
 	if g.showErrors {
 		for _, err := range errors {
-			parts = append(parts, g.getTheme().Focused.ErrorMessage.Render(err.Error()))
+			parts = append(parts, wrap(
+				g.getTheme().Focused.ErrorMessage.Render(err.Error()),
+				g.width,
+			))
 		}
 	}
-	return g.styles().Base.Render(
-		wrap(
-			lipgloss.JoinVertical(
-				lipgloss.Top,
-				parts...,
-			),
-			g.width,
-		),
-	)
+	return g.styles().Base.Render(lipgloss.JoinVertical(
+		lipgloss.Top,
+		parts...,
+	))
 }
