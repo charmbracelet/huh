@@ -386,16 +386,17 @@ func (t *Text) View() string {
 	t.textarea.Cursor.Style = styles.TextInput.Cursor
 	t.textarea.Cursor.TextStyle = styles.TextInput.CursorText
 
+	maxWidth := t.width - styles.Base.GetHorizontalFrameSize()
 	var sb strings.Builder
 	if t.title.val != "" || t.title.fn != nil {
-		sb.WriteString(styles.Title.Render(wrap(t.title.val, t.width)))
+		sb.WriteString(styles.Title.Render(wrap(t.title.val, maxWidth)))
 		if t.err != nil {
 			sb.WriteString(styles.ErrorIndicator.String())
 		}
 		sb.WriteString("\n")
 	}
 	if t.description.val != "" || t.description.fn != nil {
-		sb.WriteString(styles.Description.Render(wrap(t.description.val, t.width)))
+		sb.WriteString(styles.Description.Render(wrap(t.description.val, maxWidth)))
 		sb.WriteString("\n")
 	}
 	sb.WriteString(t.textarea.View())
