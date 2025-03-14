@@ -296,13 +296,14 @@ func (g *Group) fullHeight() int {
 	return height
 }
 
-func (g *Group) styles() GroupStyles {
-	theme := g.theme
-	if theme == nil {
-		theme = ThemeCharm()
+func (g *Group) getTheme() *Theme {
+	if theme := g.theme; theme != nil {
+		return theme
 	}
-	return theme.Group
+	return ThemeCharm()
 }
+
+func (g *Group) styles() GroupStyles { return g.getTheme().Group }
 
 func (g *Group) getContent() (int, string) {
 	var fields strings.Builder
@@ -338,30 +339,28 @@ func (g *Group) buildView() {
 
 // Header renders the group's header only (no content).
 func (g *Group) Header() string {
-	theme := g.theme
-	if theme == nil {
-		theme = ThemeCharm()
-	}
-	var view strings.Builder
+	styles := g.styles()
+	var parts []string
 	if g.title != "" {
-		view.WriteString(theme.Group.Title.Render(wrap(g.title, g.width)))
-		view.WriteRune('\n')
+		parts = append(parts, styles.Title.Render(wrap(g.title, g.width)))
 	}
 	if g.description != "" {
-		view.WriteString(theme.Group.Description.Render(wrap(g.description, g.width)))
-		view.WriteRune('\n')
+		parts = append(parts, styles.Description.Render(wrap(g.description, g.width)))
 	}
-	return view.String()
+	return lipgloss.JoinVertical(lipgloss.Top, parts...)
 }
 
 // View renders the group.
 func (g *Group) View() string {
-	var view strings.Builder
-	view.WriteString(g.Header())
-	view.WriteString(g.viewport.View())
-	view.WriteRune('\n')
-	view.WriteString(g.Footer())
-	return view.String()
+	var parts []string
+	if s := g.Header(); s != "" {
+		parts = append(parts, s)
+	}
+	parts = append(parts, g.viewport.View())
+	if s := g.Footer(); s != "" {
+		parts = append(parts, s)
+	}
+	return lipgloss.JoinVertical(lipgloss.Top, parts...)
 }
 
 // Content renders the group's content only (no footer).
@@ -379,8 +378,8 @@ func (g *Group) Footer() string {
 	}
 	if g.showErrors {
 		for _, err := range errors {
-			view.WriteString(ThemeCharm().Focused.ErrorMessage.Render(err.Error()))
+			view.WriteString(g.getTheme().Focused.ErrorMessage.Render(err.Error()))
 		}
 	}
-	return g.styles().Base.Render(view.String())
+	return g.styles().Base.Render(wrap(view.String(), g.width))
 }
