@@ -260,13 +260,14 @@ func (f *FilePicker) activeStyles() *FieldStyles {
 // View renders the file field.
 func (f *FilePicker) View() string {
 	styles := f.activeStyles()
+	maxWidth := f.width - styles.Base.GetHorizontalFrameSize()
 
 	var sb strings.Builder
 	if f.title != "" {
-		sb.WriteString(styles.Title.Render(wrap(f.title, f.width)))
+		sb.WriteString(styles.Title.Render(wrap(f.title, maxWidth)))
 	}
 	if f.description != "" {
-		sb.WriteString(styles.Title.Render(wrap(f.description, f.width)) + "\n")
+		sb.WriteString(styles.Title.Render(wrap(f.description, maxWidth)) + "\n")
 	}
 	if f.picking {
 		sb.WriteString(strings.TrimSuffix(f.picker.View(), "\n"))

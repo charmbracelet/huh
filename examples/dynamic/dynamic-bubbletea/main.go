@@ -215,7 +215,7 @@ func (m Model) View() string {
 		if len(errors) > 0 {
 			header = m.appErrorBoundaryView(m.errorView())
 		}
-		body := lipgloss.JoinHorizontal(lipgloss.Top, form, status)
+		body := lipgloss.JoinHorizontal(lipgloss.Left, form, status)
 
 		footer := m.appBoundaryView(m.form.Help().ShortHelpView(m.form.KeyBinds()))
 		if len(errors) > 0 {

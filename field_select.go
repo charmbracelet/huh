@@ -537,16 +537,17 @@ func (s *Select[T]) activeStyles() *FieldStyles {
 
 func (s *Select[T]) titleView() string {
 	var (
-		styles = s.activeStyles()
-		sb     = strings.Builder{}
+		styles   = s.activeStyles()
+		sb       = strings.Builder{}
+		maxWidth = s.width - styles.Base.GetHorizontalFrameSize()
 	)
 	if s.filtering {
 		sb.WriteString(s.filter.View())
 	} else if s.filter.Value() != "" && !s.inline {
-		sb.WriteString(styles.Title.Render(wrap(s.title.val, s.width)))
+		sb.WriteString(styles.Title.Render(wrap(s.title.val, maxWidth)))
 		sb.WriteString(styles.Description.Render("/" + s.filter.Value()))
 	} else {
-		sb.WriteString(styles.Title.Render(wrap(s.title.val, s.width)))
+		sb.WriteString(styles.Title.Render(wrap(s.title.val, maxWidth)))
 	}
 	if s.err != nil {
 		sb.WriteString(styles.ErrorIndicator.String())
@@ -555,7 +556,8 @@ func (s *Select[T]) titleView() string {
 }
 
 func (s *Select[T]) descriptionView() string {
-	return s.activeStyles().Description.Render(wrap(s.description.val, s.width))
+	maxWidth := s.width - s.activeStyles().Base.GetHorizontalFrameSize()
+	return s.activeStyles().Description.Render(wrap(s.description.val, maxWidth))
 }
 
 func (s *Select[T]) optionsView() (string, int, int) {
@@ -608,22 +610,23 @@ func (s *Select[T]) optionsView() (string, int, int) {
 
 func (s *Select[T]) renderOption(option Option[T], selected bool) string {
 	var (
-		styles  = s.activeStyles()
-		cursor  = styles.SelectSelector.String()
-		cursorW = lipgloss.Width(cursor)
+		styles   = s.activeStyles()
+		cursor   = styles.SelectSelector.String()
+		cursorW  = lipgloss.Width(cursor)
+		maxWidth = s.width - s.activeStyles().Base.GetHorizontalFrameSize() - cursorW
 	)
 
-	key := wrap(option.Key, s.width-cursorW)
+	key := wrap(option.Key, maxWidth)
 
 	if selected {
 		return lipgloss.JoinHorizontal(
-			lipgloss.Top,
+			lipgloss.Left,
 			cursor,
 			styles.SelectedOption.Render(key),
 		)
 	}
 	return lipgloss.JoinHorizontal(
-		lipgloss.Top,
+		lipgloss.Left,
 		strings.Repeat(" ", cursorW),
 		styles.UnselectedOption.Render(key),
 	)

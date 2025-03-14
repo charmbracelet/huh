@@ -386,21 +386,21 @@ func (t *Text) View() string {
 	t.textarea.Cursor.Style = styles.TextInput.Cursor
 	t.textarea.Cursor.TextStyle = styles.TextInput.CursorText
 
-	var sb strings.Builder
+	maxWidth := t.width - styles.Base.GetHorizontalFrameSize()
+	var parts []string
 	if t.title.val != "" || t.title.fn != nil {
-		sb.WriteString(styles.Title.Render(wrap(t.title.val, t.width)))
+		header := styles.Title.Render(wrap(t.title.val, maxWidth))
 		if t.err != nil {
-			sb.WriteString(styles.ErrorIndicator.String())
+			header += styles.ErrorIndicator.String()
 		}
-		sb.WriteString("\n")
+		parts = append(parts, header)
 	}
 	if t.description.val != "" || t.description.fn != nil {
-		sb.WriteString(styles.Description.Render(wrap(t.description.val, t.width)))
-		sb.WriteString("\n")
+		parts = append(parts, styles.Description.Render(wrap(t.description.val, maxWidth)))
 	}
-	sb.WriteString(t.textarea.View())
+	parts = append(parts, t.textarea.View())
 
-	return styles.Base.Render(sb.String())
+	return styles.Base.Render(lipgloss.JoinVertical(lipgloss.Top, parts...))
 }
 
 // Run runs the text field.
