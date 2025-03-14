@@ -80,7 +80,7 @@ func (l *layoutColumns) View(f *Form) string {
 
 	return lipgloss.JoinVertical(lipgloss.Left,
 		header,
-		lipgloss.JoinHorizontal(lipgloss.Top, columns...),
+		lipgloss.JoinHorizontal(lipgloss.Left, columns...),
 		footer,
 	)
 }
@@ -158,7 +158,7 @@ func (l *layoutGrid) View(f *Form) string {
 		for _, group := range row {
 			columns = append(columns, group.Content())
 		}
-		rows = append(rows, lipgloss.JoinHorizontal(lipgloss.Top, columns...))
+		rows = append(rows, lipgloss.JoinHorizontal(lipgloss.Left, columns...))
 	}
 	footer := f.selector.Selected().Footer()
 
