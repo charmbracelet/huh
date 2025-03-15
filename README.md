@@ -454,7 +454,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m Model) View() string {
     if m.form.State == huh.StateCompleted {
         class := m.form.GetString("class")
-        level := m.form.GetString("level")
+        level := m.form.GetInt("level")
         return fmt.Sprintf("You selected: %s, Lvl. %d", class, level)
     }
     return m.form.View()
