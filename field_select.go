@@ -284,12 +284,12 @@ func (s *Select[T]) Blur() tea.Cmd {
 // Hovered returns the value of the option under the cursor, and a bool
 // indicating whether one was found. If there are no visible options, returns
 // a zero-valued T and false.
-func (m *Select[T]) Hovered() (T, bool) {
-	if len(m.filteredOptions) == 0 || m.selected >= len(m.filteredOptions) {
+func (s *Select[T]) Hovered() (T, bool) {
+	if len(s.filteredOptions) == 0 || s.selected >= len(s.filteredOptions) {
 		var zero T
 		return zero, false
 	}
-	return m.filteredOptions[m.selected].Value, true
+	return s.filteredOptions[s.selected].Value, true
 }
 
 // KeyBinds returns the help keybindings for the select field.

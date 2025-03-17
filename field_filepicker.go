@@ -337,7 +337,7 @@ func (f *FilePicker) runAccessible() error {
 	return nil
 }
 
-// copied from bubbles' filepicker
+// copied from bubbles' filepicker.
 const (
 	fileSizeWidth = 7
 	paddingLeft   = 2
