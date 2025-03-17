@@ -87,6 +87,9 @@ type Form struct {
 	timeout    time.Duration
 	teaOptions []tea.ProgramOption
 
+	// the maximum height we might need.
+	neededHeight int
+
 	layout Layout
 }
 
@@ -119,6 +122,16 @@ func NewForm(groups ...*Group) *Form {
 		f.WithWidth(defaultWidth)
 		f.WithAccessible(true)
 	}
+
+	// get the max allowed height, and use it, so all groups have the same
+	// height.
+	f.neededHeight = 0
+	f.selector.Range(func(_ int, group *Group) bool {
+		if h := group.rawHeight(); h > f.neededHeight {
+			f.neededHeight = h
+		}
+		return true
+	})
 
 	return f
 }
@@ -488,12 +501,12 @@ func (f *Form) GetFocusedField() Field {
 
 // Init initializes the form.
 func (f *Form) Init() tea.Cmd {
-	cmds := make([]tea.Cmd, f.selector.Total())
+	var cmds []tea.Cmd
 	f.selector.Range(func(i int, group *Group) bool {
 		if i == 0 {
 			group.active = true
 		}
-		cmds[i] = group.Init()
+		cmds = append(cmds, group.Init())
 		return true
 	})
 
@@ -501,6 +514,7 @@ func (f *Form) Init() tea.Cmd {
 		cmds = append(cmds, nextGroup)
 	}
 
+	cmds = append(cmds, tea.WindowSize())
 	return tea.Batch(cmds...)
 }
 
@@ -528,19 +542,8 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			break
 		}
 
-		// get the max allowed height, and use it, so all groups have the same
-		// height.
-		normalizedHeight := 0
 		f.selector.Range(func(_ int, group *Group) bool {
-			gh := max(group.height, min(group.rawHeight(), msg.Height))
-			if gh > normalizedHeight {
-				normalizedHeight = gh
-			}
-			return true
-		})
-
-		f.selector.Range(func(_ int, group *Group) bool {
-			group.WithHeight(normalizedHeight)
+			group.WithHeight(min(f.neededHeight, msg.Height))
 			return true
 		})
 
