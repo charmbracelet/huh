@@ -355,6 +355,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.filteredOptions = m.options.val
 			m.setFilter(false)
 		case key.Matches(msg, m.keymap.Up):
+			//nolint:godox
 			// FIXME: should use keys in keymap
 			if m.filtering && msg.String() == "k" {
 				break
@@ -365,6 +366,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.viewport.SetYOffset(m.cursor)
 			}
 		case key.Matches(msg, m.keymap.Down):
+			//nolint:godox
 			// FIXME: should use keys in keymap
 			if m.filtering && msg.String() == "j" {
 				break
