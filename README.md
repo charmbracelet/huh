@@ -21,7 +21,7 @@ The above example is running from a single Go program ([source](./examples/burge
 ## Tutorial
 
 Let’s build a form for ordering burgers. To start, we’ll import the library and
-define a few variables where’ll we store answers.
+define a few variables where we'll store answers.
 
 ```go
 package main
