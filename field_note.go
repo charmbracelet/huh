@@ -232,7 +232,8 @@ func (n *Note) View() string {
 		sb.WriteRune('\n')
 		sb.WriteString(styles.Next.Render(n.nextLabel))
 	}
-	return styles.Card.Height(n.height).Width(n.width).Render(sb.String())
+	return styles.Card.Height(n.height).Width(n.width).
+		Render(sb.String())
 }
 
 // Run runs the note field.

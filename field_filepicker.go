@@ -278,7 +278,8 @@ func (f *FilePicker) View() string {
 			sb.WriteString(styles.TextInput.Placeholder.Render("No file selected."))
 		}
 	}
-	return styles.Base.Render(sb.String())
+	return styles.Base.Width(f.width).Height(f.height).
+		Render(sb.String())
 }
 
 func (f *FilePicker) setPicking(v bool) {

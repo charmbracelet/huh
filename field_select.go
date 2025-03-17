@@ -655,7 +655,8 @@ func (s *Select[T]) View() string {
 	if s.description.val != "" || s.description.fn != nil {
 		parts = append(parts, s.descriptionView())
 	}
-	return styles.Base.Render(lipgloss.JoinVertical(lipgloss.Top, parts...))
+	return styles.Base.Width(s.width).Height(s.height).
+		Render(lipgloss.JoinVertical(lipgloss.Top, parts...))
 }
 
 // clearFilter clears the value of the filter.

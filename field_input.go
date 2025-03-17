@@ -405,7 +405,8 @@ func (i *Input) View() string {
 	}
 	sb.WriteString(i.textinput.View())
 
-	return styles.Base.Render(sb.String())
+	return styles.Base.Width(i.width).Height(i.height).
+		Render(sb.String())
 }
 
 // Run runs the input field in accessible mode.

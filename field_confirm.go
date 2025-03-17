@@ -291,7 +291,8 @@ func (c *Confirm) View() string {
 	style := lipgloss.NewStyle().Width(renderWidth).Align(c.buttonAlignment)
 
 	sb.WriteString(style.Render(buttonsRow))
-	return styles.Base.Render(sb.String())
+	return styles.Base.Width(c.width).Height(c.height).
+		Render(sb.String())
 }
 
 // Run runs the confirm field in accessible mode.

@@ -629,7 +629,8 @@ func (m *MultiSelect[T]) View() string {
 		sb.WriteString(m.descriptionView() + "\n")
 	}
 	sb.WriteString(m.viewport.View())
-	return styles.Base.Render(sb.String())
+	return styles.Base.Width(m.width).Height(m.height).
+		Render(sb.String())
 }
 
 func (m *MultiSelect[T]) printOptions() {
