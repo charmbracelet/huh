@@ -475,10 +475,15 @@ func (m *MultiSelect[T]) updateViewportHeight() {
 		return
 	}
 
-	const minHeight = 1
-	m.viewport.Height = max(minHeight, m.height-
-		lipgloss.Height(m.titleView())-
-		lipgloss.Height(m.descriptionView()))
+	offset := 0
+	if ss := m.titleView(); ss != "" {
+		offset += lipgloss.Height(ss)
+	}
+	if ss := m.descriptionView(); ss != "" {
+		offset += lipgloss.Height(ss)
+	}
+
+	m.viewport.Height = max(minHeight, m.height-offset)
 }
 
 // numSelected returns the total number of selected options.
@@ -550,6 +555,9 @@ func (m *MultiSelect[T]) titleView() string {
 }
 
 func (m *MultiSelect[T]) descriptionView() string {
+	if m.description.val == "" {
+		return ""
+	}
 	maxWidth := m.width - m.activeStyles().Base.GetHorizontalFrameSize()
 	return m.activeStyles().Description.Render(wrap(m.description.val, maxWidth))
 }

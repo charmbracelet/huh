@@ -519,9 +519,15 @@ func (s *Select[T]) updateViewportHeight() {
 		return
 	}
 
-	s.viewport.Height = max(minHeight, s.height-
-		lipgloss.Height(s.titleView())-
-		lipgloss.Height(s.descriptionView()))
+	offset := 0
+	if ss := s.titleView(); ss != "" {
+		offset += lipgloss.Height(ss)
+	}
+	if ss := s.descriptionView(); ss != "" {
+		offset += lipgloss.Height(ss)
+	}
+
+	s.viewport.Height = max(minHeight, s.height-offset)
 }
 
 func (s *Select[T]) activeStyles() *FieldStyles {
@@ -556,6 +562,9 @@ func (s *Select[T]) titleView() string {
 }
 
 func (s *Select[T]) descriptionView() string {
+	if s.description.val == "" {
+		return ""
+	}
 	maxWidth := s.width - s.activeStyles().Base.GetHorizontalFrameSize()
 	return s.activeStyles().Description.Render(wrap(s.description.val, maxWidth))
 }
@@ -638,21 +647,15 @@ func (s *Select[T]) View() string {
 	vpc, _, _ := s.optionsView()
 	s.viewport.SetContent(vpc)
 
-	var sb strings.Builder
+	var parts []string
 	if s.title.val != "" || s.title.fn != nil {
-		sb.WriteString(s.titleView())
-		if !s.inline {
-			sb.WriteString("\n")
-		}
+		parts = append(parts, s.titleView())
 	}
+	parts = append(parts, s.viewport.View())
 	if s.description.val != "" || s.description.fn != nil {
-		sb.WriteString(s.descriptionView())
-		if !s.inline {
-			sb.WriteString("\n")
-		}
+		parts = append(parts, s.descriptionView())
 	}
-	sb.WriteString(s.viewport.View())
-	return styles.Base.Render(sb.String())
+	return styles.Base.Render(lipgloss.JoinVertical(lipgloss.Top, parts...))
 }
 
 // clearFilter clears the value of the filter.
