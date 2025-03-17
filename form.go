@@ -475,7 +475,7 @@ func (f *Form) NextField() tea.Cmd {
 	return cmd
 }
 
-// NextField moves the form to the next field.
+// PrevField moves the form to the next field.
 func (f *Form) PrevField() tea.Cmd {
 	_, cmd := f.Update(PrevField())
 	return cmd
