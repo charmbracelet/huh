@@ -582,14 +582,19 @@ func (s *Select[T]) optionsView() (string, int, int) {
 	}
 
 	if s.inline {
-		prev := styles.PrevIndicator.Faint(s.selected <= 0).String()
-		next := styles.NextIndicator.Faint(s.selected == len(s.filteredOptions)-1).String()
-		opt := styles.TextInput.Placeholder.Render("No matches")
+		option := styles.TextInput.Placeholder.Render("No matches")
 		if len(s.filteredOptions) > 0 {
-			opt = styles.SelectedOption.Render(s.filteredOptions[s.selected].Key)
+			option = styles.SelectedOption.Render(s.filteredOptions[s.selected].Key)
 		}
-		ss := lipgloss.JoinHorizontal(lipgloss.Left, prev, opt, next)
-		return lipgloss.NewStyle().Width(s.width).Render(ss), -1, 1
+		return lipgloss.NewStyle().
+				Width(s.width).
+				Render(lipgloss.JoinHorizontal(
+					lipgloss.Left,
+					styles.PrevIndicator.Faint(s.selected <= 0).String(),
+					option,
+					styles.NextIndicator.Faint(s.selected == len(s.filteredOptions)-1).String(),
+				)),
+			-1, 1
 	}
 
 	var cursorOffset int
