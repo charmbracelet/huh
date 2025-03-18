@@ -477,10 +477,15 @@ func (m *MultiSelect[T]) updateViewportHeight() {
 		return
 	}
 
-	const minHeight = 1
-	m.viewport.Height = max(minHeight, m.height-
-		lipgloss.Height(m.titleView())-
-		lipgloss.Height(m.descriptionView()))
+	offset := 0
+	if ss := m.titleView(); ss != "" {
+		offset += lipgloss.Height(ss)
+	}
+	if ss := m.descriptionView(); ss != "" {
+		offset += lipgloss.Height(ss)
+	}
+
+	m.viewport.Height = max(minHeight, m.height-offset)
 }
 
 // numSelected returns the total number of selected options.
@@ -533,16 +538,17 @@ func (m *MultiSelect[T]) titleView() string {
 		return ""
 	}
 	var (
-		styles = m.activeStyles()
-		sb     = strings.Builder{}
+		styles   = m.activeStyles()
+		sb       = strings.Builder{}
+		maxWidth = m.width - styles.Base.GetHorizontalFrameSize()
 	)
 	if m.filtering {
 		sb.WriteString(m.filter.View())
 	} else if m.filter.Value() != "" {
-		sb.WriteString(styles.Title.Render(wrap(m.title.val, m.width)))
+		sb.WriteString(styles.Title.Render(wrap(m.title.val, maxWidth)))
 		sb.WriteString(styles.Description.Render("/" + m.filter.Value()))
 	} else {
-		sb.WriteString(styles.Title.Render(wrap(m.title.val, m.width)))
+		sb.WriteString(styles.Title.Render(wrap(m.title.val, maxWidth)))
 	}
 	if m.err != nil {
 		sb.WriteString(styles.ErrorIndicator.String())
@@ -551,7 +557,11 @@ func (m *MultiSelect[T]) titleView() string {
 }
 
 func (m *MultiSelect[T]) descriptionView() string {
-	return m.activeStyles().Description.Render(wrap(m.description.val, m.width))
+	if m.description.val == "" {
+		return ""
+	}
+	maxWidth := m.width - m.activeStyles().Base.GetHorizontalFrameSize()
+	return m.activeStyles().Description.Render(wrap(m.description.val, maxWidth))
 }
 
 func (m *MultiSelect[T]) renderOption(option Option[T], cursor, selected bool) string {
@@ -569,7 +579,7 @@ func (m *MultiSelect[T]) renderOption(option Option[T], cursor, selected bool) s
 		parts = append(parts, styles.UnselectedPrefix.String())
 		parts = append(parts, styles.UnselectedOption.Render(option.Key))
 	}
-	return lipgloss.JoinHorizontal(lipgloss.Top, parts...)
+	return lipgloss.JoinHorizontal(lipgloss.Left, parts...)
 }
 
 func (m *MultiSelect[T]) optionsView() (string, int, int) {
@@ -621,13 +631,15 @@ func (m *MultiSelect[T]) View() string {
 		sb.WriteString(m.descriptionView() + "\n")
 	}
 	sb.WriteString(m.viewport.View())
-	return styles.Base.Render(sb.String())
+	return styles.Base.Width(m.width).Height(m.height).
+		Render(sb.String())
 }
 
 func (m *MultiSelect[T]) printOptions() {
 	styles := m.activeStyles()
+	maxWidth := m.width - styles.Base.GetHorizontalFrameSize()
 	var sb strings.Builder
-	sb.WriteString(styles.Title.Render(wrap(m.title.val, m.width)))
+	sb.WriteString(styles.Title.Render(wrap(m.title.val, maxWidth)))
 	sb.WriteString("\n")
 
 	for i, option := range m.options.val {

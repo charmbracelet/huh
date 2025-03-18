@@ -990,7 +990,7 @@ var titleAndDescTests = map[string]struct {
 }{
 	"Group": {
 		NewGroup(NewInput()),
-		3, // \n> \n
+		2, // > \n
 		NewGroup(NewInput()).Title(title),
 		NewGroup(NewInput()).Description(description),
 	},

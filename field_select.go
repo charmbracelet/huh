@@ -519,9 +519,15 @@ func (s *Select[T]) updateViewportHeight() {
 		return
 	}
 
-	s.viewport.Height = max(minHeight, s.height-
-		lipgloss.Height(s.titleView())-
-		lipgloss.Height(s.descriptionView()))
+	offset := 0
+	if ss := s.titleView(); ss != "" {
+		offset += lipgloss.Height(ss)
+	}
+	if ss := s.descriptionView(); ss != "" {
+		offset += lipgloss.Height(ss)
+	}
+
+	s.viewport.Height = max(minHeight, s.height-offset)
 }
 
 func (s *Select[T]) activeStyles() *FieldStyles {
@@ -537,16 +543,17 @@ func (s *Select[T]) activeStyles() *FieldStyles {
 
 func (s *Select[T]) titleView() string {
 	var (
-		styles = s.activeStyles()
-		sb     = strings.Builder{}
+		styles   = s.activeStyles()
+		sb       = strings.Builder{}
+		maxWidth = s.width - styles.Base.GetHorizontalFrameSize()
 	)
 	if s.filtering {
 		sb.WriteString(s.filter.View())
 	} else if s.filter.Value() != "" && !s.inline {
-		sb.WriteString(styles.Title.Render(wrap(s.title.val, s.width)))
+		sb.WriteString(styles.Title.Render(wrap(s.title.val, maxWidth)))
 		sb.WriteString(styles.Description.Render("/" + s.filter.Value()))
 	} else {
-		sb.WriteString(styles.Title.Render(wrap(s.title.val, s.width)))
+		sb.WriteString(styles.Title.Render(wrap(s.title.val, maxWidth)))
 	}
 	if s.err != nil {
 		sb.WriteString(styles.ErrorIndicator.String())
@@ -555,7 +562,11 @@ func (s *Select[T]) titleView() string {
 }
 
 func (s *Select[T]) descriptionView() string {
-	return s.activeStyles().Description.Render(wrap(s.description.val, s.width))
+	if s.description.val == "" {
+		return ""
+	}
+	maxWidth := s.width - s.activeStyles().Base.GetHorizontalFrameSize()
+	return s.activeStyles().Description.Render(wrap(s.description.val, maxWidth))
 }
 
 func (s *Select[T]) optionsView() (string, int, int) {
@@ -571,14 +582,19 @@ func (s *Select[T]) optionsView() (string, int, int) {
 	}
 
 	if s.inline {
-		sb.WriteString(styles.PrevIndicator.Faint(s.selected <= 0).String())
+		option := styles.TextInput.Placeholder.Render("No matches")
 		if len(s.filteredOptions) > 0 {
-			sb.WriteString(styles.SelectedOption.Render(s.filteredOptions[s.selected].Key))
-		} else {
-			sb.WriteString(styles.TextInput.Placeholder.Render("No matches"))
+			option = styles.SelectedOption.Render(s.filteredOptions[s.selected].Key)
 		}
-		sb.WriteString(styles.NextIndicator.Faint(s.selected == len(s.filteredOptions)-1).String())
-		return sb.String(), -1, 1
+		return lipgloss.NewStyle().
+				Width(s.width).
+				Render(lipgloss.JoinHorizontal(
+					lipgloss.Left,
+					styles.PrevIndicator.Faint(s.selected <= 0).String(),
+					option,
+					styles.NextIndicator.Faint(s.selected == len(s.filteredOptions)-1).String(),
+				)),
+			-1, 1
 	}
 
 	var cursorOffset int
@@ -608,22 +624,23 @@ func (s *Select[T]) optionsView() (string, int, int) {
 
 func (s *Select[T]) renderOption(option Option[T], selected bool) string {
 	var (
-		styles  = s.activeStyles()
-		cursor  = styles.SelectSelector.String()
-		cursorW = lipgloss.Width(cursor)
+		styles   = s.activeStyles()
+		cursor   = styles.SelectSelector.String()
+		cursorW  = lipgloss.Width(cursor)
+		maxWidth = s.width - s.activeStyles().Base.GetHorizontalFrameSize() - cursorW
 	)
 
-	key := wrap(option.Key, s.width-cursorW)
+	key := wrap(option.Key, maxWidth)
 
 	if selected {
 		return lipgloss.JoinHorizontal(
-			lipgloss.Top,
+			lipgloss.Left,
 			cursor,
 			styles.SelectedOption.Render(key),
 		)
 	}
 	return lipgloss.JoinHorizontal(
-		lipgloss.Top,
+		lipgloss.Left,
 		strings.Repeat(" ", cursorW),
 		styles.UnselectedOption.Render(key),
 	)
@@ -635,21 +652,16 @@ func (s *Select[T]) View() string {
 	vpc, _, _ := s.optionsView()
 	s.viewport.SetContent(vpc)
 
-	var sb strings.Builder
+	var parts []string
 	if s.title.val != "" || s.title.fn != nil {
-		sb.WriteString(s.titleView())
-		if !s.inline {
-			sb.WriteString("\n")
-		}
+		parts = append(parts, s.titleView())
 	}
+	parts = append(parts, s.viewport.View())
 	if s.description.val != "" || s.description.fn != nil {
-		sb.WriteString(s.descriptionView())
-		if !s.inline {
-			sb.WriteString("\n")
-		}
+		parts = append(parts, s.descriptionView())
 	}
-	sb.WriteString(s.viewport.View())
-	return styles.Base.Render(sb.String())
+	return styles.Base.Width(s.width).Height(s.height).
+		Render(lipgloss.JoinVertical(lipgloss.Top, parts...))
 }
 
 // clearFilter clears the value of the filter.

@@ -233,11 +233,12 @@ func (c *Confirm) activeStyles() *FieldStyles {
 // View renders the confirm field.
 func (c *Confirm) View() string {
 	styles := c.activeStyles()
+	maxWidth := c.width - styles.Base.GetHorizontalFrameSize()
 
 	var wroteHeader bool
 	var sb strings.Builder
 	if c.title.val != "" {
-		sb.WriteString(styles.Title.Render(wrap(c.title.val, c.width)))
+		sb.WriteString(styles.Title.Render(wrap(c.title.val, maxWidth)))
 		wroteHeader = true
 	}
 	if c.err != nil {
@@ -246,7 +247,7 @@ func (c *Confirm) View() string {
 	}
 
 	if c.description.val != "" {
-		description := styles.Description.Render(wrap(c.description.val, c.width))
+		description := styles.Description.Render(wrap(c.description.val, maxWidth))
 		if !c.inline && (c.description.val != "" || c.description.fn != nil) {
 			sb.WriteString("\n")
 		}
@@ -290,7 +291,8 @@ func (c *Confirm) View() string {
 	style := lipgloss.NewStyle().Width(renderWidth).Align(c.buttonAlignment)
 
 	sb.WriteString(style.Render(buttonsRow))
-	return styles.Base.Render(sb.String())
+	return styles.Base.Width(c.width).Height(c.height).
+		Render(sb.String())
 }
 
 // Run runs the confirm field in accessible mode.

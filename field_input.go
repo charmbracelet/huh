@@ -374,6 +374,7 @@ func (i *Input) activeStyles() *FieldStyles {
 // View renders the input field.
 func (i *Input) View() string {
 	styles := i.activeStyles()
+	maxWidth := i.width - styles.Base.GetHorizontalFrameSize()
 
 	// NB: since the method is on a pointer receiver these are being mutated.
 	// Because this runs on every render this shouldn't matter in practice,
@@ -386,25 +387,26 @@ func (i *Input) View() string {
 
 	// Adjust text input size to its char limit if it fit in its width
 	if i.textinput.CharLimit > 0 {
-		i.textinput.Width = min(i.textinput.CharLimit, i.textinput.Width)
+		i.textinput.Width = min(i.textinput.CharLimit, i.textinput.Width, maxWidth)
 	}
 
 	var sb strings.Builder
 	if i.title.val != "" || i.title.fn != nil {
-		sb.WriteString(styles.Title.Render(wrap(i.title.val, i.width)))
+		sb.WriteString(styles.Title.Render(wrap(i.title.val, maxWidth)))
 		if !i.inline {
 			sb.WriteString("\n")
 		}
 	}
 	if i.description.val != "" || i.description.fn != nil {
-		sb.WriteString(styles.Description.Render(wrap(i.description.val, i.width)))
+		sb.WriteString(styles.Description.Render(wrap(i.description.val, maxWidth)))
 		if !i.inline {
 			sb.WriteString("\n")
 		}
 	}
 	sb.WriteString(i.textinput.View())
 
-	return styles.Base.Render(sb.String())
+	return styles.Base.Width(i.width).Height(i.height).
+		Render(sb.String())
 }
 
 // Run runs the input field in accessible mode.

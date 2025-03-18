@@ -217,21 +217,23 @@ func (n *Note) activeStyles() *FieldStyles {
 // View renders the note field.
 func (n *Note) View() string {
 	styles := n.activeStyles()
+	maxWidth := n.width - styles.Card.GetHorizontalFrameSize()
 	sb := strings.Builder{}
 
 	if n.title.val != "" || n.title.fn != nil {
-		sb.WriteString(styles.NoteTitle.Render(wrap(n.title.val, n.width)))
+		sb.WriteString(styles.NoteTitle.Render(wrap(n.title.val, maxWidth)))
 	}
 	if n.description.val != "" || n.description.fn != nil {
 		sb.WriteRune('\n')
-		sb.WriteString(wrap(render(n.description.val), n.width))
+		sb.WriteString(wrap(render(n.description.val), maxWidth))
 		sb.WriteRune('\n')
 	}
 	if n.showNextButton {
 		sb.WriteRune('\n')
 		sb.WriteString(styles.Next.Render(n.nextLabel))
 	}
-	return styles.Card.Height(n.height).Render(sb.String())
+	return styles.Card.Height(n.height).Width(n.width).
+		Render(sb.String())
 }
 
 // Run runs the note field.
