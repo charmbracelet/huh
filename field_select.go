@@ -176,20 +176,26 @@ func (s *Select[T]) Options(options ...Option[T]) *Select[T] {
 	s.options.val = options
 	s.filteredOptions = options
 
-	// Set the cursor to the existing value or the last selected option.
-	for i, option := range options {
-		if option.Value == s.accessor.Get() {
-			s.selected = i
-			break
-		} else if option.selected {
-			s.selected = i
-		}
-	}
+	s.selectOption()
 
 	s.updateViewportHeight()
 	s.updateValue()
 
 	return s
+}
+
+func (s *Select[T]) selectOption() {
+	// Set the cursor to the existing value or the last selected option.
+	for i, option := range s.options.val {
+		if option.Value == s.accessor.Get() {
+			s.selected = i
+			break
+		}
+		if option.selected {
+			s.selected = i
+			break
+		}
+	}
 }
 
 // OptionsFunc sets the options func of the select field.
@@ -377,9 +383,10 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case updateOptionsMsg[T]:
 		if msg.id == s.id && msg.hash == s.options.bindingsHash {
 			s.options.update(msg.options)
+			s.selectOption()
 
-			// since we're updating the options, we need to update the selected cursor
-			// position and filteredOptions.
+			// since we're updating the options, we need to update the selected
+			// cursor position and filteredOptions.
 			s.selected = clamp(s.selected, 0, len(msg.options)-1)
 			s.filteredOptions = msg.options
 			s.updateValue()

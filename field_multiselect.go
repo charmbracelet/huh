@@ -128,18 +128,23 @@ func (m *MultiSelect[T]) Options(options ...Option[T]) *MultiSelect[T] {
 		return m
 	}
 
-	for i, o := range options {
+	m.options.val = options
+	m.filteredOptions = options
+	m.selectOptions()
+	m.updateViewportHeight()
+	return m
+}
+
+func (m *MultiSelect[T]) selectOptions() {
+	// Set the cursor to the existing value or the last selected option.
+	for i, o := range m.options.val {
 		for _, v := range m.accessor.Get() {
 			if o.Value == v {
-				options[i].selected = true
-				break
+				m.options.val[i].selected = true
+				m.cursor = i
 			}
 		}
 	}
-	m.options.val = options
-	m.filteredOptions = options
-	m.updateViewportHeight()
-	return m
 }
 
 // OptionsFunc sets the options func of the multi-select field.
@@ -333,6 +338,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case updateOptionsMsg[T]:
 		if msg.id == m.id && msg.hash == m.options.bindingsHash {
 			m.options.update(msg.options)
+			m.selectOptions()
 			// since we're updating the options, we need to reset the cursor.
 			m.filteredOptions = m.options.val
 			m.updateValue()
