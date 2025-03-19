@@ -148,14 +148,7 @@ func (f *FilePicker) AllowedTypes(types []string) *FilePicker {
 // Height sets the height of the file field. If the number of options
 // exceeds the height, the file field will become scrollable.
 func (f *FilePicker) Height(height int) *FilePicker {
-	adjust := 0
-	if f.title != "" {
-		adjust++
-	}
-	if f.description != "" {
-		adjust++
-	}
-	f.picker.Height = height - adjust
+	f.WithHeight(height)
 	return f
 }
 
@@ -257,29 +250,42 @@ func (f *FilePicker) activeStyles() *FieldStyles {
 	return &theme.Blurred
 }
 
+func (f *FilePicker) renderTitle() string {
+	styles := f.activeStyles()
+	maxWidth := f.width - styles.Base.GetHorizontalFrameSize()
+	return styles.Title.Render(wrap(f.title, maxWidth))
+}
+
+func (f FilePicker) renderDescription() string {
+	styles := f.activeStyles()
+	maxWidth := f.width - styles.Base.GetHorizontalFrameSize()
+	return styles.Description.Render(wrap(f.description, maxWidth))
+}
+
 // View renders the file field.
 func (f *FilePicker) View() string {
 	styles := f.activeStyles()
-	maxWidth := f.width - styles.Base.GetHorizontalFrameSize()
-
-	var sb strings.Builder
+	var parts []string
 	if f.title != "" {
-		sb.WriteString(styles.Title.Render(wrap(f.title, maxWidth)))
+		parts = append(parts, f.renderTitle())
 	}
 	if f.description != "" {
-		sb.WriteString(styles.Title.Render(wrap(f.description, maxWidth)) + "\n")
+		parts = append(parts, f.renderDescription())
 	}
-	if f.picking {
-		sb.WriteString(strings.TrimSuffix(f.picker.View(), "\n"))
-	} else {
-		if f.accessor.Get() != "" {
-			sb.WriteString(styles.SelectedOption.Render(f.accessor.Get()))
-		} else {
-			sb.WriteString(styles.TextInput.Placeholder.Render("No file selected."))
-		}
-	}
+	parts = append(parts, f.pickerView())
 	return styles.Base.Width(f.width).Height(f.height).
-		Render(sb.String())
+		Render(lipgloss.JoinVertical(lipgloss.Top, parts...))
+}
+
+func (f *FilePicker) pickerView() string {
+	if f.picking {
+		return f.picker.View()
+	}
+	styles := f.activeStyles()
+	if f.accessor.Get() != "" {
+		return styles.SelectedOption.Render(f.accessor.Get())
+	}
+	return styles.TextInput.Placeholder.Render("No file selected.")
 }
 
 func (f *FilePicker) setPicking(v bool) {
@@ -293,6 +299,8 @@ func (f *FilePicker) setPicking(v bool) {
 
 	f.picker.KeyMap.Up.SetEnabled(v)
 	f.picker.KeyMap.Down.SetEnabled(v)
+	f.picker.KeyMap.GoToTop.SetEnabled(v)
+	f.picker.KeyMap.GoToLast.SetEnabled(v)
 	f.picker.KeyMap.Select.SetEnabled(v)
 	f.picker.KeyMap.Open.SetEnabled(v)
 	f.picker.KeyMap.Back.SetEnabled(v)
@@ -374,8 +382,8 @@ func (f *FilePicker) WithTheme(theme *Theme) Field {
 func (f *FilePicker) WithKeyMap(k *KeyMap) Field {
 	f.keymap = k.FilePicker
 	f.picker.KeyMap = filepicker.KeyMap{
-		GoToTop:  k.FilePicker.GoToTop,
-		GoToLast: k.FilePicker.GoToLast,
+		GoToTop:  k.FilePicker.GotoTop,
+		GoToLast: k.FilePicker.GotoBottom,
 		Down:     k.FilePicker.Down,
 		Up:       k.FilePicker.Up,
 		PageUp:   k.FilePicker.PageUp,
@@ -402,9 +410,15 @@ func (f *FilePicker) WithWidth(width int) Field {
 
 // WithHeight sets the height of the file field.
 func (f *FilePicker) WithHeight(height int) Field {
-	f.height = height
-	f.Height(height)
-	f.picker, _ = f.picker.Update(nil)
+	adjust := 0
+	if f.title != "" {
+		adjust += lipgloss.Height(f.renderTitle())
+	}
+	if f.description != "" {
+		adjust += lipgloss.Height(f.renderDescription())
+	}
+	adjust += 1 // picker's own help height
+	f.picker.Height = height - adjust
 	return f
 }
 
