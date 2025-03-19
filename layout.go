@@ -56,7 +56,7 @@ func (l *layoutColumns) visibleGroups(f *Form) []*Group {
 			groups = append(groups, group)
 			return true
 		}
-		return false
+		return true
 	})
 
 	return groups
@@ -126,7 +126,7 @@ func (l *layoutGrid) visibleGroups(f *Form) [][]*Group {
 			visible = append(visible, group)
 			return true
 		}
-		return false
+		return true
 	})
 	grid := make([][]*Group, l.rows)
 	for i := 0; i < l.rows; i++ {
