@@ -417,7 +417,7 @@ func (f *FilePicker) WithHeight(height int) Field {
 	if f.description != "" {
 		adjust += lipgloss.Height(f.renderDescription())
 	}
-	adjust += 1 // picker's own help height
+	adjust++ // picker's own help height
 	f.picker.Height = height - adjust
 	return f
 }
