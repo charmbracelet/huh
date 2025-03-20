@@ -123,9 +123,7 @@ func NewForm(groups ...*Group) *Form {
 		f.WithAccessible(true)
 	}
 
-	// get the max allowed height, and use it, so all groups have the same
-	// height.
-	f.neededHeight = 0
+	// set neededHeight as the height of the tallest group
 	f.selector.Range(func(_ int, group *Group) bool {
 		if h := group.rawHeight(); h > f.neededHeight {
 			f.neededHeight = h
@@ -529,23 +527,19 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		if f.width > 0 {
-			break
+		if f.width == 0 {
+			f.selector.Range(func(_ int, group *Group) bool {
+				width := f.layout.GroupWidth(f, group, msg.Width)
+				group.WithWidth(width)
+				return true
+			})
 		}
-		f.selector.Range(func(_ int, group *Group) bool {
-			width := f.layout.GroupWidth(f, group, msg.Width)
-			group.WithWidth(width)
-			return true
-		})
-
-		if f.height > 0 {
-			break
+		if f.height == 0 {
+			f.selector.Range(func(_ int, group *Group) bool {
+				group.WithHeight(min(f.neededHeight, msg.Height))
+				return true
+			})
 		}
-
-		f.selector.Range(func(_ int, group *Group) bool {
-			group.WithHeight(min(f.neededHeight, msg.Height))
-			return true
-		})
 
 	case tea.KeyMsg:
 		switch {
@@ -627,12 +621,15 @@ func (f *Form) isGroupHidden(group *Group) bool {
 	return hide()
 }
 
-func (f *Form) styles() FormStyles {
-	theme := f.theme
-	if theme == nil {
-		theme = ThemeCharm()
+func (f *Form) getTheme() *Theme {
+	if f.theme != nil {
+		return f.theme
 	}
-	return theme.Form
+	return ThemeCharm()
+}
+
+func (f *Form) styles() FormStyles {
+	return f.getTheme().Form
 }
 
 // View renders the form.

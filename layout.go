@@ -92,7 +92,7 @@ type layoutStack struct{}
 func (l *layoutStack) View(f *Form) string {
 	var columns []string
 	f.selector.Range(func(_ int, group *Group) bool {
-		columns = append(columns, group.Content())
+		columns = append(columns, group.Content(), "")
 		return true
 	})
 
@@ -155,7 +155,7 @@ func (l *layoutGrid) View(f *Form) string {
 		for _, group := range row {
 			columns = append(columns, group.Content())
 		}
-		rows = append(rows, lipgloss.JoinHorizontal(lipgloss.Left, columns...))
+		rows = append(rows, lipgloss.JoinHorizontal(lipgloss.Left, columns...), "")
 	}
 	footer := f.selector.Selected().Footer()
 
