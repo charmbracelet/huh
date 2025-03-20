@@ -297,7 +297,8 @@ func (g *Group) styles() GroupStyles { return g.getTheme().Group }
 func (g *Group) getContent() (int, string) {
 	var fields strings.Builder
 	offset := 0
-	gap := "\n\n"
+
+	gap := g.getTheme().FieldSeparator.Render()
 
 	// if the focused field is requesting it be zoomed, only show that field.
 	if g.selector.Selected().Zoom() {
