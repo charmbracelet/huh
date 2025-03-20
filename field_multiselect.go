@@ -24,6 +24,7 @@ type MultiSelect[T comparable] struct {
 	title           Eval[string]
 	description     Eval[string]
 	options         Eval[[]Option[T]]
+	hide            Eval[bool]
 	filterable      bool
 	filteredOptions []Option[T]
 	limit           int
@@ -64,6 +65,7 @@ func NewMultiSelect[T comparable]() *MultiSelect[T] {
 		options:     Eval[[]Option[T]]{cache: make(map[uint64][]Option[T])},
 		title:       Eval[string]{cache: make(map[uint64]string)},
 		description: Eval[string]{cache: make(map[uint64]string)},
+		hide:        Eval[bool]{cache: make(map[uint64]bool)},
 		spinner:     s,
 		filterable:  true,
 	}
@@ -317,6 +319,15 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}, m.spinner.Tick)
 			}
 		}
+		if ok, hash := m.hide.shouldUpdate(); ok {
+			m.hide.bindingsHash = hash
+			if !m.hide.loadFromCache() {
+				m.hide.loading = true
+				fieldCmds = append(fieldCmds, func() tea.Msg {
+					return updateHideMsg{id: m.id, hide: m.hide.fn(), hash: hash}
+				})
+			}
+		}
 
 		return m, tea.Batch(fieldCmds...)
 
@@ -343,6 +354,10 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.filteredOptions = m.options.val
 			m.updateValue()
 			m.cursor = clamp(m.cursor, 0, len(m.filteredOptions)-1)
+		}
+	case updateHideMsg:
+		if msg.id == m.id && msg.hash == m.hide.bindingsHash {
+			m.hide.update(msg.hide)
 		}
 	case tea.KeyMsg:
 		m.err = nil
@@ -794,6 +809,23 @@ func (m *MultiSelect[T]) WithPosition(p FieldPosition) Field {
 	m.keymap.Prev.SetEnabled(!p.IsFirst())
 	m.keymap.Next.SetEnabled(!p.IsLast())
 	m.keymap.Submit.SetEnabled(p.IsLast())
+	return m
+}
+
+// Hide returns whether this input should be hidden and not updated.
+func (m *MultiSelect[T]) Hide() bool {
+	return m.hide.val
+}
+
+func (m *MultiSelect[T]) WithHide(value bool) *MultiSelect[T] {
+	m.hide.val = value
+    m.hide.fn = nil
+	return m
+}
+
+func (m *MultiSelect[T]) WithHideFunc(fn func() bool, bindings any) *MultiSelect[T] {
+	m.hide.fn = fn
+	m.hide.bindings = bindings
 	return m
 }
 

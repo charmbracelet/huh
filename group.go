@@ -221,7 +221,7 @@ func (g *Group) nextField() []tea.Cmd {
 		return []tea.Cmd{blurCmd, nextGroup}
 	}
 	g.selector.Next()
-	for g.selector.Selected().Skip() {
+	for g.selector.Selected().Skip() || g.selector.Selected().Hide() {
 		if g.selector.OnLast() {
 			return []tea.Cmd{blurCmd, nextGroup}
 		}
@@ -238,7 +238,7 @@ func (g *Group) prevField() []tea.Cmd {
 		return []tea.Cmd{blurCmd, prevGroup}
 	}
 	g.selector.Prev()
-	for g.selector.Selected().Skip() {
+	for g.selector.Selected().Skip() || g.selector.Selected().Hide() {
 		if g.selector.OnFirst() {
 			return []tea.Cmd{blurCmd, prevGroup}
 		}
@@ -305,6 +305,10 @@ func (g *Group) getContent() (int, string) {
 		fields.WriteString(g.selector.Selected().View())
 	} else {
 		g.selector.Range(func(i int, field Field) bool {
+			if field.Hide() {
+				return true
+			}
+
 			fields.WriteString(field.View())
 			if i == g.selector.Index() {
 				offset = lipgloss.Height(fields.String()) - lipgloss.Height(field.View())
