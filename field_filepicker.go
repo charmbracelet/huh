@@ -410,6 +410,9 @@ func (f *FilePicker) WithWidth(width int) Field {
 
 // WithHeight sets the height of the file field.
 func (f *FilePicker) WithHeight(height int) Field {
+	if height == 0 {
+		return f
+	}
 	adjust := 0
 	if f.title != "" {
 		adjust += lipgloss.Height(f.renderTitle())
@@ -418,7 +421,7 @@ func (f *FilePicker) WithHeight(height int) Field {
 		adjust += lipgloss.Height(f.renderDescription())
 	}
 	adjust++ // picker's own help height
-	f.picker.Height = height - adjust
+	f.picker.SetHeight(height - adjust)
 	return f
 }
 
