@@ -28,8 +28,13 @@ func TestForm(t *testing.T) {
 		Toppings []string
 	}
 
+	type Beverages struct {
+		Name []string
+	}
+
 	type Order struct {
 		Taco         Taco
+		Beverages    Beverages
 		Name         string
 		Instructions string
 		Discount     bool
@@ -81,6 +86,24 @@ func TestForm(t *testing.T) {
 				Value(&order.Taco.Toppings).
 				Filterable(true).
 				Limit(4),
+		),
+
+		// Prompt for beverages.
+		// The customer can ask for at least two beverages.
+		NewGroup(
+			NewMultiSelect[string]().
+				Title("Beverages").
+				Description("Choose at least two.").
+				Options(
+					NewOption("Coke", "coke").Selected(true),
+					NewOption("Pepsi", "pepsi").Selected(true),
+					NewOption("Sprite", "sprite"),
+					NewOption("Fanta", "fanta"),
+					NewOption("Dr. Pepper", "dr. pepper"),
+				).
+				Value(&order.Beverages.Name).
+				Filterable(true).
+				Minimum(2),
 		),
 
 		// Gather final details for the order.
@@ -214,6 +237,40 @@ func TestForm(t *testing.T) {
 	if !strings.Contains(view, "> ✓ Corn") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected form to change selection to corn")
+	}
+
+	m = batchUpdate(m.Update(tea.KeyMsg{Type: tea.KeyEnter}))
+	view = ansi.Strip(m.View())
+
+	//
+	// ┃ Beverages
+	// ┃ Choose at least two.
+	// ┃ > ✓ Coke
+	// ┃   ✓ Pepsi
+	// ┃   • Sprite
+	// ┃   • Fanta
+	// ┃   • Dr. Pepper
+	//
+	//  x toggle • ↑ up • ↓ down • enter confirm • shift+tab back
+	//
+	if !strings.Contains(view, "Beverages") {
+		t.Log(pretty.Render(view))
+		t.Fatal("Expected form to show beverages group")
+	}
+
+	if !strings.Contains(view, "Choose at least two.") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected form to show beverages description")
+	}
+
+	if !strings.Contains(view, "> ✓ Coke") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected form to preselect coke")
+	}
+
+	if !strings.Contains(view, "  ✓ Pepsi") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected form to preselect pepsi")
 	}
 
 	m = batchUpdate(m.Update(tea.KeyMsg{Type: tea.KeyEnter}))
