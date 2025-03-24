@@ -108,6 +108,7 @@ func NewForm(groups ...*Group) *Form {
 		layout:   LayoutDefault,
 		teaOptions: []tea.ProgramOption{
 			tea.WithOutput(os.Stderr),
+			tea.WithReportFocus(),
 		},
 	}
 
@@ -664,14 +665,13 @@ func (f *Form) RunWithContext(ctx context.Context) error {
 
 // run runs the form in normal mode.
 func (f *Form) run(ctx context.Context) error {
+	var cancel context.CancelFunc
 	if f.timeout > 0 {
-		ctx, cancel := context.WithTimeout(ctx, f.timeout)
+		ctx, cancel = context.WithTimeout(ctx, f.timeout)
 		defer cancel()
-		f.teaOptions = append(f.teaOptions, tea.WithContext(ctx), tea.WithReportFocus())
-	} else {
-		f.teaOptions = append(f.teaOptions, tea.WithContext(ctx), tea.WithReportFocus())
 	}
 
+	f.teaOptions = append(f.teaOptions, tea.WithContext(ctx))
 	m, err := tea.NewProgram(f, f.teaOptions...).Run()
 	if m.(*Form).aborted || errors.Is(err, tea.ErrInterrupted) {
 		return ErrUserAborted

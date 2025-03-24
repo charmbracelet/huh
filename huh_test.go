@@ -954,7 +954,7 @@ func TestTimeout(t *testing.T) {
 	f := formProgram()
 
 	// Test that the form times out after 1ms and returns a timeout error.
-	err := f.WithTimeout(1 * time.Millisecond).Run()
+	err := f.WithTimeout(100 * time.Millisecond).Run()
 	if err == nil || !errors.Is(err, ErrTimeout) {
 		t.Errorf("expected timeout error, got %v", err)
 	}
@@ -1097,7 +1097,8 @@ func TestGetFocusedField(t *testing.T) {
 // formProgram returns a new Form with a nil input and output, so it can be used as a test program.
 func formProgram() *Form {
 	return NewForm(NewGroup(NewInput().Title("Foo"))).
-		WithInput(nil).WithOutput(io.Discard).
+		WithInput(nil).
+		WithOutput(io.Discard).
 		WithAccessible(false)
 }
 
