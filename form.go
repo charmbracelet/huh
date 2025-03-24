@@ -87,9 +87,6 @@ type Form struct {
 	timeout    time.Duration
 	teaOptions []tea.ProgramOption
 
-	// the maximum height we might need.
-	neededHeight int
-
 	layout Layout
 }
 
@@ -123,14 +120,6 @@ func NewForm(groups ...*Group) *Form {
 		f.WithWidth(defaultWidth)
 		f.WithAccessible(true)
 	}
-
-	// set neededHeight as the height of the tallest group
-	f.selector.Range(func(_ int, group *Group) bool {
-		if h := group.rawHeight(); h > f.neededHeight {
-			f.neededHeight = h
-		}
-		return true
-	})
 
 	return f
 }
@@ -536,8 +525,18 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			})
 		}
 		if f.height == 0 {
+			// calculate the needed height, which is the height of the
+			// heightest group, accounting for the width, wraps, etc.
+			neededHeight := 0
 			f.selector.Range(func(_ int, group *Group) bool {
-				group.WithHeight(min(f.neededHeight, msg.Height))
+				if h := group.rawHeight(); h > neededHeight {
+					neededHeight = h
+				}
+				return true
+			})
+
+			f.selector.Range(func(_ int, group *Group) bool {
+				group.WithHeight(min(neededHeight, msg.Height))
 				return true
 			})
 		}
