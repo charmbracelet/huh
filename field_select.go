@@ -663,10 +663,10 @@ func (s *Select[T]) View() string {
 	if s.title.val != "" || s.title.fn != nil {
 		parts = append(parts, s.titleView())
 	}
-	parts = append(parts, s.viewport.View())
 	if s.description.val != "" || s.description.fn != nil {
 		parts = append(parts, s.descriptionView())
 	}
+	parts = append(parts, s.viewport.View())
 	return styles.Base.Width(s.width).Height(s.height).
 		Render(lipgloss.JoinVertical(lipgloss.Top, parts...))
 }
