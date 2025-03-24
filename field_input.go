@@ -405,7 +405,9 @@ func (i *Input) View() string {
 	}
 	sb.WriteString(i.textinput.View())
 
-	return styles.Base.Width(i.width).Height(i.height).
+	return styles.Base.
+		Width(i.width).
+		Height(i.height).
 		Render(sb.String())
 }
 
