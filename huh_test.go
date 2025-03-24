@@ -954,7 +954,7 @@ func TestTimeout(t *testing.T) {
 	f := formProgram()
 
 	// Test that the form times out after 1ms and returns a timeout error.
-	err := f.WithTimeout(time.Millisecond).Run()
+	err := f.WithTimeout(100 * time.Millisecond).Run()
 	if err == nil || !errors.Is(err, ErrTimeout) {
 		t.Errorf("expected timeout error, got %v", err)
 	}
