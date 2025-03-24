@@ -503,7 +503,7 @@ func (f *Form) Init() tea.Cmd {
 	}
 
 	cmds = append(cmds, tea.WindowSize())
-	return tea.Batch(cmds...)
+	return tea.Sequence(cmds...)
 }
 
 // Update updates the form.
