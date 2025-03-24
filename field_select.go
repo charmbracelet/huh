@@ -196,6 +196,7 @@ func (s *Select[T]) selectOption() {
 			break
 		}
 	}
+	s.viewport.YOffset = s.selected
 }
 
 // OptionsFunc sets the options func of the select field.

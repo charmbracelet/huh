@@ -141,9 +141,17 @@ func (m *MultiSelect[T]) selectOptions() {
 		for _, v := range m.accessor.Get() {
 			if o.Value == v {
 				m.options.val[i].selected = true
-				m.cursor = i
 			}
 		}
+	}
+
+	for i, o := range m.options.val {
+		if !o.selected {
+			continue
+		}
+		m.cursor = i
+		m.viewport.YOffset = i
+		break
 	}
 }
 
