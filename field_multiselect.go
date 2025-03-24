@@ -238,6 +238,7 @@ func (m *MultiSelect[T]) Hovered() (T, bool) {
 
 // KeyBinds returns the help message for the multi-select field.
 func (m *MultiSelect[T]) KeyBinds() []key.Binding {
+	m.setSelectAllHelp()
 	binds := []key.Binding{
 		m.keymap.Toggle,
 		m.keymap.Up,
@@ -679,13 +680,17 @@ func (m *MultiSelect[T]) filterFunc(option string) bool {
 
 // setSelectAllHelp enables the appropriate select all or select none keybinding.
 func (m *MultiSelect[T]) setSelectAllHelp() {
-	if m.limit <= 0 {
-		noneSelected := m.numFilteredSelected() <= 0
-		allSelected := m.numFilteredSelected() > 0 && m.numFilteredSelected() < len(m.filteredOptions)
-		selectAll := noneSelected || allSelected
-		m.keymap.SelectAll.SetEnabled(selectAll)
-		m.keymap.SelectNone.SetEnabled(!selectAll)
+	if m.limit > 0 {
+		m.keymap.SelectAll.SetEnabled(false)
+		m.keymap.SelectNone.SetEnabled(false)
+		return
 	}
+
+	noneSelected := m.numFilteredSelected() <= 0
+	allSelected := m.numFilteredSelected() > 0 && m.numFilteredSelected() < len(m.filteredOptions)
+	selectAll := noneSelected || allSelected
+	m.keymap.SelectAll.SetEnabled(selectAll)
+	m.keymap.SelectNone.SetEnabled(!selectAll)
 }
 
 // Run runs the multi-select field.
