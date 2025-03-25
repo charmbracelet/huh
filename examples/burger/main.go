@@ -59,7 +59,7 @@ func main() {
 	form := huh.NewForm(
 		huh.NewGroup(huh.NewNote().
 			Title("Charmburger").
-			Description("Welcome to _Charmburger™_.\n\nHow may we take your order?\n\n").
+			Description("Welcome to _Charmburger™_.\n\nHow may we take your order?").
 			Next(true).
 			NextLabel("Next"),
 		),
