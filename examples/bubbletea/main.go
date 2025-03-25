@@ -269,7 +269,7 @@ func (m Model) getRole() (string, string) {
 	case "Rogue":
 		switch level {
 		case "1":
-			return "Stealth Junior Designer", "Designs rougue-like activities. Reports to Stealth Lead."
+			return "Stealth Junior Designer", "Designs rogue-like activities. Reports to Stealth Lead."
 		case "9999":
 			return "Stealth Lead", "Lead designer for all things stealth. Some travel required."
 		default:
