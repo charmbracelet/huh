@@ -365,7 +365,8 @@ func (g *Group) View() string {
 	}
 	parts = append(parts, g.viewport.View())
 	if s := g.Footer(); s != "" {
-		parts = append(parts, s)
+		// append an empty line, and the footer (usually the help).
+		parts = append(parts, "", s)
 	}
 	return lipgloss.JoinVertical(lipgloss.Top, parts...)
 }
