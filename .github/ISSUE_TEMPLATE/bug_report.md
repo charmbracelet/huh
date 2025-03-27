@@ -7,32 +7,47 @@ assignees: ''
 
 ---
 
-**Describe the bug**
+### Describe the bug
+
 A clear and concise description of what the bug is.
 
-**To Reproduce**
+### Setup
+
+Please complete the following information along with version numbers, if applicable.
+ - OS [e.g. Ubuntu, macOS]
+ - Shell [e.g. zsh, fish]
+ - Terminal Emulator [e.g. kitty, iterm]
+ - Terminal Multiplexer [e.g. tmux]
+
+*Note: you might encounter rendering issues if your locale does not use
+`UTF-8` encoding. Please check your locale (`locale` on POSIX shells) to
+see what encoding is being used by your system.*
+
+### To Reproduce
+
 Steps to reproduce the behavior:
 1. Go to '...'
 2. Click on '....'
 3. Scroll down to '....'
 4. See error
 
-**Expected behavior**
+### Source Code
+
+Please include a [minimum reproducible example][writing-example] to reproduce the behavior.
+
+Please paste your example as a code block on the issue. Do not link to an external project. Your example should fit in a single file. Take a look at [Bubble Tea examples][bubbletea-example] for an idea on writing a small, but runnable program.
+
+[bubbletea-example]: https://github.com/charmbracelet/bubbletea/tree/main/examples
+[writing-example]: https://stackoverflow.com/help/minimal-reproducible-example
+
+### Expected behavior
+
 A clear and concise description of what you expected to happen.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+### Screenshots
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+Add screenshots to help explain your problem.
 
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+### Additional context
 
-**Additional context**
 Add any other context about the problem here.

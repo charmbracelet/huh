@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Anything but bugs
+    url: https://github.com/charmbracelet/huh/discussions/new/choose
+    about: Please highlight your feature requests, questions, and feedback in discussions.
+  - name: Community Discord
+    url: https://charm.sh/chat
+    about: Chat with the community on Discord!
