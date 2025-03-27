@@ -26,6 +26,7 @@ type Text struct {
 	title       Eval[string]
 	description Eval[string]
 	placeholder Eval[string]
+	hide        Eval[bool]
 
 	externalEditor  bool
 	editorCmd       string
@@ -70,6 +71,7 @@ func NewText() *Text {
 		title:           Eval[string]{cache: make(map[uint64]string)},
 		description:     Eval[string]{cache: make(map[uint64]string)},
 		placeholder:     Eval[string]{cache: make(map[uint64]string)},
+		hide:            Eval[bool]{cache: make(map[uint64]bool)},
 	}
 
 	return t
@@ -173,6 +175,22 @@ func (t *Text) Placeholder(str string) *Text {
 func (t *Text) PlaceholderFunc(f func() string, bindings any) *Text {
 	t.placeholder.fn = f
 	t.placeholder.bindings = bindings
+	return t
+}
+
+func (t *Text) Hide() bool {
+	return t.hide.val
+}
+
+func (t *Text) WithHide(value bool) *Text {
+	t.hide.val = value
+	t.hide.fn = nil
+	return t
+}
+
+func (t *Text) WithHideFunc(fn func() bool, bindings any) *Text {
+	t.hide.fn = fn
+	t.hide.bindings = bindings
 	return t
 }
 
@@ -298,6 +316,15 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				})
 			}
 		}
+		if ok, hash := t.hide.shouldUpdate(); ok {
+			t.hide.bindingsHash = hash
+			if !t.hide.loadFromCache() {
+				t.hide.loading = true
+				cmds = append(cmds, func() tea.Msg {
+					return updateHideMsg{id: t.id, hide: t.hide.fn(), hash: hash}
+				})
+			}
+		}
 		return t, tea.Batch(cmds...)
 	case updatePlaceholderMsg:
 		if t.id == msg.id && t.placeholder.bindingsHash == msg.hash {
@@ -311,6 +338,10 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case updateDescriptionMsg:
 		if t.id == msg.id && t.description.bindingsHash == msg.hash {
 			t.description.update(msg.description)
+		}
+	case updateHideMsg:
+		if t.id == msg.id && t.hide.bindingsHash == msg.hash {
+			t.hide.update(msg.hide)
 		}
 	case tea.KeyMsg:
 		t.err = nil
