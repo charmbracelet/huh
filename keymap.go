@@ -69,7 +69,7 @@ type MultiSelectKeyMap struct {
 	SelectNone   key.Binding
 }
 
-// FilePickerKey is the keybindings for filepicker fields.
+// FilePickerKeyMap is the keybindings for filepicker fields.
 type FilePickerKeyMap struct {
 	Open       key.Binding
 	Close      key.Binding
