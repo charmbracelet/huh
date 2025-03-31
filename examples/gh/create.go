@@ -5,9 +5,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/charmbracelet/huh"
-	"github.com/charmbracelet/huh/spinner"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/huh/v2"
+	"github.com/charmbracelet/huh/v2/spinner"
+	"github.com/charmbracelet/lipgloss/v2"
 )
 
 type Action int
@@ -21,14 +21,18 @@ const (
 
 var highlight = lipgloss.NewStyle().Foreground(lipgloss.Color("#00D7D7"))
 
+func customTheme(isDark bool) *huh.Styles {
+	theme := huh.ThemeBase16(isDark)
+	theme.FieldSeparator = lipgloss.NewStyle().SetString("\n")
+	theme.Help.FullKey.MarginTop(1)
+	return theme
+}
+
 func main() {
 	var action Action
 	spinnerStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("4"))
 
 	repo := "charmbracelet/huh"
-	theme := huh.ThemeBase16()
-	theme.FieldSeparator = lipgloss.NewStyle().SetString("\n")
-	theme.Help.FullKey.MarginTop(1)
 
 	f := huh.NewForm(
 		huh.NewGroup(
@@ -42,7 +46,7 @@ func main() {
 				).
 				Title("Where should we push the 'feature' branch?"),
 		),
-	).WithTheme(theme)
+	).WithTheme(huh.ThemeFunc(customTheme))
 
 	err := f.Run()
 	if err != nil {
@@ -80,7 +84,7 @@ func main() {
 				Options(huh.NewOptions("Submit", "Submit as draft", "Continue in browser", "Add metadata", "Cancel")...).
 				Title("What's next?").Value(&nextAction),
 		),
-	).WithTheme(theme)
+	).WithTheme(huh.ThemeFunc(customTheme))
 
 	err = f.Run()
 	if err != nil {

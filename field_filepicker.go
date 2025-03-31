@@ -8,11 +8,11 @@ import (
 
 	xstrings "github.com/charmbracelet/x/exp/strings"
 
-	"github.com/charmbracelet/bubbles/filepicker"
-	"github.com/charmbracelet/bubbles/key"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/accessibility"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/bubbles/v2/filepicker"
+	"github.com/charmbracelet/bubbles/v2/key"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/huh/v2/accessibility"
+	"github.com/charmbracelet/lipgloss/v2"
 )
 
 // FilePicker is a form file file field.
@@ -37,7 +37,8 @@ type FilePicker struct {
 	width      int
 	height     int
 	accessible bool
-	theme      *Theme
+	theme      Theme
+	hasDarkBg  bool
 	keymap     FilePickerKeyMap
 }
 
@@ -202,6 +203,8 @@ func (f *FilePicker) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	f.err = nil
 
 	switch msg := msg.(type) {
+	case tea.BackgroundColorMsg:
+		f.hasDarkBg = msg.IsDark()
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, f.keymap.Open):
@@ -242,12 +245,12 @@ func (f *FilePicker) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (f *FilePicker) activeStyles() *FieldStyles {
 	theme := f.theme
 	if theme == nil {
-		theme = ThemeCharm()
+		theme = ThemeFunc(ThemeCharm)
 	}
 	if f.focused {
-		return &theme.Focused
+		return &theme.Theme(f.hasDarkBg).Focused
 	}
-	return &theme.Blurred
+	return &theme.Theme(f.hasDarkBg).Blurred
 }
 
 func (f *FilePicker) renderTitle() string {
@@ -354,25 +357,26 @@ const (
 )
 
 // WithTheme sets the theme of the file field.
-func (f *FilePicker) WithTheme(theme *Theme) Field {
+func (f *FilePicker) WithTheme(theme Theme) Field {
 	if f.theme != nil || theme == nil {
 		return f
 	}
 	f.theme = theme
+	styles := f.theme.Theme(f.hasDarkBg)
 
 	// XXX: add specific themes
 	f.picker.Styles = filepicker.Styles{
 		DisabledCursor:   lipgloss.Style{},
-		Cursor:           theme.Focused.TextInput.Prompt,
+		Cursor:           styles.Focused.TextInput.Prompt,
 		Symlink:          lipgloss.NewStyle(),
-		Directory:        theme.Focused.Directory,
-		File:             theme.Focused.File,
-		DisabledFile:     theme.Focused.TextInput.Placeholder,
-		Permission:       theme.Focused.TextInput.Placeholder,
-		Selected:         theme.Focused.SelectedOption,
-		DisabledSelected: theme.Focused.TextInput.Placeholder,
-		FileSize:         theme.Focused.TextInput.Placeholder.Width(fileSizeWidth).Align(lipgloss.Right),
-		EmptyDirectory:   theme.Focused.TextInput.Placeholder.PaddingLeft(paddingLeft).SetString("No files found."),
+		Directory:        styles.Focused.Directory,
+		File:             styles.Focused.File,
+		DisabledFile:     styles.Focused.TextInput.Placeholder,
+		Permission:       styles.Focused.TextInput.Placeholder,
+		Selected:         styles.Focused.SelectedOption,
+		DisabledSelected: styles.Focused.TextInput.Placeholder,
+		FileSize:         styles.Focused.TextInput.Placeholder.Width(fileSizeWidth).Align(lipgloss.Right),
+		EmptyDirectory:   styles.Focused.TextInput.Placeholder.PaddingLeft(paddingLeft).SetString("No files found."),
 	}
 
 	return f

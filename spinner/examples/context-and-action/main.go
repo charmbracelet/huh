@@ -7,7 +7,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/charmbracelet/huh/spinner"
+	"github.com/charmbracelet/huh/v2/spinner"
 )
 
 func main() {

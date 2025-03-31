@@ -5,13 +5,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/spinner"
-	"github.com/charmbracelet/bubbles/textinput"
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/accessibility"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/bubbles/v2/key"
+	"github.com/charmbracelet/bubbles/v2/spinner"
+	"github.com/charmbracelet/bubbles/v2/textinput"
+	"github.com/charmbracelet/bubbles/v2/viewport"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/huh/v2/accessibility"
+	"github.com/charmbracelet/lipgloss/v2"
 )
 
 const (
@@ -50,7 +50,8 @@ type Select[T comparable] struct {
 	width      int
 	height     int
 	accessible bool
-	theme      *Theme
+	theme      Theme
+	hasDarkBg  bool
 	keymap     SelectKeyMap
 }
 
@@ -196,7 +197,7 @@ func (s *Select[T]) selectOption() {
 			break
 		}
 	}
-	s.viewport.YOffset = s.selected
+	s.viewport.SetYOffset(s.selected)
 }
 
 // OptionsFunc sets the options func of the select field.
@@ -330,6 +331,8 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	switch msg := msg.(type) {
+	case tea.BackgroundColorMsg:
+		s.hasDarkBg = msg.IsDark()
 	case updateFieldMsg:
 		var cmds []tea.Cmd
 		if ok, hash := s.title.shouldUpdate(); ok {
@@ -421,7 +424,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				s.selected = len(s.filteredOptions) - 1
 				s.viewport.GotoBottom()
 			}
-			if s.selected < s.viewport.YOffset {
+			if s.selected < s.viewport.YOffset() {
 				s.viewport.SetYOffset(s.selected)
 			}
 			s.updateValue()
@@ -439,12 +442,12 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			s.selected = len(s.filteredOptions) - 1
 			s.viewport.GotoBottom()
 		case key.Matches(msg, s.keymap.HalfPageUp):
-			s.selected = max(s.selected-s.viewport.Height/2, 0)
-			s.viewport.HalfViewUp()
+			s.selected = max(s.selected-s.viewport.Height()/2, 0)
+			s.viewport.HalfPageUp()
 			s.updateValue()
 		case key.Matches(msg, s.keymap.HalfPageDown):
-			s.selected = min(s.selected+s.viewport.Height/2, len(s.filteredOptions)-1)
-			s.viewport.HalfViewDown()
+			s.selected = min(s.selected+s.viewport.Height()/2, len(s.filteredOptions)-1)
+			s.viewport.HalfPageDown()
 			s.updateValue()
 		case key.Matches(msg, s.keymap.Down, s.keymap.Right):
 			// When filtering we should ignore j/k keybindings
@@ -458,8 +461,8 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				s.selected = 0
 				s.viewport.GotoTop()
 			}
-			if s.selected >= s.viewport.YOffset+s.viewport.Height {
-				s.viewport.LineDown(1)
+			if s.selected >= s.viewport.YOffset()+s.viewport.Height() {
+				s.viewport.ScrollDown(1)
 			}
 			s.updateValue()
 		case key.Matches(msg, s.keymap.Prev):
@@ -503,7 +506,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		_, offset, height := s.optionsView()
-		if offset > -1 && height > 0 && (offset < s.viewport.YOffset || height+offset >= s.viewport.YOffset+s.viewport.Height) {
+		if offset > -1 && height > 0 && (offset < s.viewport.YOffset() || height+offset >= s.viewport.YOffset()+s.viewport.Height()) {
 			s.viewport.SetYOffset(offset)
 		}
 	}
@@ -523,7 +526,7 @@ func (s *Select[T]) updateViewportHeight() {
 	// If no height is set size the viewport to the number of options.
 	if s.height <= 0 {
 		v, _, _ := s.optionsView()
-		s.viewport.Height = lipgloss.Height(v)
+		s.viewport.SetHeight(lipgloss.Height(v))
 		return
 	}
 
@@ -535,18 +538,18 @@ func (s *Select[T]) updateViewportHeight() {
 		offset += lipgloss.Height(ss)
 	}
 
-	s.viewport.Height = max(minHeight, s.height-offset)
+	s.viewport.SetHeight(max(minHeight, s.height-offset))
 }
 
 func (s *Select[T]) activeStyles() *FieldStyles {
 	theme := s.theme
 	if theme == nil {
-		theme = ThemeCharm()
+		theme = ThemeFunc(ThemeCharm)
 	}
 	if s.focused {
-		return &theme.Focused
+		return &theme.Theme(s.hasDarkBg).Focused
 	}
-	return &theme.Blurred
+	return &theme.Theme(s.hasDarkBg).Blurred
 }
 
 func (s *Select[T]) titleView() string {
@@ -682,7 +685,7 @@ func (s *Select[T]) clearFilter() {
 // setFiltering sets the filter of the select field.
 func (s *Select[T]) setFiltering(filtering bool) {
 	if s.inline && filtering {
-		s.filter.Width = lipgloss.Width(s.titleView()) - 1 - 1
+		s.filter.SetWidth(lipgloss.Width(s.titleView()) - 1 - 1)
 	}
 	s.filtering = filtering
 	s.keymap.SetFilter.SetEnabled(filtering)
@@ -733,16 +736,20 @@ func (s *Select[T]) runAccessible() error {
 }
 
 // WithTheme sets the theme of the select field.
-func (s *Select[T]) WithTheme(theme *Theme) Field {
+func (s *Select[T]) WithTheme(theme Theme) Field {
 	if s.theme != nil {
 		return s
 	}
 	s.theme = theme
-	s.filter.Cursor.Style = theme.Focused.TextInput.Cursor
-	s.filter.Cursor.TextStyle = theme.Focused.TextInput.CursorText
-	s.filter.PromptStyle = theme.Focused.TextInput.Prompt
-	s.filter.TextStyle = theme.Focused.TextInput.Text
-	s.filter.PlaceholderStyle = theme.Focused.TextInput.Placeholder
+	styles := s.theme.Theme(s.hasDarkBg)
+
+	// TODO: ???
+	// s.filter.Cursor.Style = theme.Focused.TextInput.Cursor
+	// s.filter.Cursor.TextStyle = theme.Focused.TextInput.CursorText
+
+	s.filter.Styles.Focused.Prompt = styles.Focused.TextInput.Prompt
+	s.filter.Styles.Focused.Text = styles.Focused.TextInput.Text
+	s.filter.Styles.Focused.Placeholder = styles.Focused.TextInput.Placeholder
 	s.updateViewportHeight()
 	return s
 }
