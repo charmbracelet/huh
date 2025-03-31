@@ -1,3 +1,4 @@
+// Package accessibility provides accessible functions to capture user input.
 package accessibility
 
 import (
@@ -5,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -36,18 +38,14 @@ func PromptInt(prompt string, low, high int) int {
 func parseBool(s string) (bool, error) {
 	s = strings.ToLower(s)
 
-	for _, y := range []string{"y", "yes"} {
-		if y == s {
-			return true, nil
-		}
+	if slices.Contains([]string{"y", "yes"}, s) {
+		return true, nil
 	}
 
 	// As a special case, we default to "" to no since the usage of this
 	// function suggests N is the default.
-	for _, n := range []string{"", "n", "no"} {
-		if n == s {
-			return false, nil
-		}
+	if slices.Contains([]string{"", "n", "no"}, s) {
+		return false, nil
 	}
 
 	return false, errors.New("invalid input. please try again")

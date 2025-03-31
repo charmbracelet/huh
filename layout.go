@@ -10,18 +10,18 @@ type Layout interface {
 	GroupWidth(f *Form, g *Group, w int) int
 }
 
-// Default layout shows a single group at a time.
+// LayoutDefault is the default layout shows a single group at a time.
 var LayoutDefault Layout = &layoutDefault{}
 
-// Stack layout stacks all groups on top of each other.
+// LayoutStack is a layout stacks all groups on top of each other.
 var LayoutStack Layout = &layoutStack{}
 
-// Column layout distributes groups in even columns.
+// LayoutColumns layout distributes groups in even columns.
 func LayoutColumns(columns int) Layout {
 	return &layoutColumns{columns: columns}
 }
 
-// Grid layout distributes groups in a grid.
+// LayoutGrid layout distributes groups in a grid.
 func LayoutGrid(rows int, columns int) Layout {
 	return &layoutGrid{rows: rows, columns: columns}
 }

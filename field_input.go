@@ -174,15 +174,15 @@ func (i *Input) SuggestionsFunc(f func() []string, bindings any) *Input {
 type EchoMode textinput.EchoMode
 
 const (
-	// EchoNormal displays text as is.
+	// EchoModeNormal displays text as is.
 	// This is the default behavior.
 	EchoModeNormal EchoMode = EchoMode(textinput.EchoNormal)
 
-	// EchoPassword displays the EchoCharacter mask instead of actual characters.
+	// EchoModePassword displays the EchoCharacter mask instead of actual characters.
 	// This is commonly used for password fields.
 	EchoModePassword EchoMode = EchoMode(textinput.EchoPassword)
 
-	// EchoNone displays nothing as characters are entered.
+	// EchoModeNone displays nothing as characters are entered.
 	// This is commonly seen for password fields on the command line.
 	EchoModeNone EchoMode = EchoMode(textinput.EchoNone)
 )
