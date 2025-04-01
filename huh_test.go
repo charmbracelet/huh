@@ -125,7 +125,7 @@ func TestForm(t *testing.T) {
 	//   ↑ up • ↓ down • / filter • enter select
 	//
 
-	if !strings.Contains(view, "┃ Shell?") {
+	if !strings.Contains(view, "┃ Shell?") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected form to contain Shell? title")
 	}
@@ -157,7 +157,7 @@ func TestForm(t *testing.T) {
 
 	view = ansi.Strip(m.(tea.ViewModel).View())
 
-	if !strings.Contains(view, "┃ > Chicken") {
+	if !strings.Contains(view, "┃ > Chicken") {
 		t.Log(pretty.Render(view))
 		t.Fatal("Expected form to continue to base group")
 	}
@@ -249,7 +249,7 @@ func TestForm(t *testing.T) {
 	//
 	//   enter next • shift+tab back
 	//
-	m.Update(typeText("Glen"))
+	typeText(m, "Glen")
 	view = ansi.Strip(m.(tea.ViewModel).View())
 	if !strings.Contains(view, "Glen") {
 		t.Log(pretty.Render(view))
@@ -288,8 +288,7 @@ func TestInput(t *testing.T) {
 	}
 
 	// Type Huh in the form.
-	m, _ := f.Update(typeText("Huh"))
-	f = m.(*Form)
+	f = typeText(f, "Huh")
 	view = ansi.Strip(f.View())
 
 	if !strings.Contains(view, "Huh") {
@@ -319,14 +318,13 @@ func TestInlineInput(t *testing.T) {
 
 	view := ansi.Strip(f.View())
 
-	if !strings.Contains(view, "┃ Input Description:") {
+	if !strings.Contains(view, "┃ Input Description:") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected field to contain inline input.")
 	}
 
 	// Type Huh in the form.
-	m, _ := f.Update(typeText("Huh"))
-	f = m.(*Form)
+	f = typeText(f, "Huh")
 	view = ansi.Strip(f.View())
 
 	if !strings.Contains(view, "Huh") {
@@ -339,7 +337,7 @@ func TestInlineInput(t *testing.T) {
 		t.Error("Expected field to contain help.")
 	}
 
-	if !strings.Contains(view, "┃ Input Description: Huh") {
+	if !strings.Contains(view, "┃ Input Description: Huh") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected field to contain help.")
 	}
@@ -355,8 +353,7 @@ func TestText(t *testing.T) {
 	f.Update(f.Init())
 
 	// Type Huh in the form.
-	m, _ := f.Update(typeText("Huh"))
-	f = m.(*Form)
+	f = typeText(f, "Huh")
 	view := ansi.Strip(f.View())
 
 	if !strings.Contains(view, "Huh") {
@@ -380,8 +377,7 @@ func TestTextExternalEditorHidden(t *testing.T) {
 	f.Update(f.Init())
 
 	// Type Huh in the form.
-	m, _ := f.Update(typeText("Huh"))
-	f = m.(*Form)
+	f = typeText(f, "Huh")
 	view := ansi.Strip(f.View())
 
 	if !strings.Contains(view, "Huh") {
@@ -403,10 +399,6 @@ func TestConfirm(t *testing.T) {
 	field := NewConfirm().Title("Are you sure?")
 	f := NewForm(NewGroup(field))
 	f.Update(f.Init())
-
-	// Type Huh in the form.
-	m, _ := f.Update(typeText("Huh"))
-	f = m.(*Form)
 	view := ansi.Strip(f.View())
 
 	if !strings.Contains(view, "Yes") {
@@ -430,6 +422,7 @@ func TestConfirm(t *testing.T) {
 	}
 
 	if field.GetValue() != false {
+		t.Log(pretty.Render(view))
 		t.Error("Expected field value to be false")
 	}
 
@@ -912,7 +905,7 @@ func TestSkip(t *testing.T) {
 	f = batchUpdate(f, f.Init()).(*Form)
 	view := ansi.Strip(f.View())
 
-	if !strings.Contains(view, "┃ First") {
+	if !strings.Contains(view, "┃ First") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected first field to be focused")
 	}
@@ -921,12 +914,12 @@ func TestSkip(t *testing.T) {
 	f.Update(NextField())
 	view = ansi.Strip(f.View())
 
-	if strings.Contains(view, "┃ First") {
+	if strings.Contains(view, "┃ First") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected first field to be blurred")
 	}
 
-	if !strings.Contains(view, "┃ Second") {
+	if !strings.Contains(view, "┃ Second") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected second field to be focused")
 	}
@@ -935,12 +928,12 @@ func TestSkip(t *testing.T) {
 	f.Update(PrevField())
 	view = ansi.Strip(f.View())
 
-	if strings.Contains(view, "┃ Second") {
+	if strings.Contains(view, "┃ Second") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected second field to be blurred")
 	}
 
-	if !strings.Contains(view, "┃ First") {
+	if !strings.Contains(view, "┃ First") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected first field to be focused")
 	}
@@ -1121,10 +1114,10 @@ func keypress(r rune) tea.KeyMsg {
 	})
 }
 
-func typeText(s string) []tea.KeyMsg {
-	keys := make([]tea.KeyMsg, 0, len(s))
+func typeText[T tea.Model](m T, s string) T {
+	var tm tea.Model = m
 	for _, r := range s {
-		keys = append(keys, keypress(r))
+		tm, _ = tm.Update(keypress(r))
 	}
-	return keys
+	return tm.(T)
 }
