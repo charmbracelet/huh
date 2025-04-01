@@ -69,18 +69,18 @@ func TestSpinnerContextCancellationWhileRunning(t *testing.T) {
 
 func TestSpinnerStyleMethods(t *testing.T) {
 	s := New()
-	style := lipgloss.NewStyle().Foreground(lipgloss.Color("red"))
-	titleStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("blue"))
 
-	s.Style(style)
-	s.TitleStyle(titleStyle)
+	theme := ThemeFunc(func(bool) *Styles {
+		return &Styles{
+			Spinner: lipgloss.NewStyle().Foreground(lipgloss.Color("red")),
+			Title:   lipgloss.NewStyle().Foreground(lipgloss.Color("blue")),
+		}
+	})
 
-	if !reflect.DeepEqual(s.spinner.Style, style) {
+	s.WithTheme(theme).View()
+	styles := s.theme.Theme(true)
+	if !reflect.DeepEqual(s.spinner.Style, styles.Spinner) {
 		t.Errorf("Style was not set correctly")
-	}
-
-	if !reflect.DeepEqual(s.titleStyle, titleStyle) {
-		t.Errorf("TitleStyle was not set correctly")
 	}
 }
 
@@ -110,7 +110,7 @@ func TestSpinnerUpdate(t *testing.T) {
 	}
 
 	// Simulate key press
-	_, cmd = s.Update(tea.KeyMsg{Type: tea.KeyCtrlC})
+	_, cmd = s.Update(tea.KeyPressMsg(tea.Key{Mod: tea.ModCtrl, Code: 'c'}))
 	if cmd == nil {
 		t.Errorf("Update did not handle key press correctly")
 	}
@@ -141,14 +141,14 @@ func exercise(t *testing.T, factory func() *Spinner, checker func(tb testing.TB,
 	t.Run("accessible", func(t *testing.T) {
 		err := factory().
 			Accessible(true).
-			Output(io.Discard).
+			WithOutput(io.Discard).
 			Run()
 		checker(t, err)
 	})
 	t.Run("regular", func(t *testing.T) {
 		err := factory().
 			Accessible(false).
-			Output(io.Discard).
+			WithOutput(io.Discard).
 			Run()
 		checker(t, err)
 	})
