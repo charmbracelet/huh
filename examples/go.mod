@@ -9,7 +9,6 @@ require (
 	github.com/charmbracelet/bubbletea/v2 v2.0.0-beta.1.0.20250331173400-ed4fde7ae48f
 	github.com/charmbracelet/glamour/v2 v2.0.0-20250328172740-ed09839a4c9a
 	github.com/charmbracelet/huh/v2 v2.0.0-00010101000000-000000000000
-	github.com/charmbracelet/huh/v2/spinner v0.0.0-00010101000000-000000000000
 	github.com/charmbracelet/lipgloss/v2 v2.0.0-beta.1.0.20250328203811-64646b468a10
 	github.com/charmbracelet/log/v2 v2.0.0-20250226163916-c379e29ff706
 	github.com/charmbracelet/ssh v0.0.0-20250128164007-98fd5ae11894
@@ -21,7 +20,6 @@ require (
 	github.com/alecthomas/chroma/v2 v2.14.0 // indirect
 	github.com/anmitsu/go-shlex v0.0.0-20200514113438-38f4b401e2be // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
-	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/catppuccin/go v0.3.0 // indirect
 	github.com/charmbracelet/colorprofile v0.3.0 // indirect
@@ -41,12 +39,10 @@ require (
 	github.com/go-logfmt/logfmt v0.6.0 // indirect
 	github.com/gorilla/css v1.0.1 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
-	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.27 // indirect
 	github.com/mitchellh/hashstructure/v2 v2.0.2 // indirect
 	github.com/muesli/cancelreader v0.2.2 // indirect
-	github.com/muesli/termenv v0.16.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	github.com/yuin/goldmark v1.7.8 // indirect
@@ -60,5 +56,3 @@ require (
 )
 
 replace github.com/charmbracelet/huh/v2 => ../
-
-replace github.com/charmbracelet/huh/v2/spinner => ../spinner
