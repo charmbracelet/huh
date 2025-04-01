@@ -1,8 +1,8 @@
 package spinner
 
 import (
+	"cmp"
 	"context"
-	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -27,9 +27,10 @@ type Spinner struct {
 	accessible bool
 	title      string
 	err        error
-
-	theme     Theme
-	hasDarkBg bool
+	teaOptions []tea.ProgramOption
+	theme      Theme
+	out        io.Writer // acessible mode output
+	hasDarkBg  bool
 }
 
 // Styles are the spinner styles.
@@ -90,6 +91,14 @@ func (s *Spinner) Type(t Type) *Spinner {
 // Title sets the title of the spinner.
 func (s *Spinner) Title(title string) *Spinner {
 	s.title = title
+	return s
+}
+
+// WithOutput set the output for the spinner.
+// Default is STDOUT when [Spinner.Accessible], STDERR otherwise.
+func (s *Spinner) WithOutput(w io.Writer) *Spinner {
+	s.teaOptions = append(s.teaOptions, tea.WithOutput(w))
+	s.out = w
 	return s
 }
 
@@ -206,10 +215,8 @@ func (s *Spinner) Run() error {
 		return s.runAccessible()
 	}
 
-	m, err := tea.NewProgram(
-		s,
-		tea.WithContext(s.ctx),
-	).Run()
+	opts := append(s.teaOptions, tea.WithContext(s.ctx))
+	m, err := tea.NewProgram(s, opts...).Run()
 	mm := m.(*Spinner)
 	if mm.err != nil {
 		return mm.err
@@ -220,14 +227,16 @@ func (s *Spinner) Run() error {
 // runAccessible runs the spinner in an accessible mode (statically).
 func (s *Spinner) runAccessible() error {
 	s.hasDarkBg = lipgloss.HasDarkBackground(os.Stdin, os.Stdout)
+	out := cmp.Or[io.Writer](s.out, os.Stdout)
 	styles := s.theme.Theme(s.hasDarkBg)
-	io.WriteString(os.Stdout, ansi.HideCursor)
+
+	_, _ = io.WriteString(out, ansi.HideCursor)
 	frame := s.spinner.Style.Render("...")
 	title := styles.Title.Render(strings.TrimSuffix(s.title, "..."))
-	fmt.Println(title + frame)
+	_, _ = io.WriteString(out, title+frame)
 
 	defer func() {
-		io.WriteString(os.Stdout, ansi.ShowCursor)
+		_, _ = io.WriteString(out, ansi.ShowCursor)
 	}()
 
 	actionDone := make(chan error)
