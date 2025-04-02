@@ -743,10 +743,7 @@ func (s *Select[T]) WithTheme(theme Theme) Field {
 	s.theme = theme
 	styles := s.theme.Theme(s.hasDarkBg)
 
-	// TODO: ???
-	// s.filter.Cursor.Style = theme.Focused.TextInput.Cursor
-	// s.filter.Cursor.TextStyle = theme.Focused.TextInput.CursorText
-
+	s.filter.Styles.Cursor.Color = styles.Focused.TextInput.Cursor.GetForeground()
 	s.filter.Styles.Focused.Prompt = styles.Focused.TextInput.Prompt
 	s.filter.Styles.Focused.Text = styles.Focused.TextInput.Text
 	s.filter.Styles.Focused.Placeholder = styles.Focused.TextInput.Placeholder

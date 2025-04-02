@@ -382,10 +382,7 @@ func (i *Input) View() string {
 	// NB: since the method is on a pointer receiver these are being mutated.
 	// Because this runs on every render this shouldn't matter in practice,
 	// however.
-	// TODO: ???
-	// i.textinput.Cursor.Style = styles.TextInput.Cursor
-	// i.textinput.Cursor.TextStyle = styles.TextInput.CursorText
-
+	i.textinput.Styles.Cursor.Color = styles.TextInput.Cursor.GetForeground()
 	i.textinput.Styles.Focused.Prompt = styles.TextInput.Prompt
 	i.textinput.Styles.Focused.Text = styles.TextInput.Text
 	i.textinput.Styles.Focused.Placeholder = styles.TextInput.Placeholder

@@ -386,10 +386,7 @@ func (t *Text) View() string {
 	textareaStyles.Text = styles.TextInput.Text
 	textareaStyles.Prompt = styles.TextInput.Prompt
 	textareaStyles.CursorLine = styles.TextInput.Text
-
-	// TODO: ???
-	// t.textarea.Cursor.Style = styles.TextInput.Cursor
-	// t.textarea.Cursor.TextStyle = styles.TextInput.CursorText
+	t.textarea.Styles.Cursor.Color = styles.TextInput.Cursor.GetBackground()
 
 	maxWidth := t.width - styles.Base.GetHorizontalFrameSize()
 	var parts []string
