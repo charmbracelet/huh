@@ -3,6 +3,7 @@ package huh
 import (
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -309,16 +310,16 @@ func (f *FilePicker) setPicking(v bool) {
 // Run runs the file field.
 func (f *FilePicker) Run() error {
 	if f.accessible {
-		return f.runAccessible()
+		return f.runAccessible(os.Stdout, os.Stdin)
 	}
 	return Run(f)
 }
 
 // runAccessible runs an accessible file field.
-func (f *FilePicker) runAccessible() error {
+func (f *FilePicker) runAccessible(w io.Writer, r io.Reader) error {
 	styles := f.activeStyles()
-	fmt.Println(styles.Title.Render(f.title))
-	fmt.Println()
+	fmt.Fprintln(w, styles.Title.Render(f.title))
+	fmt.Fprintln(w)
 
 	validateFile := func(s string) error {
 		// is the string a file?
@@ -342,8 +343,8 @@ func (f *FilePicker) runAccessible() error {
 		return f.validate(s)
 	}
 
-	f.accessor.Set(accessibility.PromptString("File: ", validateFile))
-	fmt.Println(styles.SelectedOption.Render(f.accessor.Get() + "\n"))
+	f.accessor.Set(accessibility.PromptString(r, "File: ", validateFile))
+	fmt.Fprintln(w, styles.SelectedOption.Render(f.accessor.Get()+"\n"))
 	return nil
 }
 

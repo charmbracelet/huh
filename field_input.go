@@ -2,6 +2,8 @@ package huh
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
@@ -414,7 +416,7 @@ func (i *Input) View() string {
 // Run runs the input field in accessible mode.
 func (i *Input) Run() error {
 	if i.accessible {
-		return i.runAccessible()
+		return i.runAccessible(os.Stdout, os.Stdin)
 	}
 	return i.run()
 }
@@ -425,12 +427,12 @@ func (i *Input) run() error {
 }
 
 // runAccessible runs the input field in accessible mode.
-func (i *Input) runAccessible() error {
+func (i *Input) runAccessible(w io.Writer, r io.Reader) error {
 	styles := i.activeStyles()
-	fmt.Println(styles.Title.Render(i.title.val))
-	fmt.Println()
-	i.accessor.Set(accessibility.PromptString("Input: ", i.validate))
-	fmt.Println(styles.SelectedOption.Render("Input: " + i.accessor.Get() + "\n"))
+	fmt.Fprintln(w, styles.Title.Render(i.title.val))
+	fmt.Fprintln(w)
+	i.accessor.Set(accessibility.PromptString(r, "Input: ", i.validate))
+	fmt.Fprintln(w, styles.SelectedOption.Render("Input: "+i.accessor.Get()+"\n"))
 	return nil
 }
 

@@ -2,6 +2,8 @@ package huh
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"strings"
 	"time"
 
@@ -699,13 +701,13 @@ func (s *Select[T]) filterFunc(option string) bool {
 // Run runs the select field.
 func (s *Select[T]) Run() error {
 	if s.accessible {
-		return s.runAccessible()
+		return s.runAccessible(os.Stdout, os.Stdin)
 	}
 	return Run(s)
 }
 
 // runAccessible runs an accessible select field.
-func (s *Select[T]) runAccessible() error {
+func (s *Select[T]) runAccessible(w io.Writer, r io.Reader) error {
 	var sb strings.Builder
 	styles := s.activeStyles()
 	sb.WriteString(styles.Title.Render(s.title.val) + "\n")
@@ -715,16 +717,16 @@ func (s *Select[T]) runAccessible() error {
 		sb.WriteString("\n")
 	}
 
-	fmt.Println(sb.String())
+	fmt.Fprintln(w, sb.String())
 
 	for {
-		choice := accessibility.PromptInt("Choose: ", 1, len(s.options.val))
+		choice := accessibility.PromptInt(r, "Choose: ", 1, len(s.options.val))
 		option := s.options.val[choice-1]
 		if err := s.validate(option.Value); err != nil {
-			fmt.Println(err.Error())
+			fmt.Fprintln(w, err.Error())
 			continue
 		}
-		fmt.Println(styles.SelectedOption.Render("Chose: " + option.Key + "\n"))
+		fmt.Fprintln(w, styles.SelectedOption.Render("Chose: "+option.Key+"\n"))
 		s.accessor.Set(option.Value)
 		break
 	}

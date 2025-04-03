@@ -2,6 +2,8 @@ package huh
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
@@ -298,20 +300,20 @@ func (c *Confirm) View() string {
 // Run runs the confirm field in accessible mode.
 func (c *Confirm) Run() error {
 	if c.accessible {
-		return c.runAccessible()
+		return c.runAccessible(os.Stdout, os.Stdin)
 	}
 	return Run(c)
 }
 
 // runAccessible runs the confirm field in accessible mode.
-func (c *Confirm) runAccessible() error {
+func (c *Confirm) runAccessible(w io.Writer, r io.Reader) error {
 	styles := c.activeStyles()
 	if c.title.val != "" {
-		fmt.Println(styles.Title.Render(c.title.val))
-		fmt.Println()
+		fmt.Fprintln(w, styles.Title.Render(c.title.val))
+		fmt.Fprintln(w)
 	}
-	c.accessor.Set(accessibility.PromptBool())
-	fmt.Println(styles.SelectedOption.Render("Chose: "+c.String()) + "\n")
+	c.accessor.Set(accessibility.PromptBool(r))
+	fmt.Fprintln(w, styles.SelectedOption.Render("Chose: "+c.String())+"\n")
 	return nil
 }
 

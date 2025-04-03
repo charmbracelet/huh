@@ -3,7 +3,6 @@ package spinner
 import (
 	"cmp"
 	"context"
-	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -175,7 +174,8 @@ func (s *Spinner) Run() error {
 	}
 
 	if s.accessible {
-		return s.runAccessible()
+		out := cmp.Or[io.Writer](s.output, os.Stdout)
+		return s.runAccessible(out)
 	}
 
 	m, err := tea.NewProgram(
@@ -192,13 +192,12 @@ func (s *Spinner) Run() error {
 }
 
 // runAccessible runs the spinner in an accessible mode (statically).
-func (s *Spinner) runAccessible() error {
-	tty := cmp.Or[io.Writer](s.output, os.Stdout)
-	output := termenv.NewOutput(tty)
+func (s *Spinner) runAccessible(out io.Writer) error {
+	output := termenv.NewOutput(out)
 	output.HideCursor()
 	frame := s.spinner.Style.Render("...")
 	title := s.titleStyle.Render(strings.TrimSuffix(s.title, "..."))
-	fmt.Println(title + frame)
+	_, _ = io.WriteString(out, title+frame)
 
 	defer func() {
 		output.ShowCursor()

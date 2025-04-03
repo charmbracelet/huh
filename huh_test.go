@@ -1,6 +1,7 @@
 package huh
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -1121,4 +1122,28 @@ func keys(runes ...rune) tea.KeyMsg {
 		Type:  tea.KeyRunes,
 		Runes: runes,
 	}
+}
+
+func TestAccessible(t *testing.T) {
+	var out bytes.Buffer
+	var in bytes.Buffer
+
+	_, _ = in.WriteString("carlos")
+
+	f := NewForm(
+		NewGroup(
+			NewConfirm().Title("Hello"),
+			NewInput().Title("Hello"),
+		),
+	).
+		WithAccessible(true).
+		WithOutput(&out).
+		WithInput(&in)
+
+	if err := f.Run(); err != nil {
+		t.Error(err)
+	}
+
+	t.Log("A:", out.String())
+	t.Error("oh no")
 }

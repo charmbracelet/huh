@@ -2,6 +2,8 @@ package huh
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"strings"
 	"time"
 
@@ -650,7 +652,7 @@ func (m *MultiSelect[T]) View() string {
 		Render(sb.String())
 }
 
-func (m *MultiSelect[T]) printOptions() {
+func (m *MultiSelect[T]) printOptions(w io.Writer) {
 	styles := m.activeStyles()
 	maxWidth := m.width - styles.Base.GetHorizontalFrameSize()
 	var sb strings.Builder
@@ -666,7 +668,7 @@ func (m *MultiSelect[T]) printOptions() {
 		sb.WriteString("\n")
 	}
 
-	fmt.Println(sb.String())
+	fmt.Fprintln(w, sb.String())
 }
 
 // setFilter sets the filter of the select field.
@@ -704,43 +706,43 @@ func (m *MultiSelect[T]) setSelectAllHelp() {
 // Run runs the multi-select field.
 func (m *MultiSelect[T]) Run() error {
 	if m.accessible {
-		return m.runAccessible()
+		return m.runAccessible(os.Stdout, os.Stdin)
 	}
 	return Run(m)
 }
 
 // runAccessible() runs the multi-select field in accessible mode.
-func (m *MultiSelect[T]) runAccessible() error {
-	m.printOptions()
+func (m *MultiSelect[T]) runAccessible(w io.Writer, r io.Reader) error {
+	m.printOptions(w)
 	styles := m.activeStyles()
 
 	var choice int
 	for {
-		fmt.Printf("Select up to %d options. 0 to continue.\n", m.limit)
+		fmt.Fprintf(w, "Select up to %d options. 0 to continue.\n", m.limit)
 
-		choice = accessibility.PromptInt("Select: ", 0, len(m.options.val))
+		choice = accessibility.PromptInt(r, "Select: ", 0, len(m.options.val))
 		if choice == 0 {
 			m.updateValue()
 			err := m.validate(m.accessor.Get())
 			if err != nil {
-				fmt.Println(err)
+				fmt.Fprintln(w, err)
 				continue
 			}
 			break
 		}
 
 		if !m.options.val[choice-1].selected && m.limit > 0 && m.numSelected() >= m.limit {
-			fmt.Printf("You can't select more than %d options.\n", m.limit)
+			fmt.Fprintf(w, "You can't select more than %d options.\n", m.limit)
 			continue
 		}
 		m.options.val[choice-1].selected = !m.options.val[choice-1].selected
 		if m.options.val[choice-1].selected {
-			fmt.Printf("Selected: %s\n\n", m.options.val[choice-1].Key)
+			fmt.Fprintf(w, "Selected: %s\n\n", m.options.val[choice-1].Key)
 		} else {
-			fmt.Printf("Deselected: %s\n\n", m.options.val[choice-1].Key)
+			fmt.Fprintf(w, "Deselected: %s\n\n", m.options.val[choice-1].Key)
 		}
 
-		m.printOptions()
+		m.printOptions(w)
 	}
 
 	var values []string
@@ -750,7 +752,7 @@ func (m *MultiSelect[T]) runAccessible() error {
 		}
 	}
 
-	fmt.Println(styles.SelectedOption.Render("Selected:", strings.Join(values, ", ")+"\n"))
+	fmt.Fprintln(w, styles.SelectedOption.Render("Selected:", strings.Join(values, ", ")+"\n"))
 	return nil
 }
 

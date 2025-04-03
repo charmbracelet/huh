@@ -2,6 +2,7 @@ package huh
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"strings"
@@ -406,17 +407,17 @@ func (t *Text) View() string {
 // Run runs the text field.
 func (t *Text) Run() error {
 	if t.accessible {
-		return t.runAccessible()
+		return t.runAccessible(os.Stdout, os.Stdin)
 	}
 	return Run(t)
 }
 
 // runAccessible runs an accessible text field.
-func (t *Text) runAccessible() error {
+func (t *Text) runAccessible(w io.Writer, r io.Reader) error {
 	styles := t.activeStyles()
-	fmt.Println(styles.Title.Render(t.title.val))
-	fmt.Println()
-	t.accessor.Set(accessibility.PromptString("Input: ", func(input string) error {
+	fmt.Fprintln(w, styles.Title.Render(t.title.val))
+	fmt.Fprintln(w)
+	t.accessor.Set(accessibility.PromptString(r, "Input: ", func(input string) error {
 		if err := t.validate(input); err != nil {
 			// Handle the error from t.validate, return it
 			return err
@@ -427,7 +428,7 @@ func (t *Text) runAccessible() error {
 		}
 		return nil
 	}))
-	fmt.Println()
+	fmt.Fprintln(w)
 	return nil
 }
 
