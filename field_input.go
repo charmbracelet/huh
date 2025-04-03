@@ -429,10 +429,10 @@ func (i *Input) run() error {
 // runAccessible runs the input field in accessible mode.
 func (i *Input) runAccessible(w io.Writer, r io.Reader) error {
 	styles := i.activeStyles()
-	fmt.Fprintln(w, styles.Title.Render(i.title.val))
-	fmt.Fprintln(w)
+	_, _ = fmt.Fprintln(w, styles.Title.Render(i.title.val))
+	_, _ = fmt.Fprintln(w)
 	i.accessor.Set(accessibility.PromptString(w, r, "Input: ", i.validate))
-	fmt.Fprintln(w, styles.SelectedOption.Render("Input: "+i.accessor.Get()+"\n"))
+	_, _ = fmt.Fprintln(w, styles.SelectedOption.Render("Input: "+i.accessor.Get()+"\n"))
 	return nil
 }
 

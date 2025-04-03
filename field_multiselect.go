@@ -668,7 +668,7 @@ func (m *MultiSelect[T]) printOptions(w io.Writer) {
 		sb.WriteString("\n")
 	}
 
-	fmt.Fprintln(w, sb.String())
+	_, _ = fmt.Fprintln(w, sb.String())
 }
 
 // setFilter sets the filter of the select field.
@@ -718,28 +718,28 @@ func (m *MultiSelect[T]) runAccessible(w io.Writer, r io.Reader) error {
 
 	var choice int
 	for {
-		fmt.Fprintf(w, "Select up to %d options. 0 to continue.\n", m.limit)
+		_, _ = fmt.Fprintf(w, "Select up to %d options. 0 to continue.\n", m.limit)
 
 		choice = accessibility.PromptInt(w, r, "Select: ", 0, len(m.options.val))
 		if choice == 0 {
 			m.updateValue()
 			err := m.validate(m.accessor.Get())
 			if err != nil {
-				fmt.Fprintln(w, err)
+				_, _ = fmt.Fprintln(w, err)
 				continue
 			}
 			break
 		}
 
 		if !m.options.val[choice-1].selected && m.limit > 0 && m.numSelected() >= m.limit {
-			fmt.Fprintf(w, "You can't select more than %d options.\n", m.limit)
+			_, _ = fmt.Fprintf(w, "You can't select more than %d options.\n", m.limit)
 			continue
 		}
 		m.options.val[choice-1].selected = !m.options.val[choice-1].selected
 		if m.options.val[choice-1].selected {
-			fmt.Fprintf(w, "Selected: %s\n\n", m.options.val[choice-1].Key)
+			_, _ = fmt.Fprintf(w, "Selected: %s\n\n", m.options.val[choice-1].Key)
 		} else {
-			fmt.Fprintf(w, "Deselected: %s\n\n", m.options.val[choice-1].Key)
+			_, _ = fmt.Fprintf(w, "Deselected: %s\n\n", m.options.val[choice-1].Key)
 		}
 
 		m.printOptions(w)
@@ -752,7 +752,7 @@ func (m *MultiSelect[T]) runAccessible(w io.Writer, r io.Reader) error {
 		}
 	}
 
-	fmt.Fprintln(w, styles.SelectedOption.Render("Selected:", strings.Join(values, ", ")+"\n"))
+	_, _ = fmt.Fprintln(w, styles.SelectedOption.Render("Selected:", strings.Join(values, ", ")+"\n"))
 	return nil
 }
 

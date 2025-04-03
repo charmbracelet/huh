@@ -249,14 +249,14 @@ func (n *Note) Run() error {
 }
 
 // runAccessible runs an accessible note field.
-func (n *Note) runAccessible(w io.Writer, r io.Reader) error {
+func (n *Note) runAccessible(w io.Writer, _ io.Reader) error {
 	if n.title.val != "" {
-		fmt.Fprintln(w, n.title.val)
-		fmt.Fprintln(w)
+		_, _ = fmt.Fprintln(w, n.title.val)
+		_, _ = fmt.Fprintln(w)
 	}
 
-	fmt.Fprintln(w, n.description.val)
-	fmt.Fprintln(w)
+	_, _ = fmt.Fprintln(w, n.description.val)
+	_, _ = fmt.Fprintln(w)
 	return nil
 }
 

@@ -309,11 +309,11 @@ func (c *Confirm) Run() error {
 func (c *Confirm) runAccessible(w io.Writer, r io.Reader) error {
 	styles := c.activeStyles()
 	if c.title.val != "" {
-		fmt.Fprintln(w, styles.Title.Render(c.title.val))
-		fmt.Fprintln(w)
+		_, _ = fmt.Fprintln(w, styles.Title.Render(c.title.val))
+		_, _ = fmt.Fprintln(w)
 	}
 	c.accessor.Set(accessibility.PromptBool(w, r))
-	fmt.Fprintln(w, styles.SelectedOption.Render("Chose: "+c.String())+"\n")
+	_, _ = fmt.Fprintln(w, styles.SelectedOption.Render("Chose: "+c.String())+"\n")
 	return nil
 }
 

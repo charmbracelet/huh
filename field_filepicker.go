@@ -318,8 +318,8 @@ func (f *FilePicker) Run() error {
 // runAccessible runs an accessible file field.
 func (f *FilePicker) runAccessible(w io.Writer, r io.Reader) error {
 	styles := f.activeStyles()
-	fmt.Fprintln(w, styles.Title.Render(f.title))
-	fmt.Fprintln(w)
+	_, _ = fmt.Fprintln(w, styles.Title.Render(f.title))
+	_, _ = fmt.Fprintln(w)
 
 	validateFile := func(s string) error {
 		// is the string a file?
@@ -344,7 +344,7 @@ func (f *FilePicker) runAccessible(w io.Writer, r io.Reader) error {
 	}
 
 	f.accessor.Set(accessibility.PromptString(w, r, "File: ", validateFile))
-	fmt.Fprintln(w, styles.SelectedOption.Render(f.accessor.Get()+"\n"))
+	_, _ = fmt.Fprintln(w, styles.SelectedOption.Render(f.accessor.Get()+"\n"))
 	return nil
 }
 

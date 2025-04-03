@@ -717,16 +717,16 @@ func (s *Select[T]) runAccessible(w io.Writer, r io.Reader) error {
 		sb.WriteString("\n")
 	}
 
-	fmt.Fprintln(w, sb.String())
+	_, _ = fmt.Fprintln(w, sb.String())
 
 	for {
 		choice := accessibility.PromptInt(w, r, "Choose: ", 1, len(s.options.val))
 		option := s.options.val[choice-1]
 		if err := s.validate(option.Value); err != nil {
-			fmt.Fprintln(w, err.Error())
+			_, _ = fmt.Fprintln(w, err.Error())
 			continue
 		}
-		fmt.Fprintln(w, styles.SelectedOption.Render("Chose: "+option.Key+"\n"))
+		_, _ = fmt.Fprintln(w, styles.SelectedOption.Render("Chose: "+option.Key+"\n"))
 		s.accessor.Set(option.Value)
 		break
 	}

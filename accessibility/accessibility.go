@@ -77,7 +77,7 @@ func PromptString(w io.Writer, r io.Reader, prompt string, validator func(input 
 	)
 
 	for !valid {
-		fmt.Fprint(w, prompt)
+		_, _ = fmt.Fprint(w, prompt)
 		if !scanner.Scan() {
 			// no way to bubble up errors or signal cancellation
 			// but the program is probably not continuing if
@@ -88,7 +88,7 @@ func PromptString(w io.Writer, r io.Reader, prompt string, validator func(input 
 
 		err := validator(input)
 		if err != nil {
-			fmt.Fprintln(w, err)
+			_, _ = fmt.Fprintln(w, err)
 			continue
 		}
 
