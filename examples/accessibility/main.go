@@ -9,6 +9,8 @@ import (
 func main() {
 	form := huh.NewForm(
 		huh.NewGroup(
+			huh.NewText().Title("Something").CharLimit(100),
+			huh.NewInput(),
 			huh.NewSelect[string]().
 				Options(huh.NewOptions("Italian", "Greek", "Indian", "Japanese", "American")...).
 				Title("Favorite Cuisine?"),

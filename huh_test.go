@@ -1124,15 +1124,14 @@ func keys(runes ...rune) tea.KeyMsg {
 	}
 }
 
-func TestAccessible(t *testing.T) {
+func TestAccessibleForm(t *testing.T) {
 	var out bytes.Buffer
 	var in bytes.Buffer
 
-	_, _ = in.WriteString("carlos")
+	_, _ = in.WriteString("carlos\n")
 
 	f := NewForm(
 		NewGroup(
-			NewConfirm().Title("Hello"),
 			NewInput().Title("Hello"),
 		),
 	).
@@ -1144,6 +1143,61 @@ func TestAccessible(t *testing.T) {
 		t.Error(err)
 	}
 
-	t.Log("A:", out.String())
-	t.Error("oh no")
+	if !strings.Contains(out.String(), "Input: carlos") {
+		t.Error("invalid output:\n", out.String())
+	}
+}
+
+func TestAccessibleFields(t *testing.T) {
+	for name, test := range map[string]struct {
+		Field Field
+		Input string
+		Check func(output string) bool
+	}{
+		"input": {
+			NewInput(),
+			"Hello",
+			func(output string) bool { return strings.Contains(output, "Hello") },
+		},
+		"confirm": {
+			NewConfirm(),
+			"Y",
+			func(output string) bool { return strings.Contains(output, "Yes") },
+		},
+		"filepicker": {
+			NewFilePicker(),
+			"./huh_test.go",
+			func(output string) bool { return strings.Contains(output, "./huh_test.go") },
+		},
+		"multiselect": {
+			NewMultiSelect[string]().Options(NewOptions("a", "b")...),
+			"2",
+			func(output string) bool { return strings.Contains(output, "2. ✓ b") },
+		},
+		"select": {
+			NewSelect[string]().Options(NewOptions("a", "b")...),
+			"2",
+			func(output string) bool { return strings.Contains(output, "Chose: b") },
+		},
+		"note": {
+			NewNote().Title("Hi").Description("there"),
+			"",
+			func(output string) bool { return strings.Contains(output, "Hi") },
+		},
+		"text": {
+			NewText().CharLimit(400).Title("Text"),
+			"hello world",
+			func(output string) bool { return strings.Contains(output, "hello world") },
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			var out bytes.Buffer
+			if err := test.Field.runAccessible(&out, strings.NewReader(test.Input)); err != nil {
+				t.Error(err)
+			}
+			if !test.Check(out.String()) {
+				t.Error("check failed:\n", out.String())
+			}
+		})
+	}
 }

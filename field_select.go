@@ -720,7 +720,7 @@ func (s *Select[T]) runAccessible(w io.Writer, r io.Reader) error {
 	fmt.Fprintln(w, sb.String())
 
 	for {
-		choice := accessibility.PromptInt(r, "Choose: ", 1, len(s.options.val))
+		choice := accessibility.PromptInt(w, r, "Choose: ", 1, len(s.options.val))
 		option := s.options.val[choice-1]
 		if err := s.validate(option.Value); err != nil {
 			fmt.Fprintln(w, err.Error())

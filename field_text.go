@@ -417,7 +417,7 @@ func (t *Text) runAccessible(w io.Writer, r io.Reader) error {
 	styles := t.activeStyles()
 	fmt.Fprintln(w, styles.Title.Render(t.title.val))
 	fmt.Fprintln(w)
-	t.accessor.Set(accessibility.PromptString(r, "Input: ", func(input string) error {
+	t.accessor.Set(accessibility.PromptString(w, r, "Input: ", func(input string) error {
 		if err := t.validate(input); err != nil {
 			// Handle the error from t.validate, return it
 			return err
@@ -429,6 +429,7 @@ func (t *Text) runAccessible(w io.Writer, r io.Reader) error {
 		return nil
 	}))
 	fmt.Fprintln(w)
+	fmt.Fprintln(w, styles.SelectedOption.Render("Input: "+t.accessor.Get()+"\n"))
 	return nil
 }
 

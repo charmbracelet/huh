@@ -16,7 +16,7 @@ import (
 // Given invalid input (non-integers, integers outside of the range), the user
 // will continue to be reprompted until a valid input is given, ensuring that
 // the return value is always valid.
-func PromptInt(r io.Reader, prompt string, low, high int) int {
+func PromptInt(w io.Writer, r io.Reader, prompt string, low, high int) int {
 	var (
 		input  string
 		choice int
@@ -30,7 +30,7 @@ func PromptInt(r io.Reader, prompt string, low, high int) int {
 		return nil
 	}
 
-	input = PromptString(r, prompt, validInt)
+	input = PromptString(w, r, prompt, validInt)
 	choice, _ = strconv.Atoi(input)
 	return choice
 }
@@ -55,20 +55,20 @@ func parseBool(s string) (bool, error) {
 //
 // Given invalid input (non-boolean), the user will continue to be reprompted
 // until a valid input is given, ensuring that the return value is always valid.
-func PromptBool(r io.Reader) bool {
+func PromptBool(w io.Writer, r io.Reader) bool {
 	validBool := func(s string) error {
 		_, err := parseBool(s)
 		return err
 	}
 
-	input := PromptString(r, "Choose [y/N]: ", validBool)
+	input := PromptString(w, r, "Choose [y/N]: ", validBool)
 	b, _ := parseBool(input)
 	return b
 }
 
 // PromptString prompts a user for a string value and validates it against a
 // validator function. It re-prompts the user until a valid input is given.
-func PromptString(r io.Reader, prompt string, validator func(input string) error) string {
+func PromptString(w io.Writer, r io.Reader, prompt string, validator func(input string) error) string {
 	scanner := bufio.NewScanner(r)
 
 	var (
@@ -77,7 +77,7 @@ func PromptString(r io.Reader, prompt string, validator func(input string) error
 	)
 
 	for !valid {
-		fmt.Print(prompt)
+		fmt.Fprint(w, prompt)
 		if !scanner.Scan() {
 			// no way to bubble up errors or signal cancellation
 			// but the program is probably not continuing if
@@ -88,7 +88,7 @@ func PromptString(r io.Reader, prompt string, validator func(input string) error
 
 		err := validator(input)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Fprintln(w, err)
 			continue
 		}
 
