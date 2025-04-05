@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/key"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/accessibility"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/bubbles/v2/key"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/huh/v2/accessibility"
+	"github.com/charmbracelet/lipgloss/v2"
 )
 
 // Confirm is a form confirm field.
@@ -34,7 +34,8 @@ type Confirm struct {
 	height          int
 	inline          bool
 	accessible      bool
-	theme           *Theme
+	theme           Theme
+	hasDarkBg       bool
 	keymap          ConfirmKeyMap
 	buttonAlignment lipgloss.Position
 }
@@ -165,6 +166,8 @@ func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
+	case tea.BackgroundColorMsg:
+		c.hasDarkBg = msg.IsDark()
 	case updateFieldMsg:
 		if ok, hash := c.title.shouldUpdate(); ok {
 			c.title.bindingsHash = hash
@@ -222,12 +225,12 @@ func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (c *Confirm) activeStyles() *FieldStyles {
 	theme := c.theme
 	if theme == nil {
-		theme = ThemeCharm()
+		theme = ThemeFunc(ThemeCharm)
 	}
 	if c.focused {
-		return &theme.Focused
+		return &theme.Theme(c.hasDarkBg).Focused
 	}
-	return &theme.Blurred
+	return &theme.Theme(c.hasDarkBg).Blurred
 }
 
 // View renders the confirm field.
@@ -283,10 +286,7 @@ func (c *Confirm) View() string {
 	promptWidth := lipgloss.Width(sb.String())
 	buttonsWidth := lipgloss.Width(buttonsRow)
 
-	renderWidth := promptWidth
-	if buttonsWidth > renderWidth {
-		renderWidth = buttonsWidth
-	}
+	renderWidth := max(buttonsWidth, promptWidth)
 
 	style := lipgloss.NewStyle().Width(renderWidth).Align(c.buttonAlignment)
 
@@ -323,7 +323,7 @@ func (c *Confirm) String() string {
 }
 
 // WithTheme sets the theme of the confirm field.
-func (c *Confirm) WithTheme(theme *Theme) Field {
+func (c *Confirm) WithTheme(theme Theme) Field {
 	if c.theme != nil {
 		return c
 	}

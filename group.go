@@ -3,11 +3,11 @@ package huh
 import (
 	"strings"
 
-	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/internal/selector"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/bubbles/v2/help"
+	"github.com/charmbracelet/bubbles/v2/viewport"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/huh/v2/internal/selector"
+	"github.com/charmbracelet/lipgloss/v2"
 )
 
 // Group is a collection of fields that are displayed together with a page of
@@ -35,12 +35,13 @@ type Group struct {
 	showErrors bool
 
 	// group options
-	width  int
-	height int
-	theme  *Theme
-	keymap *KeyMap
-	hide   func() bool
-	active bool
+	width     int
+	height    int
+	theme     Theme
+	hasDarkBg bool
+	keymap    *KeyMap
+	hide      func() bool
+	active    bool
 }
 
 // NewGroup returns a new group with the given fields.
@@ -56,7 +57,10 @@ func NewGroup(fields ...Field) *Group {
 
 	group.width = 80
 	height := group.rawHeight()
-	v := viewport.New(group.width, height) //nolint:mnd
+	v := viewport.New(
+		viewport.WithWidth(group.width),
+		viewport.WithHeight(height),
+	) //nolint:mnd
 	group.viewport = v
 	group.height = height
 
@@ -88,9 +92,9 @@ func (g *Group) WithShowErrors(show bool) *Group {
 }
 
 // WithTheme sets the theme on a group.
-func (g *Group) WithTheme(t *Theme) *Group {
+func (g *Group) WithTheme(t Theme) *Group {
 	g.theme = t
-	g.help.Styles = t.Help
+	g.help.Styles = t.Theme(g.hasDarkBg).Help
 	g.selector.Range(func(_ int, field Field) bool {
 		field.WithTheme(t)
 		return true
@@ -114,7 +118,7 @@ func (g *Group) WithKeyMap(k *KeyMap) *Group {
 // WithWidth sets the width on a group.
 func (g *Group) WithWidth(width int) *Group {
 	g.width = width
-	g.viewport.Width = width
+	g.viewport.SetWidth(width)
 	g.help.Width = width
 	g.selector.Range(func(_ int, field Field) bool {
 		field.WithWidth(width)
@@ -127,7 +131,7 @@ func (g *Group) WithWidth(width int) *Group {
 func (g *Group) WithHeight(height int) *Group {
 	g.height = height
 	h := height - g.nonContentHeight()
-	g.viewport.Height = h
+	g.viewport.SetHeight(h)
 	g.selector.Range(func(_ int, field Field) bool {
 		// A field height must not exceed the form height.
 		if h < lipgloss.Height(field.View()) {
@@ -273,7 +277,9 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return true
 	})
 
-	switch msg.(type) {
+	switch msg := msg.(type) {
+	case tea.BackgroundColorMsg:
+		g.hasDarkBg = msg.IsDark()
 	case nextFieldMsg:
 		cmds = append(cmds, g.nextField()...)
 	case prevFieldMsg:
@@ -285,11 +291,11 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return g, tea.Batch(cmds...)
 }
 
-func (g *Group) getTheme() *Theme {
+func (g *Group) getTheme() *Styles {
 	if theme := g.theme; theme != nil {
-		return theme
+		return theme.Theme(g.hasDarkBg)
 	}
-	return ThemeCharm()
+	return ThemeFunc(ThemeCharm).Theme(g.hasDarkBg)
 }
 
 func (g *Group) styles() GroupStyles { return g.getTheme().Group }

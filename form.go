@@ -9,10 +9,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/bubbles/key"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/internal/selector"
+	"github.com/charmbracelet/bubbles/v2/help"
+	"github.com/charmbracelet/bubbles/v2/key"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/huh/v2/internal/selector"
 )
 
 const defaultWidth = 80
@@ -82,7 +82,8 @@ type Form struct {
 	// options
 	width      int
 	height     int
-	theme      *Theme
+	theme      Theme
+	hasDarkBg  bool
 	keymap     *KeyMap
 	timeout    time.Duration
 	teaOptions []tea.ProgramOption
@@ -157,7 +158,7 @@ type Field interface {
 	KeyBinds() []key.Binding
 
 	// WithTheme sets the theme on a field.
-	WithTheme(*Theme) Field
+	WithTheme(Theme) Field
 
 	// WithAccessible sets whether the field should run in accessible mode.
 	WithAccessible(bool) Field
@@ -258,7 +259,7 @@ func (f *Form) WithShowErrors(v bool) *Form {
 // This allows all groups and fields to be themed consistently, however themes
 // can be applied to each group and field individually for more granular
 // control.
-func (f *Form) WithTheme(theme *Theme) *Form {
+func (f *Form) WithTheme(theme Theme) *Form {
 	if theme == nil {
 		return f
 	}
@@ -502,7 +503,7 @@ func (f *Form) Init() tea.Cmd {
 		cmds = append(cmds, nextGroup)
 	}
 
-	cmds = append(cmds, tea.WindowSize())
+	cmds = append(cmds, tea.RequestWindowSize)
 	return tea.Sequence(cmds...)
 }
 
@@ -516,6 +517,8 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	group := f.selector.Selected()
 
 	switch msg := msg.(type) {
+	case tea.BackgroundColorMsg:
+		f.hasDarkBg = msg.IsDark()
 	case tea.WindowSizeMsg:
 		if f.width == 0 {
 			f.selector.Range(func(_ int, group *Group) bool {
@@ -621,11 +624,11 @@ func (f *Form) isGroupHidden(group *Group) bool {
 	return hide()
 }
 
-func (f *Form) getTheme() *Theme {
+func (f *Form) getTheme() *Styles {
 	if f.theme != nil {
-		return f.theme
+		return f.theme.Theme(f.hasDarkBg)
 	}
-	return ThemeCharm()
+	return ThemeCharm(f.hasDarkBg)
 }
 
 func (f *Form) styles() FormStyles {
