@@ -12,6 +12,7 @@ import (
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
+
 	"github.com/charmbracelet/huh/internal/selector"
 )
 
@@ -23,6 +24,9 @@ var (
 	lastID int
 	idMtx  sync.Mutex
 )
+
+// Storing a default KeyMap for later reference, avoiding unnecessary instantiation whenever a Help() is called.
+var defaultKeyMap *KeyMap = NewDefaultKeyMap()
 
 // Return the next ID we should use on the Model.
 func nextID() int {
@@ -100,7 +104,7 @@ func NewForm(groups ...*Group) *Form {
 
 	f := &Form{
 		selector: selector,
-		keymap:   NewDefaultKeyMap(),
+		keymap:   defaultKeyMap,
 		results:  make(map[string]any),
 		layout:   LayoutDefault,
 		teaOptions: []tea.ProgramOption{
@@ -421,9 +425,15 @@ func (f *Form) Help() help.Model {
 }
 
 // KeyBinds returns the current fields' keybinds.
+// If the `Quit` binding differs from the default, this will also be included.
 func (f *Form) KeyBinds() []key.Binding {
+	var binds []key.Binding
 	group := f.selector.Selected()
-	return group.selector.Selected().KeyBinds()
+	binds = append(binds, group.selector.Selected().KeyBinds()...)
+	if !f.keymap.Quit.Equal(defaultKeyMap.Quit) {
+		binds = append(binds, f.keymap.Quit)
+	}
+	return binds
 }
 
 // Get returns a result from the form.
