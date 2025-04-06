@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/key"
-	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/bubbles/v2/key"
+	tea "github.com/charmbracelet/bubbletea/v2"
 )
 
 // Note is a note field.
@@ -28,8 +28,9 @@ type Note struct {
 	height     int
 	width      int
 
-	theme  *Theme
-	keymap NoteKeyMap
+	theme     Theme
+	hasDarkBg bool
+	keymap    NoteKeyMap
 }
 
 // NewNote creates a new note field.
@@ -162,6 +163,8 @@ func (n *Note) Init() tea.Cmd { return nil }
 // Update updates the note field.
 func (n *Note) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.BackgroundColorMsg:
+		n.hasDarkBg = msg.IsDark()
 	case updateFieldMsg:
 		var cmds []tea.Cmd
 		if ok, hash := n.title.shouldUpdate(); ok {
@@ -206,12 +209,12 @@ func (n *Note) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (n *Note) activeStyles() *FieldStyles {
 	theme := n.theme
 	if theme == nil {
-		theme = ThemeCharm()
+		theme = ThemeFunc(ThemeCharm)
 	}
 	if n.focused {
-		return &theme.Focused
+		return &theme.Theme(n.hasDarkBg).Focused
 	}
-	return &theme.Blurred
+	return &theme.Theme(n.hasDarkBg).Blurred
 }
 
 // View renders the note field.
@@ -259,7 +262,7 @@ func (n *Note) runAccessible() error {
 }
 
 // WithTheme sets the theme on a note field.
-func (n *Note) WithTheme(theme *Theme) Field {
+func (n *Note) WithTheme(theme Theme) Field {
 	if n.theme != nil {
 		return n
 	}

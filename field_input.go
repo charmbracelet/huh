@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/textinput"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/accessibility"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/bubbles/v2/key"
+	"github.com/charmbracelet/bubbles/v2/textinput"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/huh/v2/accessibility"
+	"github.com/charmbracelet/lipgloss/v2"
 )
 
 // Input is a input field.
@@ -38,8 +38,9 @@ type Input struct {
 	width      int
 	height     int // not really used anywhere
 
-	theme  *Theme
-	keymap InputKeyMap
+	theme     Theme
+	hasDarkBg bool
+	keymap    InputKeyMap
 }
 
 // NewInput creates a new input field.
@@ -274,6 +275,8 @@ func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
+	case tea.BackgroundColorMsg:
+		i.hasDarkBg = msg.IsDark()
 	case updateFieldMsg:
 		var cmds []tea.Cmd
 		if ok, hash := i.title.shouldUpdate(); ok {
@@ -363,12 +366,12 @@ func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (i *Input) activeStyles() *FieldStyles {
 	theme := i.theme
 	if theme == nil {
-		theme = ThemeCharm()
+		theme = ThemeFunc(ThemeCharm)
 	}
 	if i.focused {
-		return &theme.Focused
+		return &theme.Theme(i.hasDarkBg).Focused
 	}
-	return &theme.Blurred
+	return &theme.Theme(i.hasDarkBg).Blurred
 }
 
 // View renders the input field.
@@ -379,15 +382,14 @@ func (i *Input) View() string {
 	// NB: since the method is on a pointer receiver these are being mutated.
 	// Because this runs on every render this shouldn't matter in practice,
 	// however.
-	i.textinput.PlaceholderStyle = styles.TextInput.Placeholder
-	i.textinput.PromptStyle = styles.TextInput.Prompt
-	i.textinput.Cursor.Style = styles.TextInput.Cursor
-	i.textinput.Cursor.TextStyle = styles.TextInput.CursorText
-	i.textinput.TextStyle = styles.TextInput.Text
+	i.textinput.Styles.Cursor.Color = styles.TextInput.Cursor.GetForeground()
+	i.textinput.Styles.Focused.Prompt = styles.TextInput.Prompt
+	i.textinput.Styles.Focused.Text = styles.TextInput.Text
+	i.textinput.Styles.Focused.Placeholder = styles.TextInput.Placeholder
 
 	// Adjust text input size to its char limit if it fit in its width
 	if i.textinput.CharLimit > 0 {
-		i.textinput.Width = min(i.textinput.CharLimit, i.textinput.Width, maxWidth)
+		i.textinput.SetWidth(min(i.textinput.CharLimit, i.textinput.Width(), maxWidth))
 	}
 
 	var sb strings.Builder
@@ -448,7 +450,7 @@ func (i *Input) WithAccessible(accessible bool) Field {
 }
 
 // WithTheme sets the theme of the input field.
-func (i *Input) WithTheme(theme *Theme) Field {
+func (i *Input) WithTheme(theme Theme) Field {
 	if i.theme != nil {
 		return i
 	}
@@ -461,13 +463,12 @@ func (i *Input) WithWidth(width int) Field {
 	styles := i.activeStyles()
 	i.width = width
 	frameSize := styles.Base.GetHorizontalFrameSize()
-	promptWidth := lipgloss.Width(i.textinput.PromptStyle.Render(i.textinput.Prompt))
+	promptWidth := lipgloss.Width(i.textinput.Styles.Focused.Prompt.Render(i.textinput.Prompt))
 	titleWidth := lipgloss.Width(styles.Title.Render(i.title.val))
 	descriptionWidth := lipgloss.Width(styles.Description.Render(i.description.val))
-	i.textinput.Width = width - frameSize - promptWidth - 1
+	i.textinput.SetWidth(width - frameSize - promptWidth - 1)
 	if i.inline {
-		i.textinput.Width -= titleWidth
-		i.textinput.Width -= descriptionWidth
+		i.textinput.SetWidth(i.textinput.Width() - titleWidth - descriptionWidth)
 	}
 	return i
 }

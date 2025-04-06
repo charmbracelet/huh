@@ -1,6 +1,6 @@
 package huh
 
-import "github.com/charmbracelet/bubbles/key"
+import "github.com/charmbracelet/bubbles/v2/key"
 
 // KeyMap is the keybindings to navigate the form.
 type KeyMap struct {
@@ -156,7 +156,7 @@ func NewDefaultKeyMap() *KeyMap {
 			Prev:         key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),
 			Next:         key.NewBinding(key.WithKeys("enter", "tab"), key.WithHelp("enter", "confirm")),
 			Submit:       key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "submit")),
-			Toggle:       key.NewBinding(key.WithKeys(" ", "x"), key.WithHelp("x", "toggle")),
+			Toggle:       key.NewBinding(key.WithKeys("space", "x"), key.WithHelp("x", "toggle")),
 			Up:           key.NewBinding(key.WithKeys("up", "k", "ctrl+p"), key.WithHelp("↑", "up")),
 			Down:         key.NewBinding(key.WithKeys("down", "j", "ctrl+n"), key.WithHelp("↓", "down")),
 			Filter:       key.NewBinding(key.WithKeys("/"), key.WithHelp("/", "filter")),

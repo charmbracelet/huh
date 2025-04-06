@@ -3,15 +3,14 @@ package spinner
 import (
 	"cmp"
 	"context"
-	"fmt"
 	"io"
 	"os"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/spinner"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
-	"github.com/muesli/termenv"
+	"github.com/charmbracelet/bubbles/v2/spinner"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/lipgloss/v2"
+	"github.com/charmbracelet/x/ansi"
 )
 
 // Spinner represents a loading spinner.
@@ -27,11 +26,45 @@ type Spinner struct {
 	ctx        context.Context
 	accessible bool
 	title      string
-	titleStyle lipgloss.Style
-	output     io.Writer
 	err        error
+	teaOptions []tea.ProgramOption
+	theme      Theme
+	out        io.Writer // acessible mode output
+	hasDarkBg  bool
 }
 
+// Styles are the spinner styles.
+type Styles struct {
+	Spinner, Title lipgloss.Style
+}
+
+// Theme represents a theme for a huh.
+type Theme interface {
+	Theme(isDark bool) *Styles
+}
+
+// ThemeFunc is a function that returns a new theme.
+type ThemeFunc func(isDark bool) *Styles
+
+// Theme implements the Theme interface.
+func (f ThemeFunc) Theme(isDark bool) *Styles {
+	return f(isDark)
+}
+
+// ThemeDefault is the default theme.
+func ThemeDefault(isDark bool) *Styles {
+	lightDark := lipgloss.LightDark(isDark)
+	title := lightDark(
+		lipgloss.Color("#00020A"),
+		lipgloss.Color("#FFFDF5"),
+	)
+	return &Styles{
+		Spinner: lipgloss.NewStyle().Foreground(lipgloss.Color("#F780E2")),
+		Title:   lipgloss.NewStyle().Foreground(title),
+	}
+}
+
+// Type is a set of frames used in animating the spinner.
 type Type spinner.Spinner
 
 var (
@@ -61,10 +94,11 @@ func (s *Spinner) Title(title string) *Spinner {
 	return s
 }
 
-// Output set the output for the spinner.
+// WithOutput set the output for the spinner.
 // Default is STDOUT when [Spinner.Accessible], STDERR otherwise.
-func (s *Spinner) Output(w io.Writer) *Spinner {
-	s.output = w
+func (s *Spinner) WithOutput(w io.Writer) *Spinner {
+	s.teaOptions = append(s.teaOptions, tea.WithOutput(w))
+	s.out = w
 	return s
 }
 
@@ -92,18 +126,6 @@ func (s *Spinner) Context(ctx context.Context) *Spinner {
 	return s
 }
 
-// Style sets the style of the spinner.
-func (s *Spinner) Style(style lipgloss.Style) *Spinner {
-	s.spinner.Style = style
-	return s
-}
-
-// TitleStyle sets the title style of the spinner.
-func (s *Spinner) TitleStyle(style lipgloss.Style) *Spinner {
-	s.titleStyle = style
-	return s
-}
-
 // Accessible sets the spinner to be static.
 func (s *Spinner) Accessible(accessible bool) *Spinner {
 	s.accessible = accessible
@@ -114,30 +136,43 @@ func (s *Spinner) Accessible(accessible bool) *Spinner {
 func New() *Spinner {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
-
-	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("#F780E2"))
-
 	return &Spinner{
-		spinner:    s,
-		title:      "Loading...",
-		titleStyle: lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#00020A", Dark: "#FFFDF5"}),
+		spinner: s,
+		title:   "Loading...",
+		theme:   ThemeFunc(ThemeDefault),
 	}
+}
+
+// WithTheme sets the theme for the spinner.
+func (s *Spinner) WithTheme(theme Theme) *Spinner {
+	if theme == nil {
+		return s
+	}
+
+	s.theme = theme
+	return s
 }
 
 // Init initializes the spinner.
 func (s *Spinner) Init() tea.Cmd {
-	return tea.Batch(s.spinner.Tick, func() tea.Msg {
-		if s.action != nil {
-			err := s.action(s.ctx)
-			return doneMsg{err}
-		}
-		return nil
-	})
+	return tea.Batch(
+		tea.RequestBackgroundColor,
+		s.spinner.Tick,
+		func() tea.Msg {
+			if s.action != nil {
+				err := s.action(s.ctx)
+				return doneMsg{err}
+			}
+			return nil
+		},
+	)
 }
 
 // Update updates the spinner.
 func (s *Spinner) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.BackgroundColorMsg:
+		s.hasDarkBg = msg.IsDark()
 	case doneMsg:
 		s.err = msg.err
 		return s, tea.Quit
@@ -155,9 +190,11 @@ func (s *Spinner) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // View returns the spinner view.
 func (s *Spinner) View() string {
+	styles := s.theme.Theme(s.hasDarkBg)
+	s.spinner.Style = styles.Spinner
 	var title string
 	if s.title != "" {
-		title = s.titleStyle.Render(s.title)
+		title = styles.Title.Render(s.title)
 	}
 	return s.spinner.View() + title
 }
@@ -178,12 +215,8 @@ func (s *Spinner) Run() error {
 		return s.runAccessible()
 	}
 
-	m, err := tea.NewProgram(
-		s,
-		tea.WithContext(s.ctx),
-		tea.WithOutput(s.output),
-		tea.WithInput(nil),
-	).Run()
+	opts := append(s.teaOptions, tea.WithContext(s.ctx))
+	m, err := tea.NewProgram(s, opts...).Run()
 	mm := m.(*Spinner)
 	if mm.err != nil {
 		return mm.err
@@ -193,16 +226,17 @@ func (s *Spinner) Run() error {
 
 // runAccessible runs the spinner in an accessible mode (statically).
 func (s *Spinner) runAccessible() error {
-	tty := cmp.Or[io.Writer](s.output, os.Stdout)
-	output := termenv.NewOutput(tty)
-	output.HideCursor()
+	s.hasDarkBg = lipgloss.HasDarkBackground(os.Stdin, os.Stdout)
+	out := cmp.Or[io.Writer](s.out, os.Stdout)
+	styles := s.theme.Theme(s.hasDarkBg)
+
+	_, _ = io.WriteString(out, ansi.HideCursor)
 	frame := s.spinner.Style.Render("...")
-	title := s.titleStyle.Render(strings.TrimSuffix(s.title, "..."))
-	fmt.Println(title + frame)
+	title := styles.Title.Render(strings.TrimSuffix(s.title, "..."))
+	_, _ = io.WriteString(out, title+frame)
 
 	defer func() {
-		output.ShowCursor()
-		output.CursorBack(len(frame) + len(title))
+		_, _ = io.WriteString(out, ansi.ShowCursor)
 	}()
 
 	actionDone := make(chan error)

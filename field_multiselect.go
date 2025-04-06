@@ -2,16 +2,17 @@ package huh
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/spinner"
-	"github.com/charmbracelet/bubbles/textinput"
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/accessibility"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/bubbles/v2/key"
+	"github.com/charmbracelet/bubbles/v2/spinner"
+	"github.com/charmbracelet/bubbles/v2/textinput"
+	"github.com/charmbracelet/bubbles/v2/viewport"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/huh/v2/accessibility"
+	"github.com/charmbracelet/lipgloss/v2"
 )
 
 // MultiSelect is a form multi-select field.
@@ -44,7 +45,8 @@ type MultiSelect[T comparable] struct {
 	// options
 	width      int
 	accessible bool
-	theme      *Theme
+	theme      Theme
+	hasDarkBg  bool
 	keymap     MultiSelectKeyMap
 }
 
@@ -78,11 +80,8 @@ func (m *MultiSelect[T]) Value(value *[]T) *MultiSelect[T] {
 func (m *MultiSelect[T]) Accessor(accessor Accessor[[]T]) *MultiSelect[T] {
 	m.accessor = accessor
 	for i, o := range m.options.val {
-		for _, v := range m.accessor.Get() {
-			if o.Value == v {
-				m.options.val[i].selected = true
-				break
-			}
+		if slices.Contains(m.accessor.Get(), o.Value) {
+			m.options.val[i].selected = true
 		}
 	}
 	return m
@@ -150,7 +149,7 @@ func (m *MultiSelect[T]) selectOptions() {
 			continue
 		}
 		m.cursor = i
-		m.viewport.YOffset = i
+		m.viewport.SetYOffset(i)
 		break
 	}
 }
@@ -292,6 +291,8 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	switch msg := msg.(type) {
+	case tea.BackgroundColorMsg:
+		m.hasDarkBg = msg.IsDark()
 	case updateFieldMsg:
 		var fieldCmds []tea.Cmd
 		if ok, hash := m.title.shouldUpdate(); ok {
@@ -377,7 +378,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			m.cursor = max(m.cursor-1, 0)
-			if m.cursor < m.viewport.YOffset {
+			if m.cursor < m.viewport.YOffset() {
 				m.viewport.SetYOffset(m.cursor)
 			}
 		case key.Matches(msg, m.keymap.Down):
@@ -388,8 +389,8 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			m.cursor = min(m.cursor+1, len(m.filteredOptions)-1)
-			if m.cursor >= m.viewport.YOffset+m.viewport.Height {
-				m.viewport.LineDown(1)
+			if m.cursor >= m.viewport.YOffset()+m.viewport.Height() {
+				m.viewport.ScrollDown(1)
 			}
 		case key.Matches(msg, m.keymap.GotoTop):
 			if m.filtering {
@@ -404,11 +405,11 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.cursor = len(m.filteredOptions) - 1
 			m.viewport.GotoBottom()
 		case key.Matches(msg, m.keymap.HalfPageUp):
-			m.cursor = max(m.cursor-m.viewport.Height/2, 0)
-			m.viewport.HalfViewUp()
+			m.cursor = max(m.cursor-m.viewport.Height()/2, 0)
+			m.viewport.HalfPageUp()
 		case key.Matches(msg, m.keymap.HalfPageDown):
-			m.cursor = min(m.cursor+m.viewport.Height/2, len(m.filteredOptions)-1)
-			m.viewport.HalfViewDown()
+			m.cursor = min(m.cursor+m.viewport.Height()/2, len(m.filteredOptions)-1)
+			m.viewport.HalfPageDown()
 		case key.Matches(msg, m.keymap.Toggle) && !m.filtering:
 			for i, option := range m.options.val {
 				if option.Key == m.filteredOptions[m.cursor].Key {
@@ -474,7 +475,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 		_, offset, height := m.optionsView()
-		if offset > -1 && height > 0 && (offset < m.viewport.YOffset || height+offset >= m.viewport.YOffset+m.viewport.Height) {
+		if offset > -1 && height > 0 && (offset < m.viewport.YOffset() || height+offset >= m.viewport.YOffset()+m.viewport.Height()) {
 			m.viewport.SetYOffset(offset)
 		}
 	}
@@ -488,7 +489,7 @@ func (m *MultiSelect[T]) updateViewportHeight() {
 	// If no height is set size the viewport to the height of the options.
 	if m.height <= 0 {
 		v, _, _ := m.optionsView()
-		m.viewport.Height = lipgloss.Height(v)
+		m.viewport.SetHeight(lipgloss.Height(v))
 		return
 	}
 
@@ -500,7 +501,7 @@ func (m *MultiSelect[T]) updateViewportHeight() {
 		offset += lipgloss.Height(ss)
 	}
 
-	m.viewport.Height = max(minHeight, m.height-offset)
+	m.viewport.SetHeight(max(minHeight, m.height-offset))
 }
 
 // numSelected returns the total number of selected options.
@@ -540,12 +541,12 @@ func (m *MultiSelect[T]) updateValue() {
 func (m *MultiSelect[T]) activeStyles() *FieldStyles {
 	theme := m.theme
 	if theme == nil {
-		theme = ThemeCharm()
+		theme = ThemeFunc(ThemeCharm)
 	}
 	if m.focused {
-		return &theme.Focused
+		return &theme.Theme(m.hasDarkBg).Focused
 	}
-	return &theme.Blurred
+	return &theme.Theme(m.hasDarkBg).Blurred
 }
 
 func (m *MultiSelect[T]) titleView() string {
@@ -755,16 +756,17 @@ func (m *MultiSelect[T]) runAccessible() error {
 }
 
 // WithTheme sets the theme of the multi-select field.
-func (m *MultiSelect[T]) WithTheme(theme *Theme) Field {
+func (m *MultiSelect[T]) WithTheme(theme Theme) Field {
 	if m.theme != nil {
 		return m
 	}
 	m.theme = theme
-	m.filter.Cursor.Style = theme.Focused.TextInput.Cursor
-	m.filter.Cursor.TextStyle = theme.Focused.TextInput.CursorText
-	m.filter.PromptStyle = theme.Focused.TextInput.Prompt
-	m.filter.TextStyle = theme.Focused.TextInput.Text
-	m.filter.PlaceholderStyle = theme.Focused.TextInput.Placeholder
+	styles := m.theme.Theme(m.hasDarkBg)
+
+	m.filter.Styles.Cursor.Color = styles.Focused.TextInput.Cursor.GetForeground()
+	m.filter.Styles.Focused.Prompt = styles.Focused.TextInput.Prompt
+	m.filter.Styles.Focused.Text = styles.Focused.TextInput.Text
+	m.filter.Styles.Focused.Placeholder = styles.Focused.TextInput.Placeholder
 	m.updateViewportHeight()
 	return m
 }
