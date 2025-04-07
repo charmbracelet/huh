@@ -35,10 +35,10 @@ func PromptInt(w io.Writer, r io.Reader, prompt string, low, high int) int {
 	return choice
 }
 
-func parseBool(s string, val bool) (bool, error) {
+func parseBool(s string, defaultValue bool) (bool, error) {
 	s = strings.TrimSpace(strings.ToLower(s))
 	if s == "" {
-		return val, nil
+		return defaultValue, nil
 	}
 
 	if slices.Contains([]string{"y", "yes"}, s) {
@@ -58,18 +58,18 @@ func parseBool(s string, val bool) (bool, error) {
 //
 // Given invalid input (non-boolean), the user will continue to be reprompted
 // until a valid input is given, ensuring that the return value is always valid.
-func PromptBool(w io.Writer, r io.Reader, val bool) bool {
+func PromptBool(w io.Writer, r io.Reader, defaultValue bool) bool {
 	validBool := func(s string) error {
-		_, err := parseBool(s, val)
+		_, err := parseBool(s, defaultValue)
 		return err
 	}
 
 	options := "y/N"
-	if val {
+	if defaultValue {
 		options = "Y/n"
 	}
 	input := PromptString(w, r, "Choose ["+options+"]: ", validBool)
-	b, _ := parseBool(input, val)
+	b, _ := parseBool(input, defaultValue)
 	return b
 }
 
