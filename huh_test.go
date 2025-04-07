@@ -1150,48 +1150,73 @@ func TestAccessibleForm(t *testing.T) {
 
 func TestAccessibleFields(t *testing.T) {
 	for name, test := range map[string]struct {
-		Field Field
-		Input string
-		Check func(output string) bool
+		Field   Field
+		FieldFn func() Field
+		Input   string
+		Check   func(output string) bool
 	}{
 		"input": {
-			NewInput(),
-			"Hello",
-			func(output string) bool { return strings.Contains(output, "Hello") },
+			Field: NewInput(),
+			Input: "Hello",
+			Check: func(output string) bool { return strings.Contains(output, "Hello") },
 		},
 		"confirm": {
-			NewConfirm(),
-			"Y",
-			func(output string) bool { return strings.Contains(output, "Yes") },
+			Field: NewConfirm(),
+			Input: "Y",
+			Check: func(output string) bool { return strings.Contains(output, "Yes") },
+		},
+		"confirm with default": {
+			FieldFn: func() Field {
+				v := true
+				return NewConfirm().Value(&v)
+			},
+			Input: "",
+			Check: func(output string) bool {
+				return strings.Contains(output, "Y/n") &&
+					strings.Contains(output, "Yes")
+			},
+		},
+		"confirm with default choose": {
+			FieldFn: func() Field {
+				v := true
+				return NewConfirm().Value(&v)
+			},
+			Input: "n",
+			Check: func(output string) bool {
+				return strings.Contains(output, "Y/n") &&
+					strings.Contains(output, "No")
+			},
 		},
 		"filepicker": {
-			NewFilePicker(),
-			"./huh_test.go",
-			func(output string) bool { return strings.Contains(output, "./huh_test.go") },
+			Field: NewFilePicker(),
+			Input: "./huh_test.go",
+			Check: func(output string) bool { return strings.Contains(output, "./huh_test.go") },
 		},
 		"multiselect": {
-			NewMultiSelect[string]().Options(NewOptions("a", "b")...),
-			"2",
-			func(output string) bool { return strings.Contains(output, "2. ✓ b") },
+			Field: NewMultiSelect[string]().Options(NewOptions("a", "b")...),
+			Input: "2",
+			Check: func(output string) bool { return strings.Contains(output, "2. ✓ b") },
 		},
 		"select": {
-			NewSelect[string]().Options(NewOptions("a", "b")...),
-			"2",
-			func(output string) bool { return strings.Contains(output, "Chose: b") },
+			Field: NewSelect[string]().Options(NewOptions("a", "b")...),
+			Input: "2",
+			Check: func(output string) bool { return strings.Contains(output, "Chose: b") },
 		},
 		"note": {
-			NewNote().Title("Hi").Description("there"),
-			"",
-			func(output string) bool { return strings.Contains(output, "Hi") },
+			Field: NewNote().Title("Hi").Description("there"),
+			Check: func(output string) bool { return strings.Contains(output, "Hi") },
 		},
 		"text": {
-			NewText().CharLimit(400).Title("Text"),
-			"hello world",
-			func(output string) bool { return strings.Contains(output, "hello world") },
+			Field: NewText().CharLimit(400).Title("Text"),
+			Input: "hello world",
+			Check: func(output string) bool { return strings.Contains(output, "hello world") },
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			var out bytes.Buffer
+			if test.FieldFn != nil {
+				test.Field = test.FieldFn()
+			}
 			if err := test.Field.runAccessible(&out, strings.NewReader(test.Input)); err != nil {
 				t.Error(err)
 			}
