@@ -36,8 +36,7 @@ func PromptInt(w io.Writer, r io.Reader, prompt string, low, high int) int {
 }
 
 func parseBool(s string, val bool) (bool, error) {
-	s = strings.ToLower(s)
-
+	s = strings.TrimSpace(strings.ToLower(s))
 	if s == "" {
 		return val, nil
 	}
