@@ -325,6 +325,7 @@ func (f *Form) WithHeight(height int) *Form {
 }
 
 // WithOutput sets the io.Writer to output the form.
+// Default is STDOUT when [Form.Accessible], STDERR otherwise.
 func (f *Form) WithOutput(w io.Writer) *Form {
 	f.output = w
 	f.teaOptions = append(f.teaOptions, tea.WithOutput(w))
@@ -332,6 +333,7 @@ func (f *Form) WithOutput(w io.Writer) *Form {
 }
 
 // WithInput sets the io.Reader to the input form.
+// Default is STDIN.
 func (f *Form) WithInput(r io.Reader) *Form {
 	f.input = r
 	f.teaOptions = append(f.teaOptions, tea.WithInput(r))
