@@ -417,17 +417,23 @@ func (t *Text) runAccessible(w io.Writer, r io.Reader) error {
 	styles := t.activeStyles()
 	_, _ = fmt.Fprintln(w, styles.Title.Render(t.title.val))
 	_, _ = fmt.Fprintln(w)
-	t.accessor.Set(accessibility.PromptString(w, r, "Input: ", func(input string) error {
-		if err := t.validate(input); err != nil {
-			// Handle the error from t.validate, return it
-			return err
-		}
+	t.accessor.Set(accessibility.PromptString(
+		"Input: ",
+		func(input string) error {
+			if err := t.validate(input); err != nil {
+				// Handle the error from t.validate, return it
+				return err
+			}
 
-		if len(input) > t.textarea.CharLimit {
-			return fmt.Errorf("Input cannot exceed %d characters", t.textarea.CharLimit)
-		}
-		return nil
-	}))
+			if len(input) > t.textarea.CharLimit {
+				return fmt.Errorf("Input cannot exceed %d characters", t.textarea.CharLimit)
+			}
+			return nil
+		},
+		// XXX: default value
+		accessibility.Output(w),
+		accessibility.Input(r),
+	))
 	_, _ = fmt.Fprintln(w)
 	_, _ = fmt.Fprintln(w, styles.SelectedOption.Render("Input: "+t.accessor.Get()+"\n"))
 	return nil

@@ -3,9 +3,11 @@ package accessibility
 
 import (
 	"bufio"
+	"cmp"
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"slices"
 	"strconv"
 	"strings"
@@ -16,7 +18,7 @@ import (
 // Given invalid input (non-integers, integers outside of the range), the user
 // will continue to be reprompted until a valid input is given, ensuring that
 // the return value is always valid.
-func PromptInt(w io.Writer, r io.Reader, prompt string, low, high int) int {
+func PromptInt(prompt string, low, high int, opts ...Option) int {
 	var (
 		input  string
 		choice int
@@ -30,7 +32,7 @@ func PromptInt(w io.Writer, r io.Reader, prompt string, low, high int) int {
 		return nil
 	}
 
-	input = PromptString(w, r, prompt, validInt)
+	input = PromptString(prompt, validInt, opts...)
 	choice, _ = strconv.Atoi(input)
 	return choice
 }
@@ -58,24 +60,27 @@ func parseBool(s string, defaultValue bool) (bool, error) {
 //
 // Given invalid input (non-boolean), the user will continue to be reprompted
 // until a valid input is given, ensuring that the return value is always valid.
-func PromptBool(w io.Writer, r io.Reader, defaultValue bool) bool {
+func PromptBool(opts ...Option) bool {
+	options := eval(opts)
+	defaultValue := options.defaultValue.(bool)
 	validBool := func(s string) error {
 		_, err := parseBool(s, defaultValue)
 		return err
 	}
 
-	options := "y/N"
+	chooseStr := "y/N"
 	if defaultValue {
-		options = "Y/n"
+		chooseStr = "Y/n"
 	}
-	input := PromptString(w, r, "Choose ["+options+"]: ", validBool)
+	input := PromptString("Choose ["+chooseStr+"]: ", validBool, opts...)
 	b, _ := parseBool(input, defaultValue)
 	return b
 }
 
 // PromptString prompts a user for a string value and validates it against a
 // validator function. It re-prompts the user until a valid input is given.
-func PromptString(w io.Writer, r io.Reader, prompt string, validator func(input string) error) string {
+func PromptString(prompt string, validator func(input string) error, opts ...Option) string {
+	w, r := ioFor(eval(opts))
 	scanner := bufio.NewScanner(r)
 
 	var (
@@ -103,4 +108,47 @@ func PromptString(w io.Writer, r io.Reader, prompt string, validator func(input 
 	}
 
 	return input
+}
+
+type options struct {
+	w            io.Writer
+	r            io.Reader
+	defaultValue any
+}
+
+func eval(opts []Option) options {
+	var o options
+	for _, opt := range opts {
+		opt(&o)
+	}
+	return o
+}
+
+func ioFor(o options) (io.Writer, io.Reader) {
+	return cmp.Or[io.Writer](o.w, os.Stdout),
+		cmp.Or[io.Reader](o.r, os.Stdin)
+}
+
+// Option sets the options for the accessibility operations.
+type Option func(*options)
+
+// Output sets the output writer for the accessibility operations.
+func Output(w io.Writer) Option {
+	return func(o *options) {
+		o.w = w
+	}
+}
+
+// Input sets the input writer for the accessibility operations.
+func Input(r io.Reader) Option {
+	return func(o *options) {
+		o.r = r
+	}
+}
+
+// DefaultValue sets the default value of the field.
+func DefaultValue(defaultValue any) Option {
+	return func(o *options) {
+		o.defaultValue = defaultValue
+	}
 }

@@ -343,7 +343,13 @@ func (f *FilePicker) runAccessible(w io.Writer, r io.Reader) error {
 		return f.validate(s)
 	}
 
-	f.accessor.Set(accessibility.PromptString(w, r, "File: ", validateFile))
+	f.accessor.Set(accessibility.PromptString(
+		"File: ",
+		validateFile,
+		// accessibility.DefaultValue(f.GetValue()), XXX: fix
+		accessibility.Output(w),
+		accessibility.Input(r),
+	))
 	_, _ = fmt.Fprintln(w, styles.SelectedOption.Render(f.accessor.Get()+"\n"))
 	return nil
 }

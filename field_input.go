@@ -431,7 +431,13 @@ func (i *Input) runAccessible(w io.Writer, r io.Reader) error {
 	styles := i.activeStyles()
 	_, _ = fmt.Fprintln(w, styles.Title.Render(i.title.val))
 	_, _ = fmt.Fprintln(w)
-	i.accessor.Set(accessibility.PromptString(w, r, "Input: ", i.validate))
+	i.accessor.Set(accessibility.PromptString(
+		"Input: ",
+		i.validate,
+		// accessibility.DefaultValue(i.GetValue()), XXX: fix
+		accessibility.Output(w),
+		accessibility.Input(r),
+	))
 	_, _ = fmt.Fprintln(w, styles.SelectedOption.Render("Input: "+i.accessor.Get()+"\n"))
 	return nil
 }

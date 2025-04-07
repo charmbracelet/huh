@@ -720,7 +720,14 @@ func (m *MultiSelect[T]) runAccessible(w io.Writer, r io.Reader) error {
 	for {
 		_, _ = fmt.Fprintf(w, "Select up to %d options. 0 to continue.\n", m.limit)
 
-		choice = accessibility.PromptInt(w, r, "Select: ", 0, len(m.options.val))
+		choice = accessibility.PromptInt(
+			"Select: ",
+			0,
+			len(m.options.val),
+			accessibility.Output(w),
+			accessibility.Input(r),
+			/// XXX: default
+		)
 		if choice == 0 {
 			m.updateValue()
 			err := m.validate(m.accessor.Get())
