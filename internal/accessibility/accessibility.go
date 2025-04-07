@@ -88,18 +88,11 @@ func PromptBool(
 
 	input := PromptString(
 		out, in, prompt,
-		boolToYN(defaultValue),
+		boolToStr(defaultValue),
 		validBool,
 	)
 	b, _ := parseBool(input)
 	return b
-}
-
-func boolToYN(b bool) string {
-	if b {
-		return "y"
-	}
-	return "N"
 }
 
 // PromptString prompts a user for a string value and validates it against a
@@ -129,7 +122,7 @@ func PromptString(
 		input = scanner.Text()
 
 		if err := validator(input); err != nil {
-			fmt.Println(err)
+			fmt.Fprintln(out, err)
 			continue
 		}
 
@@ -144,4 +137,11 @@ func ptrToStr[T any](t *T, fn func(t T) string) string {
 		return ""
 	}
 	return fn(*t)
+}
+
+func boolToStr(b bool) string {
+	if b {
+		return "y"
+	}
+	return "N"
 }
