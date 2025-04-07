@@ -10,7 +10,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/accessibility"
+	"github.com/charmbracelet/huh/internal/accessibility"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -418,7 +418,10 @@ func (t *Text) runAccessible(w io.Writer, r io.Reader) error {
 	_, _ = fmt.Fprintln(w, styles.Title.Render(t.title.val))
 	_, _ = fmt.Fprintln(w)
 	t.accessor.Set(accessibility.PromptString(
+		w,
+		r,
 		"Input: ",
+		t.GetValue().(string),
 		func(input string) error {
 			if err := t.validate(input); err != nil {
 				// Handle the error from t.validate, return it
@@ -430,9 +433,6 @@ func (t *Text) runAccessible(w io.Writer, r io.Reader) error {
 			}
 			return nil
 		},
-		// XXX: default value
-		accessibility.Output(w),
-		accessibility.Input(r),
 	))
 	_, _ = fmt.Fprintln(w)
 	_, _ = fmt.Fprintln(w, styles.SelectedOption.Render("Input: "+t.accessor.Get()+"\n"))

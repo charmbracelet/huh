@@ -1160,6 +1160,14 @@ func TestAccessibleFields(t *testing.T) {
 			Input: "Hello",
 			Check: func(output string) bool { return strings.Contains(output, "Hello") },
 		},
+		"input with default": {
+			FieldFn: func() Field {
+				v := "hi"
+				return NewInput().Value(&v)
+			},
+			Input: "\n",
+			Check: func(output string) bool { return strings.Contains(output, "hi") },
+		},
 		"confirm": {
 			Field: NewConfirm(),
 			Input: "Y",
@@ -1170,7 +1178,6 @@ func TestAccessibleFields(t *testing.T) {
 				v := true
 				return NewConfirm().Value(&v)
 			},
-			Input: "",
 			Check: func(output string) bool {
 				return strings.Contains(output, "Y/n") &&
 					strings.Contains(output, "Yes")
@@ -1192,15 +1199,43 @@ func TestAccessibleFields(t *testing.T) {
 			Input: "./huh_test.go",
 			Check: func(output string) bool { return strings.Contains(output, "./huh_test.go") },
 		},
+		"filepicker with default": {
+			FieldFn: func() Field {
+				v := "./huh_test.go"
+				return NewFilePicker().Value(&v)
+			},
+			Input: "\n",
+			Check: func(output string) bool { return strings.Contains(output, "./huh_test.go") },
+		},
 		"multiselect": {
 			Field: NewMultiSelect[string]().Options(NewOptions("a", "b")...),
 			Input: "2",
 			Check: func(output string) bool { return strings.Contains(output, "2. ✓ b") },
 		},
+		"multiselect default value": {
+			FieldFn: func() Field {
+				v := []string{"b", "c"}
+				return NewMultiSelect[string]().Options(NewOptions("a", "b", "c", "d")...).Value(&v)
+			},
+			Input: "\n",
+			Check: func(output string) bool {
+				return strings.Contains(output, "2. ✓ b") &&
+					strings.Contains(output, "3. ✓ c") &&
+					strings.Contains(output, "Selected: b, c")
+			},
+		},
 		"select": {
 			Field: NewSelect[string]().Options(NewOptions("a", "b")...),
 			Input: "2",
 			Check: func(output string) bool { return strings.Contains(output, "Chose: b") },
+		},
+		"select default value": {
+			FieldFn: func() Field {
+				v := "c"
+				return NewSelect[string]().Options(NewOptions("a", "b", "c", "d")...).Value(&v)
+			},
+			Input: "\n",
+			Check: func(output string) bool { return strings.Contains(output, "Chose: c") },
 		},
 		"note": {
 			Field: NewNote().Title("Hi").Description("there"),
@@ -1211,15 +1246,30 @@ func TestAccessibleFields(t *testing.T) {
 			Input: "hello world",
 			Check: func(output string) bool { return strings.Contains(output, "hello world") },
 		},
+		"text default value": {
+			FieldFn: func() Field {
+				v := "test"
+				return NewText().CharLimit(400).Title("Text").Value(&v)
+			},
+			Input: "\n",
+			Check: func(output string) bool { return strings.Contains(output, "test") },
+		},
 	} {
 		t.Run(name, func(t *testing.T) {
-			var out bytes.Buffer
+			field := test.Field
 			if test.FieldFn != nil {
-				test.Field = test.FieldFn()
+				field = test.FieldFn()
 			}
-			if err := test.Field.runAccessible(&out, strings.NewReader(test.Input)); err != nil {
+
+			var out bytes.Buffer
+			if err := field.runAccessible(
+				&out,
+				strings.NewReader(test.Input),
+			); err != nil {
 				t.Error(err)
 			}
+
+			t.Log("value:", field.GetValue())
 			if !test.Check(out.String()) {
 				t.Error("check failed:\n", out.String())
 			}

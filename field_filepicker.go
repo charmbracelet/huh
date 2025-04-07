@@ -7,13 +7,12 @@ import (
 	"os"
 	"strings"
 
-	xstrings "github.com/charmbracelet/x/exp/strings"
-
 	"github.com/charmbracelet/bubbles/filepicker"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/accessibility"
+	"github.com/charmbracelet/huh/internal/accessibility"
 	"github.com/charmbracelet/lipgloss"
+	xstrings "github.com/charmbracelet/x/exp/strings"
 )
 
 // FilePicker is a form file file field.
@@ -344,11 +343,11 @@ func (f *FilePicker) runAccessible(w io.Writer, r io.Reader) error {
 	}
 
 	f.accessor.Set(accessibility.PromptString(
+		w,
+		r,
 		"File: ",
+		f.GetValue().(string),
 		validateFile,
-		// accessibility.DefaultValue(f.GetValue()), XXX: fix
-		accessibility.Output(w),
-		accessibility.Input(r),
 	))
 	_, _ = fmt.Fprintln(w, styles.SelectedOption.Render(f.accessor.Get()+"\n"))
 	return nil

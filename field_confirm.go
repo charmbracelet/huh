@@ -8,7 +8,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/accessibility"
+	"github.com/charmbracelet/huh/internal/accessibility"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -312,11 +312,7 @@ func (c *Confirm) runAccessible(w io.Writer, r io.Reader) error {
 		_, _ = fmt.Fprintln(w, styles.Title.Render(c.title.val))
 		_, _ = fmt.Fprintln(w)
 	}
-	c.accessor.Set(accessibility.PromptBool(
-		accessibility.DefaultValue(c.GetValue()),
-		accessibility.Output(w),
-		accessibility.Input(r),
-	))
+	c.accessor.Set(accessibility.PromptBool(w, r, c.GetValue().(bool)))
 	_, _ = fmt.Fprintln(w, styles.SelectedOption.Render("Chose: "+c.String())+"\n")
 	return nil
 }

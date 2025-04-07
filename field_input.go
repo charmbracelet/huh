@@ -9,7 +9,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/accessibility"
+	"github.com/charmbracelet/huh/internal/accessibility"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -432,11 +432,11 @@ func (i *Input) runAccessible(w io.Writer, r io.Reader) error {
 	_, _ = fmt.Fprintln(w, styles.Title.Render(i.title.val))
 	_, _ = fmt.Fprintln(w)
 	i.accessor.Set(accessibility.PromptString(
+		w,
+		r,
 		"Input: ",
+		i.GetValue().(string),
 		i.validate,
-		// accessibility.DefaultValue(i.GetValue()), XXX: fix
-		accessibility.Output(w),
-		accessibility.Input(r),
 	))
 	_, _ = fmt.Fprintln(w, styles.SelectedOption.Render("Input: "+i.accessor.Get()+"\n"))
 	return nil

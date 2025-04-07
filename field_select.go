@@ -12,7 +12,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/accessibility"
+	"github.com/charmbracelet/huh/internal/accessibility"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -720,13 +720,14 @@ func (s *Select[T]) runAccessible(w io.Writer, r io.Reader) error {
 	_, _ = fmt.Fprintln(w, sb.String())
 
 	for {
+		selected := s.selected + 1
 		choice := accessibility.PromptInt(
+			w,
+			r,
 			"Choose: ",
 			1,
 			len(s.options.val),
-			// XXX: default
-			accessibility.Output(w),
-			accessibility.Input(r),
+			&selected,
 		)
 		option := s.options.val[choice-1]
 		if err := s.validate(option.Value); err != nil {
