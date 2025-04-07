@@ -1149,6 +1149,7 @@ func TestAccessibleForm(t *testing.T) {
 }
 
 func TestAccessibleFields(t *testing.T) {
+	trueVal := true
 	for name, test := range map[string]struct {
 		Field Field
 		Input string
@@ -1163,6 +1164,22 @@ func TestAccessibleFields(t *testing.T) {
 			NewConfirm(),
 			"Y",
 			func(output string) bool { return strings.Contains(output, "Yes") },
+		},
+		"confirm with default": {
+			NewConfirm().Value(&trueVal),
+			"",
+			func(output string) bool {
+				return strings.Contains(output, "Y/n") &&
+					strings.Contains(output, "Yes")
+			},
+		},
+		"confirm with default choose": {
+			NewConfirm().Value(&trueVal),
+			"n",
+			func(output string) bool {
+				return strings.Contains(output, "Y/n") &&
+					strings.Contains(output, "No")
+			},
 		},
 		"filepicker": {
 			NewFilePicker(),

@@ -312,7 +312,7 @@ func (c *Confirm) runAccessible(w io.Writer, r io.Reader) error {
 		_, _ = fmt.Fprintln(w, styles.Title.Render(c.title.val))
 		_, _ = fmt.Fprintln(w)
 	}
-	c.accessor.Set(accessibility.PromptBool(w, r))
+	c.accessor.Set(accessibility.PromptBool(w, r, c.GetValue().(bool)))
 	_, _ = fmt.Fprintln(w, styles.SelectedOption.Render("Chose: "+c.String())+"\n")
 	return nil
 }

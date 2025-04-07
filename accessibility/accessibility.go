@@ -35,8 +35,12 @@ func PromptInt(w io.Writer, r io.Reader, prompt string, low, high int) int {
 	return choice
 }
 
-func parseBool(s string) (bool, error) {
+func parseBool(s string, val bool) (bool, error) {
 	s = strings.ToLower(s)
+
+	if s == "" {
+		return val, nil
+	}
 
 	if slices.Contains([]string{"y", "yes"}, s) {
 		return true, nil
@@ -44,7 +48,7 @@ func parseBool(s string) (bool, error) {
 
 	// As a special case, we default to "" to no since the usage of this
 	// function suggests N is the default.
-	if slices.Contains([]string{"", "n", "no"}, s) {
+	if slices.Contains([]string{"n", "no"}, s) {
 		return false, nil
 	}
 
@@ -55,14 +59,18 @@ func parseBool(s string) (bool, error) {
 //
 // Given invalid input (non-boolean), the user will continue to be reprompted
 // until a valid input is given, ensuring that the return value is always valid.
-func PromptBool(w io.Writer, r io.Reader) bool {
+func PromptBool(w io.Writer, r io.Reader, val bool) bool {
 	validBool := func(s string) error {
-		_, err := parseBool(s)
+		_, err := parseBool(s, val)
 		return err
 	}
 
-	input := PromptString(w, r, "Choose [y/N]: ", validBool)
-	b, _ := parseBool(input)
+	options := "y/N"
+	if val {
+		options = "Y/n"
+	}
+	input := PromptString(w, r, "Choose ["+options+"]: ", validBool)
+	b, _ := parseBool(input, val)
 	return b
 }
 
