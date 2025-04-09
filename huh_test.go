@@ -1,6 +1,7 @@
 package huh
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -1120,5 +1121,170 @@ func keys(runes ...rune) tea.KeyMsg {
 	return tea.KeyMsg{
 		Type:  tea.KeyRunes,
 		Runes: runes,
+	}
+}
+
+func TestAccessibleForm(t *testing.T) {
+	var out bytes.Buffer
+	var in bytes.Buffer
+
+	_, _ = in.WriteString("carlos\n")
+
+	f := NewForm(
+		NewGroup(
+			NewInput().Title("Hello"),
+		),
+	).
+		WithAccessible(true).
+		WithOutput(&out).
+		WithInput(&in)
+
+	if err := f.Run(); err != nil {
+		t.Error(err)
+	}
+
+	if !strings.Contains(out.String(), "Input: carlos") {
+		t.Error("invalid output:\n", out.String())
+	}
+}
+
+func TestAccessibleFields(t *testing.T) {
+	for name, test := range map[string]struct {
+		Field   Field
+		FieldFn func() Field
+		Input   string
+		Check   func(output string) bool
+	}{
+		"input": {
+			Field: NewInput(),
+			Input: "Hello",
+			Check: func(output string) bool { return strings.Contains(output, "Hello") },
+		},
+		"input with charlimit": {
+			Field: NewInput().CharLimit(2),
+			Input: "Hello",
+			Check: func(output string) bool {
+				return strings.Contains(output, "Input cannot exceed 2 characters")
+			},
+		},
+		"input with default": {
+			FieldFn: func() Field {
+				v := "hi"
+				return NewInput().Value(&v)
+			},
+			Input: "\n",
+			Check: func(output string) bool { return strings.Contains(output, "hi") },
+		},
+		"confirm": {
+			Field: NewConfirm(),
+			Input: "Y",
+			Check: func(output string) bool { return strings.Contains(output, "Yes") },
+		},
+		"confirm with default": {
+			FieldFn: func() Field {
+				v := true
+				return NewConfirm().Value(&v)
+			},
+			Check: func(output string) bool {
+				return strings.Contains(output, "Y/n") &&
+					strings.Contains(output, "Yes")
+			},
+		},
+		"confirm with default choose": {
+			FieldFn: func() Field {
+				v := true
+				return NewConfirm().Value(&v)
+			},
+			Input: "n",
+			Check: func(output string) bool {
+				return strings.Contains(output, "Y/n") &&
+					strings.Contains(output, "No")
+			},
+		},
+		"filepicker": {
+			Field: NewFilePicker(),
+			Input: "./huh_test.go",
+			Check: func(output string) bool { return strings.Contains(output, "./huh_test.go") },
+		},
+		"filepicker with default": {
+			FieldFn: func() Field {
+				v := "./huh_test.go"
+				return NewFilePicker().Value(&v)
+			},
+			Input: "\n",
+			Check: func(output string) bool { return strings.Contains(output, "./huh_test.go") },
+		},
+		"multiselect": {
+			Field: NewMultiSelect[string]().Options(NewOptions("a", "b")...),
+			Input: "2",
+			Check: func(output string) bool { return strings.Contains(output, "2. ✓ b") },
+		},
+		"multiselect default value": {
+			FieldFn: func() Field {
+				v := []string{"b", "c"}
+				return NewMultiSelect[string]().Options(NewOptions("a", "b", "c", "d")...).Value(&v)
+			},
+			Input: "\n",
+			Check: func(output string) bool {
+				return strings.Contains(output, "2. ✓ b") &&
+					strings.Contains(output, "3. ✓ c") &&
+					strings.Contains(output, "Selected: b, c")
+			},
+		},
+		"select": {
+			Field: NewSelect[string]().Options(NewOptions("a", "b")...),
+			Input: "2",
+			Check: func(output string) bool { return strings.Contains(output, "Chose: b") },
+		},
+		"select default value": {
+			FieldFn: func() Field {
+				v := "c"
+				return NewSelect[string]().Options(NewOptions("a", "b", "c", "d")...).Value(&v)
+			},
+			Input: "\n",
+			Check: func(output string) bool { return strings.Contains(output, "Chose: c") },
+		},
+		"note": {
+			Field: NewNote().Title("Hi").Description("there"),
+			Check: func(output string) bool { return strings.Contains(output, "Hi") },
+		},
+		"text": {
+			Field: NewText().Title("Text"),
+			Input: "hello world",
+			Check: func(output string) bool { return strings.Contains(output, "hello world") },
+		},
+		"text with limit": {
+			Field: NewText().CharLimit(2).Title("Text"),
+			Input: "hello world",
+			Check: func(output string) bool { return strings.Contains(output, "Input cannot exceed 2 characters") },
+		},
+		"text default value": {
+			FieldFn: func() Field {
+				v := "test"
+				return NewText().Title("Text").Value(&v)
+			},
+			Input: "\n",
+			Check: func(output string) bool { return strings.Contains(output, "test") },
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			field := test.Field
+			if test.FieldFn != nil {
+				field = test.FieldFn()
+			}
+
+			var out bytes.Buffer
+			if err := field.runAccessible(
+				&out,
+				strings.NewReader(test.Input),
+			); err != nil {
+				t.Error(err)
+			}
+
+			t.Log("value:", field.GetValue())
+			if !test.Check(out.String()) {
+				t.Error("check failed:\n", out.String())
+			}
+		})
 	}
 }

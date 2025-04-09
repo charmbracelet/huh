@@ -2,12 +2,14 @@ package huh
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/accessibility"
+	"github.com/charmbracelet/huh/internal/accessibility"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -387,7 +389,7 @@ func (i *Input) View() string {
 
 	// Adjust text input size to its char limit if it fit in its width
 	if i.textinput.CharLimit > 0 {
-		i.textinput.Width = min(i.textinput.CharLimit, i.textinput.Width, maxWidth)
+		i.textinput.Width = max(min(i.textinput.CharLimit, i.textinput.Width, maxWidth), 0)
 	}
 
 	var sb strings.Builder
@@ -414,7 +416,7 @@ func (i *Input) View() string {
 // Run runs the input field in accessible mode.
 func (i *Input) Run() error {
 	if i.accessible {
-		return i.runAccessible()
+		return i.runAccessible(os.Stdout, os.Stdin)
 	}
 	return i.run()
 }
@@ -425,12 +427,23 @@ func (i *Input) run() error {
 }
 
 // runAccessible runs the input field in accessible mode.
-func (i *Input) runAccessible() error {
+func (i *Input) runAccessible(w io.Writer, r io.Reader) error {
 	styles := i.activeStyles()
-	fmt.Println(styles.Title.Render(i.title.val))
-	fmt.Println()
-	i.accessor.Set(accessibility.PromptString("Input: ", i.validate))
-	fmt.Println(styles.SelectedOption.Render("Input: " + i.accessor.Get() + "\n"))
+	_, _ = fmt.Fprintln(w, styles.Title.Render(i.title.val))
+	_, _ = fmt.Fprintln(w)
+	i.accessor.Set(accessibility.PromptString(
+		w,
+		r,
+		"Input: ",
+		i.GetValue().(string),
+		func(input string) error {
+			if i.textinput.CharLimit > 0 && len(input) > i.textinput.CharLimit {
+				return fmt.Errorf("Input cannot exceed %d characters", i.textinput.CharLimit)
+			}
+			return i.validate(input)
+		},
+	))
+	_, _ = fmt.Fprintln(w, styles.SelectedOption.Render("Input: "+i.accessor.Get()+"\n"))
 	return nil
 }
 

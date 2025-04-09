@@ -2,6 +2,8 @@ package huh
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"strings"
 	"time"
 
@@ -10,7 +12,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/accessibility"
+	"github.com/charmbracelet/huh/internal/accessibility"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -699,13 +701,13 @@ func (s *Select[T]) filterFunc(option string) bool {
 // Run runs the select field.
 func (s *Select[T]) Run() error {
 	if s.accessible {
-		return s.runAccessible()
+		return s.runAccessible(os.Stdout, os.Stdin)
 	}
 	return Run(s)
 }
 
 // runAccessible runs an accessible select field.
-func (s *Select[T]) runAccessible() error {
+func (s *Select[T]) runAccessible(w io.Writer, r io.Reader) error {
 	var sb strings.Builder
 	styles := s.activeStyles()
 	sb.WriteString(styles.Title.Render(s.title.val) + "\n")
@@ -715,16 +717,24 @@ func (s *Select[T]) runAccessible() error {
 		sb.WriteString("\n")
 	}
 
-	fmt.Println(sb.String())
+	_, _ = fmt.Fprintln(w, sb.String())
 
 	for {
-		choice := accessibility.PromptInt("Choose: ", 1, len(s.options.val))
+		selected := s.selected + 1
+		choice := accessibility.PromptInt(
+			w,
+			r,
+			"Choose: ",
+			1,
+			len(s.options.val),
+			&selected,
+		)
 		option := s.options.val[choice-1]
 		if err := s.validate(option.Value); err != nil {
-			fmt.Println(err.Error())
+			_, _ = fmt.Fprintln(w, err.Error())
 			continue
 		}
-		fmt.Println(styles.SelectedOption.Render("Chose: " + option.Key + "\n"))
+		_, _ = fmt.Fprintln(w, styles.SelectedOption.Render("Chose: "+option.Key+"\n"))
 		s.accessor.Set(option.Value)
 		break
 	}
