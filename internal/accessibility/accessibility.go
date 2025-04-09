@@ -117,6 +117,7 @@ func PromptString(
 			// no way to bubble up errors or signal cancellation
 			// but the program is probably not continuing if
 			// stdin sent EOF
+			_, _ = fmt.Fprintln(out)
 			break
 		}
 		input = scanner.Text()

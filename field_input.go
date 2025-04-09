@@ -436,7 +436,12 @@ func (i *Input) runAccessible(w io.Writer, r io.Reader) error {
 		r,
 		"Input: ",
 		i.GetValue().(string),
-		i.validate,
+		func(input string) error {
+			if i.textinput.CharLimit > 0 && len(input) > i.textinput.CharLimit {
+				return fmt.Errorf("Input cannot exceed %d characters", i.textinput.CharLimit)
+			}
+			return i.validate(input)
+		},
 	))
 	_, _ = fmt.Fprintln(w, styles.SelectedOption.Render("Input: "+i.accessor.Get()+"\n"))
 	return nil

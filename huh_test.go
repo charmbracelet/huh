@@ -1160,6 +1160,13 @@ func TestAccessibleFields(t *testing.T) {
 			Input: "Hello",
 			Check: func(output string) bool { return strings.Contains(output, "Hello") },
 		},
+		"input with charlimit": {
+			Field: NewInput().CharLimit(2),
+			Input: "Hello",
+			Check: func(output string) bool {
+				return strings.Contains(output, "Input cannot exceed 2 characters")
+			},
+		},
 		"input with default": {
 			FieldFn: func() Field {
 				v := "hi"
@@ -1245,6 +1252,11 @@ func TestAccessibleFields(t *testing.T) {
 			Field: NewText().Title("Text"),
 			Input: "hello world",
 			Check: func(output string) bool { return strings.Contains(output, "hello world") },
+		},
+		"text with limit": {
+			Field: NewText().CharLimit(2).Title("Text"),
+			Input: "hello world",
+			Check: func(output string) bool { return strings.Contains(output, "Input cannot exceed 2 characters") },
 		},
 		"text default value": {
 			FieldFn: func() Field {
