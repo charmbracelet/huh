@@ -112,7 +112,7 @@ func PromptString(
 	)
 
 	for !valid {
-		fmt.Fprint(out, prompt)
+		_, _ = fmt.Fprint(out, prompt)
 		if !scanner.Scan() {
 			// no way to bubble up errors or signal cancellation
 			// but the program is probably not continuing if
@@ -122,7 +122,7 @@ func PromptString(
 		input = scanner.Text()
 
 		if err := validator(input); err != nil {
-			fmt.Fprintln(out, err)
+			_, _ = fmt.Fprintln(out, err)
 			continue
 		}
 
