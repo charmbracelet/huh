@@ -434,7 +434,6 @@ func (t *Text) runAccessible(w io.Writer, r io.Reader) error {
 			return nil
 		},
 	))
-	_, _ = fmt.Fprintln(w)
 	_, _ = fmt.Fprintln(w, styles.SelectedOption.Render("Input: "+t.accessor.Get()+"\n"))
 	return nil
 }
