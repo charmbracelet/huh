@@ -1242,14 +1242,14 @@ func TestAccessibleFields(t *testing.T) {
 			Check: func(output string) bool { return strings.Contains(output, "Hi") },
 		},
 		"text": {
-			Field: NewText().CharLimit(400).Title("Text"),
+			Field: NewText().Title("Text"),
 			Input: "hello world",
 			Check: func(output string) bool { return strings.Contains(output, "hello world") },
 		},
 		"text default value": {
 			FieldFn: func() Field {
 				v := "test"
-				return NewText().CharLimit(400).Title("Text").Value(&v)
+				return NewText().Title("Text").Value(&v)
 			},
 			Input: "\n",
 			Check: func(output string) bool { return strings.Contains(output, "test") },

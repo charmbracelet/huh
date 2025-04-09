@@ -428,7 +428,7 @@ func (t *Text) runAccessible(w io.Writer, r io.Reader) error {
 				return err
 			}
 
-			if len(input) > t.textarea.CharLimit {
+			if t.textarea.CharLimit > 0 && len(input) > t.textarea.CharLimit {
 				return fmt.Errorf("Input cannot exceed %d characters", t.textarea.CharLimit)
 			}
 			return nil
