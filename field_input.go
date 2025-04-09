@@ -389,7 +389,7 @@ func (i *Input) View() string {
 
 	// Adjust text input size to its char limit if it fit in its width
 	if i.textinput.CharLimit > 0 {
-		i.textinput.Width = min(i.textinput.CharLimit, i.textinput.Width, maxWidth)
+		i.textinput.Width = max(min(i.textinput.CharLimit, i.textinput.Width, maxWidth), 0)
 	}
 
 	var sb strings.Builder
