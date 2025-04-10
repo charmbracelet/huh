@@ -438,6 +438,7 @@ func (i *Input) runAccessible(w io.Writer, r io.Reader) error {
 		return i.validate(input)
 	}
 
+	//nolint:exhaustive
 	switch i.textinput.EchoMode {
 	case textinput.EchoNormal:
 		value := accessibility.PromptString(w, r, "Input: ", i.GetValue().(string), validator)
@@ -448,7 +449,7 @@ func (i *Input) runAccessible(w io.Writer, r io.Reader) error {
 		if fd, ok := r.(*os.File); ok {
 			value, err := accessibility.PromptPassword(w, fd.Fd(), "Input: ", validator)
 			if err != nil {
-				return err
+				return err //nolint:wrapcheck
 			}
 			i.accessor.Set(value)
 			_, _ = fmt.Fprintln(w, styles.SelectedOption.Render("Input: (hidden)\n"))

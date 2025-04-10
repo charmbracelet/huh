@@ -109,7 +109,7 @@ func PromptPassword(
 		_, _ = fmt.Fprint(out, prompt)
 		pwd, err := term.ReadPassword(in)
 		if err != nil {
-			return "", err
+			return "", err //nolint:wrapcheck
 		}
 		_, _ = fmt.Fprintln(out)
 		if err := validator(string(pwd)); err != nil {
