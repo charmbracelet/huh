@@ -1,6 +1,7 @@
 package huh
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -430,21 +431,31 @@ func (i *Input) run() error {
 func (i *Input) runAccessible(w io.Writer, r io.Reader) error {
 	styles := i.activeStyles()
 	_, _ = fmt.Fprintln(w, styles.Title.Render(i.title.val))
-	_, _ = fmt.Fprintln(w)
-	i.accessor.Set(accessibility.PromptString(
-		w,
-		r,
-		"Input: ",
-		i.GetValue().(string),
-		func(input string) error {
-			if i.textinput.CharLimit > 0 && len(input) > i.textinput.CharLimit {
-				return fmt.Errorf("Input cannot exceed %d characters", i.textinput.CharLimit)
+	validator := func(input string) error {
+		if i.textinput.CharLimit > 0 && len(input) > i.textinput.CharLimit {
+			return fmt.Errorf("Input cannot exceed %d characters", i.textinput.CharLimit)
+		}
+		return i.validate(input)
+	}
+
+	switch i.textinput.EchoMode {
+	case textinput.EchoNormal:
+		value := accessibility.PromptString(w, r, "Input: ", i.GetValue().(string), validator)
+		i.accessor.Set(value)
+		_, _ = fmt.Fprintln(w, styles.SelectedOption.Render("Input: "+i.accessor.Get()+"\n"))
+		return nil
+	default:
+		if fd, ok := r.(*os.File); ok {
+			value, err := accessibility.PromptPassword(w, fd.Fd(), "Input: ", validator)
+			if err != nil {
+				return err
 			}
-			return i.validate(input)
-		},
-	))
-	_, _ = fmt.Fprintln(w, styles.SelectedOption.Render("Input: "+i.accessor.Get()+"\n"))
-	return nil
+			i.accessor.Set(value)
+			_, _ = fmt.Fprintln(w, styles.SelectedOption.Render("Input: (hidden)\n"))
+			return nil
+		}
+		return errors.New("password asking needs a tty")
+	}
 }
 
 // WithKeyMap sets the keymap on an input field.

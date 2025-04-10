@@ -10,6 +10,8 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+
+	"github.com/charmbracelet/x/term"
 )
 
 // PromptInt prompts a user for an integer between a certain range.
@@ -93,6 +95,29 @@ func PromptBool(
 	)
 	b, _ := parseBool(input)
 	return b
+}
+
+// PromptPassword allows to prompt for a password.
+// In must be the fd of a tty.
+func PromptPassword(
+	out io.Writer,
+	in uintptr,
+	prompt string,
+	validator func(input string) error,
+) (string, error) {
+	for {
+		_, _ = fmt.Fprint(out, prompt)
+		pwd, err := term.ReadPassword(in)
+		if err != nil {
+			return "", err
+		}
+		_, _ = fmt.Fprintln(out)
+		if err := validator(string(pwd)); err != nil {
+			_, _ = fmt.Fprintln(out, err)
+			continue
+		}
+		return string(pwd), nil
+	}
 }
 
 // PromptString prompts a user for a string value and validates it against a
