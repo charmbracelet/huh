@@ -14,6 +14,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/x/ansi"
+	"github.com/charmbracelet/x/xpty"
 )
 
 var pretty = lipgloss.NewStyle().
@@ -1287,4 +1288,51 @@ func TestAccessibleFields(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestInputPasswordAccessible(t *testing.T) {
+	t.Run("not a tty", func(t *testing.T) {
+		var out bytes.Buffer
+		if err := NewInput().
+			EchoMode(EchoModeNone).
+			runAccessible(&out, bytes.NewReader(nil)); err == nil {
+			t.Error("expected it to error")
+		}
+		if err := NewInput().
+			EchoMode(EchoModePassword).
+			runAccessible(&out, bytes.NewReader(nil)); err == nil {
+			t.Error("expected it to error")
+		}
+	})
+
+	t.Run("is a tty", func(t *testing.T) {
+		var out bytes.Buffer
+		pty, err := xpty.NewPty(50, 30)
+		if err != nil {
+			t.Skipf("could not open pty: %v", err)
+		}
+		upty, ok := pty.(*xpty.UnixPty)
+		if !ok {
+			t.Skipf("test only works on unix")
+		}
+
+		errs := make(chan error, 1)
+		go func() {
+			errs <- NewInput().
+				EchoMode(EchoModePassword).
+				runAccessible(&out, upty.Slave())
+		}()
+
+		upty.Master().Write([]byte("a password\n"))
+
+		if err := <-errs; err != nil {
+			t.Errorf("expected no error, got %v", err)
+		}
+
+		expected := "Input: \nInput: (hidden)\n"
+		got := out.String()
+		if !strings.Contains(got, expected) {
+			t.Errorf("expected output to contain %q, got %q", expected, got)
+		}
+	})
 }

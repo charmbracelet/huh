@@ -446,7 +446,7 @@ func (i *Input) runAccessible(w io.Writer, r io.Reader) error {
 		_, _ = fmt.Fprintln(w, styles.SelectedOption.Render("Input: "+i.accessor.Get()+"\n"))
 		return nil
 	default:
-		if fd, ok := r.(*os.File); ok {
+		if fd, ok := r.(interface{ Fd() uintptr }); ok {
 			value, err := accessibility.PromptPassword(w, fd.Fd(), "Input: ", validator)
 			if err != nil {
 				return err //nolint:wrapcheck
