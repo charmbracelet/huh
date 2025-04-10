@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
 	"strings"
 	"time"
 
@@ -80,11 +81,8 @@ func (m *MultiSelect[T]) Value(value *[]T) *MultiSelect[T] {
 func (m *MultiSelect[T]) Accessor(accessor Accessor[[]T]) *MultiSelect[T] {
 	m.accessor = accessor
 	for i, o := range m.options.val {
-		for _, v := range m.accessor.Get() {
-			if o.Value == v {
-				m.options.val[i].selected = true
-				break
-			}
+		if slices.Contains(m.accessor.Get(), o.Value) {
+			m.options.val[i].selected = true
 		}
 	}
 	return m
@@ -391,7 +389,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			m.cursor = min(m.cursor+1, len(m.filteredOptions)-1)
 			if m.cursor >= m.viewport.YOffset+m.viewport.Height {
-				m.viewport.LineDown(1)
+				m.viewport.ScrollDown(1)
 			}
 		case key.Matches(msg, m.keymap.GotoTop):
 			if m.filtering {
@@ -407,10 +405,10 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.viewport.GotoBottom()
 		case key.Matches(msg, m.keymap.HalfPageUp):
 			m.cursor = max(m.cursor-m.viewport.Height/2, 0)
-			m.viewport.HalfViewUp()
+			m.viewport.HalfPageUp()
 		case key.Matches(msg, m.keymap.HalfPageDown):
 			m.cursor = min(m.cursor+m.viewport.Height/2, len(m.filteredOptions)-1)
-			m.viewport.HalfViewDown()
+			m.viewport.HalfPageDown()
 		case key.Matches(msg, m.keymap.Toggle) && !m.filtering:
 			for i, option := range m.options.val {
 				if option.Key == m.filteredOptions[m.cursor].Key {

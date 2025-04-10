@@ -442,11 +442,11 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			s.viewport.GotoBottom()
 		case key.Matches(msg, s.keymap.HalfPageUp):
 			s.selected = max(s.selected-s.viewport.Height/2, 0)
-			s.viewport.HalfViewUp()
+			s.viewport.HalfPageUp()
 			s.updateValue()
 		case key.Matches(msg, s.keymap.HalfPageDown):
 			s.selected = min(s.selected+s.viewport.Height/2, len(s.filteredOptions)-1)
-			s.viewport.HalfViewDown()
+			s.viewport.HalfPageDown()
 			s.updateValue()
 		case key.Matches(msg, s.keymap.Down, s.keymap.Right):
 			// When filtering we should ignore j/k keybindings
@@ -461,7 +461,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				s.viewport.GotoTop()
 			}
 			if s.selected >= s.viewport.YOffset+s.viewport.Height {
-				s.viewport.LineDown(1)
+				s.viewport.ScrollDown(1)
 			}
 			s.updateValue()
 		case key.Matches(msg, s.keymap.Prev):
