@@ -34,7 +34,7 @@ func PromptInt(
 		}
 		i, err := strconv.Atoi(s)
 		if err != nil || i < low || i > high {
-			return fmt.Errorf("Invalid: must be between %d and %d", low, high)
+			return fmt.Errorf("Invalid: must be between %d and %d", low, high) //nolint:staticcheck
 		}
 		return nil
 	}
