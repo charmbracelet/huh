@@ -710,14 +710,15 @@ func (s *Select[T]) Run() error {
 // runAccessible runs an accessible select field.
 func (s *Select[T]) runAccessible(w io.Writer, r io.Reader) error {
 	styles := s.activeStyles()
-	prompt := styles.Title.
+	_, _ = fmt.Fprintln(w, styles.Title.
 		PaddingRight(1).
-		Render(cmp.Or(s.title.val, "Select:"))
+		Render(cmp.Or(s.title.val, "Select:")))
 
 	for i, option := range s.options.val {
 		_, _ = fmt.Fprintf(w, "%d. %s\n", i+1, option.Key)
 	}
 
+	prompt := fmt.Sprintf("Input a number between %d and %d: ", 0, len(s.options.val))
 	for {
 		selected := s.selected + 1
 		choice := accessibility.PromptInt(w, r, prompt, 1, len(s.options.val), &selected)

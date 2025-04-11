@@ -658,10 +658,11 @@ func (m *MultiSelect[T]) printOptions(w io.Writer) {
 		if option.selected {
 			sb.WriteString(styles.SelectedOption.Render(fmt.Sprintf("%d. %s %s", i+1, "✓", option.Key)))
 		} else {
-			sb.WriteString(fmt.Sprintf("%d. %s %s", i+1, " ", option.Key))
+			sb.WriteString(fmt.Sprintf("%d.   %s", i+1, option.Key))
 		}
 		sb.WriteString("\n")
 	}
+	sb.WriteString("0.   Confirm selection\n")
 	_, _ = fmt.Fprint(w, sb.String())
 }
 
@@ -708,19 +709,21 @@ func (m *MultiSelect[T]) Run() error {
 // runAccessible() runs the multi-select field in accessible mode.
 func (m *MultiSelect[T]) runAccessible(w io.Writer, r io.Reader) error {
 	styles := m.activeStyles()
-	prompt := styles.Title.
+	title := styles.Title.
 		PaddingRight(1).
 		Render(cmp.Or(m.title.val, "Select:"))
+	_, _ = fmt.Fprintln(w, title)
+	limit := m.limit
+	if limit == 0 {
+		limit = len(m.options.val)
+	}
+	_, _ = fmt.Fprintf(w, "Select up to %d options.\n", limit)
 
 	var choice int
 	for {
 		m.printOptions(w)
-		limit := m.limit
-		if limit == 0 {
-			limit = len(m.options.val)
-		}
-		_, _ = fmt.Fprintf(w, "Select up to %d options. Type 0 to continue.\n", limit)
 
+		prompt := fmt.Sprintf("Input a number between %d and %d: ", 0, len(m.options.val))
 		choice = accessibility.PromptInt(w, r, prompt, 0, len(m.options.val), nil)
 		if choice == 0 {
 			m.updateValue()
