@@ -250,13 +250,13 @@ func (n *Note) Run() error {
 
 // runAccessible runs an accessible note field.
 func (n *Note) runAccessible(w io.Writer, _ io.Reader) error {
+	styles := n.activeStyles()
 	if n.title.val != "" {
-		_, _ = fmt.Fprintln(w, n.title.val)
-		_, _ = fmt.Fprintln(w)
+		_, _ = fmt.Fprintln(w, styles.Title.Render(n.title.val))
 	}
-
-	_, _ = fmt.Fprintln(w, n.description.val)
-	_, _ = fmt.Fprintln(w)
+	if n.description.val != "" {
+		_, _ = fmt.Fprintln(w, n.description.val)
+	}
 	return nil
 }
 

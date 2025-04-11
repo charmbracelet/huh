@@ -34,7 +34,7 @@ func PromptInt(
 		}
 		i, err := strconv.Atoi(s)
 		if err != nil || i < low || i > high {
-			return errors.New("invalid input. please try again")
+			return fmt.Errorf("Invalid: must be between %d and %d", low, high)
 		}
 		return nil
 	}
@@ -73,6 +73,7 @@ func parseBool(s string) (bool, error) {
 func PromptBool(
 	out io.Writer,
 	in io.Reader,
+	prompt string,
 	defaultValue bool,
 ) bool {
 	validBool := func(s string) error {
@@ -81,11 +82,6 @@ func PromptBool(
 		}
 		_, err := parseBool(s)
 		return err
-	}
-
-	prompt := "Choose [y/N]: "
-	if defaultValue {
-		prompt = "Choose [Y/n]: "
 	}
 
 	input := PromptString(

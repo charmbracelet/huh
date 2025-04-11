@@ -27,7 +27,7 @@ func PromptInt(prompt string, low, high int) int {
 //
 // Deprecated: use [accessibility.PromptBool] instead.
 func PromptBool() bool {
-	return accessibility.PromptBool(os.Stdout, os.Stdin, false)
+	return accessibility.PromptBool(os.Stdout, os.Stdin, "Choose [y/N]: ", false)
 }
 
 // PromptString prompts a user for a string value and validates it against a

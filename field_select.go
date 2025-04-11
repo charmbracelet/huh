@@ -1,6 +1,7 @@
 package huh
 
 import (
+	"cmp"
 	"fmt"
 	"io"
 	"os"
@@ -708,38 +709,27 @@ func (s *Select[T]) Run() error {
 
 // runAccessible runs an accessible select field.
 func (s *Select[T]) runAccessible(w io.Writer, r io.Reader) error {
-	var sb strings.Builder
 	styles := s.activeStyles()
-	sb.WriteString(styles.Title.Render(s.title.val) + "\n")
+	prompt := styles.Title.
+		PaddingRight(1).
+		Render(cmp.Or(s.title.val, "Select:"))
 
 	for i, option := range s.options.val {
-		sb.WriteString(fmt.Sprintf("%d. %s", i+1, option.Key))
-		sb.WriteString("\n")
+		_, _ = fmt.Fprintf(w, "%d. %s\n", i+1, option.Key)
 	}
-
-	_, _ = fmt.Fprintln(w, sb.String())
 
 	for {
 		selected := s.selected + 1
-		choice := accessibility.PromptInt(
-			w,
-			r,
-			"Choose: ",
-			1,
-			len(s.options.val),
-			&selected,
-		)
+		choice := accessibility.PromptInt(w, r, prompt, 1, len(s.options.val), &selected)
 		option := s.options.val[choice-1]
 		if err := s.validate(option.Value); err != nil {
 			_, _ = fmt.Fprintln(w, err.Error())
+			_, _ = fmt.Fprintln(w)
 			continue
 		}
-		_, _ = fmt.Fprintln(w, styles.SelectedOption.Render("Chose: "+option.Key+"\n"))
 		s.accessor.Set(option.Value)
-		break
+		return nil
 	}
-
-	return nil
 }
 
 // WithTheme sets the theme of the select field.

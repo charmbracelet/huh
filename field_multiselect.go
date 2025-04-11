@@ -1,6 +1,7 @@
 package huh
 
 import (
+	"cmp"
 	"fmt"
 	"io"
 	"os"
@@ -652,11 +653,7 @@ func (m *MultiSelect[T]) View() string {
 
 func (m *MultiSelect[T]) printOptions(w io.Writer) {
 	styles := m.activeStyles()
-	maxWidth := m.width - styles.Base.GetHorizontalFrameSize()
 	var sb strings.Builder
-	sb.WriteString(styles.Title.Render(wrap(m.title.val, maxWidth)))
-	sb.WriteString("\n")
-
 	for i, option := range m.options.val {
 		if option.selected {
 			sb.WriteString(styles.SelectedOption.Render(fmt.Sprintf("%d. %s %s", i+1, "✓", option.Key)))
@@ -665,8 +662,7 @@ func (m *MultiSelect[T]) printOptions(w io.Writer) {
 		}
 		sb.WriteString("\n")
 	}
-
-	_, _ = fmt.Fprintln(w, sb.String())
+	_, _ = fmt.Fprint(w, sb.String())
 }
 
 // setFilter sets the filter of the select field.
@@ -711,21 +707,21 @@ func (m *MultiSelect[T]) Run() error {
 
 // runAccessible() runs the multi-select field in accessible mode.
 func (m *MultiSelect[T]) runAccessible(w io.Writer, r io.Reader) error {
-	m.printOptions(w)
 	styles := m.activeStyles()
+	prompt := styles.Title.
+		PaddingRight(1).
+		Render(cmp.Or(m.title.val, "Select:"))
 
 	var choice int
 	for {
-		_, _ = fmt.Fprintf(w, "Select up to %d options. 0 to continue.\n", m.limit)
+		m.printOptions(w)
+		limit := m.limit
+		if limit == 0 {
+			limit = len(m.options.val)
+		}
+		_, _ = fmt.Fprintf(w, "Select up to %d options. Type 0 to continue.\n", limit)
 
-		choice = accessibility.PromptInt(
-			w,
-			r,
-			"Select: ",
-			0,
-			len(m.options.val),
-			nil,
-		)
+		choice = accessibility.PromptInt(w, r, prompt, 0, len(m.options.val), nil)
 		if choice == 0 {
 			m.updateValue()
 			err := m.validate(m.accessor.Get())
@@ -741,23 +737,9 @@ func (m *MultiSelect[T]) runAccessible(w io.Writer, r io.Reader) error {
 			continue
 		}
 		m.options.val[choice-1].selected = !m.options.val[choice-1].selected
-		if m.options.val[choice-1].selected {
-			_, _ = fmt.Fprintf(w, "Selected: %s\n\n", m.options.val[choice-1].Key)
-		} else {
-			_, _ = fmt.Fprintf(w, "Deselected: %s\n\n", m.options.val[choice-1].Key)
-		}
-
-		m.printOptions(w)
+		_, _ = fmt.Fprintln(w)
 	}
 
-	var values []string
-	for _, option := range m.options.val {
-		if option.selected {
-			values = append(values, option.Key)
-		}
-	}
-
-	_, _ = fmt.Fprintln(w, styles.SelectedOption.Render("Selected:", strings.Join(values, ", ")+"\n"))
 	return nil
 }
 
