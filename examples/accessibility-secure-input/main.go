@@ -23,6 +23,10 @@ func main() {
 			huh.NewInput().
 				Validate(validate).
 				Title("Name:"),
+			huh.NewInput().
+				EchoMode(huh.EchoModePassword).
+				Validate(validate).
+				Title("Password:"),
 			huh.NewMultiSelect[string]().
 				Options(huh.NewOptions(
 					"Red",
@@ -38,10 +42,6 @@ func main() {
 					"Yellow",
 				)...).
 				Title("Choose the best color:"),
-			huh.NewInput().
-				EchoMode(huh.EchoModePassword).
-				Validate(validate).
-				Title("Password:"),
 			huh.NewFilePicker().
 				Title("Which file?"),
 			huh.NewConfirm().
