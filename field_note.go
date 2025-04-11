@@ -149,6 +149,11 @@ func (n *Note) Skip() bool { return n.skip }
 // Zoom returns whether the note should be zoomed.
 func (n *Note) Zoom() bool { return false }
 
+// Hide returns whether this input should be hidden and not updated.
+func (*Note) Hide() bool {
+	return false
+}
+
 // KeyBinds returns the help message for the note field.
 func (n *Note) KeyBinds() []key.Binding {
 	return []key.Binding{
