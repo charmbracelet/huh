@@ -1,8 +1,8 @@
 package huh
 
 import (
+	"cmp"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -317,8 +317,9 @@ func (f *FilePicker) Run() error {
 // runAccessible runs an accessible file field.
 func (f *FilePicker) runAccessible(w io.Writer, r io.Reader) error {
 	styles := f.activeStyles()
-	_, _ = fmt.Fprintln(w, styles.Title.Render(f.title))
-	_, _ = fmt.Fprintln(w)
+	prompt := styles.Title.
+		PaddingRight(1).
+		Render(cmp.Or(f.title, "Choose a file:"))
 
 	validateFile := func(s string) error {
 		// is the string a file?
@@ -327,7 +328,7 @@ func (f *FilePicker) runAccessible(w io.Writer, r io.Reader) error {
 		}
 
 		// is it one of the allowed types?
-		valid := false
+		valid := len(f.picker.AllowedTypes) == 0
 		for _, ext := range f.picker.AllowedTypes {
 			if strings.HasSuffix(s, ext) {
 				valid = true
@@ -345,11 +346,10 @@ func (f *FilePicker) runAccessible(w io.Writer, r io.Reader) error {
 	f.accessor.Set(accessibility.PromptString(
 		w,
 		r,
-		"File: ",
+		prompt,
 		f.GetValue().(string),
 		validateFile,
 	))
-	_, _ = fmt.Fprintln(w, styles.SelectedOption.Render(f.accessor.Get()+"\n"))
 	return nil
 }
 

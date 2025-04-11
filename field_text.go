@@ -1,6 +1,7 @@
 package huh
 
 import (
+	"cmp"
 	"fmt"
 	"io"
 	"os"
@@ -415,12 +416,13 @@ func (t *Text) Run() error {
 // runAccessible runs an accessible text field.
 func (t *Text) runAccessible(w io.Writer, r io.Reader) error {
 	styles := t.activeStyles()
-	_, _ = fmt.Fprintln(w, styles.Title.Render(t.title.val))
-	_, _ = fmt.Fprintln(w)
+	prompt := styles.Title.
+		PaddingRight(1).
+		Render(cmp.Or(t.title.val, "Input:"))
 	t.accessor.Set(accessibility.PromptString(
 		w,
 		r,
-		"Input: ",
+		prompt,
 		t.GetValue().(string),
 		func(input string) error {
 			if err := t.validate(input); err != nil {
@@ -434,7 +436,6 @@ func (t *Text) runAccessible(w io.Writer, r io.Reader) error {
 			return nil
 		},
 	))
-	_, _ = fmt.Fprintln(w, styles.SelectedOption.Render("Input: "+t.accessor.Get()+"\n"))
 	return nil
 }
 

@@ -710,6 +710,7 @@ func (f *Form) runAccessible(w io.Writer, r io.Reader) error {
 			field.Init()
 			field.Focus()
 			_ = field.WithAccessible(true).runAccessible(w, r)
+			_, _ = fmt.Fprintln(w)
 			return true
 		})
 		return true
