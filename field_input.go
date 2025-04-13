@@ -24,10 +24,11 @@ type Input struct {
 	key      string
 	id       int
 
-	title       Eval[string]
-	description Eval[string]
-	placeholder Eval[string]
-	suggestions Eval[[]string]
+	title                Eval[string]
+	description          Eval[string]
+	placeholder          Eval[string]
+	placeholderIsDefault bool
+	suggestions          Eval[[]string]
 
 	textinput textinput.Model
 
@@ -215,8 +216,24 @@ func (i *Input) Placeholder(str string) *Input {
 
 // PlaceholderFunc sets the placeholder func of the text input.
 func (i *Input) PlaceholderFunc(f func() string, bindings any) *Input {
+	i.placeholderIsDefault = false
 	i.placeholder.fn = f
 	i.placeholder.bindings = bindings
+	return i
+}
+
+// Default sets the default value of the text input. This looks the same as a placeholder,
+// but it is the field's value unless the user overrides it.
+func (i *Input) Default(str string) *Input {
+	i.Placeholder(str)
+	i.placeholderIsDefault = true
+	return i
+}
+
+// DefaultFunc sets the default func of the text input.
+func (i *Input) DefaultFunc(f func() string, bindings any) *Input {
+	i.PlaceholderFunc(f, bindings)
+	i.placeholderIsDefault = true
 	return i
 }
 
@@ -250,7 +267,7 @@ func (i *Input) Focus() tea.Cmd {
 // Blur blurs the input field.
 func (i *Input) Blur() tea.Cmd {
 	i.focused = false
-	i.accessor.Set(i.textinput.Value())
+	i.accessor.Set(i.valueOrDefault())
 	i.textinput.Blur()
 	i.err = i.validate(i.accessor.Get())
 	return nil
@@ -346,18 +363,29 @@ func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, i.keymap.Prev):
 			cmds = append(cmds, PrevField)
 		case key.Matches(msg, i.keymap.Next, i.keymap.Submit):
-			value := i.textinput.Value()
+			value := i.valueOrDefault()
 			i.err = i.validate(value)
 			if i.err != nil {
 				return i, nil
 			}
 			cmds = append(cmds, NextField)
+		case key.Matches(msg,
+			i.textinput.KeyMap.CharacterForward,
+			i.textinput.KeyMap.DeleteCharacterForward,
+			i.textinput.KeyMap.WordForward,
+			i.textinput.KeyMap.DeleteWordForward,
+			i.textinput.KeyMap.LineEnd):
+
+			if i.placeholderIsDefault && i.textinput.Value() == "" {
+				i.textinput.SetValue(i.textinput.Placeholder)
+				i.textinput.CursorStart()
+			}
 		}
 	}
 
 	i.textinput, cmd = i.textinput.Update(msg)
 	cmds = append(cmds, cmd)
-	i.accessor.Set(i.textinput.Value())
+	i.accessor.Set(i.valueOrDefault())
 
 	return i, tea.Batch(cmds...)
 }
@@ -505,4 +533,12 @@ func (i *Input) GetKey() string { return i.key }
 // GetValue returns the value of the field.
 func (i *Input) GetValue() any {
 	return i.accessor.Get()
+}
+
+func (i *Input) valueOrDefault() string {
+	value := i.textinput.Value()
+	if i.placeholderIsDefault && value == "" {
+		value = i.textinput.Placeholder
+	}
+	return value
 }
