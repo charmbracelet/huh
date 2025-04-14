@@ -470,6 +470,7 @@ Tea example][example].
 [example]: https://github.com/charmbracelet/huh/blob/main/examples/bubbletea/main.go
 
 ## `Huh?` in the Wild
+
 For some `Huh?` programs in production, see:
 
 * [glyphs](https://github.com/maaslalani/glyphs): a unicode symbol picker
@@ -478,6 +479,11 @@ For some `Huh?` programs in production, see:
 * [gum](https://github.com/charmbracelet/gum): a tool for glamorous shell scripts
 * [savvy](https://github.com/getsavvyinc/savvy-cli): the easiest way to create, share, and run runbooks in the terminal
 
+## Contributing
+
+See [contributing][contribute].
+
+[contribute]: https://github.com/charmbracelet/huh/contribute
 
 ## Feedback
 

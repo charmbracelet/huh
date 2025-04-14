@@ -1,7 +1,10 @@
 package huh
 
 import (
+	"cmp"
 	"fmt"
+	"io"
+	"os"
 	"slices"
 	"strings"
 	"time"
@@ -11,7 +14,7 @@ import (
 	"github.com/charmbracelet/bubbles/v2/textinput"
 	"github.com/charmbracelet/bubbles/v2/viewport"
 	tea "github.com/charmbracelet/bubbletea/v2"
-	"github.com/charmbracelet/huh/v2/accessibility"
+	"github.com/charmbracelet/huh/v2/internal/accessibility"
 	"github.com/charmbracelet/lipgloss/v2"
 )
 
@@ -651,23 +654,19 @@ func (m *MultiSelect[T]) View() string {
 		Render(sb.String())
 }
 
-func (m *MultiSelect[T]) printOptions() {
+func (m *MultiSelect[T]) printOptions(w io.Writer) {
 	styles := m.activeStyles()
-	maxWidth := m.width - styles.Base.GetHorizontalFrameSize()
 	var sb strings.Builder
-	sb.WriteString(styles.Title.Render(wrap(m.title.val, maxWidth)))
-	sb.WriteString("\n")
-
 	for i, option := range m.options.val {
 		if option.selected {
 			sb.WriteString(styles.SelectedOption.Render(fmt.Sprintf("%d. %s %s", i+1, "✓", option.Key)))
 		} else {
-			sb.WriteString(fmt.Sprintf("%d. %s %s", i+1, " ", option.Key))
+			sb.WriteString(fmt.Sprintf("%d.   %s", i+1, option.Key))
 		}
 		sb.WriteString("\n")
 	}
-
-	fmt.Println(sb.String())
+	sb.WriteString("0.   Confirm selection\n")
+	_, _ = fmt.Fprint(w, sb.String())
 }
 
 // setFilter sets the filter of the select field.
@@ -705,53 +704,49 @@ func (m *MultiSelect[T]) setSelectAllHelp() {
 // Run runs the multi-select field.
 func (m *MultiSelect[T]) Run() error {
 	if m.accessible {
-		return m.runAccessible()
+		return m.runAccessible(os.Stdout, os.Stdin)
 	}
 	return Run(m)
 }
 
 // runAccessible() runs the multi-select field in accessible mode.
-func (m *MultiSelect[T]) runAccessible() error {
-	m.printOptions()
+func (m *MultiSelect[T]) runAccessible(w io.Writer, r io.Reader) error {
 	styles := m.activeStyles()
+	title := styles.Title.
+		PaddingRight(1).
+		Render(cmp.Or(m.title.val, "Select:"))
+	_, _ = fmt.Fprintln(w, title)
+	limit := m.limit
+	if limit == 0 {
+		limit = len(m.options.val)
+	}
+	_, _ = fmt.Fprintf(w, "Select up to %d options.\n", limit)
 
 	var choice int
 	for {
-		fmt.Printf("Select up to %d options. 0 to continue.\n", m.limit)
+		m.printOptions(w)
 
-		choice = accessibility.PromptInt("Select: ", 0, len(m.options.val))
+		prompt := fmt.Sprintf("Input a number between %d and %d: ", 0, len(m.options.val))
+		choice = accessibility.PromptInt(w, r, prompt, 0, len(m.options.val), nil)
 		if choice == 0 {
 			m.updateValue()
 			err := m.validate(m.accessor.Get())
 			if err != nil {
-				fmt.Println(err)
+				_, _ = fmt.Fprintln(w, err)
 				continue
 			}
 			break
 		}
 
 		if !m.options.val[choice-1].selected && m.limit > 0 && m.numSelected() >= m.limit {
-			fmt.Printf("You can't select more than %d options.\n", m.limit)
+			_, _ = fmt.Fprintf(w, "You can't select more than %d options.\n", m.limit)
+			_, _ = fmt.Fprintln(w)
 			continue
 		}
 		m.options.val[choice-1].selected = !m.options.val[choice-1].selected
-		if m.options.val[choice-1].selected {
-			fmt.Printf("Selected: %s\n\n", m.options.val[choice-1].Key)
-		} else {
-			fmt.Printf("Deselected: %s\n\n", m.options.val[choice-1].Key)
-		}
-
-		m.printOptions()
+		_, _ = fmt.Fprintln(w)
 	}
 
-	var values []string
-	for _, option := range m.options.val {
-		if option.selected {
-			values = append(values, option.Key)
-		}
-	}
-
-	fmt.Println(styles.SelectedOption.Render("Selected:", strings.Join(values, ", ")+"\n"))
 	return nil
 }
 

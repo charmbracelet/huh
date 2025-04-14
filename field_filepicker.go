@@ -1,8 +1,9 @@
 package huh
 
 import (
+	"cmp"
 	"errors"
-	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -11,7 +12,7 @@ import (
 	"github.com/charmbracelet/bubbles/v2/filepicker"
 	"github.com/charmbracelet/bubbles/v2/key"
 	tea "github.com/charmbracelet/bubbletea/v2"
-	"github.com/charmbracelet/huh/v2/accessibility"
+	"github.com/charmbracelet/huh/v2/internal/accessibility"
 	"github.com/charmbracelet/lipgloss/v2"
 )
 
@@ -312,16 +313,17 @@ func (f *FilePicker) setPicking(v bool) {
 // Run runs the file field.
 func (f *FilePicker) Run() error {
 	if f.accessible {
-		return f.runAccessible()
+		return f.runAccessible(os.Stdout, os.Stdin)
 	}
 	return Run(f)
 }
 
 // runAccessible runs an accessible file field.
-func (f *FilePicker) runAccessible() error {
+func (f *FilePicker) runAccessible(w io.Writer, r io.Reader) error {
 	styles := f.activeStyles()
-	fmt.Println(styles.Title.Render(f.title))
-	fmt.Println()
+	prompt := styles.Title.
+		PaddingRight(1).
+		Render(cmp.Or(f.title, "Choose a file:"))
 
 	validateFile := func(s string) error {
 		// is the string a file?
@@ -330,7 +332,7 @@ func (f *FilePicker) runAccessible() error {
 		}
 
 		// is it one of the allowed types?
-		valid := false
+		valid := len(f.picker.AllowedTypes) == 0
 		for _, ext := range f.picker.AllowedTypes {
 			if strings.HasSuffix(s, ext) {
 				valid = true
@@ -345,8 +347,13 @@ func (f *FilePicker) runAccessible() error {
 		return f.validate(s)
 	}
 
-	f.accessor.Set(accessibility.PromptString("File: ", validateFile))
-	fmt.Println(styles.SelectedOption.Render(f.accessor.Get() + "\n"))
+	f.accessor.Set(accessibility.PromptString(
+		w,
+		r,
+		prompt,
+		f.GetValue().(string),
+		validateFile,
+	))
 	return nil
 }
 

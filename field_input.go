@@ -1,13 +1,17 @@
 package huh
 
 import (
+	"cmp"
+	"errors"
 	"fmt"
+	"io"
+	"os"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/v2/key"
 	"github.com/charmbracelet/bubbles/v2/textinput"
 	tea "github.com/charmbracelet/bubbletea/v2"
-	"github.com/charmbracelet/huh/v2/accessibility"
+	"github.com/charmbracelet/huh/v2/internal/accessibility"
 	"github.com/charmbracelet/lipgloss/v2"
 )
 
@@ -389,7 +393,7 @@ func (i *Input) View() string {
 
 	// Adjust text input size to its char limit if it fit in its width
 	if i.textinput.CharLimit > 0 {
-		i.textinput.SetWidth(min(i.textinput.CharLimit, i.textinput.Width(), maxWidth))
+		i.textinput.SetWidth(max(min(i.textinput.CharLimit, i.textinput.Width(), maxWidth), 0))
 	}
 
 	var sb strings.Builder
@@ -416,7 +420,7 @@ func (i *Input) View() string {
 // Run runs the input field in accessible mode.
 func (i *Input) Run() error {
 	if i.accessible {
-		return i.runAccessible()
+		return i.runAccessible(os.Stdout, os.Stdin)
 	}
 	return i.run()
 }
@@ -427,13 +431,38 @@ func (i *Input) run() error {
 }
 
 // runAccessible runs the input field in accessible mode.
-func (i *Input) runAccessible() error {
+func (i *Input) runAccessible(w io.Writer, r io.Reader) error {
 	styles := i.activeStyles()
-	fmt.Println(styles.Title.Render(i.title.val))
-	fmt.Println()
-	i.accessor.Set(accessibility.PromptString("Input: ", i.validate))
-	fmt.Println(styles.SelectedOption.Render("Input: " + i.accessor.Get() + "\n"))
-	return nil
+	validator := func(input string) error {
+		if i.textinput.CharLimit > 0 && len(input) > i.textinput.CharLimit {
+			return fmt.Errorf("Input cannot exceed %d characters", i.textinput.CharLimit)
+		}
+		return i.validate(input)
+	}
+
+	//nolint:exhaustive
+	switch i.textinput.EchoMode {
+	case textinput.EchoNormal:
+		prompt := styles.Title.
+			PaddingRight(1).
+			Render(cmp.Or(i.title.val, "Input:"))
+		value := accessibility.PromptString(w, r, prompt, i.GetValue().(string), validator)
+		i.accessor.Set(value)
+		return nil
+	default:
+		prompt := styles.Title.
+			PaddingRight(1).
+			Render(cmp.Or(i.title.val, "Password:"))
+		if fd, ok := r.(interface{ Fd() uintptr }); ok {
+			value, err := accessibility.PromptPassword(w, fd.Fd(), prompt, validator)
+			if err != nil {
+				return err //nolint:wrapcheck
+			}
+			i.accessor.Set(value)
+			return nil
+		}
+		return errors.New("password asking needs a tty")
+	}
 }
 
 // WithKeyMap sets the keymap on an input field.

@@ -1,7 +1,9 @@
 package huh
 
 import (
+	"cmp"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"strings"
@@ -9,7 +11,7 @@ import (
 	"github.com/charmbracelet/bubbles/v2/key"
 	"github.com/charmbracelet/bubbles/v2/textarea"
 	tea "github.com/charmbracelet/bubbletea/v2"
-	"github.com/charmbracelet/huh/v2/accessibility"
+	"github.com/charmbracelet/huh/v2/internal/accessibility"
 	"github.com/charmbracelet/lipgloss/v2"
 )
 
@@ -408,28 +410,34 @@ func (t *Text) View() string {
 // Run runs the text field.
 func (t *Text) Run() error {
 	if t.accessible {
-		return t.runAccessible()
+		return t.runAccessible(os.Stdout, os.Stdin)
 	}
 	return Run(t)
 }
 
 // runAccessible runs an accessible text field.
-func (t *Text) runAccessible() error {
+func (t *Text) runAccessible(w io.Writer, r io.Reader) error {
 	styles := t.activeStyles()
-	fmt.Println(styles.Title.Render(t.title.val))
-	fmt.Println()
-	t.accessor.Set(accessibility.PromptString("Input: ", func(input string) error {
-		if err := t.validate(input); err != nil {
-			// Handle the error from t.validate, return it
-			return err
-		}
+	prompt := styles.Title.
+		PaddingRight(1).
+		Render(cmp.Or(t.title.val, "Input:"))
+	t.accessor.Set(accessibility.PromptString(
+		w,
+		r,
+		prompt,
+		t.GetValue().(string),
+		func(input string) error {
+			if err := t.validate(input); err != nil {
+				// Handle the error from t.validate, return it
+				return err
+			}
 
-		if len(input) > t.textarea.CharLimit {
-			return fmt.Errorf("Input cannot exceed %d characters", t.textarea.CharLimit)
-		}
-		return nil
-	}))
-	fmt.Println()
+			if t.textarea.CharLimit > 0 && len(input) > t.textarea.CharLimit {
+				return fmt.Errorf("Input cannot exceed %d characters", t.textarea.CharLimit)
+			}
+			return nil
+		},
+	))
 	return nil
 }
 

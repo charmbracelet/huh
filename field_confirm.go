@@ -1,12 +1,14 @@
 package huh
 
 import (
-	"fmt"
+	"cmp"
+	"io"
+	"os"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/v2/key"
 	tea "github.com/charmbracelet/bubbletea/v2"
-	"github.com/charmbracelet/huh/v2/accessibility"
+	"github.com/charmbracelet/huh/v2/internal/accessibility"
 	"github.com/charmbracelet/lipgloss/v2"
 )
 
@@ -298,20 +300,23 @@ func (c *Confirm) View() string {
 // Run runs the confirm field in accessible mode.
 func (c *Confirm) Run() error {
 	if c.accessible {
-		return c.runAccessible()
+		return c.runAccessible(os.Stdout, os.Stdin)
 	}
 	return Run(c)
 }
 
 // runAccessible runs the confirm field in accessible mode.
-func (c *Confirm) runAccessible() error {
+func (c *Confirm) runAccessible(w io.Writer, r io.Reader) error {
 	styles := c.activeStyles()
-	if c.title.val != "" {
-		fmt.Println(styles.Title.Render(c.title.val))
-		fmt.Println()
+	defaultValue := c.GetValue().(bool)
+	opts := "[y/N]"
+	if defaultValue {
+		opts = "[Y/n]"
 	}
-	c.accessor.Set(accessibility.PromptBool())
-	fmt.Println(styles.SelectedOption.Render("Chose: "+c.String()) + "\n")
+	prompt := styles.Title.
+		PaddingRight(1).
+		Render(cmp.Or(c.title.val, "Choose"), opts)
+	c.accessor.Set(accessibility.PromptBool(w, r, prompt, defaultValue))
 	return nil
 }
 

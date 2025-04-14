@@ -2,6 +2,8 @@ package huh
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/v2/key"
@@ -244,20 +246,20 @@ func (n *Note) View() string {
 // Run runs the note field.
 func (n *Note) Run() error {
 	if n.accessible {
-		return n.runAccessible()
+		return n.runAccessible(os.Stdout, os.Stdin)
 	}
 	return Run(n)
 }
 
 // runAccessible runs an accessible note field.
-func (n *Note) runAccessible() error {
+func (n *Note) runAccessible(w io.Writer, _ io.Reader) error {
+	styles := n.activeStyles()
 	if n.title.val != "" {
-		fmt.Println(n.title.val)
-		fmt.Println()
+		_, _ = fmt.Fprintln(w, styles.Title.Render(n.title.val))
 	}
-
-	fmt.Println(n.description.val)
-	fmt.Println()
+	if n.description.val != "" {
+		_, _ = fmt.Fprintln(w, n.description.val)
+	}
 	return nil
 }
 

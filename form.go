@@ -1,6 +1,7 @@
 package huh
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -89,6 +90,10 @@ type Form struct {
 	teaOptions []tea.ProgramOption
 
 	layout Layout
+
+	// accessible mode IO
+	output io.Writer
+	input  io.Reader
 }
 
 // NewForm returns a form with the given groups and default themes and
@@ -146,6 +151,8 @@ type Field interface {
 
 	// Run runs the field individually.
 	Run() error
+
+	runAccessible(w io.Writer, r io.Reader) error
 
 	// Skip returns whether this input should be skipped or not.
 	Skip() bool
@@ -319,13 +326,17 @@ func (f *Form) WithHeight(height int) *Form {
 }
 
 // WithOutput sets the io.Writer to output the form.
+// Default is STDOUT when [Form] is accessible (set with [Form.WithAccessible], STDERR otherwise.
 func (f *Form) WithOutput(w io.Writer) *Form {
+	f.output = w
 	f.teaOptions = append(f.teaOptions, tea.WithOutput(w))
 	return f
 }
 
 // WithInput sets the io.Reader to the input form.
+// Default is STDIN.
 func (f *Form) WithInput(r io.Reader) *Form {
+	f.input = r
 	f.teaOptions = append(f.teaOptions, tea.WithInput(r))
 	return f
 }
@@ -659,7 +670,10 @@ func (f *Form) RunWithContext(ctx context.Context) error {
 	}
 
 	if f.accessible {
-		return f.runAccessible()
+		return f.runAccessible(
+			cmp.Or[io.Writer](f.output, os.Stdout),
+			cmp.Or[io.Reader](f.input, os.Stdin),
+		)
 	}
 
 	return f.run(ctx)
@@ -688,7 +702,7 @@ func (f *Form) run(ctx context.Context) error {
 }
 
 // runAccessible runs the form in accessible mode.
-func (f *Form) runAccessible() error {
+func (f *Form) runAccessible(w io.Writer, r io.Reader) error {
 	// Timeouts are not supported in this mode.
 	if f.timeout > 0 {
 		return ErrTimeoutUnsupported
@@ -698,7 +712,8 @@ func (f *Form) runAccessible() error {
 		group.selector.Range(func(_ int, field Field) bool {
 			field.Init()
 			field.Focus()
-			_ = field.WithAccessible(true).Run()
+			_ = field.WithAccessible(true).runAccessible(w, r)
+			_, _ = fmt.Fprintln(w)
 			return true
 		})
 		return true

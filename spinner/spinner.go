@@ -212,7 +212,8 @@ func (s *Spinner) Run() error {
 	}
 
 	if s.accessible {
-		return s.runAccessible()
+		out := cmp.Or[io.Writer](s.output, os.Stdout)
+		return s.runAccessible(out)
 	}
 
 	opts := append(s.teaOptions, tea.WithContext(s.ctx))
