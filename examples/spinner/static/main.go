@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/charmbracelet/huh/spinner"
+	"github.com/charmbracelet/huh/v2/spinner"
 )
 
 func main() {

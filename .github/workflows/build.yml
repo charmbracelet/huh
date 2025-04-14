@@ -18,26 +18,6 @@ jobs:
       - run: go mod download
       - run: go build -v ./...
       - run: go test -v -race ./...
-  spinner:
-    strategy:
-      matrix:
-        go-version: [oldstable, stable]
-        os: [ubuntu-latest, macos-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
-    env:
-      GO111MODULE: "on"
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version: ${{ matrix.go-version }}
-          cache: true
-      - run: go mod download
-        working-directory: ./spinner
-      - run: go build -v ./...
-        working-directory: ./spinner
-      - run: go test -v -race ./...
-        working-directory: ./spinner
   examples:
     strategy:
       matrix:
