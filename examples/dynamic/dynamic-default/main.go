@@ -13,7 +13,7 @@ func main() {
 
 	form := huh.NewForm(
 		huh.NewGroup(
-			huh.NewInput().Title("Project name").Value(&name).Validate(huh.ValidateNotEmpty()),
+			huh.NewInput().Title("Project name").Value(&name).Placeholder("<Placeholder>").Validate(huh.ValidateNotEmpty()),
 			huh.NewInput().Title("Project ID").Value(&id).DefaultFunc(func() string {
 				return strings.ReplaceAll(strings.ToLower(name), "/", "-")
 			}, &name),

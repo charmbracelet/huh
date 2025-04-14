@@ -409,7 +409,11 @@ func (i *Input) View() string {
 	// NB: since the method is on a pointer receiver these are being mutated.
 	// Because this runs on every render this shouldn't matter in practice,
 	// however.
-	i.textinput.PlaceholderStyle = styles.TextInput.Placeholder
+	if i.placeholderIsDefault {
+		i.textinput.PlaceholderStyle = styles.TextInput.DefaultValue
+	} else {
+		i.textinput.PlaceholderStyle = styles.TextInput.Placeholder
+	}
 	i.textinput.PromptStyle = styles.TextInput.Prompt
 	i.textinput.Cursor.Style = styles.TextInput.Cursor
 	i.textinput.Cursor.TextStyle = styles.TextInput.CursorText
