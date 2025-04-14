@@ -14,6 +14,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/x/ansi"
+	"github.com/charmbracelet/x/xpty"
 )
 
 var pretty = lipgloss.NewStyle().
@@ -1126,45 +1127,51 @@ func keys(runes ...rune) tea.KeyMsg {
 
 func TestAccessibleForm(t *testing.T) {
 	var out bytes.Buffer
-	var in bytes.Buffer
-
-	_, _ = in.WriteString("carlos\n")
 
 	f := NewForm(
 		NewGroup(
-			NewInput().Title("Hello"),
+			NewInput().Title("Hello:"),
 		),
 	).
 		WithAccessible(true).
 		WithOutput(&out).
-		WithInput(&in)
+		WithInput(strings.NewReader("carlos\n"))
 
 	if err := f.Run(); err != nil {
 		t.Error(err)
 	}
 
-	if !strings.Contains(out.String(), "Input: carlos") {
+	if !strings.Contains(out.String(), "Hello: ") {
 		t.Error("invalid output:\n", out.String())
 	}
 }
 
 func TestAccessibleFields(t *testing.T) {
 	for name, test := range map[string]struct {
-		Field   Field
-		FieldFn func() Field
-		Input   string
-		Check   func(output string) bool
+		Field       Field
+		FieldFn     func() Field
+		Input       string
+		CheckOutput func(tb testing.TB, output string)
+		CheckValue  func(tb testing.TB, value any)
 	}{
 		"input": {
 			Field: NewInput(),
 			Input: "Hello",
-			Check: func(output string) bool { return strings.Contains(output, "Hello") },
+			CheckOutput: func(tb testing.TB, output string) {
+				tb.Helper()
+				requireContains(tb, output, "Input: ")
+			},
+			CheckValue: func(tb testing.TB, value any) {
+				tb.Helper()
+				requireEqual(tb, "Hello", value.(string))
+			},
 		},
 		"input with charlimit": {
 			Field: NewInput().CharLimit(2),
 			Input: "Hello",
-			Check: func(output string) bool {
-				return strings.Contains(output, "Input cannot exceed 2 characters")
+			CheckOutput: func(tb testing.TB, output string) {
+				tb.Helper()
+				requireContains(tb, output, "Input cannot exceed 2 characters")
 			},
 		},
 		"input with default": {
@@ -1173,21 +1180,39 @@ func TestAccessibleFields(t *testing.T) {
 				return NewInput().Value(&v)
 			},
 			Input: "\n",
-			Check: func(output string) bool { return strings.Contains(output, "hi") },
+			CheckOutput: func(tb testing.TB, output string) {
+				tb.Helper()
+				requireContains(tb, output, "Input: ")
+			},
+			CheckValue: func(tb testing.TB, value any) {
+				tb.Helper()
+				requireEqual(tb, "hi", value.(string))
+			},
 		},
 		"confirm": {
 			Field: NewConfirm(),
 			Input: "Y",
-			Check: func(output string) bool { return strings.Contains(output, "Yes") },
+			CheckOutput: func(tb testing.TB, output string) {
+				tb.Helper()
+				requireContains(tb, output, "Choose [y/N] ")
+			},
+			CheckValue: func(tb testing.TB, value any) {
+				tb.Helper()
+				requireEqual(tb, true, value.(bool))
+			},
 		},
 		"confirm with default": {
 			FieldFn: func() Field {
 				v := true
 				return NewConfirm().Value(&v)
 			},
-			Check: func(output string) bool {
-				return strings.Contains(output, "Y/n") &&
-					strings.Contains(output, "Yes")
+			CheckOutput: func(tb testing.TB, output string) {
+				tb.Helper()
+				requireContains(tb, output, "Choose [Y/n] ")
+			},
+			CheckValue: func(tb testing.TB, value any) {
+				tb.Helper()
+				requireEqual(tb, true, value.(bool))
 			},
 		},
 		"confirm with default choose": {
@@ -1196,28 +1221,55 @@ func TestAccessibleFields(t *testing.T) {
 				return NewConfirm().Value(&v)
 			},
 			Input: "n",
-			Check: func(output string) bool {
-				return strings.Contains(output, "Y/n") &&
-					strings.Contains(output, "No")
+			CheckOutput: func(tb testing.TB, output string) {
+				tb.Helper()
+				requireContains(tb, output, "Y/n")
+			},
+			CheckValue: func(tb testing.TB, value any) {
+				tb.Helper()
+				requireEqual(tb, false, value.(bool))
 			},
 		},
 		"filepicker": {
 			Field: NewFilePicker(),
-			Input: "./huh_test.go",
-			Check: func(output string) bool { return strings.Contains(output, "./huh_test.go") },
+			Input: "huh_test.go",
+			CheckOutput: func(tb testing.TB, output string) {
+				tb.Helper()
+				requireContains(tb, output, "Choose a file: ")
+			},
+			CheckValue: func(tb testing.TB, value any) {
+				tb.Helper()
+				requireEqual(tb, "huh_test.go", value.(string))
+			},
 		},
 		"filepicker with default": {
 			FieldFn: func() Field {
-				v := "./huh_test.go"
+				v := "huh_test.go"
 				return NewFilePicker().Value(&v)
 			},
 			Input: "\n",
-			Check: func(output string) bool { return strings.Contains(output, "./huh_test.go") },
+			CheckOutput: func(tb testing.TB, output string) {
+				tb.Helper()
+				requireContains(tb, output, "Choose a file: ")
+			},
+			CheckValue: func(tb testing.TB, value any) {
+				tb.Helper()
+				requireEqual(tb, "huh_test.go", value.(string))
+			},
 		},
 		"multiselect": {
 			Field: NewMultiSelect[string]().Options(NewOptions("a", "b")...),
 			Input: "2",
-			Check: func(output string) bool { return strings.Contains(output, "2. ✓ b") },
+			CheckOutput: func(tb testing.TB, output string) {
+				tb.Helper()
+				requireContains(tb, output, "2. ✓ b")
+			},
+			CheckValue: func(tb testing.TB, value any) {
+				tb.Helper()
+				got := value.([]string)
+				requireEqual(tb, 1, len(got))
+				requireEqual(tb, "b", got[0])
+			},
 		},
 		"multiselect default value": {
 			FieldFn: func() Field {
@@ -1225,16 +1277,23 @@ func TestAccessibleFields(t *testing.T) {
 				return NewMultiSelect[string]().Options(NewOptions("a", "b", "c", "d")...).Value(&v)
 			},
 			Input: "\n",
-			Check: func(output string) bool {
-				return strings.Contains(output, "2. ✓ b") &&
-					strings.Contains(output, "3. ✓ c") &&
-					strings.Contains(output, "Selected: b, c")
+			CheckOutput: func(tb testing.TB, output string) {
+				tb.Helper()
+				requireContains(tb, output, "2. ✓ b")
+				requireContains(tb, output, "3. ✓ c")
 			},
 		},
 		"select": {
 			Field: NewSelect[string]().Options(NewOptions("a", "b")...),
 			Input: "2",
-			Check: func(output string) bool { return strings.Contains(output, "Chose: b") },
+			CheckOutput: func(tb testing.TB, output string) {
+				tb.Helper()
+				requireContains(tb, output, "Select: ")
+			},
+			CheckValue: func(tb testing.TB, value any) {
+				tb.Helper()
+				requireEqual(tb, "b", value.(string))
+			},
 		},
 		"select default value": {
 			FieldFn: func() Field {
@@ -1242,29 +1301,57 @@ func TestAccessibleFields(t *testing.T) {
 				return NewSelect[string]().Options(NewOptions("a", "b", "c", "d")...).Value(&v)
 			},
 			Input: "\n",
-			Check: func(output string) bool { return strings.Contains(output, "Chose: c") },
+			CheckOutput: func(tb testing.TB, output string) {
+				tb.Helper()
+				requireContains(tb, output, "Select: ")
+			},
+			CheckValue: func(tb testing.TB, value any) {
+				tb.Helper()
+				requireEqual(tb, "c", value.(string))
+			},
 		},
 		"note": {
 			Field: NewNote().Title("Hi").Description("there"),
-			Check: func(output string) bool { return strings.Contains(output, "Hi") },
+			CheckOutput: func(tb testing.TB, output string) {
+				tb.Helper()
+				requireContains(tb, output, "Hi")
+				requireContains(tb, output, "there")
+			},
 		},
 		"text": {
-			Field: NewText().Title("Text"),
+			Field: NewText().Title("Text: "),
 			Input: "hello world",
-			Check: func(output string) bool { return strings.Contains(output, "hello world") },
+			CheckOutput: func(tb testing.TB, output string) {
+				tb.Helper()
+				requireContains(tb, output, "Text: ")
+			},
+			CheckValue: func(tb testing.TB, value any) {
+				tb.Helper()
+				requireEqual(tb, "hello world", value.(string))
+			},
 		},
 		"text with limit": {
 			Field: NewText().CharLimit(2).Title("Text"),
 			Input: "hello world",
-			Check: func(output string) bool { return strings.Contains(output, "Input cannot exceed 2 characters") },
+			CheckOutput: func(tb testing.TB, output string) {
+				tb.Helper()
+				requireContains(tb, output, "Input cannot exceed 2 characters")
+			},
 		},
 		"text default value": {
 			FieldFn: func() Field {
 				v := "test"
-				return NewText().Title("Text").Value(&v)
+				return NewText().Title("Text:").Value(&v)
 			},
 			Input: "\n",
-			Check: func(output string) bool { return strings.Contains(output, "test") },
+			CheckOutput: func(tb testing.TB, output string) {
+				tb.Helper()
+				requireContains(tb, output, "Text: ")
+			},
+			CheckValue: func(tb testing.TB, value any) {
+				tb.Helper()
+				requireEqual(tb, "test", value.(string))
+			},
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -1280,11 +1367,70 @@ func TestAccessibleFields(t *testing.T) {
 			); err != nil {
 				t.Error(err)
 			}
-
-			t.Log("value:", field.GetValue())
-			if !test.Check(out.String()) {
-				t.Error("check failed:\n", out.String())
+			if test.CheckOutput != nil {
+				test.CheckOutput(t, out.String())
+			}
+			if test.CheckValue != nil {
+				test.CheckValue(t, field.GetValue())
 			}
 		})
+	}
+}
+
+func TestInputPasswordAccessible(t *testing.T) {
+	t.Run("not a tty", func(t *testing.T) {
+		var out bytes.Buffer
+		if err := NewInput().
+			EchoMode(EchoModeNone).
+			runAccessible(&out, bytes.NewReader(nil)); err == nil {
+			t.Error("expected it to error")
+		}
+		if err := NewInput().
+			EchoMode(EchoModePassword).
+			runAccessible(&out, bytes.NewReader(nil)); err == nil {
+			t.Error("expected it to error")
+		}
+	})
+
+	t.Run("is a tty", func(t *testing.T) {
+		var out bytes.Buffer
+		pty, err := xpty.NewPty(50, 30)
+		if err != nil {
+			t.Skipf("could not open pty: %v", err)
+		}
+		upty, ok := pty.(*xpty.UnixPty)
+		if !ok {
+			t.Skipf("test only works on unix")
+		}
+
+		input := NewInput().EchoMode(EchoModePassword)
+
+		errs := make(chan error, 1)
+		go func() {
+			errs <- input.runAccessible(&out, upty.Slave())
+		}()
+
+		upty.Master().Write([]byte("a password\n"))
+
+		if err := <-errs; err != nil {
+			t.Errorf("expected no error, got %v", err)
+		}
+
+		requireContains(t, out.String(), "Password: ")
+		requireEqual(t, "a password", input.GetValue().(string))
+	})
+}
+
+func requireEqual[T comparable](tb testing.TB, a, b T) {
+	tb.Helper()
+	if a != b {
+		tb.Errorf("expected %v to be equal to %v", a, b)
+	}
+}
+
+func requireContains(tb testing.TB, s, subtr string) {
+	tb.Helper()
+	if !strings.Contains(s, subtr) {
+		tb.Errorf("%q does not contain %q", s, subtr)
 	}
 }

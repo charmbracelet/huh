@@ -1,6 +1,8 @@
 package huh
 
 import (
+	"cmp"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -429,22 +431,36 @@ func (i *Input) run() error {
 // runAccessible runs the input field in accessible mode.
 func (i *Input) runAccessible(w io.Writer, r io.Reader) error {
 	styles := i.activeStyles()
-	_, _ = fmt.Fprintln(w, styles.Title.Render(i.title.val))
-	_, _ = fmt.Fprintln(w)
-	i.accessor.Set(accessibility.PromptString(
-		w,
-		r,
-		"Input: ",
-		i.GetValue().(string),
-		func(input string) error {
-			if i.textinput.CharLimit > 0 && len(input) > i.textinput.CharLimit {
-				return fmt.Errorf("Input cannot exceed %d characters", i.textinput.CharLimit)
+	validator := func(input string) error {
+		if i.textinput.CharLimit > 0 && len(input) > i.textinput.CharLimit {
+			return fmt.Errorf("Input cannot exceed %d characters", i.textinput.CharLimit)
+		}
+		return i.validate(input)
+	}
+
+	//nolint:exhaustive
+	switch i.textinput.EchoMode {
+	case textinput.EchoNormal:
+		prompt := styles.Title.
+			PaddingRight(1).
+			Render(cmp.Or(i.title.val, "Input:"))
+		value := accessibility.PromptString(w, r, prompt, i.GetValue().(string), validator)
+		i.accessor.Set(value)
+		return nil
+	default:
+		prompt := styles.Title.
+			PaddingRight(1).
+			Render(cmp.Or(i.title.val, "Password:"))
+		if fd, ok := r.(interface{ Fd() uintptr }); ok {
+			value, err := accessibility.PromptPassword(w, fd.Fd(), prompt, validator)
+			if err != nil {
+				return err //nolint:wrapcheck
 			}
-			return i.validate(input)
-		},
-	))
-	_, _ = fmt.Fprintln(w, styles.SelectedOption.Render("Input: "+i.accessor.Get()+"\n"))
-	return nil
+			i.accessor.Set(value)
+			return nil
+		}
+		return errors.New("password asking needs a tty")
+	}
 }
 
 // WithKeyMap sets the keymap on an input field.

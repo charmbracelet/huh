@@ -1,7 +1,7 @@
 package huh
 
 import (
-	"fmt"
+	"cmp"
 	"io"
 	"os"
 	"strings"
@@ -308,12 +308,15 @@ func (c *Confirm) Run() error {
 // runAccessible runs the confirm field in accessible mode.
 func (c *Confirm) runAccessible(w io.Writer, r io.Reader) error {
 	styles := c.activeStyles()
-	if c.title.val != "" {
-		_, _ = fmt.Fprintln(w, styles.Title.Render(c.title.val))
-		_, _ = fmt.Fprintln(w)
+	defaultValue := c.GetValue().(bool)
+	opts := "[y/N]"
+	if defaultValue {
+		opts = "[Y/n]"
 	}
-	c.accessor.Set(accessibility.PromptBool(w, r, c.GetValue().(bool)))
-	_, _ = fmt.Fprintln(w, styles.SelectedOption.Render("Chose: "+c.String())+"\n")
+	prompt := styles.Title.
+		PaddingRight(1).
+		Render(cmp.Or(c.title.val, "Choose"), opts)
+	c.accessor.Set(accessibility.PromptBool(w, r, prompt, defaultValue))
 	return nil
 }
 

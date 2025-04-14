@@ -10,6 +10,8 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+
+	"github.com/charmbracelet/x/term"
 )
 
 // PromptInt prompts a user for an integer between a certain range.
@@ -32,7 +34,7 @@ func PromptInt(
 		}
 		i, err := strconv.Atoi(s)
 		if err != nil || i < low || i > high {
-			return errors.New("invalid input. please try again")
+			return fmt.Errorf("Invalid: must be between %d and %d", low, high) //nolint:staticcheck
 		}
 		return nil
 	}
@@ -71,6 +73,7 @@ func parseBool(s string) (bool, error) {
 func PromptBool(
 	out io.Writer,
 	in io.Reader,
+	prompt string,
 	defaultValue bool,
 ) bool {
 	validBool := func(s string) error {
@@ -81,11 +84,6 @@ func PromptBool(
 		return err
 	}
 
-	prompt := "Choose [y/N]: "
-	if defaultValue {
-		prompt = "Choose [Y/n]: "
-	}
-
 	input := PromptString(
 		out, in, prompt,
 		boolToStr(defaultValue),
@@ -93,6 +91,29 @@ func PromptBool(
 	)
 	b, _ := parseBool(input)
 	return b
+}
+
+// PromptPassword allows to prompt for a password.
+// In must be the fd of a tty.
+func PromptPassword(
+	out io.Writer,
+	in uintptr,
+	prompt string,
+	validator func(input string) error,
+) (string, error) {
+	for {
+		_, _ = fmt.Fprint(out, prompt)
+		pwd, err := term.ReadPassword(in)
+		if err != nil {
+			return "", err //nolint:wrapcheck
+		}
+		_, _ = fmt.Fprintln(out)
+		if err := validator(string(pwd)); err != nil {
+			_, _ = fmt.Fprintln(out, err)
+			continue
+		}
+		return string(pwd), nil
+	}
 }
 
 // PromptString prompts a user for a string value and validates it against a
