@@ -11,6 +11,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea/v2"
 	"github.com/charmbracelet/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
+	"github.com/charmbracelet/x/term"
 )
 
 // Spinner represents a loading spinner.
@@ -29,7 +30,8 @@ type Spinner struct {
 	err        error
 	teaOptions []tea.ProgramOption
 	theme      Theme
-	out        io.Writer // acessible mode output
+	output     io.Writer // acessible mode output
+	input      io.Reader // acessible mode output
 	hasDarkBg  bool
 }
 
@@ -98,7 +100,15 @@ func (s *Spinner) Title(title string) *Spinner {
 // Default is STDOUT when [Spinner.Accessible], STDERR otherwise.
 func (s *Spinner) WithOutput(w io.Writer) *Spinner {
 	s.teaOptions = append(s.teaOptions, tea.WithOutput(w))
-	s.out = w
+	s.output = w
+	return s
+}
+
+// WithInput set the input for the spinner.
+// Default is STDIN.
+func (s *Spinner) WithInput(r io.Reader) *Spinner {
+	s.teaOptions = append(s.teaOptions, tea.WithInput(r))
+	s.input = r
 	return s
 }
 
@@ -213,7 +223,8 @@ func (s *Spinner) Run() error {
 
 	if s.accessible {
 		out := cmp.Or[io.Writer](s.output, os.Stdout)
-		return s.runAccessible(out)
+		in := cmp.Or[io.Reader](s.input, os.Stdin)
+		return s.runAccessible(in, out)
 	}
 
 	opts := append(s.teaOptions, tea.WithContext(s.ctx))
@@ -226,9 +237,15 @@ func (s *Spinner) Run() error {
 }
 
 // runAccessible runs the spinner in an accessible mode (statically).
-func (s *Spinner) runAccessible() error {
-	s.hasDarkBg = lipgloss.HasDarkBackground(os.Stdin, os.Stdout)
-	out := cmp.Or[io.Writer](s.out, os.Stdout)
+func (s *Spinner) runAccessible(in io.Reader, out io.Writer) error {
+	tin, iok := in.(term.File)
+	tout, ook := out.(term.File)
+
+	s.hasDarkBg = true
+	if iok && ook {
+		s.hasDarkBg = lipgloss.HasDarkBackground(tin, tout)
+	}
+
 	styles := s.theme.Theme(s.hasDarkBg)
 
 	_, _ = io.WriteString(out, ansi.HideCursor)
