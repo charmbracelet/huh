@@ -718,7 +718,7 @@ func (s *Select[T]) runAccessible(w io.Writer, r io.Reader) error {
 		_, _ = fmt.Fprintf(w, "%d. %s\n", i+1, option.Key)
 	}
 
-	prompt := fmt.Sprintf("Input a number between %d and %d: ", 0, len(s.options.val))
+	prompt := fmt.Sprintf("Input a number between %d and %d: ", 1, len(s.options.val))
 	for {
 		selected := s.selected + 1
 		choice := accessibility.PromptInt(w, r, prompt, 1, len(s.options.val), &selected)
