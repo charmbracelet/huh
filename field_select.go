@@ -199,7 +199,19 @@ func (s *Select[T]) selectOption() {
 			break
 		}
 	}
-	s.viewport.YOffset = s.selected
+	// Center the selected option in the viewport if possible.
+	if s.viewport.Height > 0 {
+		centered := s.selected - s.viewport.Height/2
+		if centered < 0 {
+			centered = 0
+		}
+		if centered > len(s.options.val)-s.viewport.Height {
+			centered = max(len(s.options.val)-s.viewport.Height, 0)
+		}
+		s.viewport.YOffset = centered
+	} else {
+		s.viewport.YOffset = s.selected
+	}
 }
 
 // OptionsFunc sets the options func of the select field.
@@ -527,18 +539,30 @@ func (s *Select[T]) updateViewportHeight() {
 	if s.height <= 0 {
 		v, _, _ := s.optionsView()
 		s.viewport.Height = lipgloss.Height(v)
-		return
+	} else {
+		offset := 0
+		if ss := s.titleView(); ss != "" {
+			offset += lipgloss.Height(ss)
+		}
+		if ss := s.descriptionView(); ss != "" {
+			offset += lipgloss.Height(ss)
+		}
+		s.viewport.Height = max(minHeight, s.height-offset)
 	}
 
-	offset := 0
-	if ss := s.titleView(); ss != "" {
-		offset += lipgloss.Height(ss)
+	// Center the selected option in the viewport if possible.
+	if s.viewport.Height > 0 && len(s.options.val) > 0 {
+		centered := s.selected - s.viewport.Height/2
+		if centered < 0 {
+			centered = 0
+		}
+		if centered > len(s.options.val)-s.viewport.Height {
+			centered = max(len(s.options.val)-s.viewport.Height, 0)
+		}
+		s.viewport.YOffset = centered
+	} else {
+		s.viewport.YOffset = s.selected
 	}
-	if ss := s.descriptionView(); ss != "" {
-		offset += lipgloss.Height(ss)
-	}
-
-	s.viewport.Height = max(minHeight, s.height-offset)
 }
 
 func (s *Select[T]) activeStyles() *FieldStyles {
