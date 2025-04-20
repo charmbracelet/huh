@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
 	"github.com/charmbracelet/x/xpty"
 )
@@ -127,7 +127,7 @@ func TestForm(t *testing.T) {
 	//   ↑ up • ↓ down • / filter • enter select
 	//
 
-	if !strings.Contains(view, "┃ Shell?") {
+	if !strings.Contains(view, "┃ Shell?") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected form to contain Shell? title")
 	}
@@ -143,31 +143,31 @@ func TestForm(t *testing.T) {
 	}
 
 	// Attempt to select hard shell and retrieve error.
-	m, _ := f.Update(keys('j'))
-	m, _ = m.Update(tea.KeyMsg{Type: tea.KeyTab})
-	view = ansi.Strip(m.View())
+	m, _ := f.Update(keypress('j'))
+	m, _ = m.Update(keypress(tea.KeyTab))
+	view = ansi.Strip(m.(tea.ViewModel).View())
 
 	if !strings.Contains(view, "* we're out of hard shells, sorry") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected form to show out of hard shells error")
 	}
 
-	m, _ = m.Update(keys('k'))
+	m, _ = m.Update(keypress('k'))
 
-	m, cmd := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m, cmd := m.Update(keypress(tea.KeyEnter))
 	m = batchUpdate(m, cmd)
 
-	view = ansi.Strip(m.View())
+	view = ansi.Strip(m.(tea.ViewModel).View())
 
-	if !strings.Contains(view, "┃ > Chicken") {
+	if !strings.Contains(view, "┃ > Chicken") {
 		t.Log(pretty.Render(view))
 		t.Fatal("Expected form to continue to base group")
 	}
 
 	// batchMsg + nextGroup
-	m, cmd = m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m, cmd = m.Update(keypress(tea.KeyEnter))
 	m = batchUpdate(m, cmd)
-	view = ansi.Strip(m.View())
+	view = ansi.Strip(m.(tea.ViewModel).View())
 
 	//
 	// ┃ Toppings
@@ -201,25 +201,25 @@ func TestForm(t *testing.T) {
 		t.Error("Expected form to preselect tomatoes")
 	}
 
-	m, _ = m.Update(keys('j'))
-	m, _ = m.Update(keys('j'))
-	view = ansi.Strip(m.View())
+	m, _ = m.Update(keypress('j'))
+	m, _ = m.Update(keypress('j'))
+	view = ansi.Strip(m.(tea.ViewModel).View())
 
 	if !strings.Contains(view, "> • Corn") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected form to change selection to corn")
 	}
 
-	m, _ = m.Update(keys('x'))
-	view = ansi.Strip(m.View())
+	m, _ = m.Update(keypress('x'))
+	view = ansi.Strip(m.(tea.ViewModel).View())
 
 	if !strings.Contains(view, "> ✓ Corn") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected form to change selection to corn")
 	}
 
-	m = batchUpdate(m.Update(tea.KeyMsg{Type: tea.KeyEnter}))
-	view = ansi.Strip(m.View())
+	m = batchUpdate(m.Update(keypress(tea.KeyEnter)))
+	view = ansi.Strip(m.(tea.ViewModel).View())
 
 	if !strings.Contains(view, "What's your name?") {
 		t.Log(pretty.Render(view))
@@ -251,8 +251,8 @@ func TestForm(t *testing.T) {
 	//
 	//   enter next • shift+tab back
 	//
-	m.Update(keys('G', 'l', 'e', 'n'))
-	view = ansi.Strip(m.View())
+	typeText(m, "Glen")
+	view = ansi.Strip(m.(tea.ViewModel).View())
 	if !strings.Contains(view, "Glen") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected form to accept user input")
@@ -290,8 +290,7 @@ func TestInput(t *testing.T) {
 	}
 
 	// Type Huh in the form.
-	m, _ := f.Update(keys('H', 'u', 'h'))
-	f = m.(*Form)
+	f = typeText(f, "Huh")
 	view = ansi.Strip(f.View())
 
 	if !strings.Contains(view, "Huh") {
@@ -321,14 +320,13 @@ func TestInlineInput(t *testing.T) {
 
 	view := ansi.Strip(f.View())
 
-	if !strings.Contains(view, "┃ Input Description:") {
+	if !strings.Contains(view, "┃ Input Description:") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected field to contain inline input.")
 	}
 
 	// Type Huh in the form.
-	m, _ := f.Update(keys('H', 'u', 'h'))
-	f = m.(*Form)
+	f = typeText(f, "Huh")
 	view = ansi.Strip(f.View())
 
 	if !strings.Contains(view, "Huh") {
@@ -341,7 +339,7 @@ func TestInlineInput(t *testing.T) {
 		t.Error("Expected field to contain help.")
 	}
 
-	if !strings.Contains(view, "┃ Input Description: Huh") {
+	if !strings.Contains(view, "┃ Input Description: Huh") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected field to contain help.")
 	}
@@ -357,8 +355,7 @@ func TestText(t *testing.T) {
 	f.Update(f.Init())
 
 	// Type Huh in the form.
-	m, _ := f.Update(keys('H', 'u', 'h'))
-	f = m.(*Form)
+	f = typeText(f, "Huh")
 	view := ansi.Strip(f.View())
 
 	if !strings.Contains(view, "Huh") {
@@ -382,8 +379,7 @@ func TestTextExternalEditorHidden(t *testing.T) {
 	f.Update(f.Init())
 
 	// Type Huh in the form.
-	m, _ := f.Update(keys('H', 'u', 'h'))
-	f = m.(*Form)
+	f = typeText(f, "Huh")
 	view := ansi.Strip(f.View())
 
 	if !strings.Contains(view, "Huh") {
@@ -405,10 +401,6 @@ func TestConfirm(t *testing.T) {
 	field := NewConfirm().Title("Are you sure?")
 	f := NewForm(NewGroup(field))
 	f.Update(f.Init())
-
-	// Type Huh in the form.
-	m, _ := f.Update(keys('H'))
-	f = m.(*Form)
 	view := ansi.Strip(f.View())
 
 	if !strings.Contains(view, "Yes") {
@@ -432,18 +424,19 @@ func TestConfirm(t *testing.T) {
 	}
 
 	if field.GetValue() != false {
+		t.Log(pretty.Render(view))
 		t.Error("Expected field value to be false")
 	}
 
 	// Toggle left
-	f.Update(tea.KeyMsg{Type: tea.KeyLeft})
+	f.Update(keypress(tea.KeyLeft))
 
 	if field.GetValue() != true {
 		t.Error("Expected field value to be true")
 	}
 
 	// Toggle right
-	f.Update(tea.KeyMsg{Type: tea.KeyRight})
+	f.Update(keypress(tea.KeyRight))
 
 	if field.GetValue() != false {
 		t.Error("Expected field value to be false")
@@ -480,7 +473,7 @@ func TestSelect(t *testing.T) {
 	}
 
 	// Move selection cursor down
-	m, _ := f.Update(tea.KeyMsg{Type: tea.KeyDown})
+	m, _ := f.Update(keypress(tea.KeyDown))
 	f = m.(*Form)
 
 	view = ansi.Strip(f.View())
@@ -506,7 +499,7 @@ func TestSelect(t *testing.T) {
 	}
 
 	// Submit
-	f.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	f.Update(keypress(tea.KeyEnter))
 
 	if field.GetValue() != "Bar\nLine 2" {
 		t.Error("Expected field value to be Bar")
@@ -544,8 +537,8 @@ func TestMultiSelect(t *testing.T) {
 	}
 
 	// Move selection cursor down
-	m, _ := f.Update(keys('j'))
-	view = ansi.Strip(m.View())
+	m, _ := f.Update(keypress('j'))
+	view = ansi.Strip(m.(tea.ViewModel).View())
 
 	if got, ok := field.Hovered(); !ok || got != "Bar\nLine2" {
 		t.Log(pretty.Render(view))
@@ -563,8 +556,8 @@ func TestMultiSelect(t *testing.T) {
 	}
 
 	// Toggle
-	m, _ = f.Update(keys('x'))
-	view = ansi.Strip(m.View())
+	m, _ = f.Update(keypress('x'))
+	view = ansi.Strip(m.(tea.ViewModel).View())
 
 	if !strings.Contains(view, "> ✓ Bar") {
 		t.Log(pretty.Render(view))
@@ -577,7 +570,7 @@ func TestMultiSelect(t *testing.T) {
 	}
 
 	// Submit
-	f.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	f.Update(keypress(tea.KeyEnter))
 
 	value := field.GetValue()
 	if value, ok := value.([]string); !ok {
@@ -608,8 +601,8 @@ func TestMultiSelectFiltering(t *testing.T) {
 			f := NewForm(NewGroup(field))
 			f.Update(f.Init())
 			// Filter for values starting with a 'B' only.
-			f.Update(keys('/'))
-			f.Update(keys('B'))
+			f.Update(keypress('/'))
+			f.Update(keypress('B'))
 
 			view := ansi.Strip(f.View())
 			// When we're filtering, the list should change.
@@ -678,45 +671,42 @@ func TestSelectPageNavigation(t *testing.T) {
 				t.Errorf("Wrong item selected, should have matched %q (first item)", reFirst.String())
 			}
 
-			m, _ := f.Update(keys('G'))
-			view = ansi.Strip(m.View())
+			m, _ := f.Update(keypress('G'))
+			view = ansi.Strip(m.(tea.ViewModel).View())
 			if !reLast.MatchString(view) {
 				t.Log(pretty.Render(view))
 				t.Errorf("Wrong item selected, should have matched %q (last item)", reLast.String())
 			}
 
-			m, _ = f.Update(keys('g'))
-			view = ansi.Strip(m.View())
+			m, _ = f.Update(keypress('g'))
+			view = ansi.Strip(m.(tea.ViewModel).View())
 			if !reFirst.MatchString(view) {
 				t.Log(pretty.Render(view))
 				t.Errorf("Wrong item selected, should have matched %q (first item)", reFirst.String())
 			}
 
-			m, _ = f.Update(tea.KeyMsg{Type: tea.KeyCtrlD})
-			view = ansi.Strip(m.View())
+			m, _ = f.Update(tea.KeyPressMsg(tea.Key{Mod: tea.ModCtrl, Code: 'd'}))
+			view = ansi.Strip(m.(tea.ViewModel).View())
 			if !reHalfDown.MatchString(view) {
 				t.Log(pretty.Render(view))
 				t.Errorf("Wrong item selected, should have matched %q (half down item)", reHalfDown.String())
 			}
 
 			// sends multiple to verify it stays within boundaries
-			f.Update(tea.KeyMsg{Type: tea.KeyCtrlU})
-			f.Update(tea.KeyMsg{Type: tea.KeyCtrlU})
-			m, _ = f.Update(tea.KeyMsg{Type: tea.KeyCtrlU})
-			view = ansi.Strip(m.View())
+			for range 10 {
+				m, _ = f.Update(tea.KeyPressMsg(tea.Key{Mod: tea.ModCtrl, Code: 'u'}))
+			}
+			view = ansi.Strip(m.(tea.ViewModel).View())
 			if !reFirst.MatchString(view) {
 				t.Log(pretty.Render(view))
 				t.Errorf("Wrong item selected, should have matched %q (first item)", reFirst.String())
 			}
 
 			// verify it stays within boundaries
-			f.Update(tea.KeyMsg{Type: tea.KeyCtrlD})
-			f.Update(tea.KeyMsg{Type: tea.KeyCtrlD})
-			f.Update(tea.KeyMsg{Type: tea.KeyCtrlD})
-			f.Update(tea.KeyMsg{Type: tea.KeyCtrlD})
-			f.Update(tea.KeyMsg{Type: tea.KeyCtrlD})
-			m, _ = f.Update(tea.KeyMsg{Type: tea.KeyCtrlD})
-			view = ansi.Strip(m.View())
+			for range 10 {
+				m, _ = f.Update(tea.KeyPressMsg(tea.Key{Mod: tea.ModCtrl, Code: 'd'}))
+			}
+			view = ansi.Strip(m.(tea.ViewModel).View())
 			if !reLast.MatchString(view) {
 				t.Log(pretty.Render(view))
 				t.Errorf("Wrong item selected, should have matched %q (last item)", reLast.String())
@@ -917,7 +907,7 @@ func TestSkip(t *testing.T) {
 	f = batchUpdate(f, f.Init()).(*Form)
 	view := ansi.Strip(f.View())
 
-	if !strings.Contains(view, "┃ First") {
+	if !strings.Contains(view, "┃ First") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected first field to be focused")
 	}
@@ -926,12 +916,12 @@ func TestSkip(t *testing.T) {
 	f.Update(NextField())
 	view = ansi.Strip(f.View())
 
-	if strings.Contains(view, "┃ First") {
+	if strings.Contains(view, "┃ First") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected first field to be blurred")
 	}
 
-	if !strings.Contains(view, "┃ Second") {
+	if !strings.Contains(view, "┃ Second") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected second field to be focused")
 	}
@@ -940,12 +930,12 @@ func TestSkip(t *testing.T) {
 	f.Update(PrevField())
 	view = ansi.Strip(f.View())
 
-	if strings.Contains(view, "┃ Second") {
+	if strings.Contains(view, "┃ Second") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected second field to be blurred")
 	}
 
-	if !strings.Contains(view, "┃ First") {
+	if !strings.Contains(view, "┃ First") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected first field to be focused")
 	}
@@ -971,7 +961,7 @@ func TestAbort(t *testing.T) {
 	// Since the context is cancelled, the program should exit immediately.
 	cancel()
 	// Tell the form to abort.
-	f.Update(tea.KeyMsg{Type: tea.KeyCtrlC})
+	f.Update(tea.KeyPressMsg(tea.Key{Mod: tea.ModCtrl, Code: 'c'}))
 	// Run the program.
 	err := f.RunWithContext(ctx)
 	if err == nil || !errors.Is(err, ErrUserAborted) {
@@ -1118,11 +1108,20 @@ func batchUpdate(m tea.Model, cmd tea.Cmd) tea.Model {
 	return m
 }
 
-func keys(runes ...rune) tea.KeyMsg {
-	return tea.KeyMsg{
-		Type:  tea.KeyRunes,
-		Runes: runes,
+func keypress(r rune) tea.KeyMsg {
+	return tea.KeyPressMsg(tea.Key{
+		Text:        string(r),
+		Code:        r,
+		ShiftedCode: r,
+	})
+}
+
+func typeText[T tea.Model](m T, s string) T {
+	var tm tea.Model = m
+	for _, r := range s {
+		tm, _ = tm.Update(keypress(r))
 	}
+	return tm.(T)
 }
 
 func TestAccessibleForm(t *testing.T) {

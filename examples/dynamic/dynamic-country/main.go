@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/charmbracelet/log"
-
-	"github.com/charmbracelet/huh"
+	"github.com/charmbracelet/huh/v2"
+	"github.com/charmbracelet/log/v2"
 )
 
 func main() {
