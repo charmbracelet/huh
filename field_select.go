@@ -561,7 +561,6 @@ func (s *Select[T]) titleView() string {
 	if s.filtering {
 		sb.WriteString(s.filter.View())
 	} else if s.filter.Value() != "" && !s.inline {
-		sb.WriteString(styles.Title.Render(wrap(s.title.val, maxWidth)))
 		sb.WriteString(styles.Description.Render("/" + s.filter.Value()))
 	} else {
 		sb.WriteString(styles.Title.Render(wrap(s.title.val, maxWidth)))
