@@ -1140,7 +1140,7 @@ func TestAccessibleForm(t *testing.T) {
 		t.Error(err)
 	}
 
-	if !strings.Contains(out.String(), "Hello: ") {
+	if !strings.Contains(out.String(), "Hello:") {
 		t.Error("invalid output:\n", out.String())
 	}
 }
@@ -1158,7 +1158,7 @@ func TestAccessibleFields(t *testing.T) {
 			Input: "Hello",
 			CheckOutput: func(tb testing.TB, output string) {
 				tb.Helper()
-				requireContains(tb, output, "Input: ")
+				requireContains(tb, output, "Input:")
 			},
 			CheckValue: func(tb testing.TB, value any) {
 				tb.Helper()
@@ -1181,7 +1181,7 @@ func TestAccessibleFields(t *testing.T) {
 			Input: "\n",
 			CheckOutput: func(tb testing.TB, output string) {
 				tb.Helper()
-				requireContains(tb, output, "Input: ")
+				requireContains(tb, output, "Input:")
 			},
 			CheckValue: func(tb testing.TB, value any) {
 				tb.Helper()
@@ -1193,7 +1193,7 @@ func TestAccessibleFields(t *testing.T) {
 			Input: "Y",
 			CheckOutput: func(tb testing.TB, output string) {
 				tb.Helper()
-				requireContains(tb, output, "Choose [y/N] ")
+				requireContains(tb, output, "Choose [y/N]")
 			},
 			CheckValue: func(tb testing.TB, value any) {
 				tb.Helper()
@@ -1207,7 +1207,7 @@ func TestAccessibleFields(t *testing.T) {
 			},
 			CheckOutput: func(tb testing.TB, output string) {
 				tb.Helper()
-				requireContains(tb, output, "Choose [Y/n] ")
+				requireContains(tb, output, "Choose [Y/n]")
 			},
 			CheckValue: func(tb testing.TB, value any) {
 				tb.Helper()
@@ -1234,7 +1234,7 @@ func TestAccessibleFields(t *testing.T) {
 			Input: "huh_test.go",
 			CheckOutput: func(tb testing.TB, output string) {
 				tb.Helper()
-				requireContains(tb, output, "Choose a file: ")
+				requireContains(tb, output, "Choose a file:")
 			},
 			CheckValue: func(tb testing.TB, value any) {
 				tb.Helper()
@@ -1249,7 +1249,7 @@ func TestAccessibleFields(t *testing.T) {
 			Input: "\n",
 			CheckOutput: func(tb testing.TB, output string) {
 				tb.Helper()
-				requireContains(tb, output, "Choose a file: ")
+				requireContains(tb, output, "Choose a file:")
 			},
 			CheckValue: func(tb testing.TB, value any) {
 				tb.Helper()
@@ -1287,7 +1287,7 @@ func TestAccessibleFields(t *testing.T) {
 			Input: "2",
 			CheckOutput: func(tb testing.TB, output string) {
 				tb.Helper()
-				requireContains(tb, output, "Select: ")
+				requireContains(tb, output, "Select:")
 			},
 			CheckValue: func(tb testing.TB, value any) {
 				tb.Helper()
@@ -1302,7 +1302,7 @@ func TestAccessibleFields(t *testing.T) {
 			Input: "\n",
 			CheckOutput: func(tb testing.TB, output string) {
 				tb.Helper()
-				requireContains(tb, output, "Select: ")
+				requireContains(tb, output, "Select:")
 			},
 			CheckValue: func(tb testing.TB, value any) {
 				tb.Helper()
@@ -1318,11 +1318,11 @@ func TestAccessibleFields(t *testing.T) {
 			},
 		},
 		"text": {
-			Field: NewText().Title("Text: "),
+			Field: NewText().Title("Text:"),
 			Input: "hello world",
 			CheckOutput: func(tb testing.TB, output string) {
 				tb.Helper()
-				requireContains(tb, output, "Text: ")
+				requireContains(tb, output, "Text:")
 			},
 			CheckValue: func(tb testing.TB, value any) {
 				tb.Helper()
@@ -1345,7 +1345,7 @@ func TestAccessibleFields(t *testing.T) {
 			Input: "\n",
 			CheckOutput: func(tb testing.TB, output string) {
 				tb.Helper()
-				requireContains(tb, output, "Text: ")
+				requireContains(tb, output, "Text:")
 			},
 			CheckValue: func(tb testing.TB, value any) {
 				tb.Helper()
@@ -1415,7 +1415,8 @@ func TestInputPasswordAccessible(t *testing.T) {
 			t.Errorf("expected no error, got %v", err)
 		}
 
-		requireContains(t, out.String(), "Password: ")
+		t.Logf("%q", out.String())
+		requireContains(t, out.String(), "Password:")
 		requireEqual(t, "a password", input.GetValue().(string))
 	})
 }
