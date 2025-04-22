@@ -539,6 +539,7 @@ func (s *Select[T]) updateViewportHeight() {
 	}
 
 	s.viewport.Height = max(minHeight, s.height-offset)
+	s.viewport.YOffset = s.selected
 }
 
 func (s *Select[T]) activeStyles() *FieldStyles {
