@@ -540,9 +540,7 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// heightest group, accounting for the width, wraps, etc.
 			neededHeight := 0
 			f.selector.Range(func(_ int, group *Group) bool {
-				if h := group.rawHeight(); h > neededHeight {
-					neededHeight = h
-				}
+				neededHeight = max(neededHeight, group.rawHeight())
 				return true
 			})
 

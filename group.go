@@ -126,7 +126,7 @@ func (g *Group) WithWidth(width int) *Group {
 // WithHeight sets the height on a group.
 func (g *Group) WithHeight(height int) *Group {
 	g.height = height
-	h := height - g.nonContentHeight()
+	h := height - g.titleFooterHeight()
 	g.viewport.Height = h
 	g.selector.Range(func(_ int, field Field) bool {
 		// A field height must not exceed the form height.
@@ -340,21 +340,21 @@ func (g *Group) Header() string {
 	return lipgloss.JoinVertical(lipgloss.Top, parts...)
 }
 
-// nonContentHeight returns the height of the footer + header.
-func (g *Group) nonContentHeight() int {
-	var parts []string
+// titleFooterHeight returns the height of the footer + header.
+func (g *Group) titleFooterHeight() int {
+	h := 0
 	if s := g.Header(); s != "" {
-		parts = append(parts, s)
+		h += lipgloss.Height(s)
 	}
 	if s := g.Footer(); s != "" {
-		parts = append(parts, s)
+		h += lipgloss.Height(s)
 	}
-	return lipgloss.Height(lipgloss.JoinVertical(lipgloss.Top, parts...))
+	return h
 }
 
 // rawHeight returns the full height of the group, without using a viewport.
 func (g *Group) rawHeight() int {
-	return lipgloss.Height(g.Content()) + g.nonContentHeight()
+	return lipgloss.Height(g.Content()) + g.titleFooterHeight()
 }
 
 // View renders the group.
