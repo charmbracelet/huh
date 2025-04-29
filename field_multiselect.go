@@ -725,7 +725,7 @@ func (m *MultiSelect[T]) runAccessible(w io.Writer, r io.Reader) error {
 
 		prompt := fmt.Sprintf("Input a number between %d and %d: ", 0, len(m.options.val))
 		choice = accessibility.PromptInt(w, r, prompt, 0, len(m.options.val), nil)
-		if choice == 0 {
+		if choice <= 0 {
 			m.updateValue()
 			err := m.validate(m.accessor.Get())
 			if err != nil {
