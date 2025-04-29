@@ -1298,16 +1298,47 @@ func TestAccessibleFields(t *testing.T) {
 		"select default value": {
 			FieldFn: func() Field {
 				v := "c"
-				return NewSelect[string]().Options(NewOptions("a", "b", "c", "d")...).Value(&v)
+				return NewSelect[string]().
+					Options(NewOptions("a", "b", "c", "d")...).
+					Value(&v)
 			},
 			Input: "\n",
 			CheckOutput: func(tb testing.TB, output string) {
 				tb.Helper()
 				requireContains(tb, output, "Select: ")
+				requireContains(tb, output, "Enter a number between 1 and 4")
 			},
 			CheckValue: func(tb testing.TB, value any) {
 				tb.Helper()
 				requireEqual(tb, "c", value.(string))
+			},
+		},
+		"select no input": {
+			Field: NewSelect[string]().Options(NewOptions("a", "b")...),
+			Input: "\n2\n",
+			CheckOutput: func(tb testing.TB, output string) {
+				tb.Helper()
+				requireContains(tb, output, "Select: ")
+				requireContains(tb, output, "Enter a number between 1 and 2")
+				requireContains(tb, output, "Invalid: must be a number between 1 and 2")
+			},
+			CheckValue: func(tb testing.TB, value any) {
+				tb.Helper()
+				requireEqual(tb, "b", value.(string))
+			},
+		},
+		"select single option": {
+			Field: NewSelect[string]().Options(NewOptions("a")...),
+			Input: "\n1\n",
+			CheckOutput: func(tb testing.TB, output string) {
+				tb.Helper()
+				requireContains(tb, output, "Select: ")
+				requireContains(tb, output, "There is only one option available; enter the number 1:")
+				requireContains(tb, output, "Invalid: must be 1")
+			},
+			CheckValue: func(tb testing.TB, value any) {
+				tb.Helper()
+				requireEqual(tb, "a", value.(string))
 			},
 		},
 		"note": {
@@ -1424,13 +1455,13 @@ func TestInputPasswordAccessible(t *testing.T) {
 func requireEqual[T comparable](tb testing.TB, a, b T) {
 	tb.Helper()
 	if a != b {
-		tb.Errorf("expected %v to be equal to %v", a, b)
+		tb.Fatalf("expected %v to be equal to %v", a, b)
 	}
 }
 
 func requireContains(tb testing.TB, s, subtr string) {
 	tb.Helper()
 	if !strings.Contains(s, subtr) {
-		tb.Errorf("%q does not contain %q", s, subtr)
+		tb.Fatalf("%q does not contain %q", s, subtr)
 	}
 }

@@ -718,10 +718,19 @@ func (s *Select[T]) runAccessible(w io.Writer, r io.Reader) error {
 		_, _ = fmt.Fprintf(w, "%d. %s\n", i+1, option.Key)
 	}
 
-	prompt := fmt.Sprintf("Input a number between %d and %d: ", 1, len(s.options.val))
+	var defaultValue *int
+	switch s.accessor.(type) {
+	case *PointerAccessor[T]: // if its of this type, it means it has a default value
+		s.selectOption() // make sure s.selected is set
+		idx := s.selected + 1
+		defaultValue = &idx
+	}
+	prompt := fmt.Sprintf("Enter a number between %d and %d: ", 1, len(s.options.val))
+	if len(s.options.val) == 1 {
+		prompt = "There is only one option available; enter the number 1:"
+	}
 	for {
-		selected := s.selected + 1
-		choice := accessibility.PromptInt(w, r, prompt, 1, len(s.options.val), &selected)
+		choice := accessibility.PromptInt(w, r, prompt, 1, len(s.options.val), defaultValue)
 		option := s.options.val[choice-1]
 		if err := s.validate(option.Value); err != nil {
 			_, _ = fmt.Fprintln(w, err.Error())
