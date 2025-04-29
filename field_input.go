@@ -438,8 +438,7 @@ func (i *Input) runAccessible(w io.Writer, r io.Reader) error {
 		return i.validate(input)
 	}
 
-	//nolint:exhaustive
-	switch i.textinput.EchoMode {
+	switch i.textinput.EchoMode { //nolint:exhaustive
 	case textinput.EchoNormal:
 		prompt := styles.Title.
 			PaddingRight(1).

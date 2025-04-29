@@ -18,7 +18,7 @@ func atoi(s string) (int, error) {
 	if strings.TrimSpace(s) == "" {
 		return -1, nil
 	}
-	return strconv.Atoi(s)
+	return strconv.Atoi(s) //nolint:wrapcheck
 }
 
 // PromptInt prompts a user for an integer between a certain range.
