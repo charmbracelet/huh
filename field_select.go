@@ -725,7 +725,7 @@ func (s *Select[T]) runAccessible(w io.Writer, r io.Reader) error {
 		idx := s.selected + 1
 		defaultValue = &idx
 	}
-	prompt := fmt.Sprintf("Input a number between %d and %d: ", 1, len(s.options.val))
+	prompt := fmt.Sprintf("Enter a number between %d and %d: ", 1, len(s.options.val))
 	if len(s.options.val) == 1 {
 		prompt = "There is only one option available; enter the number 1:"
 	}

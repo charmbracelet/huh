@@ -1333,7 +1333,7 @@ func TestAccessibleFields(t *testing.T) {
 			CheckOutput: func(tb testing.TB, output string) {
 				tb.Helper()
 				requireContains(tb, output, "Select: ")
-				requireContains(tb, output, "Only one option available")
+				requireContains(tb, output, "There is only one option available; enter the number 1:")
 				requireContains(tb, output, "Invalid: must be 1")
 			},
 			CheckValue: func(tb testing.TB, value any) {
