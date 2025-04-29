@@ -402,7 +402,8 @@ func (t *Text) View() string {
 	}
 	parts = append(parts, t.textarea.View())
 
-	return styles.Base.Render(lipgloss.JoinVertical(lipgloss.Top, parts...))
+	return styles.Base.
+		Render(strings.Join(parts, "\n"))
 }
 
 // Run runs the text field.

@@ -869,7 +869,7 @@ func TestNote(t *testing.T) {
 		t.Error("Expected field to contain next button")
 	}
 
-	const expect = 8
+	const expect = 7
 	if h := lipgloss.Height(ansi.Strip(view)); h != expect {
 		t.Log(view)
 		t.Errorf("Expected field to have height %d, got %d", expect, h)
@@ -992,7 +992,7 @@ var titleAndDescTests = map[string]struct {
 }{
 	"Group": {
 		NewGroup(NewInput()),
-		2, // > \n
+		1, // >
 		NewGroup(NewInput()).Title(title),
 		NewGroup(NewInput()).Description(description),
 	},
