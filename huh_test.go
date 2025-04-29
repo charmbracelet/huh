@@ -1306,7 +1306,7 @@ func TestAccessibleFields(t *testing.T) {
 			CheckOutput: func(tb testing.TB, output string) {
 				tb.Helper()
 				requireContains(tb, output, "Select: ")
-				requireContains(tb, output, "Input a number between 1 and 4")
+				requireContains(tb, output, "Enter a number between 1 and 4")
 			},
 			CheckValue: func(tb testing.TB, value any) {
 				tb.Helper()
@@ -1319,7 +1319,7 @@ func TestAccessibleFields(t *testing.T) {
 			CheckOutput: func(tb testing.TB, output string) {
 				tb.Helper()
 				requireContains(tb, output, "Select: ")
-				requireContains(tb, output, "Input a number between 1 and 2")
+				requireContains(tb, output, "Enter a number between 1 and 2")
 				requireContains(tb, output, "Invalid: must be a number between 1 and 2")
 			},
 			CheckValue: func(tb testing.TB, value any) {

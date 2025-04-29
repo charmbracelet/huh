@@ -727,7 +727,7 @@ func (s *Select[T]) runAccessible(w io.Writer, r io.Reader) error {
 	}
 	prompt := fmt.Sprintf("Input a number between %d and %d: ", 1, len(s.options.val))
 	if len(s.options.val) == 1 {
-		prompt = "Only one option available; enter number 1:"
+		prompt = "There is only one option available; enter the number 1:"
 	}
 	for {
 		choice := accessibility.PromptInt(w, r, prompt, 1, len(s.options.val), defaultValue)
