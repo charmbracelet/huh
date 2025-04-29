@@ -672,7 +672,7 @@ func (s *Select[T]) View() string {
 	}
 	parts = append(parts, s.viewport.View())
 	return styles.Base.Width(s.width).Height(s.height).
-		Render(lipgloss.JoinVertical(lipgloss.Top, parts...))
+		Render(strings.Join(parts, "\n"))
 }
 
 // clearFilter clears the value of the filter.

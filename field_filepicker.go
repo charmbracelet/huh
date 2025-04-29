@@ -274,7 +274,7 @@ func (f *FilePicker) View() string {
 	}
 	parts = append(parts, f.pickerView())
 	return styles.Base.Width(f.width).Height(f.height).
-		Render(lipgloss.JoinVertical(lipgloss.Top, parts...))
+		Render(strings.Join(parts, "\n"))
 }
 
 func (f *FilePicker) pickerView() string {

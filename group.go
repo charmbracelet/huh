@@ -322,7 +322,6 @@ func (g *Group) getContent() (int, string) {
 
 func (g *Group) buildView() {
 	offset, content := g.getContent()
-
 	g.viewport.SetContent(content)
 	g.viewport.SetYOffset(offset)
 }
@@ -337,7 +336,7 @@ func (g *Group) Header() string {
 	if g.description != "" {
 		parts = append(parts, styles.Description.Render(wrap(g.description, g.width)))
 	}
-	return lipgloss.JoinVertical(lipgloss.Top, parts...)
+	return strings.Join(parts, "\n")
 }
 
 // titleFooterHeight returns the height of the footer + header.
@@ -368,7 +367,7 @@ func (g *Group) View() string {
 		// append an empty line, and the footer (usually the help).
 		parts = append(parts, "", s)
 	}
-	return lipgloss.JoinVertical(lipgloss.Top, parts...)
+	return strings.Join(parts, "\n")
 }
 
 // Content renders the group's content only (no footer).
@@ -392,8 +391,6 @@ func (g *Group) Footer() string {
 			))
 		}
 	}
-	return g.styles().Base.Render(lipgloss.JoinVertical(
-		lipgloss.Top,
-		parts...,
-	))
+	return g.styles().Base.
+		Render(strings.Join(parts, "\n"))
 }
