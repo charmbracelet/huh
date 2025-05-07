@@ -368,9 +368,9 @@ func (g *Group) View() string {
 		parts = append(parts, "", s)
 	}
 	if len(parts) > 0 {
-		// XXX: Trim suffix spaces from the last part as it can accidentally
-		// scroll the view up on some terminals when we right to the bottom
-		// rightmost corner cell.
+		// Trim suffix spaces from the last part as it can accidentally
+		// scroll the view up on some terminals (like Apple's Terminal.app)
+		// when we right to the bottom rightmost corner cell.
 		parts[len(parts)-1] = strings.TrimSuffix(parts[len(parts)-1], " ")
 	}
 	return strings.Join(parts, "\n")
