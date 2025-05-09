@@ -407,7 +407,7 @@ Huh is built on [Bubble Tea][tea] and, in addition to its standalone mode,
 `huh?` has first-class support and can be easily integrated into 
 Bubble Tea applications. It’s very useful in portions of your Bubble Tea 
 application that need form-like input, and for times when you need more
-flexibility than `huh?` can offer.
+flexibility than `huh?` alone can offer.
 
 <img alt="Bubble Tea embedded form example" width="800" src="https://vhs.charm.sh/vhs-3wGaB7EUKWmojeaHpARMUv.gif">
 
