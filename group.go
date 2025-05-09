@@ -169,26 +169,26 @@ func (g *Group) Errors() []error {
 // methods to make all fields dynamically update based on user input.
 type updateFieldMsg struct{}
 
-// nextFieldMsg is a message to move to the next field,
+// NextFieldMsg is a message to move to the next field,
 //
 // each field controls when to send this message such that it is able to use
 // different key bindings or events to trigger group progression.
-type nextFieldMsg struct{}
+type NextFieldMsg struct{}
 
-// prevFieldMsg is a message to move to the previous field.
+// PrevFieldMsg is a message to move to the previous field.
 //
 // each field controls when to send this message such that it is able to use
 // different key bindings or events to trigger group progression.
-type prevFieldMsg struct{}
+type PrevFieldMsg struct{}
 
 // NextField is the command to move to the next field.
 func NextField() tea.Msg {
-	return nextFieldMsg{}
+	return NextFieldMsg{}
 }
 
 // PrevField is the command to move to the previous field.
 func PrevField() tea.Msg {
-	return prevFieldMsg{}
+	return PrevFieldMsg{}
 }
 
 // Init initializes the group.
@@ -274,9 +274,9 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	})
 
 	switch msg.(type) {
-	case nextFieldMsg:
+	case NextFieldMsg:
 		cmds = append(cmds, g.nextField()...)
-	case prevFieldMsg:
+	case PrevFieldMsg:
 		cmds = append(cmds, g.prevField()...)
 	}
 
