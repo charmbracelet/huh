@@ -77,6 +77,12 @@ type updateSuggestionsMsg struct {
 	suggestions []string
 }
 
+type updateHideMsg struct {
+	id   int
+	hash uint64
+	hide bool
+}
+
 type updateOptionsMsg[T comparable] struct {
 	id      int
 	hash    uint64
