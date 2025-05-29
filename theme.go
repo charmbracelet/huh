@@ -65,6 +65,21 @@ type FieldStyles struct {
 	Card      lipgloss.Style
 	NoteTitle lipgloss.Style
 	Next      lipgloss.Style
+
+	// Table styles.
+	Table TableStyles
+}
+
+// TableStyles defines the styles for table fields.
+type TableStyles struct {
+	Header         lipgloss.Style // Style for the table header row
+	Cell           lipgloss.Style // Style for regular cells
+	SelectedRow    lipgloss.Style // Style for the entire selected row
+	SelectedCell   lipgloss.Style // Style for individual cells in a selected row (if different/supported)
+	Cursor         lipgloss.Style // Style for a cursor or selection indicator (e.g., "> ") if not part of SelectedRow
+	Border         lipgloss.Style // Style for table borders (if applicable as a general style)
+	EvenRow        lipgloss.Style // Style for even rows (if desired for striping)
+	OddRow         lipgloss.Style // Style for odd rows (if desired for striping)
 }
 
 // TextInputStyles are the styles for text inputs.
@@ -119,6 +134,18 @@ func ThemeBase() *Theme {
 	t.Blurred.NextIndicator = lipgloss.NewStyle()
 	t.Blurred.PrevIndicator = lipgloss.NewStyle()
 
+	// Default Table Styles (simple)
+	t.Focused.Table.Header = lipgloss.NewStyle().Bold(true)
+	t.Focused.Table.SelectedRow = lipgloss.NewStyle().Reverse(true) // Simple reverse for selected row
+	t.Focused.Table.Cell = lipgloss.NewStyle()                      // Default cell
+	t.Focused.Table.Cursor = lipgloss.NewStyle()                    // Not directly used by bubbles/table
+
+	t.Blurred.Table.Header = lipgloss.NewStyle()
+	t.Blurred.Table.SelectedRow = lipgloss.NewStyle() // No special selection style when blurred by default
+	t.Blurred.Table.Cell = lipgloss.NewStyle()
+	t.Blurred.Table.Cursor = lipgloss.NewStyle()
+
+
 	return &t
 }
 
@@ -165,6 +192,16 @@ func ThemeCharm() *Theme {
 	t.Blurred.Card = t.Blurred.Base
 	t.Blurred.NextIndicator = lipgloss.NewStyle()
 	t.Blurred.PrevIndicator = lipgloss.NewStyle()
+
+	// Charm Table Styles
+	t.Focused.Table.Header = lipgloss.NewStyle().Bold(true).Foreground(indigo).BorderBottom(true)
+	t.Focused.Table.Cell = lipgloss.NewStyle().Padding(0, 1)
+	t.Focused.Table.SelectedRow = lipgloss.NewStyle().Background(fuchsia).Foreground(cream)
+	t.Focused.Table.Cursor = lipgloss.NewStyle().Foreground(fuchsia) // For consistency, though not directly used by table.Model
+
+	t.Blurred.Table.Header = lipgloss.NewStyle().Bold(true).Foreground(normalFg).BorderBottom(true)
+	t.Blurred.Table.Cell = lipgloss.NewStyle().Padding(0, 1)
+	t.Blurred.Table.SelectedRow = lipgloss.NewStyle().Background(lipgloss.AdaptiveColor{Light: "252", Dark: "237"}) // Muted selection
 
 	t.Group.Title = t.Focused.Title
 	t.Group.Description = t.Focused.Description
@@ -217,6 +254,16 @@ func ThemeDracula() *Theme {
 	t.Blurred.NextIndicator = lipgloss.NewStyle()
 	t.Blurred.PrevIndicator = lipgloss.NewStyle()
 
+	// Dracula Table Styles
+	t.Focused.Table.Header = lipgloss.NewStyle().Bold(true).Foreground(purple).BorderBottom(true)
+	t.Focused.Table.Cell = lipgloss.NewStyle().Padding(0, 1)
+	t.Focused.Table.SelectedRow = lipgloss.NewStyle().Background(selection).Foreground(foreground)
+	t.Focused.Table.Cursor = lipgloss.NewStyle().Foreground(yellow)
+
+	t.Blurred.Table.Header = lipgloss.NewStyle().Bold(true).Foreground(comment).BorderBottom(true)
+	t.Blurred.Table.Cell = lipgloss.NewStyle().Padding(0, 1)
+	t.Blurred.Table.SelectedRow = lipgloss.NewStyle().Background(background) // Less prominent when blurred
+
 	t.Group.Title = t.Focused.Title
 	t.Group.Description = t.Focused.Description
 	return t
@@ -260,6 +307,16 @@ func ThemeBase16() *Theme {
 
 	t.Blurred.NextIndicator = lipgloss.NewStyle()
 	t.Blurred.PrevIndicator = lipgloss.NewStyle()
+
+	// Base16 Table Styles
+	t.Focused.Table.Header = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("6")).BorderBottom(true)
+	t.Focused.Table.Cell = lipgloss.NewStyle().Padding(0, 1)
+	t.Focused.Table.SelectedRow = lipgloss.NewStyle().Background(lipgloss.Color("1")).Foreground(lipgloss.Color("7"))
+	t.Focused.Table.Cursor = lipgloss.NewStyle().Foreground(lipgloss.Color("3"))
+
+	t.Blurred.Table.Header = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("8")).BorderBottom(true) // Darker when blurred
+	t.Blurred.Table.Cell = lipgloss.NewStyle().Padding(0, 1)
+	t.Blurred.Table.SelectedRow = lipgloss.NewStyle().Background(lipgloss.Color("0")) // Even more muted
 
 	t.Group.Title = t.Focused.Title
 	t.Group.Description = t.Focused.Description
@@ -314,6 +371,16 @@ func ThemeCatppuccin() *Theme {
 	t.Blurred = t.Focused
 	t.Blurred.Base = t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
 	t.Blurred.Card = t.Blurred.Base
+
+	// Catppuccin Table Styles
+	t.Focused.Table.Header = lipgloss.NewStyle().Bold(true).Foreground(mauve).BorderBottom(true)
+	t.Focused.Table.Cell = lipgloss.NewStyle().Padding(0, 1)
+	t.Focused.Table.SelectedRow = lipgloss.NewStyle().Background(pink).Foreground(base) // Base is dark for mocha, light for latte
+	t.Focused.Table.Cursor = lipgloss.NewStyle().Foreground(pink)
+
+	t.Blurred.Table.Header = lipgloss.NewStyle().Bold(true).Foreground(subtext0).BorderBottom(true)
+	t.Blurred.Table.Cell = lipgloss.NewStyle().Padding(0, 1)
+	t.Blurred.Table.SelectedRow = lipgloss.NewStyle().Background(overlay0) // Muted selection
 
 	t.Help.Ellipsis = t.Help.Ellipsis.Foreground(subtext0)
 	t.Help.ShortKey = t.Help.ShortKey.Foreground(subtext0)

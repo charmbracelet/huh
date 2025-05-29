@@ -13,6 +13,23 @@ type KeyMap struct {
 	Note        NoteKeyMap
 	Select      SelectKeyMap
 	Text        TextKeyMap
+	Table       TableKeyMap
+}
+
+// TableKeyMap defines the keybindings for table fields.
+type TableKeyMap struct {
+	Up       key.Binding
+	Down     key.Binding
+	Left     key.Binding // For horizontal scroll or future cell navigation
+	Right    key.Binding // For horizontal scroll or future cell navigation
+	Top      key.Binding
+	Bottom   key.Binding
+	PageUp   key.Binding
+	PageDown key.Binding
+	Select   key.Binding // To select a row within the table
+	Prev     key.Binding // To navigate to the previous field in the form
+	Next     key.Binding // To navigate to the next field in the form
+	Submit   key.Binding // To submit the form (potentially from the table field)
 }
 
 // InputKeyMap is the keybindings for input fields.
@@ -181,6 +198,20 @@ func NewDefaultKeyMap() *KeyMap {
 			Toggle: key.NewBinding(key.WithKeys("h", "l", "right", "left"), key.WithHelp("←/→", "toggle")),
 			Accept: key.NewBinding(key.WithKeys("y", "Y"), key.WithHelp("y", "Yes")),
 			Reject: key.NewBinding(key.WithKeys("n", "N"), key.WithHelp("n", "No")),
+		},
+		Table: TableKeyMap{
+			Up:       key.NewBinding(key.WithKeys("up", "k"), key.WithHelp("↑/k", "up")),
+			Down:     key.NewBinding(key.WithKeys("down", "j"), key.WithHelp("↓/j", "down")),
+			Left:     key.NewBinding(key.WithKeys("left", "h"), key.WithHelp("←/h", "left")),
+			Right:    key.NewBinding(key.WithKeys("right", "l"), key.WithHelp("→/l", "right")),
+			Top:      key.NewBinding(key.WithKeys("home", "g"), key.WithHelp("g/home", "top")),
+			Bottom:   key.NewBinding(key.WithKeys("end", "G"), key.WithHelp("G/end", "bottom")),
+			PageUp:   key.NewBinding(key.WithKeys("pgup"), key.WithHelp("pgup", "page up")),
+			PageDown: key.NewBinding(key.WithKeys("pgdown"), key.WithHelp("pgdown", "page down")),
+			Select:   key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "select row")),
+			Prev:     key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),
+			Next:     key.NewBinding(key.WithKeys("tab"), key.WithHelp("tab", "next")),
+			Submit:   key.NewBinding(key.WithKeys("ctrl+s"), key.WithHelp("ctrl+s", "submit")), // ctrl+s as an example for form submit from table
 		},
 	}
 }
