@@ -367,6 +367,13 @@ func (g *Group) View() string {
 		// append an empty line, and the footer (usually the help).
 		parts = append(parts, "", s)
 	}
+	if len(parts) > 0 {
+		// Trim suffix spaces from the last part as it can accidentally
+		// scroll the view up on some terminals (like Apple's Terminal.app)
+		// when we right to the bottom rightmost corner cell.
+		lastIdx := len(parts) - 1
+		parts[lastIdx] = strings.TrimSuffix(parts[lastIdx], " ")
+	}
 	return strings.Join(parts, "\n")
 }
 
