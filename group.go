@@ -371,7 +371,7 @@ func (g *Group) View() string {
 		// Trim suffix spaces from the last part as it can accidentally
 		// scroll the view up on some terminals (like Apple's Terminal.app)
 		// when we right to the bottom rightmost corner cell.
-		lastIdx := len(parts)-1
+		lastIdx := len(parts) - 1
 		parts[lastIdx] = strings.TrimSuffix(parts[lastIdx], " ")
 	}
 	return strings.Join(parts, "\n")
