@@ -69,11 +69,12 @@ type FieldStyles struct {
 
 // TextInputStyles are the styles for text inputs.
 type TextInputStyles struct {
-	Cursor      lipgloss.Style
-	CursorText  lipgloss.Style
-	Placeholder lipgloss.Style
-	Prompt      lipgloss.Style
-	Text        lipgloss.Style
+	Cursor       lipgloss.Style
+	CursorText   lipgloss.Style
+	Placeholder  lipgloss.Style
+	DefaultValue lipgloss.Style
+	Prompt       lipgloss.Style
+	Text         lipgloss.Style
 }
 
 const (
@@ -108,6 +109,7 @@ func ThemeBase() *Theme {
 	t.Focused.FocusedButton = button.Foreground(lipgloss.Color("0")).Background(lipgloss.Color("7"))
 	t.Focused.BlurredButton = button.Foreground(lipgloss.Color("7")).Background(lipgloss.Color("0"))
 	t.Focused.TextInput.Placeholder = lipgloss.NewStyle().Foreground(lipgloss.Color("8"))
+	t.Focused.TextInput.DefaultValue = lipgloss.NewStyle().Foreground(lipgloss.Color("7"))
 
 	t.Help = help.New().Styles
 
@@ -158,6 +160,7 @@ func ThemeCharm() *Theme {
 
 	t.Focused.TextInput.Cursor = t.Focused.TextInput.Cursor.Foreground(green)
 	t.Focused.TextInput.Placeholder = t.Focused.TextInput.Placeholder.Foreground(lipgloss.AdaptiveColor{Light: "248", Dark: "238"})
+	t.Focused.TextInput.DefaultValue = t.Focused.TextInput.DefaultValue.Foreground(lipgloss.AdaptiveColor{Light: "243", Dark: "248"})
 	t.Focused.TextInput.Prompt = t.Focused.TextInput.Prompt.Foreground(fuchsia)
 
 	t.Blurred = t.Focused
@@ -209,6 +212,7 @@ func ThemeDracula() *Theme {
 
 	t.Focused.TextInput.Cursor = t.Focused.TextInput.Cursor.Foreground(yellow)
 	t.Focused.TextInput.Placeholder = t.Focused.TextInput.Placeholder.Foreground(comment)
+	t.Focused.TextInput.DefaultValue = t.Focused.TextInput.DefaultValue.Foreground(yellow)
 	t.Focused.TextInput.Prompt = t.Focused.TextInput.Prompt.Foreground(yellow)
 
 	t.Blurred = t.Focused
@@ -247,6 +251,7 @@ func ThemeBase16() *Theme {
 
 	t.Focused.TextInput.Cursor.Foreground(lipgloss.Color("5"))
 	t.Focused.TextInput.Placeholder.Foreground(lipgloss.Color("8"))
+	t.Focused.TextInput.DefaultValue.Foreground(lipgloss.Color("7"))
 	t.Focused.TextInput.Prompt.Foreground(lipgloss.Color("3"))
 
 	t.Blurred = t.Focused
@@ -278,6 +283,7 @@ func ThemeCatppuccin() *Theme {
 		text     = lipgloss.AdaptiveColor{Light: light.Text().Hex, Dark: dark.Text().Hex}
 		subtext1 = lipgloss.AdaptiveColor{Light: light.Subtext1().Hex, Dark: dark.Subtext1().Hex}
 		subtext0 = lipgloss.AdaptiveColor{Light: light.Subtext0().Hex, Dark: dark.Subtext0().Hex}
+		overlay2 = lipgloss.AdaptiveColor{Light: light.Overlay2().Hex, Dark: dark.Overlay2().Hex}
 		overlay1 = lipgloss.AdaptiveColor{Light: light.Overlay1().Hex, Dark: dark.Overlay1().Hex}
 		overlay0 = lipgloss.AdaptiveColor{Light: light.Overlay0().Hex, Dark: dark.Overlay0().Hex}
 		green    = lipgloss.AdaptiveColor{Light: light.Green().Hex, Dark: dark.Green().Hex}
@@ -309,6 +315,7 @@ func ThemeCatppuccin() *Theme {
 
 	t.Focused.TextInput.Cursor = t.Focused.TextInput.Cursor.Foreground(cursor)
 	t.Focused.TextInput.Placeholder = t.Focused.TextInput.Placeholder.Foreground(overlay0)
+	t.Focused.TextInput.DefaultValue = t.Focused.TextInput.DefaultValue.Foreground(overlay2)
 	t.Focused.TextInput.Prompt = t.Focused.TextInput.Prompt.Foreground(pink)
 
 	t.Blurred = t.Focused
