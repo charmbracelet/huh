@@ -1,3 +1,4 @@
+// Package selector provides a helper type for selecting items.
 package selector
 
 // Selector is a helper type for selecting items.

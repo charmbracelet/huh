@@ -69,21 +69,21 @@ type MultiSelectKeyMap struct {
 	SelectNone   key.Binding
 }
 
-// FilePickerKey is the keybindings for filepicker fields.
+// FilePickerKeyMap is the keybindings for filepicker fields.
 type FilePickerKeyMap struct {
-	Open     key.Binding
-	Close    key.Binding
-	GoToTop  key.Binding
-	GoToLast key.Binding
-	PageUp   key.Binding
-	PageDown key.Binding
-	Back     key.Binding
-	Select   key.Binding
-	Up       key.Binding
-	Down     key.Binding
-	Prev     key.Binding
-	Next     key.Binding
-	Submit   key.Binding
+	Open       key.Binding
+	Close      key.Binding
+	GotoTop    key.Binding
+	GotoBottom key.Binding
+	PageUp     key.Binding
+	PageDown   key.Binding
+	Back       key.Binding
+	Select     key.Binding
+	Up         key.Binding
+	Down       key.Binding
+	Prev       key.Binding
+	Next       key.Binding
+	Submit     key.Binding
 }
 
 // NoteKeyMap is the keybindings for note fields.
@@ -114,14 +114,14 @@ func NewDefaultKeyMap() *KeyMap {
 			Submit:           key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "submit")),
 		},
 		FilePicker: FilePickerKeyMap{
-			GoToTop:  key.NewBinding(key.WithKeys("g"), key.WithHelp("g", "first"), key.WithDisabled()),
-			GoToLast: key.NewBinding(key.WithKeys("G"), key.WithHelp("G", "last"), key.WithDisabled()),
-			PageUp:   key.NewBinding(key.WithKeys("K", "pgup"), key.WithHelp("pgup", "page up"), key.WithDisabled()),
-			PageDown: key.NewBinding(key.WithKeys("J", "pgdown"), key.WithHelp("pgdown", "page down"), key.WithDisabled()),
-			Back:     key.NewBinding(key.WithKeys("h", "backspace", "left", "esc"), key.WithHelp("h", "back"), key.WithDisabled()),
-			Select:   key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "select"), key.WithDisabled()),
-			Up:       key.NewBinding(key.WithKeys("up", "k", "ctrl+k", "ctrl+p"), key.WithHelp("↑", "up"), key.WithDisabled()),
-			Down:     key.NewBinding(key.WithKeys("down", "j", "ctrl+j", "ctrl+n"), key.WithHelp("↓", "down"), key.WithDisabled()),
+			GotoTop:    key.NewBinding(key.WithKeys("g"), key.WithHelp("g", "first"), key.WithDisabled()),
+			GotoBottom: key.NewBinding(key.WithKeys("G"), key.WithHelp("G", "last"), key.WithDisabled()),
+			PageUp:     key.NewBinding(key.WithKeys("K", "pgup"), key.WithHelp("pgup", "page up"), key.WithDisabled()),
+			PageDown:   key.NewBinding(key.WithKeys("J", "pgdown"), key.WithHelp("pgdown", "page down"), key.WithDisabled()),
+			Back:       key.NewBinding(key.WithKeys("h", "backspace", "left", "esc"), key.WithHelp("h", "back"), key.WithDisabled()),
+			Select:     key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "select"), key.WithDisabled()),
+			Up:         key.NewBinding(key.WithKeys("up", "k", "ctrl+k", "ctrl+p"), key.WithHelp("↑", "up"), key.WithDisabled()),
+			Down:       key.NewBinding(key.WithKeys("down", "j", "ctrl+j", "ctrl+n"), key.WithHelp("↓", "down"), key.WithDisabled()),
 
 			Open:   key.NewBinding(key.WithKeys("l", "right", "enter"), key.WithHelp("enter", "open")),
 			Close:  key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "close"), key.WithDisabled()),

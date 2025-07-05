@@ -23,7 +23,7 @@ func main() {
 				Validate(func(s string) error {
 					v, err := strconv.Atoi(value)
 					if err != nil {
-						return err
+						return errors.New("max should be a number")
 					}
 					if v <= 0 {
 						return errors.New("maximum must be positive")

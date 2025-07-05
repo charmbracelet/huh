@@ -2,6 +2,8 @@ package huh
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
@@ -217,38 +219,44 @@ func (n *Note) activeStyles() *FieldStyles {
 // View renders the note field.
 func (n *Note) View() string {
 	styles := n.activeStyles()
+	maxWidth := n.width - styles.Card.GetHorizontalFrameSize()
 	sb := strings.Builder{}
 
 	if n.title.val != "" || n.title.fn != nil {
-		sb.WriteString(styles.NoteTitle.Render(n.title.val))
+		sb.WriteString(styles.NoteTitle.Render(wrap(n.title.val, maxWidth)))
 	}
 	if n.description.val != "" || n.description.fn != nil {
-		sb.WriteString("\n")
-		sb.WriteString(render(n.description.val))
+		sb.WriteRune('\n')
+		sb.WriteString(wrap(render(n.description.val), maxWidth))
+		sb.WriteRune('\n')
 	}
 	if n.showNextButton {
+		sb.WriteRune('\n')
 		sb.WriteString(styles.Next.Render(n.nextLabel))
 	}
-	return styles.Card.Height(n.height).Render(sb.String())
+	return styles.Card.
+		Height(n.height).
+		Width(n.width).
+		Render(sb.String())
 }
 
 // Run runs the note field.
 func (n *Note) Run() error {
 	if n.accessible {
-		return n.runAccessible()
+		return n.runAccessible(os.Stdout, os.Stdin)
 	}
 	return Run(n)
 }
 
 // runAccessible runs an accessible note field.
-func (n *Note) runAccessible() error {
+func (n *Note) runAccessible(w io.Writer, _ io.Reader) error {
+	styles := n.activeStyles()
 	if n.title.val != "" {
-		fmt.Println(n.title.val)
-		fmt.Println()
+		_, _ = fmt.Fprintln(w, styles.Title.Render(n.title.val))
 	}
-
-	fmt.Println(n.description.val)
-	fmt.Println()
+	if n.description.val != "" {
+		_, _ = fmt.Fprintln(w, n.description.val)
+	}
 	return nil
 }
 
