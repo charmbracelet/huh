@@ -30,6 +30,7 @@ type MultiSelect[T comparable] struct {
 	options         Eval[[]Option[T]]
 	filterable      bool
 	filteredOptions []Option[T]
+	filterFunc      FilterFunc
 	limit           int
 	height          int
 
@@ -64,6 +65,7 @@ func NewMultiSelect[T comparable]() *MultiSelect[T] {
 		validate:    func([]T) error { return nil },
 		filtering:   false,
 		filter:      filter,
+		filterFunc:  defaultFilterFunc,
 		id:          nextID(),
 		options:     Eval[[]Option[T]]{cache: make(map[uint64][]Option[T])},
 		title:       Eval[string]{cache: make(map[uint64]string)},
@@ -465,7 +467,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.filter.Value() != "" {
 				m.filteredOptions = nil
 				for _, option := range m.options.val {
-					if m.filterFunc(option.Key) {
+					if m.filterFunc(option.Key, m.filter.Value()) {
 						m.filteredOptions = append(m.filteredOptions, option)
 					}
 				}
@@ -677,12 +679,6 @@ func (m *MultiSelect[T]) setFilter(filter bool) {
 	m.keymap.ClearFilter.SetEnabled(!filter && m.filter.Value() != "")
 }
 
-// filterFunc returns true if the option matches the filter.
-func (m *MultiSelect[T]) filterFunc(option string) bool {
-	// XXX: remove diacritics or allow customization of filter function.
-	return strings.Contains(strings.ToLower(option), strings.ToLower(m.filter.Value()))
-}
-
 // setSelectAllHelp enables the appropriate select all or select none keybinding.
 func (m *MultiSelect[T]) setSelectAllHelp() {
 	if m.limit > 0 {
@@ -776,6 +772,13 @@ func (m *MultiSelect[T]) WithKeyMap(k *KeyMap) Field {
 // WithAccessible sets the accessible mode of the multi-select field.
 func (m *MultiSelect[T]) WithAccessible(accessible bool) Field {
 	m.accessible = accessible
+	return m
+}
+
+// WithFilterFunc sets the function used to compare the list option to the filter
+func (m *MultiSelect[T]) WithFilterFunc(fn FilterFunc) Field {
+	m.filterFunc = fn
+
 	return m
 }
 

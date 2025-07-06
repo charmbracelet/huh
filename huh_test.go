@@ -595,16 +595,24 @@ func TestMultiSelect(t *testing.T) {
 
 func TestMultiSelectFiltering(t *testing.T) {
 	tests := []struct {
-		name      string
-		filtering bool
+		name       string
+		filtering  bool
+		filterFunc FilterFunc
 	}{
-		{"Filtering off", false},
-		{"Filtering on", true},
+		{"Filtering off", false, nil},
+		{"Filtering on", true, nil},
+		{"Custom Filter on", true, func(target, filter string) bool {
+			return target == "Baz"
+		}},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			field := NewMultiSelect[string]().Options(NewOptions("Foo", "Bar", "Baz")...).Title("Which one?").Filterable(tc.filtering)
+			if tc.filterFunc != nil {
+				field.WithFilterFunc(tc.filterFunc)
+			}
+
 			f := NewForm(NewGroup(field))
 			f.Update(f.Init())
 			// Filter for values starting with a 'B' only.
@@ -617,6 +625,13 @@ func TestMultiSelectFiltering(t *testing.T) {
 				t.Log(pretty.Render(view))
 				t.Error("Foo should not in filtered list.")
 			}
+
+			// When custom filter is defined, should only contain Baz
+			if tc.filtering && tc.filterFunc != nil && !strings.Contains(view, "Baz") && strings.Contains(view, "Bar") {
+				t.Log(pretty.Render(view))
+				t.Error("Baz should be only option available")
+			}
+
 			// When we're not filtering, the list shouldn't change.
 			if !tc.filtering && !strings.Contains(view, "Foo") {
 				t.Log(pretty.Render(view))
