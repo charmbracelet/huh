@@ -47,7 +47,7 @@ type MultiSelect[T comparable] struct {
 
 	// options
 	width      int
-	accessible bool
+	accessible bool // Deprecated: use RunAccessible instead.
 	theme      *Theme
 	keymap     MultiSelectKeyMap
 }
@@ -700,14 +700,14 @@ func (m *MultiSelect[T]) setSelectAllHelp() {
 
 // Run runs the multi-select field.
 func (m *MultiSelect[T]) Run() error {
-	if m.accessible {
-		return m.runAccessible(os.Stdout, os.Stdin)
+	if m.accessible { // TODO: remove in a future release.
+		return m.RunAccessible(os.Stdout, os.Stdin)
 	}
 	return Run(m)
 }
 
-// runAccessible() runs the multi-select field in accessible mode.
-func (m *MultiSelect[T]) runAccessible(w io.Writer, r io.Reader) error {
+// RunAccessible() runs the multi-select field in accessible mode.
+func (m *MultiSelect[T]) RunAccessible(w io.Writer, r io.Reader) error {
 	styles := m.activeStyles()
 	title := styles.Title.
 		PaddingRight(1).
@@ -774,6 +774,9 @@ func (m *MultiSelect[T]) WithKeyMap(k *KeyMap) Field {
 }
 
 // WithAccessible sets the accessible mode of the multi-select field.
+//
+// Deprecated: you may now call [MultiSelect.RunAccessible] directly to run the
+// field in accessible mode.
 func (m *MultiSelect[T]) WithAccessible(accessible bool) Field {
 	m.accessible = accessible
 	return m
