@@ -706,7 +706,7 @@ func (m *MultiSelect[T]) Run() error {
 	return Run(m)
 }
 
-// RunAccessible() runs the multi-select field in accessible mode.
+// RunAccessible runs the multi-select field in accessible mode.
 func (m *MultiSelect[T]) RunAccessible(w io.Writer, r io.Reader) error {
 	styles := m.activeStyles()
 	title := styles.Title.
