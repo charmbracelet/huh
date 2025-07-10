@@ -1392,7 +1392,7 @@ func TestAccessibleFields(t *testing.T) {
 			}
 
 			var out bytes.Buffer
-			if err := field.runAccessible(
+			if err := field.RunAccessible(
 				&out,
 				strings.NewReader(test.Input),
 			); err != nil {
@@ -1413,12 +1413,12 @@ func TestInputPasswordAccessible(t *testing.T) {
 		var out bytes.Buffer
 		if err := NewInput().
 			EchoMode(EchoModeNone).
-			runAccessible(&out, bytes.NewReader(nil)); err == nil {
+			RunAccessible(&out, bytes.NewReader(nil)); err == nil {
 			t.Error("expected it to error")
 		}
 		if err := NewInput().
 			EchoMode(EchoModePassword).
-			runAccessible(&out, bytes.NewReader(nil)); err == nil {
+			RunAccessible(&out, bytes.NewReader(nil)); err == nil {
 			t.Error("expected it to error")
 		}
 	})
@@ -1438,7 +1438,7 @@ func TestInputPasswordAccessible(t *testing.T) {
 
 		errs := make(chan error, 1)
 		go func() {
-			errs <- input.runAccessible(&out, upty.Slave())
+			errs <- input.RunAccessible(&out, upty.Slave())
 		}()
 
 		upty.Master().Write([]byte("a password\n"))

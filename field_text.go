@@ -40,7 +40,7 @@ type Text struct {
 	validate func(string) error
 	err      error
 
-	accessible bool
+	accessible bool // Deprecated: use RunAccessible instead.
 	width      int
 
 	theme  *Theme
@@ -408,14 +408,14 @@ func (t *Text) View() string {
 
 // Run runs the text field.
 func (t *Text) Run() error {
-	if t.accessible {
-		return t.runAccessible(os.Stdout, os.Stdin)
+	if t.accessible { // TODO: remove in a future release.
+		return t.RunAccessible(os.Stdout, os.Stdin)
 	}
 	return Run(t)
 }
 
-// runAccessible runs an accessible text field.
-func (t *Text) runAccessible(w io.Writer, r io.Reader) error {
+// RunAccessible runs an accessible text field.
+func (t *Text) RunAccessible(w io.Writer, r io.Reader) error {
 	styles := t.activeStyles()
 	prompt := styles.Title.
 		PaddingRight(1).
@@ -457,6 +457,9 @@ func (t *Text) WithKeyMap(k *KeyMap) Field {
 }
 
 // WithAccessible sets the accessible mode of the text field.
+//
+// Deprecated: you may now call [Text.RunAccessible] directly to run the
+// field in accessible mode.
 func (t *Text) WithAccessible(accessible bool) Field {
 	t.accessible = accessible
 	return t
