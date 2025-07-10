@@ -243,6 +243,11 @@ func (*Input) Skip() bool { return false }
 // Zoom returns whether the input should be zoomed.
 func (*Input) Zoom() bool { return false }
 
+// Hide returns whether this input should be hidden and not updated.
+func (*Input) Hide() bool {
+	return false
+}
+
 // Focus focuses the input field.
 func (i *Input) Focus() tea.Cmd {
 	i.focused = true
