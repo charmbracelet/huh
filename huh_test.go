@@ -351,6 +351,82 @@ func TestInlineInput(t *testing.T) {
 	}
 }
 
+func TestInputPlaceholderSmallTerminalWidth(t *testing.T) {
+	field := NewInput().Placeholder("-")
+	f := NewForm(NewGroup(field))
+	f.Update(f.Init())
+	f.Update(tea.WindowSizeMsg{Width: 0, Height: 10})
+
+	view := ansi.Strip(f.View())
+
+	if !strings.Contains(view, ">") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to contain prompt.")
+	}
+
+	// Type Huh in the form.
+	m, _ := f.Update(keys('H', 'u', 'h'))
+	f = m.(*Form)
+	view = ansi.Strip(f.View())
+
+	if !strings.Contains(view, "Huh") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to contain Huh.")
+	}
+
+	if !strings.Contains(view, "enter submit") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to contain help.")
+	}
+
+	if field.GetValue() != "Huh" {
+		t.Error("Expected field value to be Huh")
+	}
+}
+
+func TestInlineInputSmallTerminalWidth(t *testing.T) {
+	field := NewInput().
+		Title("Input ").
+		Prompt(": ").
+		Description("Description").
+		Inline(true)
+
+	f := NewForm(NewGroup(field))
+	f.Update(f.Init())
+	f.Update(tea.WindowSizeMsg{Width: 0, Height: 10})
+
+	view := ansi.Strip(f.View())
+
+	if !strings.Contains(view, "┃ Input Description:") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to contain inline input.")
+	}
+
+	// Type Huh in the form.
+	m, _ := f.Update(keys('H', 'u', 'h'))
+	f = m.(*Form)
+	view = ansi.Strip(f.View())
+
+	if !strings.Contains(view, "Huh") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to contain Huh.")
+	}
+
+	if !strings.Contains(view, "enter submit") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to contain help.")
+	}
+
+	if !strings.Contains(view, "┃ Input Description: Huh") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field to contain help.")
+	}
+
+	if field.GetValue() != "Huh" {
+		t.Error("Expected field value to be Huh")
+	}
+}
+
 func TestText(t *testing.T) {
 	field := NewText()
 	f := NewForm(NewGroup(field))
