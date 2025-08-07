@@ -270,7 +270,7 @@ func (i *Input) Init() tea.Cmd {
 }
 
 // Update updates the input field.
-func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (i *Input) Update(msg tea.Msg) (Field, tea.Cmd) {
 	var cmds []tea.Cmd
 	var cmd tea.Cmd
 

@@ -108,8 +108,8 @@ func New() *Spinner {
 }
 
 // Init initializes the spinner.
-func (s *Spinner) Init() (tea.Model, tea.Cmd) {
-	return s, s.spinner.Tick
+func (s *Spinner) Init() tea.Cmd {
+	return s.spinner.Tick
 }
 
 // Update updates the spinner.

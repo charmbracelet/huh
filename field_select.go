@@ -304,7 +304,7 @@ func (s *Select[T]) Init() tea.Cmd {
 }
 
 // Update updates the select field.
-func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (s *Select[T]) Update(msg tea.Msg) (Field, tea.Cmd) {
 	s.updateViewportHeight()
 
 	var cmd tea.Cmd

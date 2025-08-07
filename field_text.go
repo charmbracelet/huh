@@ -250,7 +250,7 @@ func (t *Text) Init() tea.Cmd {
 }
 
 // Update updates the text field.
-func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (t *Text) Update(msg tea.Msg) (Field, tea.Cmd) {
 	var cmds []tea.Cmd
 	var cmd tea.Cmd
 

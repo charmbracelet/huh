@@ -3,12 +3,12 @@ module examples
 go 1.22
 
 require (
-	github.com/charmbracelet/bubbles/v2 v2.0.0-alpha.2.0.20250123213707-518ff7d0d016
-	github.com/charmbracelet/bubbletea/v2 v2.0.0-alpha.2.0.20250123211610-443afa6fa0c1
+	github.com/charmbracelet/bubbles/v2 v2.0.0-alpha.2.0.20250204182757-f0328bd74143
+	github.com/charmbracelet/bubbletea/v2 v2.0.0-alpha.2.0.20250204175057-2a96bc438da6
 	github.com/charmbracelet/glamour v0.8.0
 	github.com/charmbracelet/huh/v2 v2.0.0-00010101000000-000000000000
 	github.com/charmbracelet/huh/v2/spinner v0.0.0-00010101000000-000000000000
-	github.com/charmbracelet/lipgloss/v2 v2.0.0-alpha.2.0.20250114171829-b67eb015d607
+	github.com/charmbracelet/lipgloss/v2 v2.0.0-alpha.2.0.20250204145343-96725424379d
 	github.com/charmbracelet/log v0.4.0
 	github.com/charmbracelet/ssh v0.0.0-20240725163421-eb71b85b27aa
 	github.com/charmbracelet/wish v1.4.3
@@ -23,18 +23,17 @@ require (
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/catppuccin/go v0.2.0 // indirect
 	github.com/charmbracelet/bubbletea v1.0.0 // indirect
-	github.com/charmbracelet/colorprofile v0.1.9 // indirect
+	github.com/charmbracelet/colorprofile v0.2.0 // indirect
 	github.com/charmbracelet/harmonica v0.2.0 // indirect
 	github.com/charmbracelet/keygen v0.5.1 // indirect
 	github.com/charmbracelet/lipgloss v0.13.0 // indirect
-	github.com/charmbracelet/x/ansi v0.7.0 // indirect
-	github.com/charmbracelet/x/cellbuf v0.0.7-0.20250113065325-800d48271e72 // indirect
+	github.com/charmbracelet/x/ansi v0.8.0 // indirect
+	github.com/charmbracelet/x/cellbuf v0.0.9-0.20250203222631-bea22a7f0a07 // indirect
 	github.com/charmbracelet/x/conpty v0.1.0 // indirect
 	github.com/charmbracelet/x/errors v0.0.0-20240508181413-e8d8b6e2de86 // indirect
-	github.com/charmbracelet/x/input v0.3.0 // indirect
+	github.com/charmbracelet/x/input v0.3.1 // indirect
 	github.com/charmbracelet/x/term v0.2.1 // indirect
 	github.com/charmbracelet/x/termios v0.1.0 // indirect
-	github.com/charmbracelet/x/wcwidth v0.0.0-20241113152101-0af7d04e9f32 // indirect
 	github.com/charmbracelet/x/windows v0.2.0 // indirect
 	github.com/creack/pty v1.1.21 // indirect
 	github.com/dlclark/regexp2 v1.11.0 // indirect

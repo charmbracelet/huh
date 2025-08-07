@@ -243,7 +243,7 @@ func (g *Group) prevField() []tea.Cmd {
 }
 
 // Update updates the group.
-func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (g *Group) Update(msg tea.Msg) (*Group, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	// Update all the fields in the group.
@@ -253,16 +253,16 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			break
 		default:
 			m, cmd := field.Update(msg)
-			g.selector.Set(i, m.(Field))
+			g.selector.Set(i, m)
 			cmds = append(cmds, cmd)
 		}
 		if g.selector.Index() == i {
 			m, cmd := field.Update(msg)
-			g.selector.Set(i, m.(Field))
+			g.selector.Set(i, m)
 			cmds = append(cmds, cmd)
 		}
 		m, cmd := field.Update(updateFieldMsg{})
-		g.selector.Set(i, m.(Field))
+		g.selector.Set(i, m)
 		cmds = append(cmds, cmd)
 		return true
 	})

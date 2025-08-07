@@ -22,3 +22,6 @@ go.work
 
 # Debugging
 debug.log
+
+# Crush directory
+.crush

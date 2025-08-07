@@ -90,6 +90,32 @@ type Form struct {
 	layout Layout
 }
 
+// TODO need a tea.Model that wraps the form that we can use with tea.NewProgram
+// FormModel implements tea.Model interface
+type FormModel struct {
+	form *Form
+}
+
+func (m FormModel) Init() tea.Cmd {
+	return m.form.Init()
+}
+
+func (m FormModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
+	m.form, cmd = m.form.Update(msg)
+	return m, cmd
+}
+
+func (m FormModel) View() string {
+	return m.form.View()
+}
+
+func NewFormModel(form *Form) FormModel {
+	return FormModel{
+		form: form,
+	}
+}
+
 // NewForm returns a form with the given groups and default themes and
 // keybindings.
 //
@@ -130,8 +156,10 @@ func NewForm(groups ...*Group) *Form {
 //
 // Each field implements the Bubble Tea Model interface.
 type Field interface {
-	// Bubble Tea Model
-	tea.Model
+	// Bubble Tea Model methods
+	Init() tea.Cmd
+	Update(tea.Msg) (Field, tea.Cmd)
+	View() string
 
 	// Bubble Tea Events
 	Blur() tea.Cmd
@@ -497,7 +525,7 @@ func (f *Form) Init() tea.Cmd {
 }
 
 // Update updates the form.
-func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (f *Form) Update(msg tea.Msg) (*Form, tea.Cmd) {
 	// If the form is aborted or completed there's no need to update it.
 	if f.State != StateNormal {
 		return f, nil
@@ -543,7 +571,7 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return f, nil
 		}
 
-		submit := func() (tea.Model, tea.Cmd) {
+		submit := func() (*Form, tea.Cmd) {
 			f.quitting = true
 			f.State = StateCompleted
 			return f, f.SubmitCmd
@@ -586,7 +614,7 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	m, cmd := group.Update(msg)
-	f.selector.Set(f.selector.Index(), m.(*Group))
+	f.selector.Set(f.selector.Index(), m)
 
 	// A user input a key, this could hide or show other groups,
 	// let's update all of their positions.
@@ -648,10 +676,14 @@ func (f *Form) run(ctx context.Context) error {
 		f.teaOptions = append(f.teaOptions, tea.WithContext(ctx), tea.WithReportFocus())
 	}
 
-	m, err := tea.NewProgram(f, f.teaOptions...).Run()
-	if m.(*Form).aborted {
-		return ErrUserAborted
+	formModel := NewFormModel(f)
+	m, err := tea.NewProgram(formModel, f.teaOptions...).Run()
+	if m, ok := m.(FormModel); ok {
+		if m.form.aborted {
+			return ErrUserAborted
+		}
 	}
+
 	if errors.Is(err, tea.ErrProgramKilled) {
 		return ErrTimeout
 	}

@@ -160,7 +160,7 @@ func (c *Confirm) Init() tea.Cmd {
 }
 
 // Update updates the confirm field.
-func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (c *Confirm) Update(msg tea.Msg) (Field, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {

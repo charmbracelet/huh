@@ -302,7 +302,7 @@ func TestInput(t *testing.T) {
 	// Type Huh in the form.
 	for _, msg := range typeText("Huh") {
 		m, _ := f.Update(msg)
-		f = m.(*Form)
+		f = m
 	}
 	view = ansi.Strip(f.View())
 
@@ -342,7 +342,7 @@ func TestInlineInput(t *testing.T) {
 	// Type Huh in the form.
 	for _, msg := range typeText("Huh") {
 		m, _ := f.Update(msg)
-		f = m.(*Form)
+		f = m
 	}
 	view = ansi.Strip(f.View())
 
@@ -375,7 +375,7 @@ func TestText(t *testing.T) {
 	// Type Huh in the form.
 	for _, msg := range typeText("Huh") {
 		m, _ := f.Update(msg)
-		f = m.(*Form)
+		f = m
 	}
 	view := ansi.Strip(f.View())
 
@@ -402,7 +402,7 @@ func TestConfirm(t *testing.T) {
 
 	// Type Huh in the form.
 	m, _ := f.Update(keypress('H'))
-	f = m.(*Form)
+	f = m
 	view := ansi.Strip(f.View())
 
 	if !strings.Contains(view, "Yes") {
@@ -467,7 +467,7 @@ func TestSelect(t *testing.T) {
 
 	// Move selection cursor down
 	m, _ := f.Update(tea.KeyPressMsg(tea.Key{Code: tea.KeyDown}))
-	f = m.(*Form)
+	f = m
 
 	view = ansi.Strip(f.View())
 
@@ -488,7 +488,7 @@ func TestSelect(t *testing.T) {
 
 	// Submit
 	m, _ = f.Update(tea.KeyPressMsg(tea.Key{Code: tea.KeyEnter}))
-	_ = m.(*Form)
+	_ = m
 
 	if field.GetValue() != "Bar" {
 		t.Error("Expected field value to be Bar")
@@ -548,7 +548,7 @@ func TestMultiSelect(t *testing.T) {
 
 	// Submit
 	m, _ = f.Update(tea.KeyPressMsg(tea.Key{Code: tea.KeyEnter}))
-	_ = m.(*Form)
+	_ = m
 
 	value := field.GetValue()
 	if value, ok := value.([]string); !ok {
@@ -584,7 +584,7 @@ func TestMultiSelectFiltering(t *testing.T) {
 				Code: '/',
 			}))
 			m, _ := f.Update(keypress('B'))
-			f = m.(*Form)
+			f = m
 
 			view := ansi.Strip(f.View())
 			// When we're filtering, the list should change.
@@ -732,7 +732,7 @@ func TestHideGroup(t *testing.T) {
 
 	cmd := f.Init()
 	f.Update(cmd)
-	f = batchUpdate(f, cmd).(*Form)
+	f = batchUpdate(f, cmd)
 
 	if v := f.View(); !strings.Contains(v, "Bar") {
 		t.Log(pretty.Render(v))
@@ -776,7 +776,7 @@ func TestHideGroupLastAndFirstGroupsNotHidden(t *testing.T) {
 
 	cmd := f.Init()
 	f.Update(cmd)
-	f = batchUpdate(f, cmd).(*Form)
+	f = batchUpdate(f, cmd)
 
 	if v := ansi.Strip(f.View()); !strings.Contains(v, "Bar") {
 		t.Log(pretty.Render(v))
@@ -814,7 +814,7 @@ func TestPrevGroup(t *testing.T) {
 
 	cmd := f.Init()
 	f.Update(cmd)
-	f = batchUpdate(f, cmd).(*Form)
+	f = batchUpdate(f, cmd)
 	f.Update(nextGroup())
 	f.Update(nextGroup())
 	f.Update(prevGroup())
@@ -891,7 +891,7 @@ func TestSkip(t *testing.T) {
 
 	cmd := f.Init()
 	f.Update(cmd)
-	f = batchUpdate(f, cmd).(*Form)
+	f = batchUpdate(f, cmd)
 	view := ansi.Strip(f.View())
 
 	if !strings.Contains(view, "┃ First") {
@@ -963,7 +963,7 @@ func formProgram() *Form {
 		WithAccessible(false)
 }
 
-func batchUpdate(m tea.Model, cmd tea.Cmd) tea.Model {
+func batchUpdate(m *Form, cmd tea.Cmd) *Form {
 	if cmd == nil {
 		return m
 	}

@@ -253,7 +253,7 @@ func (m *MultiSelect[T]) Init() tea.Cmd {
 }
 
 // Update updates the multi-select field.
-func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *MultiSelect[T]) Update(msg tea.Msg) (Field, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	// Enforce height on the viewport during update as we need themes to

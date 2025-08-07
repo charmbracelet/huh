@@ -202,7 +202,7 @@ func (f *FilePicker) Init() tea.Cmd {
 }
 
 // Update updates the file field.
-func (f *FilePicker) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (f *FilePicker) Update(msg tea.Msg) (Field, tea.Cmd) {
 	f.err = nil
 
 	switch msg := msg.(type) {
