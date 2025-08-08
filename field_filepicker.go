@@ -102,7 +102,7 @@ func (f *FilePicker) FileAllowed(v bool) *FilePicker {
 	return f
 }
 
-// DirAllowed sets whether to allow files to be selected.
+// DirAllowed sets whether to allow directories to be selected.
 func (f *FilePicker) DirAllowed(v bool) *FilePicker {
 	f.picker.DirAllowed = v
 	return f
