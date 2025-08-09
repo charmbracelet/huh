@@ -353,7 +353,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (Field, tea.Cmd) {
 			}
 
 			m.cursor = max(m.cursor-1, 0)
-			if m.cursor < m.viewport.YOffset {
+			if m.cursor < m.viewport.YOffset() {
 				m.viewport.SetYOffset(m.cursor)
 			}
 		case key.Matches(msg, m.keymap.Down):
@@ -363,8 +363,8 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (Field, tea.Cmd) {
 			}
 
 			m.cursor = min(m.cursor+1, len(m.filteredOptions)-1)
-			if m.cursor >= m.viewport.YOffset+m.viewport.Height() {
-				m.viewport.LineDown(1)
+			if m.cursor >= m.viewport.YOffset()+m.viewport.Height() {
+				m.viewport.ScrollDown(1)
 			}
 		case key.Matches(msg, m.keymap.GotoTop):
 			if m.filtering {
@@ -380,10 +380,10 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (Field, tea.Cmd) {
 			m.viewport.GotoBottom()
 		case key.Matches(msg, m.keymap.HalfPageUp):
 			m.cursor = max(m.cursor-m.viewport.Height()/2, 0)
-			m.viewport.HalfViewUp()
+			m.viewport.HalfPageUp()
 		case key.Matches(msg, m.keymap.HalfPageDown):
 			m.cursor = min(m.cursor+m.viewport.Height()/2, len(m.filteredOptions)-1)
-			m.viewport.HalfViewDown()
+			m.viewport.HalfPageDown()
 		case key.Matches(msg, m.keymap.Toggle) && !m.filtering:
 			for i, option := range m.options.val {
 				if option.Key == m.filteredOptions[m.cursor].Key {
@@ -710,11 +710,14 @@ func (m *MultiSelect[T]) WithTheme(theme Theme) Field {
 	}
 	m.theme = theme
 	t := theme.Theme(m.hasDarkBg)
-	m.filter.Cursor.Style = t.Focused.TextInput.Cursor
-	m.filter.Cursor.TextStyle = t.Focused.TextInput.CursorText
-	m.filter.PromptStyle = t.Focused.TextInput.Prompt
-	m.filter.TextStyle = t.Focused.TextInput.Text
-	m.filter.PlaceholderStyle = t.Focused.TextInput.Placeholder
+	// TODO cursor stuff
+	// s.filter.Cursor.Style = t.Focused.TextInput.Cursor
+	// s.filter.Cursor.TextStyle = t.Focused.TextInput.CursorText
+	tiStyle := m.filter.Styles()
+	tiStyle.Focused.Prompt = t.Focused.TextInput.Prompt
+	tiStyle.Focused.Text = t.Focused.TextInput.Text
+	tiStyle.Focused.Placeholder = t.Focused.TextInput.Placeholder
+	m.filter.SetStyles(tiStyle)
 	m.updateViewportHeight()
 	return m
 }

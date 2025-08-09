@@ -312,7 +312,7 @@ func (s *Select[T]) Update(msg tea.Msg) (Field, tea.Cmd) {
 		s.filter, cmd = s.filter.Update(msg)
 
 		// Keep the selected item in view.
-		if s.selected < s.viewport.YOffset || s.selected >= s.viewport.YOffset+s.viewport.Height() {
+		if s.selected < s.viewport.YOffset() || s.selected >= s.viewport.YOffset()+s.viewport.Height() {
 			s.viewport.SetYOffset(s.selected)
 		}
 	}
@@ -410,7 +410,7 @@ func (s *Select[T]) Update(msg tea.Msg) (Field, tea.Cmd) {
 				s.selected = len(s.filteredOptions) - 1
 				s.viewport.GotoBottom()
 			}
-			if s.selected < s.viewport.YOffset {
+			if s.selected < s.viewport.YOffset() {
 				s.viewport.SetYOffset(s.selected)
 			}
 			s.updateValue()
@@ -429,11 +429,11 @@ func (s *Select[T]) Update(msg tea.Msg) (Field, tea.Cmd) {
 			s.viewport.GotoBottom()
 		case key.Matches(msg, s.keymap.HalfPageUp):
 			s.selected = max(s.selected-s.viewport.Height()/2, 0)
-			s.viewport.HalfViewUp()
+			s.viewport.HalfPageUp()
 			s.updateValue()
 		case key.Matches(msg, s.keymap.HalfPageDown):
 			s.selected = min(s.selected+s.viewport.Height()/2, len(s.filteredOptions)-1)
-			s.viewport.HalfViewDown()
+			s.viewport.HalfPageDown()
 			s.updateValue()
 		case key.Matches(msg, s.keymap.Down, s.keymap.Right):
 			// When filtering we should ignore j/k keybindings
@@ -447,8 +447,8 @@ func (s *Select[T]) Update(msg tea.Msg) (Field, tea.Cmd) {
 				s.selected = 0
 				s.viewport.GotoTop()
 			}
-			if s.selected >= s.viewport.YOffset+s.viewport.Height() {
-				s.viewport.LineDown(1)
+			if s.selected >= s.viewport.YOffset()+s.viewport.Height() {
+				s.viewport.ScrollDown(1)
 			}
 			s.updateValue()
 		case key.Matches(msg, s.keymap.Prev):
@@ -684,11 +684,14 @@ func (s *Select[T]) WithTheme(theme Theme) Field {
 	}
 	s.theme = theme
 	t := theme.Theme(s.hasDarkBg)
-	s.filter.Cursor.Style = t.Focused.TextInput.Cursor
-	s.filter.Cursor.TextStyle = t.Focused.TextInput.CursorText
-	s.filter.PromptStyle = t.Focused.TextInput.Prompt
-	s.filter.TextStyle = t.Focused.TextInput.Text
-	s.filter.PlaceholderStyle = t.Focused.TextInput.Placeholder
+	// TODO cursor stuff
+	// s.filter.Cursor.Style = t.Focused.TextInput.Cursor
+	// s.filter.Cursor.TextStyle = t.Focused.TextInput.CursorText
+	tiStyle := s.filter.Styles()
+	tiStyle.Focused.Prompt = t.Focused.TextInput.Prompt
+	tiStyle.Focused.Text = t.Focused.TextInput.Text
+	tiStyle.Focused.Placeholder = t.Focused.TextInput.Placeholder
+	s.filter.SetStyles(tiStyle)
 	s.updateViewportHeight()
 	return s
 }

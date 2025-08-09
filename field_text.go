@@ -54,7 +54,9 @@ func NewText() *Text {
 	text := textarea.New()
 	text.ShowLineNumbers = false
 	text.Prompt = ""
-	text.Styles.Focused.CursorLine = lipgloss.NewStyle()
+	taStyle := text.Styles()
+	taStyle.Focused.CursorLine = lipgloss.NewStyle()
+	text.SetStyles(taStyle)
 
 	editorCmd, editorArgs := getEditor()
 
@@ -355,14 +357,16 @@ func (t *Text) activeStyles() *FieldStyles {
 	return &theme.Theme(t.hasDarkBg).Blurred
 }
 
+// TODO check that this works
 func (t *Text) activeTextAreaStyles() *textarea.StyleState {
+	taStyles := t.textarea.Styles()
 	if t.theme == nil {
-		return &t.textarea.Styles.Blurred
+		return &taStyles.Blurred
 	}
 	if t.focused {
-		return &t.textarea.Styles.Focused
+		return &taStyles.Focused
 	}
-	return &t.textarea.Styles.Blurred
+	return &taStyles.Blurred
 }
 
 // View renders the text field.

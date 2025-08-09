@@ -386,11 +386,18 @@ func (i *Input) View() string {
 	// NB: since the method is on a pointer receiver these are being mutated.
 	// Because this runs on every render this shouldn't matter in practice,
 	// however.
-	i.textinput.PlaceholderStyle = styles.TextInput.Placeholder
-	i.textinput.PromptStyle = styles.TextInput.Prompt
-	i.textinput.Cursor.Style = styles.TextInput.Cursor
-	i.textinput.Cursor.TextStyle = styles.TextInput.CursorText
-	i.textinput.TextStyle = styles.TextInput.Text
+	// TODO this is probably focused?
+	taStyle := i.textinput.Styles()
+	taStyle.Focused.Placeholder = styles.TextInput.Placeholder
+	taStyle.Focused.Prompt = styles.TextInput.Prompt
+	taStyle.Focused.Text = styles.TextInput.Text
+	taStyle.Focused.Placeholder = styles.TextInput.Placeholder
+	i.textinput.SetStyles(taStyle)
+	// TODO
+	// - CursorStyle is its own struct
+	// - what about CursorText
+	// i.textinput.Cursor.TextStyle = styles.TextInput.CursorText
+	// taStyle.Focused.Cursor = styles.TextInput.Cursor
 
 	// Adjust text input size to its char limit if it fit in its width
 	if i.textinput.CharLimit > 0 {
@@ -468,7 +475,7 @@ func (i *Input) WithWidth(width int) Field {
 	styles := i.activeStyles()
 	i.width = width
 	frameSize := styles.Base.GetHorizontalFrameSize()
-	promptWidth := lipgloss.Width(i.textinput.PromptStyle.Render(i.textinput.Prompt))
+	promptWidth := lipgloss.Width(styles.TextInput.Prompt.Render(i.textinput.Prompt))
 	titleWidth := lipgloss.Width(styles.Title.Render(i.title.val))
 	descriptionWidth := lipgloss.Width(styles.Description.Render(i.description.val))
 	tiwidth := width - frameSize - promptWidth - 1
