@@ -8,8 +8,9 @@ import (
 
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/internal/accessibility"
 	"github.com/charmbracelet/lipgloss"
+
+	"github.com/charmbracelet/huh/internal/accessibility"
 )
 
 // Confirm is a form confirm field.
@@ -266,15 +267,15 @@ func (c *Confirm) View() string {
 	var affirmative string
 	if c.negative != "" {
 		if c.accessor.Get() {
-			affirmative = styles.FocusedButton.Render(c.affirmative)
-			negative = styles.BlurredButton.Render(c.negative)
+			affirmative = styles.FocusedButton.Render("> " + c.affirmative)
+			negative = styles.BlurredButton.Render("  " + c.negative)
 		} else {
-			affirmative = styles.BlurredButton.Render(c.affirmative)
-			negative = styles.FocusedButton.Render(c.negative)
+			affirmative = styles.BlurredButton.Render("  " + c.affirmative)
+			negative = styles.FocusedButton.Render("> " + c.negative)
 		}
 		c.keymap.Reject.SetHelp("n", c.negative)
 	} else {
-		affirmative = styles.FocusedButton.Render(c.affirmative)
+		affirmative = styles.FocusedButton.Render("> " + c.affirmative)
 		c.keymap.Reject.SetEnabled(false)
 	}
 
