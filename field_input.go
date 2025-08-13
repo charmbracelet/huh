@@ -8,11 +8,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/textinput"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/internal/accessibility"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/bubbles/v2/key"
+	"github.com/charmbracelet/bubbles/v2/textinput"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/huh/v2/internal/accessibility"
+	"github.com/charmbracelet/lipgloss/v2"
 )
 
 // Input is a input field.
@@ -364,6 +364,14 @@ func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return i, tea.Batch(cmds...)
 }
 
+func (i *Input) activeTextinputStyles() textinput.StyleState {
+	ts := i.textinput.Styles()
+	if i.textinput.Focused() {
+		return ts.Focused
+	}
+	return ts.Blurred
+}
+
 func (i *Input) activeStyles() *FieldStyles {
 	theme := i.theme
 	if theme == nil {
@@ -383,15 +391,19 @@ func (i *Input) View() string {
 	// NB: since the method is on a pointer receiver these are being mutated.
 	// Because this runs on every render this shouldn't matter in practice,
 	// however.
-	i.textinput.PlaceholderStyle = styles.TextInput.Placeholder
-	i.textinput.PromptStyle = styles.TextInput.Prompt
-	i.textinput.Cursor.Style = styles.TextInput.Cursor
-	i.textinput.Cursor.TextStyle = styles.TextInput.CursorText
-	i.textinput.TextStyle = styles.TextInput.Text
+	ts := i.textinput.Styles()
+	ts.Focused.Placeholder = styles.TextInput.Placeholder
+	ts.Blurred.Placeholder = styles.TextInput.Placeholder
+	ts.Focused.Prompt = styles.TextInput.Prompt
+	ts.Blurred.Prompt = styles.TextInput.Prompt
+	ts.Focused.Text = styles.TextInput.Text
+	ts.Blurred.Text = styles.TextInput.Text
+	ts.Cursor.Color = styles.TextInput.Cursor.GetForeground()
+	i.textinput.SetStyles(ts)
 
 	// Adjust text input size to its char limit if it fit in its width
 	if i.textinput.CharLimit > 0 {
-		i.textinput.Width = max(min(i.textinput.CharLimit, i.textinput.Width, maxWidth), 0)
+		i.textinput.SetWidth(max(min(i.textinput.CharLimit, i.textinput.Width(), maxWidth), 0))
 	}
 
 	var sb strings.Builder
@@ -490,15 +502,16 @@ func (i *Input) WithTheme(theme *Theme) Field {
 // WithWidth sets the width of the input field.
 func (i *Input) WithWidth(width int) Field {
 	styles := i.activeStyles()
+	tstyles := i.activeTextinputStyles()
 	i.width = width
 	frameSize := styles.Base.GetHorizontalFrameSize()
-	promptWidth := lipgloss.Width(i.textinput.PromptStyle.Render(i.textinput.Prompt))
+	promptWidth := lipgloss.Width(tstyles.Prompt.Render(i.textinput.Prompt))
 	titleWidth := lipgloss.Width(styles.Title.Render(i.title.val))
 	descriptionWidth := lipgloss.Width(styles.Description.Render(i.description.val))
-	i.textinput.Width = width - frameSize - promptWidth - 1
+	i.textinput.SetWidth(width - frameSize - promptWidth - 1)
 	if i.inline {
-		i.textinput.Width -= titleWidth
-		i.textinput.Width -= descriptionWidth
+		i.textinput.SetWidth(i.textinput.Width() - titleWidth)
+		i.textinput.SetWidth(i.textinput.Width() - descriptionWidth)
 	}
 	return i
 }

@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/charmbracelet/huh"
+	"github.com/charmbracelet/huh/v2"
 )
 
 func isFood(_ string) error {

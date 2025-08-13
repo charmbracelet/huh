@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/charmbracelet/bubbles/spinner"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/bubbles/v2/spinner"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/lipgloss/v2"
 )
 
 func TestNewSpinner(t *testing.T) {
@@ -110,7 +110,7 @@ func TestSpinnerUpdate(t *testing.T) {
 	}
 
 	// Simulate key press
-	_, cmd = s.Update(tea.KeyMsg{Type: tea.KeyCtrlC})
+	_, cmd = s.Update(tea.KeyPressMsg{Code: 'd', Mod: tea.ModCtrl})
 	if cmd == nil {
 		t.Errorf("Update did not handle key press correctly")
 	}

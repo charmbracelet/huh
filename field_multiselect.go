@@ -9,13 +9,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/spinner"
-	"github.com/charmbracelet/bubbles/textinput"
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/internal/accessibility"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/bubbles/v2/key"
+	"github.com/charmbracelet/bubbles/v2/spinner"
+	"github.com/charmbracelet/bubbles/v2/textinput"
+	"github.com/charmbracelet/bubbles/v2/viewport"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/huh/v2/internal/accessibility"
+	"github.com/charmbracelet/lipgloss/v2"
 )
 
 // MultiSelect is a form multi-select field.
@@ -151,7 +151,7 @@ func (m *MultiSelect[T]) selectOptions() {
 			continue
 		}
 		m.cursor = i
-		m.viewport.YOffset = i
+		m.viewport.SetYOffset(i)
 		break
 	}
 }
@@ -378,7 +378,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			m.cursor = max(m.cursor-1, 0)
-			if m.cursor < m.viewport.YOffset {
+			if m.cursor < m.viewport.YOffset() {
 				m.viewport.SetYOffset(m.cursor)
 			}
 		case key.Matches(msg, m.keymap.Down):
@@ -389,7 +389,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			m.cursor = min(m.cursor+1, len(m.filteredOptions)-1)
-			if m.cursor >= m.viewport.YOffset+m.viewport.Height {
+			if m.cursor >= m.viewport.YOffset()+m.viewport.Height() {
 				m.viewport.ScrollDown(1)
 			}
 		case key.Matches(msg, m.keymap.GotoTop):
@@ -405,10 +405,10 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.cursor = len(m.filteredOptions) - 1
 			m.viewport.GotoBottom()
 		case key.Matches(msg, m.keymap.HalfPageUp):
-			m.cursor = max(m.cursor-m.viewport.Height/2, 0)
+			m.cursor = max(m.cursor-m.viewport.Height()/2, 0)
 			m.viewport.HalfPageUp()
 		case key.Matches(msg, m.keymap.HalfPageDown):
-			m.cursor = min(m.cursor+m.viewport.Height/2, len(m.filteredOptions)-1)
+			m.cursor = min(m.cursor+m.viewport.Height()/2, len(m.filteredOptions)-1)
 			m.viewport.HalfPageDown()
 		case key.Matches(msg, m.keymap.Toggle) && !m.filtering:
 			for i, option := range m.options.val {
@@ -475,7 +475,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 		_, offset, height := m.optionsView()
-		if offset > -1 && height > 0 && (offset < m.viewport.YOffset || height+offset >= m.viewport.YOffset+m.viewport.Height) {
+		if offset > -1 && height > 0 && (offset < m.viewport.YOffset() || height+offset >= m.viewport.YOffset()+m.viewport.Height()) {
 			m.viewport.SetYOffset(offset)
 		}
 	}
@@ -489,7 +489,7 @@ func (m *MultiSelect[T]) updateViewportHeight() {
 	// If no height is set size the viewport to the height of the options.
 	if m.height <= 0 {
 		v, _, _ := m.optionsView()
-		m.viewport.Height = lipgloss.Height(v)
+		m.viewport.SetHeight(lipgloss.Height(v))
 		return
 	}
 
@@ -501,7 +501,7 @@ func (m *MultiSelect[T]) updateViewportHeight() {
 		offset += lipgloss.Height(ss)
 	}
 
-	m.viewport.Height = max(minHeight, m.height-offset)
+	m.viewport.SetHeight(max(minHeight, m.height-offset))
 }
 
 // numSelected returns the total number of selected options.
@@ -753,11 +753,15 @@ func (m *MultiSelect[T]) WithTheme(theme *Theme) Field {
 		return m
 	}
 	m.theme = theme
-	m.filter.Cursor.Style = theme.Focused.TextInput.Cursor
-	m.filter.Cursor.TextStyle = theme.Focused.TextInput.CursorText
-	m.filter.PromptStyle = theme.Focused.TextInput.Prompt
-	m.filter.TextStyle = theme.Focused.TextInput.Text
-	m.filter.PlaceholderStyle = theme.Focused.TextInput.Placeholder
+	ts := m.filter.Styles()
+	ts.Cursor.Color = theme.Focused.TextInput.Cursor.GetForeground()
+	ts.Focused.Prompt = theme.Focused.TextInput.Prompt
+	ts.Blurred.Prompt = theme.Blurred.TextInput.Prompt
+	ts.Focused.Text = theme.Focused.TextInput.Text
+	ts.Blurred.Text = theme.Blurred.TextInput.Text
+	ts.Focused.Placeholder = theme.Focused.TextInput.Placeholder
+	ts.Blurred.Placeholder = theme.Blurred.TextInput.Placeholder
+	m.filter.SetStyles(ts)
 	m.updateViewportHeight()
 	return m
 }

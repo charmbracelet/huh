@@ -6,7 +6,7 @@ package accessibility
 import (
 	"os"
 
-	"github.com/charmbracelet/huh/internal/accessibility"
+	"github.com/charmbracelet/huh/v2/internal/accessibility"
 )
 
 // PromptInt prompts a user for an integer between a certain range.

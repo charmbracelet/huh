@@ -7,9 +7,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/spinner"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/bubbles/v2/spinner"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/lipgloss/v2"
+	"github.com/charmbracelet/lipgloss/v2/compat"
 	"github.com/muesli/termenv"
 )
 
@@ -119,7 +120,7 @@ func New() *Spinner {
 	return &Spinner{
 		spinner:    s,
 		title:      "Loading...",
-		titleStyle: lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#00020A", Dark: "#FFFDF5"}),
+		titleStyle: lipgloss.NewStyle().Foreground(compat.AdaptiveColor{Light: lipgloss.Color("#00020A"), Dark: lipgloss.Color("#FFFDF5")}),
 	}
 }
 
@@ -183,6 +184,8 @@ func (s *Spinner) Run() error {
 		tea.WithContext(s.ctx),
 		tea.WithOutput(s.output),
 		tea.WithInput(nil),
+		tea.WithoutKeyEnhancements(),
+		tea.WithoutBracketedPaste(),
 	).Run()
 	mm := m.(*Spinner)
 	if mm.err != nil {

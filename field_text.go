@@ -8,11 +8,10 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/textarea"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/internal/accessibility"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/bubbles/v2/key"
+	"github.com/charmbracelet/bubbles/v2/textarea"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/huh/v2/internal/accessibility"
 )
 
 // Text is a text field.
@@ -56,7 +55,6 @@ func NewText() *Text {
 	text := textarea.New()
 	text.ShowLineNumbers = false
 	text.Prompt = ""
-	text.FocusedStyle.CursorLine = lipgloss.NewStyle()
 
 	editorCmd, editorArgs := getEditor()
 
@@ -363,19 +361,21 @@ func (t *Text) activeStyles() *FieldStyles {
 	return &theme.Blurred
 }
 
-func (t *Text) activeTextAreaStyles() *textarea.Style {
+func (t *Text) activeTextAreaStyles() *textarea.StyleState {
+	ts := t.textarea.Styles()
 	if t.theme == nil {
-		return &t.textarea.BlurredStyle
+		return &ts.Blurred
 	}
 	if t.focused {
-		return &t.textarea.FocusedStyle
+		return &ts.Focused
 	}
-	return &t.textarea.BlurredStyle
+	return &ts.Blurred
 }
 
 // View renders the text field.
 func (t *Text) View() string {
 	styles := t.activeStyles()
+	ts := t.textarea.Styles()
 	textareaStyles := t.activeTextAreaStyles()
 
 	// NB: since the method is on a pointer receiver these are being mutated.
@@ -385,8 +385,14 @@ func (t *Text) View() string {
 	textareaStyles.Text = styles.TextInput.Text
 	textareaStyles.Prompt = styles.TextInput.Prompt
 	textareaStyles.CursorLine = styles.TextInput.Text
-	t.textarea.Cursor.Style = styles.TextInput.Cursor
-	t.textarea.Cursor.TextStyle = styles.TextInput.CursorText
+	ts.Cursor.Color = styles.TextInput.Cursor.GetForeground()
+
+	if t.textarea.Focused() {
+		ts.Focused = *textareaStyles
+	} else {
+		ts.Blurred = *textareaStyles
+	}
+	t.textarea.SetStyles(ts)
 
 	maxWidth := t.width - styles.Base.GetHorizontalFrameSize()
 	var parts []string

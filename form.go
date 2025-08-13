@@ -10,10 +10,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/bubbles/key"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/internal/selector"
+	"github.com/charmbracelet/bubbles/v2/help"
+	"github.com/charmbracelet/bubbles/v2/key"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/huh/v2/internal/selector"
 )
 
 const defaultWidth = 80
@@ -516,7 +516,7 @@ func (f *Form) Init() tea.Cmd {
 		cmds = append(cmds, nextGroup)
 	}
 
-	cmds = append(cmds, tea.WindowSize())
+	cmds = append(cmds, tea.RequestWindowSize)
 	return tea.Sequence(cmds...)
 }
 

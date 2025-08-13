@@ -26,7 +26,7 @@ define a few variables where we'll store answers.
 ```go
 package main
 
-import "github.com/charmbracelet/huh"
+import "github.com/charmbracelet/huh/v2"
 
 var (
     burger       string

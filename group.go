@@ -3,11 +3,11 @@ package huh
 import (
 	"strings"
 
-	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/internal/selector"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/bubbles/v2/help"
+	"github.com/charmbracelet/bubbles/v2/viewport"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/huh/v2/internal/selector"
+	"github.com/charmbracelet/lipgloss/v2"
 )
 
 // Group is a collection of fields that are displayed together with a page of
@@ -56,7 +56,9 @@ func NewGroup(fields ...Field) *Group {
 
 	group.width = 80
 	height := group.rawHeight()
-	v := viewport.New(group.width, height) //nolint:mnd
+	v := viewport.New() //nolint:mnd
+	v.SetWidth(group.width)
+	v.SetHeight(height)
 	group.viewport = v
 	group.height = height
 
@@ -96,7 +98,7 @@ func (g *Group) WithTheme(t *Theme) *Group {
 		return true
 	})
 	if g.height <= 0 {
-		g.WithHeight(g.rawHeight())
+		g.WithHeight(0)
 	}
 	return g
 }
@@ -114,7 +116,7 @@ func (g *Group) WithKeyMap(k *KeyMap) *Group {
 // WithWidth sets the width on a group.
 func (g *Group) WithWidth(width int) *Group {
 	g.width = width
-	g.viewport.Width = width
+	g.viewport.SetWidth(width)
 	g.help.Width = width
 	g.selector.Range(func(_ int, field Field) bool {
 		field.WithWidth(width)
@@ -127,7 +129,7 @@ func (g *Group) WithWidth(width int) *Group {
 func (g *Group) WithHeight(height int) *Group {
 	g.height = height
 	h := height - g.titleFooterHeight()
-	g.viewport.Height = h
+	g.viewport.SetHeight(h)
 	g.selector.Range(func(_ int, field Field) bool {
 		// A field height must not exceed the form height.
 		if h < lipgloss.Height(field.View()) {
