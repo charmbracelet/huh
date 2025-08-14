@@ -252,8 +252,8 @@ func (t *Text) KeyBinds() []key.Binding {
 }
 
 type updateValueMsg struct {
-	content     []byte
-	destination *Text
+	content []byte
+	id      int
 }
 
 // Init initializes the text field.
@@ -269,13 +269,13 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case updateValueMsg:
-		if t != msg.destination {
-			return t, nil
+		if t.id == msg.id {
+			t.textarea.SetValue(string(msg.content))
+			t.textarea, cmd = t.textarea.Update(msg)
+			cmds = append(cmds, cmd)
+			t.accessor.Set(t.textarea.Value())
 		}
-		t.textarea.SetValue(string(msg.content))
-		t.textarea, cmd = t.textarea.Update(msg)
-		cmds = append(cmds, cmd)
-		t.accessor.Set(t.textarea.Value())
+
 	case updateFieldMsg:
 		var cmds []tea.Cmd
 		if ok, hash := t.placeholder.shouldUpdate(); ok {
@@ -333,8 +333,8 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				content, _ := os.ReadFile(tmpFile.Name())
 				_ = os.Remove(tmpFile.Name())
 				return updateValueMsg{
-					content:     content,
-					destination: t,
+					content: content,
+					id:      t.id,
 				}
 			}))
 		case key.Matches(msg, t.keymap.Next, t.keymap.Submit):
