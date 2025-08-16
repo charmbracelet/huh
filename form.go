@@ -91,27 +91,27 @@ type Form struct {
 }
 
 // TODO need a tea.Model that wraps the form that we can use with tea.NewProgram
-// FormModel implements tea.Model interface
-type FormModel struct {
+// Model implements tea.Model interface
+type Model struct {
 	form *Form
 }
 
-func (m FormModel) Init() tea.Cmd {
+func (m Model) Init() tea.Cmd {
 	return m.form.Init()
 }
 
-func (m FormModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	m.form, cmd = m.form.Update(msg)
 	return m, cmd
 }
 
-func (m FormModel) View() string {
+func (m Model) View() string {
 	return m.form.View()
 }
 
-func NewFormModel(form *Form) FormModel {
-	return FormModel{
+func NewFormModel(form *Form) Model {
+	return Model{
 		form: form,
 	}
 }
@@ -676,9 +676,9 @@ func (f *Form) run(ctx context.Context) error {
 		f.teaOptions = append(f.teaOptions, tea.WithContext(ctx), tea.WithReportFocus())
 	}
 
-	formModel := NewFormModel(f)
-	m, err := tea.NewProgram(formModel, f.teaOptions...).Run()
-	if m, ok := m.(FormModel); ok {
+	model := NewFormModel(f)
+	m, err := tea.NewProgram(model, f.teaOptions...).Run()
+	if m, ok := m.(Model); ok {
 		if m.form.aborted {
 			return ErrUserAborted
 		}
