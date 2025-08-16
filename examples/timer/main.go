@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 	"strings"
 	"time"
 
@@ -50,10 +51,8 @@ type Model struct {
 	progress progress.Model
 }
 
-func (m Model) Init() (tea.Model, tea.Cmd) {
-	form, cmd := m.form.Init()
-	m.form = form.(*huh.Form)
-	return m, cmd
+func (m Model) Init() tea.Cmd {
+	return m.form.Init()
 }
 
 const tickInterval = time.Second / 2
@@ -68,6 +67,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
+	case tea.BackgroundColorMsg:
+		m.form.WithTheme(huh.ThemeFunc(huh.ThemeCharm))
 	case tickMsg:
 		cmds = append(cmds, tea.Tick(tickInterval, tickCmd))
 	case tea.KeyMsg:
@@ -77,7 +78,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case Focusing:
 				m.mode = Paused
 				m.startTime = time.Now()
-				m.progress.FullColor = breakColor
+				m.progress.FullColor = lipgloss.Color(breakColor)
 			case Paused:
 				m.mode = Breaking
 				m.startTime = time.Now()
@@ -98,7 +99,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	// Update form
 	f, cmd := m.form.Update(msg)
-	m.form = f.(*huh.Form)
+	m.form = f
 	cmds = append(cmds, cmd)
 	if m.form.State != huh.StateCompleted {
 		return m, tea.Batch(cmds...)
@@ -118,7 +119,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if time.Now().After(m.startTime.Add(m.focusTime)) {
 			m.mode = Paused
 			m.startTime = time.Now()
-			m.progress.FullColor = breakColor
+			m.progress.FullColor = lipgloss.Color(breakColor)
 		}
 	case Breaking:
 		if time.Now().After(m.startTime.Add(m.breakTime)) {
@@ -168,7 +169,7 @@ func (m Model) View() string {
 }
 
 func NewModel() Model {
-	theme := huh.ThemeCharm()
+	theme := huh.ThemeCharm(lipgloss.HasDarkBackground(os.Stdin, os.Stdout)) // TODO test this
 	theme.Focused.Base.Border(lipgloss.HiddenBorder())
 	theme.Focused.Title.Foreground(lipgloss.Color(focusColor))
 	theme.Focused.SelectSelector.Foreground(lipgloss.Color(focusColor))
@@ -198,10 +199,11 @@ func NewModel() Model {
 					huh.NewOption("20 minutes", 20*time.Minute),
 				),
 		),
-	).WithShowHelp(false).WithTheme(theme)
+	).WithShowHelp(false).WithTheme(huh.ThemeFunc(huh.ThemeCharm))
+	// TODO set theme
 
 	progress := progress.New()
-	progress.FullColor = focusColor
+	progress.FullColor = lipgloss.Color(focusColor)
 	progress.SetSpringOptions(1, 1)
 
 	return Model{

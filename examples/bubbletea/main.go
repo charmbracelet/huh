@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"image/color"
 	"os"
 	"strings"
 
@@ -12,13 +13,23 @@ import (
 
 const maxWidth = 80
 
-var (
-	red    = lipgloss.AdaptiveColor{Light: "#FE5F86", Dark: "#FE5F86"}
-	indigo = lipgloss.AdaptiveColor{Light: "#5A56E0", Dark: "#7571F9"}
-	green  = lipgloss.AdaptiveColor{Light: "#02BA84", Dark: "#02BF87"}
-)
+type colors struct {
+	red    color.Color
+	indigo color.Color
+	green  color.Color
+}
+
+func newColors(bgIsDark bool) (c colors) {
+	lightDark := lipgloss.LightDark(bgIsDark)
+	return colors{
+		red:    lightDark(lipgloss.Color("#FE5F86"), lipgloss.Color("#FE5F86")),
+		indigo: lightDark(lipgloss.Color("#5A56E0"), lipgloss.Color("#7571F9")),
+		green:  lightDark(lipgloss.Color("#02BA84"), lipgloss.Color("#02BF87")),
+	}
+}
 
 type Styles struct {
+	Colors colors
 	Base,
 	HeaderText,
 	Status,
@@ -28,27 +39,28 @@ type Styles struct {
 	Help lipgloss.Style
 }
 
-func NewStyles(lg *lipgloss.Renderer) *Styles {
+func NewStyles() *Styles {
 	s := Styles{}
-	s.Base = lg.NewStyle().
+	s.Colors = newColors(true) // dark by default.
+	s.Base = lipgloss.NewStyle().
 		Padding(1, 4, 0, 1)
-	s.HeaderText = lg.NewStyle().
-		Foreground(indigo).
+	s.HeaderText = lipgloss.NewStyle().
+		Foreground(s.Colors.indigo).
 		Bold(true).
 		Padding(0, 1, 0, 2)
-	s.Status = lg.NewStyle().
+	s.Status = lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
-		BorderForeground(indigo).
+		BorderForeground(s.Colors.indigo).
 		PaddingLeft(1).
 		MarginTop(1)
-	s.StatusHeader = lg.NewStyle().
-		Foreground(green).
+	s.StatusHeader = lipgloss.NewStyle().
+		Foreground(s.Colors.green).
 		Bold(true)
-	s.Highlight = lg.NewStyle().
+	s.Highlight = lipgloss.NewStyle().
 		Foreground(lipgloss.Color("212"))
 	s.ErrorHeaderText = s.HeaderText.
-		Foreground(red)
-	s.Help = lg.NewStyle().
+		Foreground(s.Colors.red)
+	s.Help = lipgloss.NewStyle().
 		Foreground(lipgloss.Color("240"))
 	return &s
 }
@@ -62,7 +74,6 @@ const (
 
 type Model struct {
 	state  state
-	lg     *lipgloss.Renderer
 	styles *Styles
 	form   *huh.Form
 	width  int
@@ -70,8 +81,7 @@ type Model struct {
 
 func NewModel() Model {
 	m := Model{width: maxWidth}
-	m.lg = lipgloss.DefaultRenderer()
-	m.styles = NewStyles(m.lg)
+	m.styles = NewStyles()
 
 	m.form = huh.NewForm(
 		huh.NewGroup(
@@ -106,10 +116,8 @@ func NewModel() Model {
 	return m
 }
 
-func (m Model) Init() (tea.Model, tea.Cmd) {
-	form, cmd := m.form.Init()
-	m.form = form.(*huh.Form)
-	return m, cmd
+func (m Model) Init() tea.Cmd {
+	return m.form.Init()
 }
 
 func min(x, y int) int {
@@ -133,11 +141,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	// Process the form
-	form, cmd := m.form.Update(msg)
-	if f, ok := form.(*huh.Form); ok {
-		m.form = f
-		cmds = append(cmds, cmd)
-	}
+	var cmd tea.Cmd
+	m.form, cmd = m.form.Update(msg)
+	cmds = append(cmds, cmd)
 
 	if m.form.State == huh.StateCompleted {
 		// Quit when the form is done.
@@ -167,7 +173,7 @@ func (m Model) View() string {
 
 		// Form (left side)
 		v := strings.TrimSuffix(m.form.View(), "\n\n")
-		form := m.lg.NewStyle().Margin(1, 0).Render(v)
+		form := lipgloss.NewStyle().Margin(1, 0).Render(v)
 
 		// Status (right side)
 		var status string
@@ -231,7 +237,7 @@ func (m Model) appBoundaryView(text string) string {
 		lipgloss.Left,
 		m.styles.HeaderText.Render(text),
 		lipgloss.WithWhitespaceChars("/"),
-		lipgloss.WithWhitespaceForeground(indigo),
+		lipgloss.WithWhitespaceStyle(lipgloss.NewStyle().Foreground(m.styles.Colors.indigo)),
 	)
 }
 
@@ -241,7 +247,7 @@ func (m Model) appErrorBoundaryView(text string) string {
 		lipgloss.Left,
 		m.styles.ErrorHeaderText.Render(text),
 		lipgloss.WithWhitespaceChars("/"),
-		lipgloss.WithWhitespaceForeground(red),
+		lipgloss.WithWhitespaceStyle(lipgloss.NewStyle().Foreground(m.styles.Colors.red)),
 	)
 }
 
