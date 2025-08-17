@@ -24,11 +24,15 @@ var highlight = lipgloss.NewStyle().Foreground(lipgloss.Color("#00D7D7"))
 func main() {
 	var action Action
 	spinnerStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("4"))
+	hasDarkBg := lipgloss.HasDarkBackground(os.Stdin, os.Stdout)
 
 	repo := "charmbracelet/huh"
-	theme := huh.ThemeBase16()
-	theme.FieldSeparator = lipgloss.NewStyle().SetString("\n")
-	theme.Help.FullKey.MarginTop(1)
+	customTheme := huh.ThemeFunc(func(isDark bool) *huh.Styles {
+		theme := huh.ThemeBase16(hasDarkBg)
+		theme.FieldSeparator = lipgloss.NewStyle().SetString("\n")
+		theme.Help.FullKey.MarginTop(1)
+		return theme
+	})
 
 	f := huh.NewForm(
 		huh.NewGroup(
@@ -42,7 +46,7 @@ func main() {
 				).
 				Title("Where should we push the 'feature' branch?"),
 		),
-	).WithTheme(theme)
+	).WithTheme(customTheme)
 
 	err := f.Run()
 	if err != nil {
@@ -80,7 +84,7 @@ func main() {
 				Options(huh.NewOptions("Submit", "Submit as draft", "Continue in browser", "Add metadata", "Cancel")...).
 				Title("What's next?").Value(&nextAction),
 		),
-	).WithTheme(theme)
+	).WithTheme(customTheme)
 
 	err = f.Run()
 	if err != nil {
