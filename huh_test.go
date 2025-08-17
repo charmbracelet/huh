@@ -443,56 +443,90 @@ func TestConfirm(t *testing.T) {
 }
 
 func TestSelect(t *testing.T) {
-	field := NewSelect[string]().Options(NewOptions("Foo", "Bar", "Baz")...).Title("Which one?")
-	f := NewForm(NewGroup(field))
-	cmd := f.Init()
-	f.Update(cmd)
+	t.Run("basic", func(t *testing.T) {
+		field := NewSelect[string]().Options(NewOptions("Foo", "Bar", "Baz")...).Title("Which one?")
+		f := NewForm(NewGroup(field))
+		cmd := f.Init()
+		f.Update(cmd)
 
-	view := ansi.Strip(f.View())
+		view := ansi.Strip(f.View())
 
-	if !strings.Contains(view, "Foo") {
-		t.Log(pretty.Render(view))
-		t.Error("Expected field to contain Foo.")
-	}
+		if !strings.Contains(view, "Foo") {
+			t.Log(pretty.Render(view))
+			t.Error("Expected field to contain Foo.")
+		}
 
-	if !strings.Contains(view, "Which one?") {
-		t.Log(pretty.Render(view))
-		t.Error("Expected field to contain Which one?.")
-	}
+		if !strings.Contains(view, "Which one?") {
+			t.Log(pretty.Render(view))
+			t.Error("Expected field to contain Which one?.")
+		}
 
-	if !strings.Contains(view, "> Foo") {
-		t.Log(pretty.Render(view))
-		t.Error("Expected cursor to be on Foo.")
-	}
+		if !strings.Contains(view, "> Foo") {
+			t.Log(pretty.Render(view))
+			t.Error("Expected cursor to be on Foo.")
+		}
 
-	// Move selection cursor down
-	m, _ := f.Update(tea.KeyPressMsg(tea.Key{Code: tea.KeyDown}))
-	f = m
+		// Move selection cursor down
+		m, _ := f.Update(tea.KeyPressMsg(tea.Key{Code: tea.KeyDown}))
+		f = m
 
-	view = ansi.Strip(f.View())
+		view = ansi.Strip(f.View())
 
-	if strings.Contains(view, "> Foo") {
-		t.Log(pretty.Render(view))
-		t.Error("Expected cursor to be on Bar.")
-	}
+		if strings.Contains(view, "> Foo") {
+			t.Log(pretty.Render(view))
+			t.Error("Expected cursor to be on Bar.")
+		}
 
-	if !strings.Contains(view, "> Bar") {
-		t.Log(pretty.Render(view))
-		t.Error("Expected cursor to be on Bar.")
-	}
+		if !strings.Contains(view, "> Bar") {
+			t.Log(pretty.Render(view))
+			t.Error("Expected cursor to be on Bar.")
+		}
 
-	if !strings.Contains(view, "↑ up • ↓ down • / filter • enter submit") {
-		t.Log(pretty.Render(view))
-		t.Error("Expected field to contain help.")
-	}
+		if !strings.Contains(view, "↑ up • ↓ down • / filter • enter submit") {
+			t.Log(pretty.Render(view))
+			t.Error("Expected field to contain help.")
+		}
 
-	// Submit
-	m, _ = f.Update(tea.KeyPressMsg(tea.Key{Code: tea.KeyEnter}))
-	_ = m
+		// Submit
+		m, _ = f.Update(tea.KeyPressMsg(tea.Key{Code: tea.KeyEnter}))
+		_ = m
 
-	if field.GetValue() != "Bar" {
-		t.Error("Expected field value to be Bar")
-	}
+		if field.GetValue() != "Bar" {
+			t.Error("Expected field value to be Bar")
+		}
+	})
+
+	t.Run("long", func(t *testing.T) {
+		f := NewForm(
+			NewGroup(
+				NewSelect[string]().
+					Options(
+						NewOption("A", "a"),
+						NewOption("B", "b"),
+						NewOption("C", "c"),
+						NewOption("D", "d"),
+						NewOption("E", "e"),
+						NewOption("F", "f"),
+						NewOption("G", "g"),
+						NewOption("H", "h"),
+						NewOption("I", "i"),
+						NewOption("J", "j"),
+						NewOption("K", "k").Selected(true),
+						NewOption("L", "l"),
+						NewOption("M", "m"),
+						NewOption("N", "n"),
+						NewOption("O", "o"),
+						NewOption("P", "p"),
+					),
+			).WithHeight(8))
+		cmd := f.Init()
+		f.Update(cmd)
+		view := ansi.Strip(f.View())
+		if !strings.Contains(view, "K") {
+			t.Log(pretty.Render(view))
+			t.Error("Selected item not shown in current offset where the height exceeds its index.")
+		}
+	})
 }
 
 func TestMultiSelect(t *testing.T) {
