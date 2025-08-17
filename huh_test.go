@@ -990,6 +990,44 @@ func TestAbort(t *testing.T) {
 	}
 }
 
+func TestLayout(t *testing.T) {
+	form := NewForm(
+		NewGroup(
+			NewInput().Title("First"),
+			NewInput().Title("Second"),
+			NewInput().Title("Third"),
+		),
+		NewGroup(
+			NewInput().Title("Fourth"),
+			NewInput().Title("Fifth"),
+			NewInput().Title("Sixth"),
+		),
+		NewGroup(
+			NewInput().Title("Seventh"),
+			NewInput().Title("Eigth"),
+			NewInput().Title("Nineth"),
+			NewInput().Title("Tenth"),
+		),
+	).WithLayout(LayoutColumns(2))
+	cmd := form.Init()
+	form.Update(cmd)
+	form.Update(NextField())
+	form.Update(NextField())
+	form.Update(NextField())
+	form.Update(NextField())
+	form.Update(NextField())
+	form.Update(NextField())
+	form.Update(NextField())
+	form.Update(NextField())
+	form.Update(NextField())
+
+	view := ansi.Strip(form.View())
+	if !strings.Contains(view, "Nineth") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected to see a second page of columns")
+	}
+}
+
 // formProgram returns a new Form with a nil input and output, so it can be used as a test program.
 func formProgram() *Form {
 	return NewForm(NewGroup(NewInput().Title("Foo"))).
