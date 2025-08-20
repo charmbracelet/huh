@@ -21,7 +21,7 @@ The above example is running from a single Go program ([source](./examples/burge
 ## Tutorial
 
 Let’s build a form for ordering burgers. To start, we’ll import the library and
-define a few variables where’ll we store answers.
+define a few variables where we'll store answers.
 
 ```go
 package main
@@ -403,14 +403,15 @@ For more on Spinners see the [spinner examples](./spinner/examples) and
 
 <img alt="Bubbletea + Huh?" width="174" src="https://stuff.charm.sh/huh/bubbletea-huh.png">
 
-In addition to its standalone mode, `huh?` has first-class support for
-[Bubble Tea][tea] and can be easily integrated into Bubble Tea applications.
-It’s incredibly useful in portions of your Bubble Tea application that need
-form-like input.
+Huh is built on [Bubble Tea][tea] and, in addition to its standalone mode, 
+`huh?` has first-class support and can be easily integrated into 
+Bubble Tea applications. It’s very useful in portions of your Bubble Tea 
+application that need form-like input, and for times when you need more
+flexibility than `huh?` alone can offer.
 
 <img alt="Bubble Tea embedded form example" width="800" src="https://vhs.charm.sh/vhs-3wGaB7EUKWmojeaHpARMUv.gif">
 
-A `huh.Form` is merely a `tea.Model`, so you can use it just as
+A `huh.Form` is just a `tea.Model`, so you can use it just as
 you would any other [Bubble](https://github.com/charmbracelet/bubbles).
 
 ```go
@@ -456,7 +457,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m Model) View() string {
     if m.form.State == huh.StateCompleted {
         class := m.form.GetString("class")
-        level := m.form.GetString("level")
+        level := m.form.GetInt("level")
         return fmt.Sprintf("You selected: %s, Lvl. %d", class, level)
     }
     return m.form.View()
@@ -478,8 +479,13 @@ For some `Huh?` programs in production, see:
 - [glyphs](https://github.com/maaslalani/glyphs): a unicode symbol picker
 - [meteor](https://github.com/stefanlogue/meteor): a highly customisable conventional commit message tool
 - [freeze](https://github.com/charmbracelet/freeze): a tool for generating images of code and terminal output
-- [gum](https://github.com/charmbracelet/gum): a tool for glamorous shell scripts
 - [savvy](https://github.com/getsavvyinc/savvy-cli): the easiest way to create, share, and run runbooks in the terminal
+
+## Contributing
+
+See [contributing][contribute].
+
+[contribute]: https://github.com/charmbracelet/huh/contribute
 
 ## Feedback
 

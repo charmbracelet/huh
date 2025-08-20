@@ -74,6 +74,6 @@ func main() {
 	)
 
 	if err := f.Run(); err != nil {
-		fmt.Fprintf(os.Stderr, "Oof: %v", err)
+		fmt.Fprintf(os.Stderr, "Oof: %v\n", err)
 	}
 }

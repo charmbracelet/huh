@@ -1,7 +1,11 @@
 package huh
 
 import (
+	"cmp"
 	"fmt"
+	"io"
+	"os"
+	"slices"
 	"strings"
 	"time"
 
@@ -10,7 +14,7 @@ import (
 	"github.com/charmbracelet/bubbles/v2/textinput"
 	"github.com/charmbracelet/bubbles/v2/viewport"
 	tea "github.com/charmbracelet/bubbletea/v2"
-	"github.com/charmbracelet/huh/v2/accessibility"
+	"github.com/charmbracelet/huh/v2/internal/accessibility"
 	"github.com/charmbracelet/lipgloss/v2"
 )
 
@@ -42,8 +46,9 @@ type MultiSelect[T comparable] struct {
 	spinner   spinner.Model
 
 	// options
-	width      int
-	accessible bool
+	width int
+	// TODO should I get rid of this deprecated field?
+	accessible bool // Deprecated: use RunAccessible instead.
 	theme      Theme
 	keymap     MultiSelectKeyMap
 	hasDarkBg  bool
@@ -79,11 +84,8 @@ func (m *MultiSelect[T]) Value(value *[]T) *MultiSelect[T] {
 func (m *MultiSelect[T]) Accessor(accessor Accessor[[]T]) *MultiSelect[T] {
 	m.accessor = accessor
 	for i, o := range m.options.val {
-		for _, v := range m.accessor.Get() {
-			if o.Value == v {
-				m.options.val[i].selected = true
-				break
-			}
+		if slices.Contains(m.accessor.Get(), o.Value) {
+			m.options.val[i].selected = true
 		}
 	}
 	return m
@@ -129,18 +131,31 @@ func (m *MultiSelect[T]) Options(options ...Option[T]) *MultiSelect[T] {
 		return m
 	}
 
-	for i, o := range options {
+	m.options.val = options
+	m.filteredOptions = options
+	m.selectOptions()
+	m.updateViewportHeight()
+	return m
+}
+
+func (m *MultiSelect[T]) selectOptions() {
+	// Set the cursor to the existing value or the last selected option.
+	for i, o := range m.options.val {
 		for _, v := range m.accessor.Get() {
 			if o.Value == v {
-				options[i].selected = true
-				break
+				m.options.val[i].selected = true
 			}
 		}
 	}
-	m.options.val = options
-	m.filteredOptions = options
-	m.updateViewportHeight()
-	return m
+
+	for i, o := range m.options.val {
+		if !o.selected {
+			continue
+		}
+		m.cursor = i
+		m.viewport.SetYOffset(i)
+		break
+	}
 }
 
 // OptionsFunc sets the options func of the multi-select field.
@@ -221,8 +236,20 @@ func (m *MultiSelect[T]) Blur() tea.Cmd {
 	return nil
 }
 
+// Hovered returns the value of the option under the cursor, and a bool
+// indicating whether one was found. If there are no visible options, returns
+// a zero-valued T and false.
+func (m *MultiSelect[T]) Hovered() (T, bool) {
+	if len(m.filteredOptions) == 0 || m.cursor >= len(m.filteredOptions) {
+		var zero T
+		return zero, false
+	}
+	return m.filteredOptions[m.cursor].Value, true
+}
+
 // KeyBinds returns the help message for the multi-select field.
 func (m *MultiSelect[T]) KeyBinds() []key.Binding {
+	m.setSelectAllHelp()
 	binds := []key.Binding{
 		m.keymap.Toggle,
 		m.keymap.Up,
@@ -325,6 +352,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (Field, tea.Cmd) {
 	case updateOptionsMsg[T]:
 		if msg.id == m.id && msg.hash == m.options.bindingsHash {
 			m.options.update(msg.options)
+			m.selectOptions()
 			// since we're updating the options, we need to reset the cursor.
 			m.filteredOptions = m.options.val
 			m.updateValue()
@@ -347,6 +375,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (Field, tea.Cmd) {
 			m.filteredOptions = m.options.val
 			m.setFilter(false)
 		case key.Matches(msg, m.keymap.Up):
+			//nolint:godox
 			// FIXME: should use keys in keymap
 			if m.filtering && msg.String() == "k" {
 				break
@@ -357,6 +386,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (Field, tea.Cmd) {
 				m.viewport.SetYOffset(m.cursor)
 			}
 		case key.Matches(msg, m.keymap.Down):
+			//nolint:godox
 			// FIXME: should use keys in keymap
 			if m.filtering && msg.String() == "j" {
 				break
@@ -449,6 +479,10 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (Field, tea.Cmd) {
 				m.viewport.SetYOffset(clamp(m.cursor, 0, len(m.filteredOptions)-m.viewport.Height()))
 			}
 		}
+		_, offset, height := m.optionsView()
+		if offset > -1 && height > 0 && (offset < m.viewport.YOffset() || height+offset >= m.viewport.YOffset()+m.viewport.Height()) {
+			m.viewport.SetYOffset(offset)
+		}
 	}
 
 	return m, tea.Batch(cmds...)
@@ -457,16 +491,31 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (Field, tea.Cmd) {
 // updateViewportHeight updates the viewport size according to the Height setting
 // on this multi-select field.
 func (m *MultiSelect[T]) updateViewportHeight() {
-	// If no height is set size the viewport to the number of options.
+	// If no height is set size the viewport to the height of the options.
 	if m.height <= 0 {
-		m.viewport.SetHeight(len(m.options.val))
+		// HEAD TODO idk if I need this or not??
+		//		m.viewport.SetHeight(len(m.options.val))
+		//		return
+		//	}
+		//
+		//	const minHeight = 1
+		//	m.viewport.SetHeight(max(minHeight, m.height-
+		//		lipgloss.Height(m.titleView())-
+		//		lipgloss.Height(m.descriptionView())))
+		v, _, _ := m.optionsView()
+		m.viewport.SetHeight(lipgloss.Height(v))
 		return
 	}
 
-	const minHeight = 1
-	m.viewport.SetHeight(max(minHeight, m.height-
-		lipgloss.Height(m.titleView())-
-		lipgloss.Height(m.descriptionView())))
+	offset := 0
+	if ss := m.titleView(); ss != "" {
+		offset += lipgloss.Height(ss)
+	}
+	if ss := m.descriptionView(); ss != "" {
+		offset += lipgloss.Height(ss)
+	}
+
+	m.viewport.SetHeight(max(minHeight, m.height-offset))
 }
 
 // numSelected returns the total number of selected options.
@@ -519,15 +568,17 @@ func (m *MultiSelect[T]) titleView() string {
 		return ""
 	}
 	var (
-		styles = m.activeStyles()
-		sb     = strings.Builder{}
+		styles   = m.activeStyles()
+		sb       = strings.Builder{}
+		maxWidth = m.width - styles.Base.GetHorizontalFrameSize()
 	)
 	if m.filtering {
 		sb.WriteString(m.filter.View())
 	} else if m.filter.Value() != "" {
-		sb.WriteString(styles.Title.Render(m.title.val) + styles.Description.Render("/"+m.filter.Value()))
+		sb.WriteString(styles.Title.Render(wrap(m.title.val, maxWidth)))
+		sb.WriteString(styles.Description.Render("/" + m.filter.Value()))
 	} else {
-		sb.WriteString(styles.Title.Render(m.title.val))
+		sb.WriteString(styles.Title.Render(wrap(m.title.val, maxWidth)))
 	}
 	if m.err != nil {
 		sb.WriteString(styles.ErrorIndicator.String())
@@ -536,36 +587,52 @@ func (m *MultiSelect[T]) titleView() string {
 }
 
 func (m *MultiSelect[T]) descriptionView() string {
-	return m.activeStyles().Description.Render(m.description.val)
+	if m.description.val == "" {
+		return ""
+	}
+	maxWidth := m.width - m.activeStyles().Base.GetHorizontalFrameSize()
+	return m.activeStyles().Description.Render(wrap(m.description.val, maxWidth))
 }
 
-func (m *MultiSelect[T]) optionsView() string {
-	var (
-		styles = m.activeStyles()
-		c      = styles.MultiSelectSelector.String()
-		sb     strings.Builder
-	)
+func (m *MultiSelect[T]) renderOption(option Option[T], cursor, selected bool) string {
+	styles := m.activeStyles()
+	var parts []string
+	if cursor {
+		parts = append(parts, styles.MultiSelectSelector.String())
+	} else {
+		parts = append(parts, strings.Repeat(" ", lipgloss.Width(styles.MultiSelectSelector.String())))
+	}
+	if selected {
+		parts = append(parts, styles.SelectedPrefix.String())
+		parts = append(parts, styles.SelectedOption.Render(option.Key))
+	} else {
+		parts = append(parts, styles.UnselectedPrefix.String())
+		parts = append(parts, styles.UnselectedOption.Render(option.Key))
+	}
+	return lipgloss.JoinHorizontal(lipgloss.Left, parts...)
+}
+
+func (m *MultiSelect[T]) optionsView() (string, int, int) {
+	var sb strings.Builder
 
 	if m.options.loading && time.Since(m.options.loadingStart) > spinnerShowThreshold {
 		m.spinner.Style = m.activeStyles().MultiSelectSelector.UnsetString()
 		sb.WriteString(m.spinner.View() + " Loading...")
-		return sb.String()
+		return sb.String(), -1, 1
 	}
 
+	var cursorOffset int
+	var cursorHeight int
 	for i, option := range m.filteredOptions {
-		if m.cursor == i {
-			sb.WriteString(c)
-		} else {
-			sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)))
+		cursor := m.cursor == i
+		line := m.renderOption(option, cursor, m.filteredOptions[i].selected)
+		if i < m.cursor {
+			cursorOffset += lipgloss.Height(line)
 		}
-
-		if m.filteredOptions[i].selected {
-			sb.WriteString(styles.SelectedPrefix.String())
-			sb.WriteString(styles.SelectedOption.Render(option.Key))
-		} else {
-			sb.WriteString(styles.UnselectedPrefix.String())
-			sb.WriteString(styles.UnselectedOption.Render(option.Key))
+		if cursor {
+			cursorHeight = lipgloss.Height(line)
 		}
+		sb.WriteString(line)
 		if i < len(m.options.val)-1 {
 			sb.WriteString("\n")
 		}
@@ -575,14 +642,15 @@ func (m *MultiSelect[T]) optionsView() string {
 		sb.WriteString("\n")
 	}
 
-	return sb.String()
+	return sb.String(), cursorOffset, cursorHeight
 }
 
 // View renders the multi-select field.
 func (m *MultiSelect[T]) View() string {
 	styles := m.activeStyles()
 
-	m.viewport.SetContent(m.optionsView())
+	vpc, _, _ := m.optionsView()
+	m.viewport.SetContent(vpc)
 
 	var sb strings.Builder
 	if m.title.val != "" || m.title.fn != nil {
@@ -593,29 +661,23 @@ func (m *MultiSelect[T]) View() string {
 		sb.WriteString(m.descriptionView() + "\n")
 	}
 	sb.WriteString(m.viewport.View())
-
-	var s strings.Builder
-	s.WriteString(styles.Base.Render(sb.String()))
-
-	return s.String()
+	return styles.Base.Width(m.width).Height(m.height).
+		Render(sb.String())
 }
 
-func (m *MultiSelect[T]) printOptions() {
+func (m *MultiSelect[T]) printOptions(w io.Writer) {
 	styles := m.activeStyles()
 	var sb strings.Builder
-	sb.WriteString(styles.Title.Render(m.title.val))
-	sb.WriteString("\n")
-
 	for i, option := range m.options.val {
 		if option.selected {
 			sb.WriteString(styles.SelectedOption.Render(fmt.Sprintf("%d. %s %s", i+1, "✓", option.Key)))
 		} else {
-			sb.WriteString(fmt.Sprintf("%d. %s %s", i+1, " ", option.Key))
+			sb.WriteString(fmt.Sprintf("%d.   %s", i+1, option.Key))
 		}
 		sb.WriteString("\n")
 	}
-
-	fmt.Println(sb.String())
+	sb.WriteString("0.   Confirm selection\n")
+	_, _ = fmt.Fprint(w, sb.String())
 }
 
 // setFilter sets the filter of the select field.
@@ -637,69 +699,65 @@ func (m *MultiSelect[T]) filterFunc(option string) bool {
 
 // setSelectAllHelp enables the appropriate select all or select none keybinding.
 func (m *MultiSelect[T]) setSelectAllHelp() {
-	if m.limit <= 0 {
-		noneSelected := m.numFilteredSelected() <= 0
-		allSelected := m.numFilteredSelected() > 0 && m.numFilteredSelected() < len(m.filteredOptions)
-		selectAll := noneSelected || allSelected
-		m.keymap.SelectAll.SetEnabled(selectAll)
-		m.keymap.SelectNone.SetEnabled(!selectAll)
+	if m.limit > 0 {
+		m.keymap.SelectAll.SetEnabled(false)
+		m.keymap.SelectNone.SetEnabled(false)
+		return
 	}
+
+	noneSelected := m.numFilteredSelected() <= 0
+	allSelected := m.numFilteredSelected() > 0 && m.numFilteredSelected() < len(m.filteredOptions)
+	selectAll := noneSelected || allSelected
+	m.keymap.SelectAll.SetEnabled(selectAll)
+	m.keymap.SelectNone.SetEnabled(!selectAll)
 }
 
 // Run runs the multi-select field.
 func (m *MultiSelect[T]) Run() error {
-	if m.accessible {
-		return m.runAccessible()
+	if m.accessible { // TODO: remove in a future release.
+		return m.RunAccessible(os.Stdout, os.Stdin)
 	}
 	return Run(m)
 }
 
-// runAccessible() runs the multi-select field in accessible mode.
-func (m *MultiSelect[T]) runAccessible() error {
-	m.printOptions()
+// RunAccessible runs the multi-select field in accessible mode.
+func (m *MultiSelect[T]) RunAccessible(w io.Writer, r io.Reader) error {
 	styles := m.activeStyles()
+	title := styles.Title.
+		PaddingRight(1).
+		Render(cmp.Or(m.title.val, "Select:"))
+	_, _ = fmt.Fprintln(w, title)
+	limit := m.limit
+	if limit == 0 {
+		limit = len(m.options.val)
+	}
+	_, _ = fmt.Fprintf(w, "Select up to %d options.\n", limit)
 
 	var choice int
 	for {
-		fmt.Printf("Select up to %d options. 0 to continue.\n", m.limit)
+		m.printOptions(w)
 
-		choice = accessibility.PromptInt("Select: ", 0, len(m.options.val))
-		if choice == 0 {
+		prompt := fmt.Sprintf("Input a number between %d and %d: ", 0, len(m.options.val))
+		choice = accessibility.PromptInt(w, r, prompt, 0, len(m.options.val), nil)
+		if choice <= 0 {
 			m.updateValue()
 			err := m.validate(m.accessor.Get())
 			if err != nil {
-				fmt.Println(err)
+				_, _ = fmt.Fprintln(w, err)
 				continue
 			}
 			break
 		}
 
 		if !m.options.val[choice-1].selected && m.limit > 0 && m.numSelected() >= m.limit {
-			fmt.Printf("You can't select more than %d options.\n", m.limit)
+			_, _ = fmt.Fprintf(w, "You can't select more than %d options.\n", m.limit)
+			_, _ = fmt.Fprintln(w)
 			continue
 		}
 		m.options.val[choice-1].selected = !m.options.val[choice-1].selected
-		if m.options.val[choice-1].selected {
-			fmt.Printf("Selected: %s\n\n", m.options.val[choice-1].Key)
-		} else {
-			fmt.Printf("Deselected: %s\n\n", m.options.val[choice-1].Key)
-		}
-
-		m.printOptions()
+		_, _ = fmt.Fprintln(w)
 	}
 
-	var values []string
-
-	value := m.accessor.Get()
-	for _, option := range m.options.val {
-		if option.selected {
-			value = append(value, option.Value)
-			values = append(values, option.Key)
-		}
-	}
-	m.accessor.Set(value)
-
-	fmt.Println(styles.SelectedOption.Render("Selected:", strings.Join(values, ", ")+"\n"))
 	return nil
 }
 
@@ -734,6 +792,9 @@ func (m *MultiSelect[T]) WithKeyMap(k *KeyMap) Field {
 }
 
 // WithAccessible sets the accessible mode of the multi-select field.
+//
+// Deprecated: you may now call [MultiSelect.RunAccessible] directly to run the
+// field in accessible mode.
 func (m *MultiSelect[T]) WithAccessible(accessible bool) Field {
 	m.accessible = accessible
 	return m
@@ -771,4 +832,9 @@ func (m *MultiSelect[T]) GetKey() string {
 // GetValue returns the multi-select's value.
 func (m *MultiSelect[T]) GetValue() any {
 	return m.accessor.Get()
+}
+
+// GetFiltering returns whether the multi-select is filtering.
+func (m *MultiSelect[T]) GetFiltering() bool {
+	return m.filtering
 }

@@ -1,7 +1,10 @@
 package huh
 
 import (
+	"cmp"
 	"fmt"
+	"io"
+	"os"
 	"strings"
 	"time"
 
@@ -10,7 +13,7 @@ import (
 	"github.com/charmbracelet/bubbles/v2/textinput"
 	"github.com/charmbracelet/bubbles/v2/viewport"
 	tea "github.com/charmbracelet/bubbletea/v2"
-	"github.com/charmbracelet/huh/v2/accessibility"
+	"github.com/charmbracelet/huh/v2/internal/accessibility"
 	"github.com/charmbracelet/lipgloss/v2"
 )
 
@@ -49,7 +52,7 @@ type Select[T comparable] struct {
 	inline     bool
 	width      int
 	height     int
-	accessible bool
+	accessible bool // Deprecated: use RunAccessible instead.
 	theme      Theme
 	keymap     SelectKeyMap
 	hasDarkBg  bool
@@ -177,20 +180,27 @@ func (s *Select[T]) Options(options ...Option[T]) *Select[T] {
 	s.options.val = options
 	s.filteredOptions = options
 
-	// Set the cursor to the existing value or the last selected option.
-	for i, option := range options {
-		if option.Value == s.accessor.Get() {
-			s.selected = i
-			break
-		} else if option.selected {
-			s.selected = i
-		}
-	}
+	s.selectOption()
 
 	s.updateViewportHeight()
 	s.updateValue()
 
 	return s
+}
+
+func (s *Select[T]) selectOption() {
+	// Set the cursor to the existing value or the last selected option.
+	for i, option := range s.options.val {
+		if option.Value == s.accessor.Get() {
+			s.selected = i
+			break
+		}
+		if option.selected {
+			s.selected = i
+			break
+		}
+	}
+	s.viewport.SetYOffset(s.selected)
 }
 
 // OptionsFunc sets the options func of the select field.
@@ -282,6 +292,17 @@ func (s *Select[T]) Blur() tea.Cmd {
 	return nil
 }
 
+// Hovered returns the value of the option under the cursor, and a bool
+// indicating whether one was found. If there are no visible options, returns
+// a zero-valued T and false.
+func (s *Select[T]) Hovered() (T, bool) {
+	if len(s.filteredOptions) == 0 || s.selected >= len(s.filteredOptions) {
+		var zero T
+		return zero, false
+	}
+	return s.filteredOptions[s.selected].Value, true
+}
+
 // KeyBinds returns the help keybindings for the select field.
 func (s *Select[T]) KeyBinds() []key.Binding {
 	return []key.Binding{
@@ -310,11 +331,6 @@ func (s *Select[T]) Update(msg tea.Msg) (Field, tea.Cmd) {
 	var cmd tea.Cmd
 	if s.filtering {
 		s.filter, cmd = s.filter.Update(msg)
-
-		// Keep the selected item in view.
-		if s.selected < s.viewport.YOffset() || s.selected >= s.viewport.YOffset()+s.viewport.Height() {
-			s.viewport.SetYOffset(s.selected)
-		}
 	}
 
 	switch msg := msg.(type) {
@@ -374,9 +390,10 @@ func (s *Select[T]) Update(msg tea.Msg) (Field, tea.Cmd) {
 	case updateOptionsMsg[T]:
 		if msg.id == s.id && msg.hash == s.options.bindingsHash {
 			s.options.update(msg.options)
+			s.selectOption()
 
-			// since we're updating the options, we need to update the selected cursor
-			// position and filteredOptions.
+			// since we're updating the options, we need to update the selected
+			// cursor position and filteredOptions.
 			s.selected = clamp(s.selected, 0, len(msg.options)-1)
 			s.filteredOptions = msg.options
 			s.updateValue()
@@ -491,6 +508,11 @@ func (s *Select[T]) Update(msg tea.Msg) (Field, tea.Cmd) {
 				s.viewport.SetYOffset(clamp(s.selected, 0, len(s.filteredOptions)-s.viewport.Height()))
 			}
 		}
+
+		_, offset, height := s.optionsView()
+		if offset > -1 && height > 0 && (offset < s.viewport.YOffset() || height+offset >= s.viewport.YOffset()+s.viewport.Height()) {
+			s.viewport.SetYOffset(offset)
+		}
 	}
 
 	return s, cmd
@@ -507,13 +529,21 @@ func (s *Select[T]) updateValue() {
 func (s *Select[T]) updateViewportHeight() {
 	// If no height is set size the viewport to the number of options.
 	if s.height <= 0 {
-		s.viewport.SetHeight(len(s.options.val))
+		v, _, _ := s.optionsView()
+		s.viewport.SetHeight(lipgloss.Height(v))
 		return
 	}
 
-	s.viewport.SetHeight(max(minHeight, s.height-
-		lipgloss.Height(s.titleView())-
-		lipgloss.Height(s.descriptionView())))
+	offset := 0
+	if ss := s.titleView(); ss != "" {
+		offset += lipgloss.Height(ss)
+	}
+	if ss := s.descriptionView(); ss != "" {
+		offset += lipgloss.Height(ss)
+	}
+
+	s.viewport.SetHeight(max(minHeight, s.height-offset))
+	s.viewport.SetYOffset(s.selected)
 }
 
 func (s *Select[T]) activeStyles() *FieldStyles {
@@ -529,15 +559,16 @@ func (s *Select[T]) activeStyles() *FieldStyles {
 
 func (s *Select[T]) titleView() string {
 	var (
-		styles = s.activeStyles()
-		sb     = strings.Builder{}
+		styles   = s.activeStyles()
+		sb       = strings.Builder{}
+		maxWidth = s.width - styles.Base.GetHorizontalFrameSize()
 	)
 	if s.filtering {
 		sb.WriteString(s.filter.View())
 	} else if s.filter.Value() != "" && !s.inline {
-		sb.WriteString(styles.Title.Render(s.title.val) + styles.Description.Render("/"+s.filter.Value()))
+		sb.WriteString(styles.Description.Render("/" + s.filter.Value()))
 	} else {
-		sb.WriteString(styles.Title.Render(s.title.val))
+		sb.WriteString(styles.Title.Render(wrap(s.title.val, maxWidth)))
 	}
 	if s.err != nil {
 		sb.WriteString(styles.ErrorIndicator.String())
@@ -546,39 +577,54 @@ func (s *Select[T]) titleView() string {
 }
 
 func (s *Select[T]) descriptionView() string {
-	return s.activeStyles().Description.Render(s.description.val)
+	if s.description.val == "" {
+		return ""
+	}
+	maxWidth := s.width - s.activeStyles().Base.GetHorizontalFrameSize()
+	return s.activeStyles().Description.Render(wrap(s.description.val, maxWidth))
 }
 
-func (s *Select[T]) optionsView() string {
+func (s *Select[T]) optionsView() (string, int, int) {
 	var (
 		styles = s.activeStyles()
-		c      = styles.SelectSelector.String()
 		sb     strings.Builder
 	)
 
 	if s.options.loading && time.Since(s.options.loadingStart) > spinnerShowThreshold {
 		s.spinner.Style = s.activeStyles().MultiSelectSelector.UnsetString()
 		sb.WriteString(s.spinner.View() + " Loading...")
-		return sb.String()
+		return sb.String(), -1, 1
 	}
 
 	if s.inline {
-		sb.WriteString(styles.PrevIndicator.Faint(s.selected <= 0).String())
+		option := styles.TextInput.Placeholder.Render("No matches")
 		if len(s.filteredOptions) > 0 {
-			sb.WriteString(styles.SelectedOption.Render(s.filteredOptions[s.selected].Key))
-		} else {
-			sb.WriteString(styles.TextInput.Placeholder.Render("No matches"))
+			option = styles.SelectedOption.Render(s.filteredOptions[s.selected].Key)
 		}
-		sb.WriteString(styles.NextIndicator.Faint(s.selected == len(s.filteredOptions)-1).String())
-		return sb.String()
+		return lipgloss.NewStyle().
+				Width(s.width).
+				Render(lipgloss.JoinHorizontal(
+					lipgloss.Left,
+					styles.PrevIndicator.Faint(s.selected <= 0).String(),
+					option,
+					styles.NextIndicator.Faint(s.selected == len(s.filteredOptions)-1).String(),
+				)),
+			-1, 1
 	}
 
+	var cursorOffset int
+	var cursorHeight int
 	for i, option := range s.filteredOptions {
-		if s.selected == i {
-			sb.WriteString(c + styles.SelectedOption.Render(option.Key))
-		} else {
-			sb.WriteString(strings.Repeat(" ", lipgloss.Width(c)) + styles.UnselectedOption.Render(option.Key))
+		selected := s.selected == i
+		line := s.renderOption(option, selected)
+		if i < s.selected {
+			cursorOffset += lipgloss.Height(line)
 		}
+		if selected {
+			cursorHeight = lipgloss.Height(line)
+		}
+
+		sb.WriteString(line)
 		if i < len(s.options.val)-1 {
 			sb.WriteString("\n")
 		}
@@ -588,33 +634,49 @@ func (s *Select[T]) optionsView() string {
 		sb.WriteString("\n")
 	}
 
-	return sb.String()
+	return sb.String(), cursorOffset, cursorHeight
+}
+
+func (s *Select[T]) renderOption(option Option[T], selected bool) string {
+	var (
+		styles   = s.activeStyles()
+		cursor   = styles.SelectSelector.String()
+		cursorW  = lipgloss.Width(cursor)
+		maxWidth = s.width - s.activeStyles().Base.GetHorizontalFrameSize() - cursorW
+	)
+
+	key := wrap(option.Key, maxWidth)
+
+	if selected {
+		return lipgloss.JoinHorizontal(
+			lipgloss.Left,
+			cursor,
+			styles.SelectedOption.Render(key),
+		)
+	}
+	return lipgloss.JoinHorizontal(
+		lipgloss.Left,
+		strings.Repeat(" ", cursorW),
+		styles.UnselectedOption.Render(key),
+	)
 }
 
 // View renders the select field.
 func (s *Select[T]) View() string {
 	styles := s.activeStyles()
-	s.viewport.SetContent(s.optionsView())
+	vpc, _, _ := s.optionsView()
+	s.viewport.SetContent(vpc)
 
-	var sb strings.Builder
+	var parts []string
 	if s.title.val != "" || s.title.fn != nil {
-		sb.WriteString(s.titleView())
-		if !s.inline {
-			sb.WriteString("\n")
-		}
+		parts = append(parts, s.titleView())
 	}
 	if s.description.val != "" || s.description.fn != nil {
-		sb.WriteString(s.descriptionView())
-		if !s.inline {
-			sb.WriteString("\n")
-		}
+		parts = append(parts, s.descriptionView())
 	}
-	sb.WriteString(s.viewport.View())
-
-	var v strings.Builder
-	v.WriteString(styles.Base.Render(sb.String()))
-
-	return v.String()
+	parts = append(parts, s.viewport.View())
+	return styles.Base.Width(s.width).Height(s.height).
+		Render(strings.Join(parts, "\n"))
 }
 
 // clearFilter clears the value of the filter.
@@ -643,38 +705,45 @@ func (s *Select[T]) filterFunc(option string) bool {
 
 // Run runs the select field.
 func (s *Select[T]) Run() error {
-	if s.accessible {
-		return s.runAccessible()
+	if s.accessible { // TODO: remove in a future release.
+		return s.RunAccessible(os.Stdout, os.Stdin)
 	}
 	return Run(s)
 }
 
-// runAccessible runs an accessible select field.
-func (s *Select[T]) runAccessible() error {
-	var sb strings.Builder
+// RunAccessible runs an accessible select field.
+func (s *Select[T]) RunAccessible(w io.Writer, r io.Reader) error {
 	styles := s.activeStyles()
-	sb.WriteString(styles.Title.Render(s.title.val) + "\n")
+	_, _ = lipgloss.Fprintln(w, styles.Title.
+		PaddingRight(1).
+		Render(cmp.Or(s.title.val, "Select:")))
 
 	for i, option := range s.options.val {
-		sb.WriteString(fmt.Sprintf("%d. %s", i+1, option.Key))
-		sb.WriteString("\n")
+		_, _ = fmt.Fprintf(w, "%d. %s\n", i+1, option.Key)
 	}
 
-	fmt.Println(sb.String())
-
+	var defaultValue *int
+	switch s.accessor.(type) {
+	case *PointerAccessor[T]: // if its of this type, it means it has a default value
+		s.selectOption() // make sure s.selected is set
+		idx := s.selected + 1
+		defaultValue = &idx
+	}
+	prompt := fmt.Sprintf("Enter a number between %d and %d: ", 1, len(s.options.val))
+	if len(s.options.val) == 1 {
+		prompt = "There is only one option available; enter the number 1:"
+	}
 	for {
-		choice := accessibility.PromptInt("Choose: ", 1, len(s.options.val))
+		choice := accessibility.PromptInt(w, r, prompt, 1, len(s.options.val), defaultValue)
 		option := s.options.val[choice-1]
 		if err := s.validate(option.Value); err != nil {
-			fmt.Println(err.Error())
+			_, _ = lipgloss.Fprintln(w, err.Error())
+			_, _ = lipgloss.Fprintln(w)
 			continue
 		}
-		fmt.Println(styles.SelectedOption.Render("Chose: " + option.Key + "\n"))
 		s.accessor.Set(option.Value)
-		break
+		return nil
 	}
-
-	return nil
 }
 
 // WithTheme sets the theme of the select field.
@@ -707,6 +776,9 @@ func (s *Select[T]) WithKeyMap(k *KeyMap) Field {
 }
 
 // WithAccessible sets the accessible mode of the select field.
+//
+// Deprecated: you may now call [Select.RunAccessible] directly to run the
+// field in accessible mode.
 func (s *Select[T]) WithAccessible(accessible bool) Field {
 	s.accessible = accessible
 	return s
@@ -740,4 +812,9 @@ func (s *Select[T]) GetKey() string { return s.key }
 // GetValue returns the value of the field.
 func (s *Select[T]) GetValue() any {
 	return s.accessor.Get()
+}
+
+// GetFiltering returns the filtering state of the field.
+func (s *Select[T]) GetFiltering() bool {
+	return s.filtering
 }

@@ -12,18 +12,18 @@ type Layout interface {
 	GroupWidth(f *Form, g *Group, w int) int
 }
 
-// Default layout shows a single group at a time.
+// LayoutDefault is the default layout shows a single group at a time.
 var LayoutDefault Layout = &layoutDefault{}
 
-// Stack layout stacks all groups on top of each other.
+// LayoutStack is a layout stacks all groups on top of each other.
 var LayoutStack Layout = &layoutStack{}
 
-// Column layout distributes groups in even columns.
+// LayoutColumns layout distributes groups in even columns.
 func LayoutColumns(columns int) Layout {
 	return &layoutColumns{columns: columns}
 }
 
-// Grid layout distributes groups in a grid.
+// LayoutGrid layout distributes groups in a grid.
 func LayoutGrid(rows int, columns int) Layout {
 	return &layoutGrid{rows: rows, columns: columns}
 }
@@ -58,7 +58,7 @@ func (l *layoutColumns) visibleGroups(f *Form) []*Group {
 			groups = append(groups, group)
 			return true
 		}
-		return false
+		return true
 	})
 
 	return groups
@@ -75,13 +75,15 @@ func (l *layoutColumns) View(f *Form) string {
 	for _, group := range groups {
 		columns = append(columns, group.Content())
 	}
+
+	header := f.selector.Selected().Header()
 	footer := f.selector.Selected().Footer()
 
-	s.WriteString(lipgloss.JoinVertical(lipgloss.Left,
-		lipgloss.JoinHorizontal(lipgloss.Top, columns...),
+	return strings.Join([]string{
+		header,
+		lipgloss.JoinHorizontal(lipgloss.Left, columns...),
 		footer,
-	))
-	return s.String()
+	}, "\n")
 }
 
 func (l *layoutColumns) GroupWidth(_ *Form, _ *Group, w int) int {
@@ -93,15 +95,14 @@ type layoutStack struct{}
 func (l *layoutStack) View(f *Form) string {
 	var columns []string
 	f.selector.Range(func(_ int, group *Group) bool {
-		columns = append(columns, group.Content())
+		columns = append(columns, group.Content(), "")
 		return true
 	})
-	footer := f.selector.Selected().Footer()
 
-	var view strings.Builder
-	view.WriteString(strings.Join(columns, "\n"))
-	view.WriteString(footer)
-	return view.String()
+	if footer := f.selector.Selected().Footer(); footer != "" {
+		columns = append(columns, footer)
+	}
+	return strings.Join(columns, "\n")
 }
 
 func (l *layoutStack) GroupWidth(_ *Form, _ *Group, w int) int {
@@ -128,7 +129,7 @@ func (l *layoutGrid) visibleGroups(f *Form) [][]*Group {
 			visible = append(visible, group)
 			return true
 		}
-		return false
+		return true
 	})
 	grid := make([][]*Group, l.rows)
 	for i := 0; i < l.rows; i++ {
@@ -158,12 +159,11 @@ func (l *layoutGrid) View(f *Form) string {
 		for _, group := range row {
 			columns = append(columns, group.Content())
 		}
-		rows = append(rows, lipgloss.JoinHorizontal(lipgloss.Top, columns...))
+		rows = append(rows, lipgloss.JoinHorizontal(lipgloss.Left, columns...), "")
 	}
 	footer := f.selector.Selected().Footer()
 
-	s.WriteString(lipgloss.JoinVertical(lipgloss.Left, strings.Join(rows, "\n"), footer))
-	return s.String()
+	return strings.Join(append(rows, footer), "\n")
 }
 
 func (l *layoutGrid) GroupWidth(_ *Form, _ *Group, w int) int {

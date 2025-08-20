@@ -1,12 +1,15 @@
 module github.com/charmbracelet/huh/v2/spinner
 
-go 1.19
+go 1.23.0
+
+toolchain go1.23.7
 
 require (
 	github.com/charmbracelet/bubbles/v2 v2.0.0-alpha.2.0.20250115152509-0c83e6f4c8d3
 	github.com/charmbracelet/bubbletea/v2 v2.0.0-alpha.2.0.20250114201644-43a5b4dd0af0
 	github.com/charmbracelet/lipgloss/v2 v2.0.0-alpha.2.0.20250114171829-b67eb015d607
 	github.com/muesli/termenv v0.15.2
+
 )
 
 require (

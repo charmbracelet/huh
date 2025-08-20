@@ -2,34 +2,23 @@ package main
 
 import (
 	"fmt"
-	"image/color"
 	"os"
 	"strings"
 
-	tea "github.com/charmbracelet/bubbletea/v2"
-	"github.com/charmbracelet/huh/v2"
-	"github.com/charmbracelet/lipgloss/v2"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/huh"
+	"github.com/charmbracelet/lipgloss"
 )
 
 const maxWidth = 80
 
-type colors struct {
-	red    color.Color
-	indigo color.Color
-	green  color.Color
-}
-
-func newColors(bgIsDark bool) (c colors) {
-	lightDark := lipgloss.LightDark(bgIsDark)
-	return colors{
-		red:    lightDark(lipgloss.Color("#FE5F86"), lipgloss.Color("#FE5F86")),
-		indigo: lightDark(lipgloss.Color("#5A56E0"), lipgloss.Color("#7571F9")),
-		green:  lightDark(lipgloss.Color("#02BA84"), lipgloss.Color("#02BF87")),
-	}
-}
+var (
+	red    = lipgloss.AdaptiveColor{Light: "#FE5F86", Dark: "#FE5F86"}
+	indigo = lipgloss.AdaptiveColor{Light: "#5A56E0", Dark: "#7571F9"}
+	green  = lipgloss.AdaptiveColor{Light: "#02BA84", Dark: "#02BF87"}
+)
 
 type Styles struct {
-	Colors colors
 	Base,
 	HeaderText,
 	Status,
@@ -39,28 +28,27 @@ type Styles struct {
 	Help lipgloss.Style
 }
 
-func NewStyles() *Styles {
+func NewStyles(lg *lipgloss.Renderer) *Styles {
 	s := Styles{}
-	s.Colors = newColors(true) // dark by default.
-	s.Base = lipgloss.NewStyle().
+	s.Base = lg.NewStyle().
 		Padding(1, 4, 0, 1)
-	s.HeaderText = lipgloss.NewStyle().
-		Foreground(s.Colors.indigo).
+	s.HeaderText = lg.NewStyle().
+		Foreground(indigo).
 		Bold(true).
 		Padding(0, 1, 0, 2)
-	s.Status = lipgloss.NewStyle().
+	s.Status = lg.NewStyle().
 		Border(lipgloss.RoundedBorder()).
-		BorderForeground(s.Colors.indigo).
+		BorderForeground(indigo).
 		PaddingLeft(1).
 		MarginTop(1)
-	s.StatusHeader = lipgloss.NewStyle().
-		Foreground(s.Colors.green).
+	s.StatusHeader = lg.NewStyle().
+		Foreground(green).
 		Bold(true)
-	s.Highlight = lipgloss.NewStyle().
+	s.Highlight = lg.NewStyle().
 		Foreground(lipgloss.Color("212"))
 	s.ErrorHeaderText = s.HeaderText.
-		Foreground(s.Colors.red)
-	s.Help = lipgloss.NewStyle().
+		Foreground(red)
+	s.Help = lg.NewStyle().
 		Foreground(lipgloss.Color("240"))
 	return &s
 }
@@ -74,6 +62,7 @@ const (
 
 type Model struct {
 	state  state
+	lg     *lipgloss.Renderer
 	styles *Styles
 	form   *huh.Form
 	width  int
@@ -81,19 +70,31 @@ type Model struct {
 
 func NewModel() Model {
 	m := Model{width: maxWidth}
-	m.styles = NewStyles()
+	m.lg = lipgloss.DefaultRenderer()
+	m.styles = NewStyles(m.lg)
+
+	var class string
 
 	m.form = huh.NewForm(
 		huh.NewGroup(
 			huh.NewSelect[string]().
 				Key("class").
+				Value(&class).
 				Options(huh.NewOptions("Warrior", "Mage", "Rogue")...).
 				Title("Choose your class").
 				Description("This will determine your department"),
 
 			huh.NewSelect[string]().
 				Key("level").
-				Options(huh.NewOptions("1", "20", "9999")...).
+				OptionsFunc(func() []huh.Option[string] {
+					switch class {
+					case "Warrior":
+						return huh.NewOptions("1", "20", "9999")
+					case "Mage":
+						return huh.NewOptions("10", "100", "1000")
+					}
+					return huh.NewOptions("1", "20", "9999")
+				}, &class).
 				Title("Choose your level").
 				Description("This will determine your benefits package"),
 
@@ -133,9 +134,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = min(msg.Width, maxWidth) - m.styles.Base.GetHorizontalFrameSize()
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "ctrl+c":
-			return m, tea.Interrupt
-		case "esc", "q":
+		case "esc", "ctrl+c", "q":
 			return m, tea.Quit
 		}
 	}
@@ -143,9 +142,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	// Process the form
-	var cmd tea.Cmd
-	m.form, cmd = m.form.Update(msg)
-	cmds = append(cmds, cmd)
+	form, cmd := m.form.Update(msg)
+	if f, ok := form.(*huh.Form); ok {
+		m.form = f
+		cmds = append(cmds, cmd)
+	}
 
 	if m.form.State == huh.StateCompleted {
 		// Quit when the form is done.
@@ -175,7 +176,7 @@ func (m Model) View() string {
 
 		// Form (left side)
 		v := strings.TrimSuffix(m.form.View(), "\n\n")
-		form := lipgloss.NewStyle().Margin(1, 0).Render(v)
+		form := m.lg.NewStyle().Margin(1, 0).Render(v)
 
 		// Status (right side)
 		var status string
@@ -239,7 +240,7 @@ func (m Model) appBoundaryView(text string) string {
 		lipgloss.Left,
 		m.styles.HeaderText.Render(text),
 		lipgloss.WithWhitespaceChars("/"),
-		lipgloss.WithWhitespaceStyle(lipgloss.NewStyle().Foreground(m.styles.Colors.indigo)),
+		lipgloss.WithWhitespaceForeground(indigo),
 	)
 }
 
@@ -249,7 +250,7 @@ func (m Model) appErrorBoundaryView(text string) string {
 		lipgloss.Left,
 		m.styles.ErrorHeaderText.Render(text),
 		lipgloss.WithWhitespaceChars("/"),
-		lipgloss.WithWhitespaceStyle(lipgloss.NewStyle().Foreground(m.styles.Colors.red)),
+		lipgloss.WithWhitespaceForeground(red),
 	)
 }
 
@@ -277,7 +278,7 @@ func (m Model) getRole() (string, string) {
 	case "Rogue":
 		switch level {
 		case "1":
-			return "Stealth Junior Designer", "Designs rogue-like activities. Reports to Stealth Lead."
+			return "Stealth Junior Designer", "Designs rougue-like activities. Reports to Stealth Lead."
 		case "9999":
 			return "Stealth Lead", "Lead designer for all things stealth. Some travel required."
 		default:
