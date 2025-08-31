@@ -403,16 +403,17 @@ For more on Spinners see the [spinner examples](./spinner/examples) and
 
 <img alt="Bubbletea + Huh?" width="174" src="https://stuff.charm.sh/huh/bubbletea-huh.png">
 
-Huh is built on [Bubble Tea][tea] and, in addition to its standalone mode, 
-`huh?` has first-class support and can be easily integrated into 
-Bubble Tea applications. It’s very useful in portions of your Bubble Tea 
-application that need form-like input, and for times when you need more
-flexibility than `huh?` alone can offer.
+In addition to its standalone mode, `huh?` has first-class support for
+[Bubble Tea][tea] and can be easily integrated into Bubble Tea applications.
+It’s incredibly useful in portions of your Bubble Tea application that need
+form-like input.
 
 <img alt="Bubble Tea embedded form example" width="800" src="https://vhs.charm.sh/vhs-3wGaB7EUKWmojeaHpARMUv.gif">
 
-A `huh.Form` is just a `tea.Model`, so you can use it just as
+A `huh.Form` is merely a `tea.Model`, so you can use it just as
 you would any other [Bubble](https://github.com/charmbracelet/bubbles).
+
+TODO: do we want to update this?
 
 ```go
 type Model struct {
@@ -437,21 +438,24 @@ func NewModel() Model {
     }
 }
 
-func (m Model) Init() (tea.Model, tea.Cmd) {
-	form, cmd := m.form.Init()
-	m.form = form.(*huh.Form)
-	return m, cmd
-}
+func (m Model) Init() tea.Cmd {
+	return m.form.Init()
+
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     // ...
 
-    form, cmd := m.form.Update(msg)
-    if f, ok := form.(*huh.Form); ok {
-        m.form = f
-    }
+	// Process the form
+	var cmd tea.Cmd
+	m.form, cmd = m.form.Update(msg)
+	cmds = append(cmds, cmd)
 
-    return m, cmd
+	if m.form.State == huh.StateCompleted {
+		// Quit when the form is done.
+		cmds = append(cmds, tea.Quit)
+	}
+
+	return m, tea.Batch(cmds...)
 }
 
 func (m Model) View() string {
