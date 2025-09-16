@@ -74,6 +74,7 @@ func NewSelect[T comparable]() *Select[T] {
 		validate:    func(T) error { return nil },
 		filtering:   false,
 		filter:      filter,
+		id:          nextID(),
 		options:     Eval[[]Option[T]]{cache: make(map[uint64][]Option[T])},
 		title:       Eval[string]{cache: make(map[uint64]string)},
 		description: Eval[string]{cache: make(map[uint64]string)},
