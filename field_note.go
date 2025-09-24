@@ -26,7 +26,7 @@ type Note struct {
 	showNextButton bool
 	skip           bool
 
-	accessible bool
+	accessible bool // Deprecated: use RunAccessible instead.
 	height     int
 	width      int
 
@@ -242,14 +242,14 @@ func (n *Note) View() string {
 
 // Run runs the note field.
 func (n *Note) Run() error {
-	if n.accessible {
-		return n.runAccessible(os.Stdout, os.Stdin)
+	if n.accessible { // TODO: remove in a future release.
+		return n.RunAccessible(os.Stdout, os.Stdin)
 	}
 	return Run(n)
 }
 
-// runAccessible runs an accessible note field.
-func (n *Note) runAccessible(w io.Writer, _ io.Reader) error {
+// RunAccessible runs an accessible note field.
+func (n *Note) RunAccessible(w io.Writer, _ io.Reader) error {
 	styles := n.activeStyles()
 	if n.title.val != "" {
 		_, _ = fmt.Fprintln(w, styles.Title.Render(n.title.val))
@@ -276,6 +276,9 @@ func (n *Note) WithKeyMap(k *KeyMap) Field {
 }
 
 // WithAccessible sets the accessible mode of the note field.
+//
+// Deprecated: you may now call [Note.RunAccessible] directly to run the
+// field in accessible mode.
 func (n *Note) WithAccessible(accessible bool) Field {
 	n.accessible = accessible
 	return n

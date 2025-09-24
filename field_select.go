@@ -53,7 +53,7 @@ type Select[T comparable] struct {
 	inline     bool
 	width      int
 	height     int
-	accessible bool
+	accessible bool // Deprecated: use RunAccessible instead.
 	theme      *Theme
 	keymap     SelectKeyMap
 }
@@ -76,6 +76,7 @@ func NewSelect[T comparable]() *Select[T] {
 		filtering:   false,
 		filter:      filter,
 		filterFunc:  defaultFilterFunc,
+		id:          nextID(),
 		options:     Eval[[]Option[T]]{cache: make(map[uint64][]Option[T])},
 		title:       Eval[string]{cache: make(map[uint64]string)},
 		description: Eval[string]{cache: make(map[uint64]string)},
@@ -697,14 +698,14 @@ func (s *Select[T]) setFiltering(filtering bool) {
 
 // Run runs the select field.
 func (s *Select[T]) Run() error {
-	if s.accessible {
-		return s.runAccessible(os.Stdout, os.Stdin)
+	if s.accessible { // TODO: remove in a future release.
+		return s.RunAccessible(os.Stdout, os.Stdin)
 	}
 	return Run(s)
 }
 
-// runAccessible runs an accessible select field.
-func (s *Select[T]) runAccessible(w io.Writer, r io.Reader) error {
+// RunAccessible runs an accessible select field.
+func (s *Select[T]) RunAccessible(w io.Writer, r io.Reader) error {
 	styles := s.activeStyles()
 	_, _ = fmt.Fprintln(w, styles.Title.
 		PaddingRight(1).
@@ -764,6 +765,9 @@ func (s *Select[T]) WithKeyMap(k *KeyMap) Field {
 }
 
 // WithAccessible sets the accessible mode of the select field.
+//
+// Deprecated: you may now call [Select.RunAccessible] directly to run the
+// field in accessible mode.
 func (s *Select[T]) WithAccessible(accessible bool) Field {
 	s.accessible = accessible
 	return s
