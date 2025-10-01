@@ -181,7 +181,7 @@ func (s *Select[T]) Options(options ...Option[T]) *Select[T] {
 
 	s.selectOption()
 
-	s.updateViewportHeight()
+	s.updateViewportSize()
 	s.updateValue()
 
 	return s
@@ -232,7 +232,7 @@ func (s *Select[T]) OptionsFunc(f func() []Option[T], bindings any) *Select[T] {
 	// options are possibly dynamic.
 	if s.height <= 0 {
 		s.height = defaultHeight
-		s.updateViewportHeight()
+		s.updateViewportSize()
 	}
 	return s
 }
@@ -254,7 +254,7 @@ func (s *Select[T]) Inline(v bool) *Select[T] {
 // the height, the select field will become scrollable.
 func (s *Select[T]) Height(height int) *Select[T] {
 	s.height = height
-	s.updateViewportHeight()
+	s.updateViewportSize()
 	return s
 }
 
@@ -325,7 +325,7 @@ func (s *Select[T]) Init() tea.Cmd {
 
 // Update updates the select field.
 func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	s.updateViewportHeight()
+	s.updateViewportSize()
 
 	var cmd tea.Cmd
 	if s.filtering {
@@ -522,19 +522,19 @@ func (s *Select[T]) updateValue() {
 	}
 }
 
-// updateViewportHeight updates the viewport size according to the Height setting
+// updateViewportSize updates the viewport size according to the Height setting
 // on this select field.
-func (s *Select[T]) updateViewportHeight() {
+func (s *Select[T]) updateViewportSize() {
 	if s.height > 0 {
-		offset := 0
+		yoffset := 0
 		if ss := s.titleView(); ss != "" {
-			offset += lipgloss.Height(ss)
+			yoffset += lipgloss.Height(ss)
 		}
 		if ss := s.descriptionView(); ss != "" {
-			offset += lipgloss.Height(ss)
+			yoffset += lipgloss.Height(ss)
 		}
 		s.viewport.SetYOffset(s.selected)
-		s.viewport.SetHeight(max(minHeight, s.height-offset))
+		s.viewport.SetHeight(max(minHeight, s.height-yoffset))
 	} else {
 		// If no height is set size the viewport to the number of options.
 		v, _, _ := s.optionsView()
@@ -760,7 +760,7 @@ func (s *Select[T]) WithTheme(theme Theme) Field {
 	st.Focused.Placeholder = styles.Focused.TextInput.Placeholder
 	s.filter.SetStyles(st)
 
-	s.updateViewportHeight()
+	s.updateViewportSize()
 	return s
 }
 

@@ -30,7 +30,6 @@ type MultiSelect[T comparable] struct {
 	filterable      bool
 	filteredOptions []Option[T]
 	limit           int
-	height          int
 
 	// error handling
 	validate func([]T) error
@@ -46,6 +45,7 @@ type MultiSelect[T comparable] struct {
 
 	// options
 	width     int
+	height    int
 	theme     Theme
 	hasDarkBg bool
 	keymap    MultiSelectKeyMap
@@ -131,7 +131,7 @@ func (m *MultiSelect[T]) Options(options ...Option[T]) *MultiSelect[T] {
 	m.options.val = options
 	m.filteredOptions = options
 	m.selectOptions()
-	m.updateViewportHeight()
+	m.updateViewportSize()
 	return m
 }
 
@@ -164,7 +164,10 @@ func (m *MultiSelect[T]) OptionsFunc(f func() []Option[T], bindings any) *MultiS
 	// options are possibly dynamic.
 	if m.height <= 0 {
 		m.height = defaultHeight
-		m.updateViewportHeight()
+		m.updateViewportSize()
+	}
+	if m.width <= 0 {
+		m.Width(20)
 	}
 	return m
 }
@@ -189,12 +192,21 @@ func (m *MultiSelect[T]) Limit(limit int) *MultiSelect[T] {
 	return m
 }
 
+// Width sets the width of the multi-select field.
+func (m *MultiSelect[T]) Width(width int) *MultiSelect[T] {
+	// What we really want to do is set the width of the viewport, but we
+	// need a theme applied before we can calcualate its width.
+	m.width = width
+	m.viewport.SetHeight(width)
+	return m
+}
+
 // Height sets the height of the multi-select field.
 func (m *MultiSelect[T]) Height(height int) *MultiSelect[T] {
 	// What we really want to do is set the height of the viewport, but we
 	// need a theme applied before we can calcualate its height.
 	m.height = height
-	m.updateViewportHeight()
+	m.updateViewportSize()
 	return m
 }
 
@@ -282,7 +294,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	// Enforce height on the viewport during update as we need themes to
 	// be applied before we can calculate the height.
-	m.updateViewportHeight()
+	m.updateViewportSize()
 
 	var cmd tea.Cmd
 	if m.filtering {
@@ -484,25 +496,29 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-// updateViewportHeight updates the viewport size according to the Height setting
+// updateViewportSize updates the viewport size according to the Height setting
 // on this multi-select field.
-func (m *MultiSelect[T]) updateViewportHeight() {
-	// If no height is set size the viewport to the height of the options.
-	if m.height <= 0 {
-		v, _, _ := m.optionsView()
-		m.viewport.SetHeight(lipgloss.Height(v))
-		return
-	}
-
-	offset := 0
+func (m *MultiSelect[T]) updateViewportSize() {
+	yoffset := 0
 	if ss := m.titleView(); ss != "" {
-		offset += lipgloss.Height(ss)
+		yoffset += lipgloss.Height(ss)
 	}
 	if ss := m.descriptionView(); ss != "" {
-		offset += lipgloss.Height(ss)
+		yoffset += lipgloss.Height(ss)
 	}
+	height := m.height
+	if height <= 0 {
+		v, _, _ := m.optionsView()
+		height = lipgloss.Height(v) - yoffset
+	}
+	m.viewport.SetHeight(max(minHeight, height))
 
-	m.viewport.SetHeight(max(minHeight, m.height-offset))
+	width := m.width
+	if m.width <= 0 {
+		v, _, _ := m.optionsView()
+		width = lipgloss.Width(v)
+	}
+	m.viewport.SetWidth(width)
 }
 
 // numSelected returns the total number of selected options.
@@ -760,7 +776,7 @@ func (m *MultiSelect[T]) WithTheme(theme Theme) Field {
 	st.Focused.Placeholder = styles.Focused.TextInput.Placeholder
 	m.filter.SetStyles(st)
 
-	m.updateViewportHeight()
+	m.updateViewportSize()
 	return m
 }
 
