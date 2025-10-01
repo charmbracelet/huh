@@ -35,8 +35,8 @@ type Confirm struct {
 	width           int
 	height          int
 	inline          bool
-	accessible      bool
-	theme           Theme
+	accessible      bool // Deprecated: use RunAccessible instead.
+	theme           *Theme
 	hasDarkBg       bool
 	keymap          ConfirmKeyMap
 	buttonAlignment lipgloss.Position
@@ -299,14 +299,14 @@ func (c *Confirm) View() string {
 
 // Run runs the confirm field in accessible mode.
 func (c *Confirm) Run() error {
-	if c.accessible {
-		return c.runAccessible(os.Stdout, os.Stdin)
+	if c.accessible { // TODO: remove in a future release.
+		return c.RunAccessible(os.Stdout, os.Stdin)
 	}
 	return Run(c)
 }
 
-// runAccessible runs the confirm field in accessible mode.
-func (c *Confirm) runAccessible(w io.Writer, r io.Reader) error {
+// RunAccessible runs the confirm field in accessible mode.
+func (c *Confirm) RunAccessible(w io.Writer, r io.Reader) error {
 	styles := c.activeStyles()
 	defaultValue := c.GetValue().(bool)
 	opts := "[y/N]"
@@ -343,6 +343,9 @@ func (c *Confirm) WithKeyMap(k *KeyMap) Field {
 }
 
 // WithAccessible sets the accessible mode of the confirm field.
+//
+// Deprecated: you may now call [Confirm.RunAccessible] directly to run the
+// field in accessible mode.
 func (c *Confirm) WithAccessible(accessible bool) Field {
 	c.accessible = accessible
 	return c

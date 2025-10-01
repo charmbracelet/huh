@@ -14,6 +14,13 @@ import (
 	"github.com/charmbracelet/x/term"
 )
 
+func atoi(s string) (int, error) {
+	if strings.TrimSpace(s) == "" {
+		return -1, nil
+	}
+	return strconv.Atoi(s) //nolint:wrapcheck
+}
+
 // PromptInt prompts a user for an integer between a certain range.
 //
 // Given invalid input (non-integers, integers outside of the range), the user
@@ -32,9 +39,12 @@ func PromptInt(
 		if strings.TrimSpace(s) == "" && defaultValue != nil {
 			return nil
 		}
-		i, err := strconv.Atoi(s)
+		i, err := atoi(s)
 		if err != nil || i < low || i > high {
-			return fmt.Errorf("Invalid: must be between %d and %d", low, high) //nolint:staticcheck
+			if low == high {
+				return fmt.Errorf("Invalid: must be %d", low) //nolint:staticcheck
+			}
+			return fmt.Errorf("Invalid: must be a number between %d and %d", low, high) //nolint:staticcheck
 		}
 		return nil
 	}

@@ -506,6 +506,106 @@ func TestSelect(t *testing.T) {
 	}
 }
 
+// doAllUpdates updates the form with the given command, then continues updating it with any resultant commands from the update until no more are returned.
+func doAllUpdates(f *Form, cmd tea.Cmd) {
+	if cmd == nil {
+		return
+	}
+	var cmds []tea.Cmd
+	switch msg := cmd().(type) {
+	case tea.BatchMsg:
+		for _, subcommand := range msg {
+			doAllUpdates(f, subcommand)
+		}
+		return
+	default:
+		_, result := f.Update(msg)
+		cmds = append(cmds, result)
+	}
+	doAllUpdates(f, tea.Batch(cmds...))
+}
+
+func TestSelectDynamic(t *testing.T) {
+	trigger := "initial"
+
+	field1 := NewSelect[string]().
+		TitleFunc(func() string {
+			return "field1 title " + trigger
+		}, &trigger).
+		DescriptionFunc(func() string {
+			return "field1 desc " + trigger
+		}, &trigger).
+		OptionsFunc(func() []Option[string] {
+			return []Option[string]{NewOption("field1 opt "+trigger, "field1 opt "+trigger)}
+		}, &trigger)
+	field2 := NewSelect[string]().
+		TitleFunc(func() string {
+			return "field2 title " + trigger
+		}, &trigger).
+		DescriptionFunc(func() string {
+			return "field2 desc " + trigger
+		}, &trigger).
+		OptionsFunc(func() []Option[string] {
+			return []Option[string]{NewOption("field2 opt "+trigger, "field2 opt "+trigger)}
+		}, &trigger)
+	field1.WithHeight(5)
+	field2.WithHeight(5)
+	f := NewForm(NewGroup(field1, field2)).WithHeight(10)
+
+	doAllUpdates(f, f.Init())
+
+	view := ansi.Strip(f.View())
+
+	expectedStrings := []string{
+		"field1 title initial",
+		"field1 desc initial",
+		"field1 opt initial",
+		"field2 title initial",
+		"field2 desc initial",
+		"field2 opt initial",
+	}
+	for _, expected := range expectedStrings {
+		if !strings.Contains(view, expected) {
+			t.Log(pretty.Render(view))
+			t.Error("Expected view to contain " + expected)
+		}
+	}
+
+	if field1.GetValue() != "field1 opt initial" {
+		t.Errorf("Expected field1 value to be field1 opt initial but was %s", field1.GetValue())
+	}
+	if field2.GetValue() != "field2 opt initial" {
+		t.Errorf("Expected field2 value to be field2 opt initial but was %s", field2.GetValue())
+	}
+
+	trigger = "updated"
+	_, cmd := f.Update(nil)
+	doAllUpdates(f, cmd)
+	view = ansi.Strip(f.View())
+
+	expectedStrings = []string{
+		"field1 title updated",
+		"field1 desc updated",
+		"field1 opt updated",
+		"field2 title updated",
+		"field2 desc updated",
+		"field2 opt updated",
+	}
+	for _, expected := range expectedStrings {
+		if !strings.Contains(view, expected) {
+			t.Log(pretty.Render(view))
+			t.Error("Expected view to contain " + expected)
+		}
+	}
+
+	if field1.GetValue() != "field1 opt updated" {
+		t.Errorf("Expected field1 value to be field1 opt updated but was %s", field1.GetValue())
+	}
+	if field2.GetValue() != "field2 opt updated" {
+		t.Errorf("Expected field2 value to be field2 opt updated but was %s", field1.GetValue())
+	}
+}
+
 func TestMultiSelect(t *testing.T) {
 	field := NewMultiSelect[string]().
 		Options(NewOptions(
@@ -859,7 +959,7 @@ func TestNote(t *testing.T) {
 		t.Error("Expected field to contain next button")
 	}
 
-	const expect = 8
+	const expect = 7
 	if h := lipgloss.Height(ansi.Strip(view)); h != expect {
 		t.Log(view)
 		t.Errorf("Expected field to have height %d, got %d", expect, h)
@@ -982,7 +1082,7 @@ var titleAndDescTests = map[string]struct {
 }{
 	"Group": {
 		NewGroup(NewInput()),
-		2, // > \n
+		1, // >
 		NewGroup(NewInput()).Title(title),
 		NewGroup(NewInput()).Description(description),
 	},
@@ -1297,16 +1397,47 @@ func TestAccessibleFields(t *testing.T) {
 		"select default value": {
 			FieldFn: func() Field {
 				v := "c"
-				return NewSelect[string]().Options(NewOptions("a", "b", "c", "d")...).Value(&v)
+				return NewSelect[string]().
+					Options(NewOptions("a", "b", "c", "d")...).
+					Value(&v)
 			},
 			Input: "\n",
 			CheckOutput: func(tb testing.TB, output string) {
 				tb.Helper()
-				requireContains(tb, output, "Select:")
+				requireContains(tb, output, "Select: ")
+				requireContains(tb, output, "Enter a number between 1 and 4")
 			},
 			CheckValue: func(tb testing.TB, value any) {
 				tb.Helper()
 				requireEqual(tb, "c", value.(string))
+			},
+		},
+		"select no input": {
+			Field: NewSelect[string]().Options(NewOptions("a", "b")...),
+			Input: "\n2\n",
+			CheckOutput: func(tb testing.TB, output string) {
+				tb.Helper()
+				requireContains(tb, output, "Select: ")
+				requireContains(tb, output, "Enter a number between 1 and 2")
+				requireContains(tb, output, "Invalid: must be a number between 1 and 2")
+			},
+			CheckValue: func(tb testing.TB, value any) {
+				tb.Helper()
+				requireEqual(tb, "b", value.(string))
+			},
+		},
+		"select single option": {
+			Field: NewSelect[string]().Options(NewOptions("a")...),
+			Input: "\n1\n",
+			CheckOutput: func(tb testing.TB, output string) {
+				tb.Helper()
+				requireContains(tb, output, "Select: ")
+				requireContains(tb, output, "There is only one option available; enter the number 1:")
+				requireContains(tb, output, "Invalid: must be 1")
+			},
+			CheckValue: func(tb testing.TB, value any) {
+				tb.Helper()
+				requireEqual(tb, "a", value.(string))
 			},
 		},
 		"note": {
@@ -1360,7 +1491,7 @@ func TestAccessibleFields(t *testing.T) {
 			}
 
 			var out bytes.Buffer
-			if err := field.runAccessible(
+			if err := field.RunAccessible(
 				&out,
 				strings.NewReader(test.Input),
 			); err != nil {
@@ -1381,12 +1512,12 @@ func TestInputPasswordAccessible(t *testing.T) {
 		var out bytes.Buffer
 		if err := NewInput().
 			EchoMode(EchoModeNone).
-			runAccessible(&out, bytes.NewReader(nil)); err == nil {
+			RunAccessible(&out, bytes.NewReader(nil)); err == nil {
 			t.Error("expected it to error")
 		}
 		if err := NewInput().
 			EchoMode(EchoModePassword).
-			runAccessible(&out, bytes.NewReader(nil)); err == nil {
+			RunAccessible(&out, bytes.NewReader(nil)); err == nil {
 			t.Error("expected it to error")
 		}
 	})
@@ -1406,7 +1537,7 @@ func TestInputPasswordAccessible(t *testing.T) {
 
 		errs := make(chan error, 1)
 		go func() {
-			errs <- input.runAccessible(&out, upty.Slave())
+			errs <- input.RunAccessible(&out, upty.Slave())
 		}()
 
 		upty.Master().Write([]byte("a password\n"))
@@ -1424,13 +1555,13 @@ func TestInputPasswordAccessible(t *testing.T) {
 func requireEqual[T comparable](tb testing.TB, a, b T) {
 	tb.Helper()
 	if a != b {
-		tb.Errorf("expected %v to be equal to %v", a, b)
+		tb.Fatalf("expected %v to be equal to %v", a, b)
 	}
 }
 
 func requireContains(tb testing.TB, s, subtr string) {
 	tb.Helper()
 	if !strings.Contains(s, subtr) {
-		tb.Errorf("%q does not contain %q", s, subtr)
+		tb.Fatalf("%q does not contain %q", s, subtr)
 	}
 }

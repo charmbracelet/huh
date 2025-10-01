@@ -38,9 +38,9 @@ type Input struct {
 	err      error
 	focused  bool
 
-	accessible bool
+	accessible bool // Deprecated: use RunAccessible instead.
 	width      int
-	height     int // not really used anywhere
+	height     int
 
 	theme     Theme
 	hasDarkBg bool
@@ -419,8 +419,8 @@ func (i *Input) View() string {
 
 // Run runs the input field in accessible mode.
 func (i *Input) Run() error {
-	if i.accessible {
-		return i.runAccessible(os.Stdout, os.Stdin)
+	if i.accessible { // TODO: remove in a future release.
+		return i.RunAccessible(os.Stdout, os.Stdin)
 	}
 	return i.run()
 }
@@ -430,8 +430,8 @@ func (i *Input) run() error {
 	return Run(i)
 }
 
-// runAccessible runs the input field in accessible mode.
-func (i *Input) runAccessible(w io.Writer, r io.Reader) error {
+// RunAccessible runs the input field in accessible mode.
+func (i *Input) RunAccessible(w io.Writer, r io.Reader) error {
 	styles := i.activeStyles()
 	validator := func(input string) error {
 		if i.textinput.CharLimit > 0 && len(input) > i.textinput.CharLimit {
@@ -440,8 +440,7 @@ func (i *Input) runAccessible(w io.Writer, r io.Reader) error {
 		return i.validate(input)
 	}
 
-	//nolint:exhaustive
-	switch i.textinput.EchoMode {
+	switch i.textinput.EchoMode { //nolint:exhaustive
 	case textinput.EchoNormal:
 		prompt := styles.Title.
 			PaddingRight(1).
@@ -473,6 +472,9 @@ func (i *Input) WithKeyMap(k *KeyMap) Field {
 }
 
 // WithAccessible sets the accessible mode of the input field.
+//
+// Deprecated: you may now call [Input.RunAccessible] directly to run the
+// field in accessible mode.
 func (i *Input) WithAccessible(accessible bool) Field {
 	i.accessible = accessible
 	return i

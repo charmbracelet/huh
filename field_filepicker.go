@@ -37,8 +37,8 @@ type FilePicker struct {
 	// options
 	width      int
 	height     int
-	accessible bool
-	theme      Theme
+	accessible bool // Deprecated: use RunAccessible instead.
+	theme      *Theme
 	hasDarkBg  bool
 	keymap     FilePickerKeyMap
 }
@@ -104,7 +104,7 @@ func (f *FilePicker) FileAllowed(v bool) *FilePicker {
 	return f
 }
 
-// DirAllowed sets whether to allow files to be selected.
+// DirAllowed sets whether to allow directories to be selected.
 func (f *FilePicker) DirAllowed(v bool) *FilePicker {
 	f.picker.DirAllowed = v
 	return f
@@ -278,7 +278,7 @@ func (f *FilePicker) View() string {
 	}
 	parts = append(parts, f.pickerView())
 	return styles.Base.Width(f.width).Height(f.height).
-		Render(lipgloss.JoinVertical(lipgloss.Top, parts...))
+		Render(strings.Join(parts, "\n"))
 }
 
 func (f *FilePicker) pickerView() string {
@@ -312,14 +312,14 @@ func (f *FilePicker) setPicking(v bool) {
 
 // Run runs the file field.
 func (f *FilePicker) Run() error {
-	if f.accessible {
-		return f.runAccessible(os.Stdout, os.Stdin)
+	if f.accessible { // TODO: remove in a future release.
+		return f.RunAccessible(os.Stdout, os.Stdin)
 	}
 	return Run(f)
 }
 
-// runAccessible runs an accessible file field.
-func (f *FilePicker) runAccessible(w io.Writer, r io.Reader) error {
+// RunAccessible runs an accessible file field.
+func (f *FilePicker) RunAccessible(w io.Writer, r io.Reader) error {
 	styles := f.activeStyles()
 	prompt := styles.Title.
 		PaddingRight(1).
@@ -408,6 +408,9 @@ func (f *FilePicker) WithKeyMap(k *KeyMap) Field {
 }
 
 // WithAccessible sets the accessible mode of the file field.
+//
+// Deprecated: you may now call [FilePicker.RunAccessible] directly to run the
+// field in accessible mode.
 func (f *FilePicker) WithAccessible(accessible bool) Field {
 	f.accessible = accessible
 	return f
