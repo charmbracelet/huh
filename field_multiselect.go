@@ -197,7 +197,7 @@ func (m *MultiSelect[T]) Width(width int) *MultiSelect[T] {
 	// What we really want to do is set the width of the viewport, but we
 	// need a theme applied before we can calcualate its width.
 	m.width = width
-	m.viewport.SetHeight(width)
+	m.updateViewportSize()
 	return m
 }
 
@@ -506,19 +506,18 @@ func (m *MultiSelect[T]) updateViewportSize() {
 	if ss := m.descriptionView(); ss != "" {
 		yoffset += lipgloss.Height(ss)
 	}
+	v, _, _ := m.optionsView()
 	height := m.height
 	if height <= 0 {
-		v, _, _ := m.optionsView()
-		height = lipgloss.Height(v) - yoffset
+		height = lipgloss.Height(v)
 	}
-	m.viewport.SetHeight(max(minHeight, height))
-
 	width := m.width
 	if m.width <= 0 {
-		v, _, _ := m.optionsView()
 		width = lipgloss.Width(v)
 	}
+
 	m.viewport.SetWidth(width)
+	m.viewport.SetHeight(max(minHeight, height) - yoffset)
 }
 
 // numSelected returns the total number of selected options.
