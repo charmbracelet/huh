@@ -1,6 +1,7 @@
 package spinner
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"io"
@@ -142,6 +143,7 @@ func exercise(t *testing.T, factory func() *Spinner, checker func(tb testing.TB,
 		err := factory().
 			WithAccessible(true).
 			WithOutput(io.Discard).
+			WithInput(bytes.NewReader(nil)).
 			Run()
 		checker(t, err)
 	})
@@ -149,6 +151,7 @@ func exercise(t *testing.T, factory func() *Spinner, checker func(tb testing.TB,
 		err := factory().
 			WithAccessible(false).
 			WithOutput(io.Discard).
+			WithInput(bytes.NewReader(nil)).
 			Run()
 		checker(t, err)
 	})

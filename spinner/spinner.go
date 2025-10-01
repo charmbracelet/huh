@@ -228,6 +228,12 @@ func (s *Spinner) Run() error {
 	}
 
 	opts := append(s.teaOptions, tea.WithContext(s.ctx))
+	if s.output != nil {
+		opts = append(opts, tea.WithOutput(s.output))
+	}
+	if s.input != nil {
+		opts = append(opts, tea.WithInput(s.input))
+	}
 	m, err := tea.NewProgram(s, opts...).Run()
 	mm := m.(*Spinner)
 	if mm.err != nil {
