@@ -1,7 +1,6 @@
 package spinner
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"io"
@@ -143,7 +142,7 @@ func exercise(t *testing.T, factory func() *Spinner, checker func(tb testing.TB,
 		err := factory().
 			WithAccessible(true).
 			WithOutput(io.Discard).
-			WithInput(bytes.NewReader(nil)).
+			WithInput(nilReader{}).
 			Run()
 		checker(t, err)
 	})
@@ -151,7 +150,7 @@ func exercise(t *testing.T, factory func() *Spinner, checker func(tb testing.TB,
 		err := factory().
 			WithAccessible(false).
 			WithOutput(io.Discard).
-			WithInput(bytes.NewReader(nil)).
+			WithInput(nilReader{}).
 			Run()
 		checker(t, err)
 	})
@@ -182,3 +181,8 @@ func requireContextCanceled(tb testing.TB, err error) {
 		tb.Errorf("expected to get a context canceled error, got %v", err)
 	}
 }
+
+type nilReader struct{}
+
+// Read implements io.Reader.
+func (nilReader) Read([]byte) (int, error) { return 0, nil }
