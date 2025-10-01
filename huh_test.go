@@ -127,7 +127,7 @@ func TestForm(t *testing.T) {
 	//   ↑ up • ↓ down • / filter • enter select
 	//
 
-	if !strings.Contains(view, "┃ Shell?") {
+	if !strings.Contains(view, "┃ Shell?") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected form to contain Shell? title")
 	}
@@ -144,7 +144,7 @@ func TestForm(t *testing.T) {
 
 	// Attempt to select hard shell and retrieve error.
 	m, _ := f.Update(keypress('j'))
-	m, _ = m.Update(keypress(tea.KeyTab))
+	m, _ = m.Update(tea.KeyPressMsg(tea.Key{Code: tea.KeyTab}))
 	view = ansi.Strip(m.(tea.ViewModel).View())
 
 	if !strings.Contains(view, "* we're out of hard shells, sorry") {
@@ -152,9 +152,10 @@ func TestForm(t *testing.T) {
 		t.Error("Expected form to show out of hard shells error")
 	}
 
+	// select back the soft shell
 	m, _ = m.Update(keypress('k'))
 
-	m, cmd := m.Update(keypress(tea.KeyEnter))
+	m, cmd := m.Update(tea.Key{Code: tea.KeyEnter})
 	m = batchUpdate(m, cmd)
 
 	view = ansi.Strip(m.(tea.ViewModel).View())

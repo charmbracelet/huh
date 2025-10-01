@@ -141,7 +141,7 @@ func ThemeCharm(isDark bool) *Styles {
 	lightDark := lipgloss.LightDark(isDark)
 
 	var (
-		normalFg = lightDark(lipgloss.Color("235"), lipgloss.Color("252"))
+		normalFg = lightDark(lipgloss.Color("252"), lipgloss.Color("235"))
 		indigo   = lightDark(lipgloss.Color("#5A56E0"), lipgloss.Color("#7571F9"))
 		cream    = lightDark(lipgloss.Color("#FFFDF5"), lipgloss.Color("#FFFDF5"))
 		fuchsia  = lipgloss.Color("#F780E2")
@@ -168,7 +168,7 @@ func ThemeCharm(isDark bool) *Styles {
 	t.Focused.UnselectedOption = t.Focused.UnselectedOption.Foreground(normalFg)
 	t.Focused.FocusedButton = t.Focused.FocusedButton.Foreground(cream).Background(fuchsia)
 	t.Focused.Next = t.Focused.FocusedButton
-	t.Focused.BlurredButton = t.Focused.BlurredButton.Foreground(normalFg).Background(lightDark(lipgloss.Color("252"), lipgloss.Color("237")))
+	t.Focused.BlurredButton = t.Focused.BlurredButton.Foreground(normalFg).Background(lightDark(lipgloss.Color("237"), lipgloss.Color("252")))
 
 	t.Focused.TextInput.Cursor = t.Focused.TextInput.Cursor.Foreground(green)
 	t.Focused.TextInput.Placeholder = t.Focused.TextInput.Placeholder.Foreground(lightDark(lipgloss.Color("248"), lipgloss.Color("238")))
