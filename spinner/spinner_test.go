@@ -140,14 +140,14 @@ func exercise(t *testing.T, factory func() *Spinner, checker func(tb testing.TB,
 	t.Helper()
 	t.Run("accessible", func(t *testing.T) {
 		err := factory().
-			Accessible(true).
+			WithAccessible(true).
 			WithOutput(io.Discard).
 			Run()
 		checker(t, err)
 	})
 	t.Run("regular", func(t *testing.T) {
 		err := factory().
-			Accessible(false).
+			WithAccessible(false).
 			WithOutput(io.Discard).
 			Run()
 		checker(t, err)

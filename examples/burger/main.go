@@ -161,7 +161,7 @@ func main() {
 		time.Sleep(2 * time.Second)
 	}
 
-	_ = spinner.New().Title("Preparing your burger...").Accessible(accessible).Action(prepareBurger).Run()
+	_ = spinner.New().Title("Preparing your burger...").WithAccessible(accessible).Action(prepareBurger).Run()
 
 	// Print order summary.
 	{

@@ -97,7 +97,7 @@ func (s *Spinner) Title(title string) *Spinner {
 }
 
 // WithOutput set the output for the spinner.
-// Default is STDOUT when [Spinner.Accessible], STDERR otherwise.
+// Default is STDOUT when [Spinner.WithAccessible], STDERR otherwise.
 func (s *Spinner) WithOutput(w io.Writer) *Spinner {
 	s.teaOptions = append(s.teaOptions, tea.WithOutput(w))
 	s.output = w
@@ -136,8 +136,8 @@ func (s *Spinner) Context(ctx context.Context) *Spinner {
 	return s
 }
 
-// Accessible sets the spinner to be static.
-func (s *Spinner) Accessible(accessible bool) *Spinner {
+// WithAccessible sets the spinner to be static.
+func (s *Spinner) WithAccessible(accessible bool) *Spinner {
 	s.accessible = accessible
 	return s
 }

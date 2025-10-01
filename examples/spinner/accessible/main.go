@@ -14,7 +14,7 @@ func main() {
 
 	err := spinner.New().
 		Context(ctx).
-		Accessible(true).
+		WithAccessible(true).
 		Run()
 	if err != nil {
 		log.Fatalln(err)

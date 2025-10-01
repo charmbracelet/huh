@@ -7,6 +7,6 @@ import (
 )
 
 func main() {
-	_ = spinner.New().Title("Loading").Accessible(true).Run()
+	_ = spinner.New().Title("Loading").WithAccessible(true).Run()
 	fmt.Println("Done!")
 }

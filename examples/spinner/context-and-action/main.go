@@ -19,7 +19,7 @@ func main() {
 		Action(func() {
 			time.Sleep(time.Minute)
 		}).
-		Accessible(rand.Int()%2 == 0).
+		WithAccessible(rand.Int()%2 == 0).
 		Run()
 	if err != nil {
 		log.Fatalln(err)

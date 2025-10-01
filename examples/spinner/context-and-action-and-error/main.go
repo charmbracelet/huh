@@ -19,7 +19,7 @@ func main() {
 			time.Sleep(5 * time.Second)
 			return nil
 		}).
-		Accessible(false).
+		WithAccessible(false).
 		Run()
 	if err != nil {
 		log.Fatalln(err)
