@@ -39,7 +39,7 @@ jobs:
       - run: go test -v -race ./...
         working-directory: ./examples
   dependabot:
-    needs: [test, examples, spinner]
+    needs: [test, examples]
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
