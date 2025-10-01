@@ -143,8 +143,8 @@ func TestForm(t *testing.T) {
 	}
 
 	// Attempt to select hard shell and retrieve error.
-	m, _ := f.Update(keypress('j'))
-	m, _ = m.Update(codeKeypress(tea.KeyTab))
+	m := batchUpdate(f.Update(keypress('j')))
+	m = batchUpdate(m.Update(codeKeypress(tea.KeyTab)))
 	view = viewModel(m)
 
 	if !strings.Contains(view, "* we're out of hard shells, sorry") {
@@ -153,10 +153,8 @@ func TestForm(t *testing.T) {
 	}
 
 	// select back the soft shell
-	m, _ = m.Update(keypress('k'))
-
-	m, cmd := m.Update(codeKeypress(tea.KeyEnter))
-	m = batchUpdate(m, cmd)
+	m = batchUpdate(m.Update(keypress('k')))
+	m = batchUpdate(m.Update(codeKeypress(tea.KeyEnter)))
 
 	view = viewModel(m)
 
@@ -166,8 +164,7 @@ func TestForm(t *testing.T) {
 	}
 
 	// batchMsg + nextGroup
-	m, cmd = m.Update(codeKeypress(tea.KeyEnter))
-	m = batchUpdate(m, cmd)
+	m = batchUpdate(m.Update(codeKeypress(tea.KeyEnter)))
 	view = viewModel(m)
 
 	//
@@ -202,8 +199,8 @@ func TestForm(t *testing.T) {
 		t.Error("Expected form to preselect tomatoes")
 	}
 
-	m, _ = m.Update(keypress('j'))
-	m, _ = m.Update(keypress('j'))
+	m = batchUpdate(m.Update(keypress('j')))
+	m = batchUpdate(m.Update(keypress('j')))
 	view = viewModel(m)
 
 	if !strings.Contains(view, "> • Corn") {
@@ -211,7 +208,7 @@ func TestForm(t *testing.T) {
 		t.Error("Expected form to change selection to corn")
 	}
 
-	m, _ = m.Update(keypress('x'))
+	m = batchUpdate(m.Update(keypress('x')))
 	view = viewModel(m)
 
 	if !strings.Contains(view, "> ✓ Corn") {
@@ -474,8 +471,7 @@ func TestSelect(t *testing.T) {
 	}
 
 	// Move selection cursor down
-	m, _ := f.Update(codeKeypress(tea.KeyDown))
-	f = m.(*Form)
+	f = batchUpdate(f.Update(codeKeypress(tea.KeyDown))).(*Form)
 
 	view = viewModel(f)
 
@@ -638,7 +634,7 @@ func TestMultiSelect(t *testing.T) {
 	}
 
 	// Move selection cursor down
-	m, _ := f.Update(keypress('j'))
+	m := batchUpdate(f.Update(keypress('j')))
 	view = viewModel(m)
 
 	if got, ok := field.Hovered(); !ok || got != "Bar\nLine2" {
@@ -657,7 +653,7 @@ func TestMultiSelect(t *testing.T) {
 	}
 
 	// Toggle
-	m, _ = f.Update(keypress('x'))
+	m = batchUpdate(f.Update(keypress('x')))
 	view = viewModel(m)
 
 	if !strings.Contains(view, "> ✓ Bar") {
@@ -772,8 +768,7 @@ func TestSelectPageNavigation(t *testing.T) {
 				t.Errorf("Wrong item selected, should have matched %q (first item)", reFirst.String())
 			}
 
-			m, cmd := f.Update(keypress('G'))
-			m = batchUpdate(m, cmd)
+			m := batchUpdate(f.Update(keypress('G')))
 			// if name == "multiselect" {
 			// 	mm := field.(*MultiSelect[string])
 			// 	t.Logf("AQUI: height=%d offset=%d", mm.viewport.Height(), mm.viewport.YOffset())
@@ -785,15 +780,14 @@ func TestSelectPageNavigation(t *testing.T) {
 				t.Errorf("Wrong item selected, should have matched %q (last item)", reLast.String())
 			}
 
-			m, cmd = f.Update(keypress('g'))
-			m = batchUpdate(m, cmd)
+			m = batchUpdate(f.Update(keypress('g')))
 			view = viewModel(m)
 			if !reFirst.MatchString(view) {
 				t.Log(pretty.Render(view))
 				t.Errorf("Wrong item selected, should have matched %q (first item)", reFirst.String())
 			}
 
-			m, _ = f.Update(tea.KeyPressMsg(tea.Key{Mod: tea.ModCtrl, Code: 'd'}))
+			m = batchUpdate(f.Update(tea.KeyPressMsg(tea.Key{Mod: tea.ModCtrl, Code: 'd'})))
 			view = viewModel(m)
 			if !reHalfDown.MatchString(view) {
 				t.Log(pretty.Render(view))
@@ -802,7 +796,7 @@ func TestSelectPageNavigation(t *testing.T) {
 
 			// sends multiple to verify it stays within boundaries
 			for range 10 {
-				m, _ = f.Update(tea.KeyPressMsg(tea.Key{Mod: tea.ModCtrl, Code: 'u'}))
+				m = batchUpdate(f.Update(tea.KeyPressMsg(tea.Key{Mod: tea.ModCtrl, Code: 'u'})))
 			}
 			view = viewModel(m)
 			if !reFirst.MatchString(view) {
@@ -812,7 +806,7 @@ func TestSelectPageNavigation(t *testing.T) {
 
 			// verify it stays within boundaries
 			for range 10 {
-				m, _ = f.Update(tea.KeyPressMsg(tea.Key{Mod: tea.ModCtrl, Code: 'd'}))
+				m = batchUpdate(f.Update(tea.KeyPressMsg(tea.Key{Mod: tea.ModCtrl, Code: 'd'})))
 			}
 			view = viewModel(m)
 			if !reLast.MatchString(view) {
