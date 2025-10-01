@@ -130,7 +130,7 @@ func (g *Group) WithWidth(width int) *Group {
 // WithHeight sets the height on a group.
 func (g *Group) WithHeight(height int) *Group {
 	g.height = height
-	h := height - g.nonContentHeight()
+	h := height - g.titleFooterHeight()
 	g.viewport.SetHeight(h)
 	g.selector.Range(func(_ int, field Field) bool {
 		// A field height must not exceed the form height.

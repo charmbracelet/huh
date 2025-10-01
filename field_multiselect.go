@@ -4,7 +4,6 @@ import (
 	"cmp"
 	"fmt"
 	"io"
-	"os"
 	"slices"
 	"strings"
 	"time"
@@ -46,11 +45,10 @@ type MultiSelect[T comparable] struct {
 	spinner   spinner.Model
 
 	// options
-	width      int
-	accessible bool // Deprecated: use RunAccessible instead.
-	theme      *Theme
-	hasDarkBg  bool
-	keymap     MultiSelectKeyMap
+	width     int
+	theme     Theme
+	hasDarkBg bool
+	keymap    MultiSelectKeyMap
 }
 
 // NewMultiSelect returns a new multi-select field.
@@ -703,9 +701,6 @@ func (m *MultiSelect[T]) setSelectAllHelp() {
 
 // Run runs the multi-select field.
 func (m *MultiSelect[T]) Run() error {
-	if m.accessible { // TODO: remove in a future release.
-		return m.RunAccessible(os.Stdout, os.Stdin)
-	}
 	return Run(m)
 }
 
@@ -758,10 +753,13 @@ func (m *MultiSelect[T]) WithTheme(theme Theme) Field {
 	m.theme = theme
 	styles := m.theme.Theme(m.hasDarkBg)
 
-	m.filter.Styles.Cursor.Color = styles.Focused.TextInput.Cursor.GetForeground()
-	m.filter.Styles.Focused.Prompt = styles.Focused.TextInput.Prompt
-	m.filter.Styles.Focused.Text = styles.Focused.TextInput.Text
-	m.filter.Styles.Focused.Placeholder = styles.Focused.TextInput.Placeholder
+	st := m.filter.Styles()
+	st.Cursor.Color = styles.Focused.TextInput.Cursor.GetForeground()
+	st.Focused.Prompt = styles.Focused.TextInput.Prompt
+	st.Focused.Text = styles.Focused.TextInput.Text
+	st.Focused.Placeholder = styles.Focused.TextInput.Placeholder
+	m.filter.SetStyles(st)
+
 	m.updateViewportHeight()
 	return m
 }
@@ -774,15 +772,6 @@ func (m *MultiSelect[T]) WithKeyMap(k *KeyMap) Field {
 		m.keymap.ClearFilter.SetEnabled(false)
 		m.keymap.SetFilter.SetEnabled(false)
 	}
-	return m
-}
-
-// WithAccessible sets the accessible mode of the multi-select field.
-//
-// Deprecated: you may now call [MultiSelect.RunAccessible] directly to run the
-// field in accessible mode.
-func (m *MultiSelect[T]) WithAccessible(accessible bool) Field {
-	m.accessible = accessible
 	return m
 }
 

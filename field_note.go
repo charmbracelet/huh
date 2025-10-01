@@ -3,7 +3,6 @@ package huh
 import (
 	"fmt"
 	"io"
-	"os"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/v2/key"
@@ -26,9 +25,8 @@ type Note struct {
 	showNextButton bool
 	skip           bool
 
-	accessible bool // Deprecated: use RunAccessible instead.
-	height     int
-	width      int
+	height int
+	width  int
 
 	theme     Theme
 	hasDarkBg bool
@@ -245,9 +243,6 @@ func (n *Note) View() string {
 
 // Run runs the note field.
 func (n *Note) Run() error {
-	if n.accessible { // TODO: remove in a future release.
-		return n.RunAccessible(os.Stdout, os.Stdin)
-	}
 	return Run(n)
 }
 
@@ -275,15 +270,6 @@ func (n *Note) WithTheme(theme Theme) Field {
 // WithKeyMap sets the keymap on a note field.
 func (n *Note) WithKeyMap(k *KeyMap) Field {
 	n.keymap = k.Note
-	return n
-}
-
-// WithAccessible sets the accessible mode of the note field.
-//
-// Deprecated: you may now call [Note.RunAccessible] directly to run the
-// field in accessible mode.
-func (n *Note) WithAccessible(accessible bool) Field {
-	n.accessible = accessible
 	return n
 }
 

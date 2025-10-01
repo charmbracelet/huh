@@ -3,7 +3,6 @@ package huh
 import (
 	"cmp"
 	"io"
-	"os"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/v2/key"
@@ -35,8 +34,7 @@ type Confirm struct {
 	width           int
 	height          int
 	inline          bool
-	accessible      bool // Deprecated: use RunAccessible instead.
-	theme           *Theme
+	theme           Theme
 	hasDarkBg       bool
 	keymap          ConfirmKeyMap
 	buttonAlignment lipgloss.Position
@@ -299,9 +297,6 @@ func (c *Confirm) View() string {
 
 // Run runs the confirm field in accessible mode.
 func (c *Confirm) Run() error {
-	if c.accessible { // TODO: remove in a future release.
-		return c.RunAccessible(os.Stdout, os.Stdin)
-	}
 	return Run(c)
 }
 
@@ -339,15 +334,6 @@ func (c *Confirm) WithTheme(theme Theme) Field {
 // WithKeyMap sets the keymap of the confirm field.
 func (c *Confirm) WithKeyMap(k *KeyMap) Field {
 	c.keymap = k.Confirm
-	return c
-}
-
-// WithAccessible sets the accessible mode of the confirm field.
-//
-// Deprecated: you may now call [Confirm.RunAccessible] directly to run the
-// field in accessible mode.
-func (c *Confirm) WithAccessible(accessible bool) Field {
-	c.accessible = accessible
 	return c
 }
 

@@ -34,14 +34,13 @@ type Text struct {
 	editorArgs      []string
 	editorExtension string
 
-	textarea textarea.Model
+	textarea *textarea.Model
 
 	focused  bool
 	validate func(string) error
 	err      error
 
-	accessible bool // Deprecated: use RunAccessible instead.
-	width      int
+	width int
 
 	theme     Theme
 	hasDarkBg bool
@@ -57,7 +56,9 @@ func NewText() *Text {
 	text := textarea.New()
 	text.ShowLineNumbers = false
 	text.Prompt = ""
-	text.Styles.Focused.CursorLine = lipgloss.NewStyle()
+	st := text.Styles()
+	st.Focused.CursorLine = lipgloss.NewStyle()
+	text.SetStyles(st)
 
 	editorCmd, editorArgs := getEditor()
 
@@ -366,29 +367,24 @@ func (t *Text) activeStyles() *FieldStyles {
 	return &theme.Theme(t.hasDarkBg).Blurred
 }
 
-func (t *Text) activeTextAreaStyles() *textarea.StyleState {
-	if t.theme == nil {
-		return &t.textarea.Styles.Blurred
-	}
-	if t.focused {
-		return &t.textarea.Styles.Focused
-	}
-	return &t.textarea.Styles.Blurred
-}
-
 // View renders the text field.
 func (t *Text) View() string {
 	styles := t.activeStyles()
-	textareaStyles := t.activeTextAreaStyles()
+	st := t.textarea.Styles()
 
-	// NB: since the method is on a pointer receiver these are being mutated.
-	// Because this runs on every render this shouldn't matter in practice,
-	// however.
-	textareaStyles.Placeholder = styles.TextInput.Placeholder
-	textareaStyles.Text = styles.TextInput.Text
-	textareaStyles.Prompt = styles.TextInput.Prompt
-	textareaStyles.CursorLine = styles.TextInput.Text
-	t.textarea.Styles.Cursor.Color = styles.TextInput.Cursor.GetBackground()
+	if t.focused {
+		st.Focused.Placeholder = styles.TextInput.Placeholder
+		st.Focused.Text = styles.TextInput.Text
+		st.Focused.Prompt = styles.TextInput.Prompt
+		st.Focused.CursorLine = styles.TextInput.Text
+	} else {
+		st.Blurred.Placeholder = styles.TextInput.Placeholder
+		st.Blurred.Text = styles.TextInput.Text
+		st.Blurred.Prompt = styles.TextInput.Prompt
+		st.Blurred.CursorLine = styles.TextInput.Text
+	}
+	st.Cursor.Color = styles.TextInput.Cursor.GetBackground()
+	t.textarea.SetStyles(st)
 
 	maxWidth := t.width - styles.Base.GetHorizontalFrameSize()
 	var parts []string
@@ -410,9 +406,6 @@ func (t *Text) View() string {
 
 // Run runs the text field.
 func (t *Text) Run() error {
-	if t.accessible { // TODO: remove in a future release.
-		return t.RunAccessible(os.Stdout, os.Stdin)
-	}
 	return Run(t)
 }
 
@@ -455,15 +448,6 @@ func (t *Text) WithTheme(theme Theme) Field {
 func (t *Text) WithKeyMap(k *KeyMap) Field {
 	t.keymap = k.Text
 	t.textarea.KeyMap.InsertNewline.SetKeys(t.keymap.NewLine.Keys()...)
-	return t
-}
-
-// WithAccessible sets the accessible mode of the text field.
-//
-// Deprecated: you may now call [Text.RunAccessible] directly to run the
-// field in accessible mode.
-func (t *Text) WithAccessible(accessible bool) Field {
-	t.accessible = accessible
 	return t
 }
 

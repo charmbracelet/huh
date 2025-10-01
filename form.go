@@ -168,11 +168,6 @@ type Field interface {
 	// WithTheme sets the theme on a field.
 	WithTheme(Theme) Field
 
-	// WithAccessible sets whether the field should run in accessible mode.
-	//
-	// Deprecated: you may now call [Field.RunAccessible] directly to run the field in accessible mode.
-	WithAccessible(bool) Field
-
 	// WithKeyMap sets the keymap on a field.
 	WithKeyMap(*KeyMap) Field
 
@@ -713,7 +708,7 @@ func (f *Form) runAccessible(w io.Writer, r io.Reader) error {
 		group.selector.Range(func(_ int, field Field) bool {
 			field.Init()
 			field.Focus()
-			_ = field.WithAccessible(true).RunAccessible(w, r)
+			_ = field.RunAccessible(w, r)
 			_, _ = fmt.Fprintln(w)
 			return true
 		})

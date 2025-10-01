@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/v2/key"
@@ -38,9 +37,8 @@ type Input struct {
 	err      error
 	focused  bool
 
-	accessible bool // Deprecated: use RunAccessible instead.
-	width      int
-	height     int
+	width  int
+	height int
 
 	theme     Theme
 	hasDarkBg bool
@@ -386,10 +384,12 @@ func (i *Input) View() string {
 	// NB: since the method is on a pointer receiver these are being mutated.
 	// Because this runs on every render this shouldn't matter in practice,
 	// however.
-	i.textinput.Styles.Cursor.Color = styles.TextInput.Cursor.GetForeground()
-	i.textinput.Styles.Focused.Prompt = styles.TextInput.Prompt
-	i.textinput.Styles.Focused.Text = styles.TextInput.Text
-	i.textinput.Styles.Focused.Placeholder = styles.TextInput.Placeholder
+	st := i.textinput.Styles()
+	st.Cursor.Color = styles.TextInput.Cursor.GetForeground()
+	st.Focused.Prompt = styles.TextInput.Prompt
+	st.Focused.Text = styles.TextInput.Text
+	st.Focused.Placeholder = styles.TextInput.Placeholder
+	i.textinput.SetStyles(st)
 
 	// Adjust text input size to its char limit if it fit in its width
 	if i.textinput.CharLimit > 0 {
@@ -419,9 +419,6 @@ func (i *Input) View() string {
 
 // Run runs the input field in accessible mode.
 func (i *Input) Run() error {
-	if i.accessible { // TODO: remove in a future release.
-		return i.RunAccessible(os.Stdout, os.Stdin)
-	}
 	return i.run()
 }
 
@@ -471,15 +468,6 @@ func (i *Input) WithKeyMap(k *KeyMap) Field {
 	return i
 }
 
-// WithAccessible sets the accessible mode of the input field.
-//
-// Deprecated: you may now call [Input.RunAccessible] directly to run the
-// field in accessible mode.
-func (i *Input) WithAccessible(accessible bool) Field {
-	i.accessible = accessible
-	return i
-}
-
 // WithTheme sets the theme of the input field.
 func (i *Input) WithTheme(theme Theme) Field {
 	if i.theme != nil {
@@ -494,7 +482,7 @@ func (i *Input) WithWidth(width int) Field {
 	styles := i.activeStyles()
 	i.width = width
 	frameSize := styles.Base.GetHorizontalFrameSize()
-	promptWidth := lipgloss.Width(i.textinput.Styles.Focused.Prompt.Render(i.textinput.Prompt))
+	promptWidth := lipgloss.Width(i.textinput.Styles().Focused.Prompt.Render(i.textinput.Prompt))
 	titleWidth := lipgloss.Width(styles.Title.Render(i.title.val))
 	descriptionWidth := lipgloss.Width(styles.Description.Render(i.description.val))
 	i.textinput.SetWidth(width - frameSize - promptWidth - 1)

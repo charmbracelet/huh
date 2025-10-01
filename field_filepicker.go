@@ -35,12 +35,11 @@ type FilePicker struct {
 	err      error
 
 	// options
-	width      int
-	height     int
-	accessible bool // Deprecated: use RunAccessible instead.
-	theme      *Theme
-	hasDarkBg  bool
-	keymap     FilePickerKeyMap
+	width     int
+	height    int
+	theme     Theme
+	hasDarkBg bool
+	keymap    FilePickerKeyMap
 }
 
 // NewFilePicker returns a new file field.
@@ -312,9 +311,6 @@ func (f *FilePicker) setPicking(v bool) {
 
 // Run runs the file field.
 func (f *FilePicker) Run() error {
-	if f.accessible { // TODO: remove in a future release.
-		return f.RunAccessible(os.Stdout, os.Stdin)
-	}
 	return Run(f)
 }
 
@@ -404,15 +400,6 @@ func (f *FilePicker) WithKeyMap(k *KeyMap) Field {
 		Select:   k.FilePicker.Select,
 	}
 	f.setPicking(f.picking)
-	return f
-}
-
-// WithAccessible sets the accessible mode of the file field.
-//
-// Deprecated: you may now call [FilePicker.RunAccessible] directly to run the
-// field in accessible mode.
-func (f *FilePicker) WithAccessible(accessible bool) Field {
-	f.accessible = accessible
 	return f
 }
 

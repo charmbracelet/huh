@@ -4,7 +4,6 @@ import (
 	"cmp"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 	"time"
 
@@ -49,13 +48,12 @@ type Select[T comparable] struct {
 	filter    textinput.Model
 	spinner   spinner.Model
 
-	inline     bool
-	width      int
-	height     int
-	accessible bool // Deprecated: use RunAccessible instead.
-	theme      *Theme
-	hasDarkBg  bool
-	keymap     SelectKeyMap
+	inline    bool
+	width     int
+	height    int
+	theme     Theme
+	hasDarkBg bool
+	keymap    SelectKeyMap
 }
 
 // NewSelect creates a new select field.
@@ -527,23 +525,27 @@ func (s *Select[T]) updateValue() {
 // updateViewportHeight updates the viewport size according to the Height setting
 // on this select field.
 func (s *Select[T]) updateViewportHeight() {
-	// If no height is set size the viewport to the number of options.
-	if s.height <= 0 {
+	if s.height > 0 {
+		offset := 0
+		if ss := s.titleView(); ss != "" {
+			offset += lipgloss.Height(ss)
+		}
+		if ss := s.descriptionView(); ss != "" {
+			offset += lipgloss.Height(ss)
+		}
+		s.viewport.SetYOffset(s.selected)
+		s.viewport.SetHeight(max(minHeight, s.height-offset))
+	} else {
+		// If no height is set size the viewport to the number of options.
 		v, _, _ := s.optionsView()
 		s.viewport.SetHeight(lipgloss.Height(v))
-		return
 	}
-
-	offset := 0
-	if ss := s.titleView(); ss != "" {
-		offset += lipgloss.Height(ss)
+	if s.width > 0 {
+		s.viewport.SetWidth(s.width)
+	} else {
+		v, _, _ := s.optionsView()
+		s.viewport.SetWidth(lipgloss.Width(v))
 	}
-	if ss := s.descriptionView(); ss != "" {
-		offset += lipgloss.Height(ss)
-	}
-
-	s.viewport.YOffset = s.selected
-	s.viewport.SetHeight(max(minHeight, s.height-offset))
 }
 
 func (s *Select[T]) activeStyles() *FieldStyles {
@@ -705,9 +707,6 @@ func (s *Select[T]) filterFunc(option string) bool {
 
 // Run runs the select field.
 func (s *Select[T]) Run() error {
-	if s.accessible { // TODO: remove in a future release.
-		return s.RunAccessible(os.Stdout, os.Stdin)
-	}
 	return Run(s)
 }
 
@@ -754,10 +753,13 @@ func (s *Select[T]) WithTheme(theme Theme) Field {
 	s.theme = theme
 	styles := s.theme.Theme(s.hasDarkBg)
 
-	s.filter.Styles.Cursor.Color = styles.Focused.TextInput.Cursor.GetForeground()
-	s.filter.Styles.Focused.Prompt = styles.Focused.TextInput.Prompt
-	s.filter.Styles.Focused.Text = styles.Focused.TextInput.Text
-	s.filter.Styles.Focused.Placeholder = styles.Focused.TextInput.Placeholder
+	st := s.filter.Styles()
+	st.Cursor.Color = styles.Focused.TextInput.Cursor.GetForeground()
+	st.Focused.Prompt = styles.Focused.TextInput.Prompt
+	st.Focused.Text = styles.Focused.TextInput.Text
+	st.Focused.Placeholder = styles.Focused.TextInput.Placeholder
+	s.filter.SetStyles(st)
+
 	s.updateViewportHeight()
 	return s
 }
@@ -769,15 +771,6 @@ func (s *Select[T]) WithKeyMap(k *KeyMap) Field {
 	s.keymap.Right.SetEnabled(s.inline)
 	s.keymap.Up.SetEnabled(!s.inline)
 	s.keymap.Down.SetEnabled(!s.inline)
-	return s
-}
-
-// WithAccessible sets the accessible mode of the select field.
-//
-// Deprecated: you may now call [Select.RunAccessible] directly to run the
-// field in accessible mode.
-func (s *Select[T]) WithAccessible(accessible bool) Field {
-	s.accessible = accessible
 	return s
 }
 
