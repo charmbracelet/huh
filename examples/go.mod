@@ -4,7 +4,7 @@ go 1.24.2
 
 require (
 	github.com/charmbracelet/bubbles/v2 v2.0.0-beta.1.0.20250929183847-c2223a7c4f54
-	github.com/charmbracelet/bubbletea/v2 v2.0.0-beta.4.0.20250930175933-4cafc092c5e7
+	github.com/charmbracelet/bubbletea/v2 v2.0.0-beta.4.0.20251001203853-2e341cf94b3d
 	github.com/charmbracelet/glamour/v2 v2.0.0-20251001162047-c63e512f51d6
 	github.com/charmbracelet/huh/v2 v2.0.0-00010101000000-000000000000
 	github.com/charmbracelet/lipgloss/v2 v2.0.0-beta.3.0.20250917201909-41ff0bf215ea
