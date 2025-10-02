@@ -1,6 +1,6 @@
 package main
 
-import "github.com/charmbracelet/huh"
+import "github.com/charmbracelet/huh/v2"
 
 // TODO: ensure input is not plagiarized.
 func checkForPlagiarism(s string) error { return nil }

@@ -5,21 +5,21 @@ import (
 	"strings"
 	"time"
 
-	"github.com/charmbracelet/bubbles/progress"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh"
-	"github.com/charmbracelet/lipgloss"
-)
-
-const (
-	focusColor = "#2EF8BB"
-	breakColor = "#FF5F87"
+	"github.com/charmbracelet/bubbles/v2/progress"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/huh/v2"
+	"github.com/charmbracelet/lipgloss/v2"
 )
 
 var (
-	focusTitleStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(focusColor)).MarginRight(1).SetString("Focus Mode")
-	breakTitleStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(breakColor)).MarginRight(1).SetString("Break Mode")
-	pausedStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color(breakColor)).MarginRight(1).SetString("Continue?")
+	focusColor = lipgloss.Color("#2EF8BB")
+	breakColor = lipgloss.Color("#FF5F87")
+)
+
+var (
+	focusTitleStyle = lipgloss.NewStyle().Foreground(focusColor).MarginRight(1).SetString("Focus Mode")
+	breakTitleStyle = lipgloss.NewStyle().Foreground(breakColor).MarginRight(1).SetString("Break Mode")
+	pausedStyle     = lipgloss.NewStyle().Foreground(breakColor).MarginRight(1).SetString("Continue?")
 	helpStyle       = lipgloss.NewStyle().Foreground(lipgloss.Color("240")).MarginTop(2)
 	sidebarStyle    = lipgloss.NewStyle().MarginLeft(3).Padding(1, 3).Border(lipgloss.RoundedBorder()).BorderForeground(helpStyle.GetForeground())
 )
@@ -165,14 +165,17 @@ func (m Model) View() string {
 	return baseTimerStyle.Render(s.String())
 }
 
-func NewModel() Model {
-	theme := huh.ThemeCharm()
+func customTheme(isDark bool) *huh.Styles {
+	theme := huh.ThemeCharm(isDark)
 	theme.Focused.Base.Border(lipgloss.HiddenBorder())
-	theme.Focused.Title.Foreground(lipgloss.Color(focusColor))
-	theme.Focused.SelectSelector.Foreground(lipgloss.Color(focusColor))
+	theme.Focused.Title.Foreground(focusColor)
+	theme.Focused.SelectSelector.Foreground(focusColor)
 	theme.Focused.SelectedOption.Foreground(lipgloss.Color("15"))
 	theme.Focused.Option.Foreground(lipgloss.Color("7"))
+	return theme
+}
 
+func NewModel() Model {
 	form := huh.NewForm(
 		huh.NewGroup(
 			huh.NewSelect[time.Duration]().
@@ -196,7 +199,7 @@ func NewModel() Model {
 					huh.NewOption("20 minutes", 20*time.Minute),
 				),
 		),
-	).WithShowHelp(false).WithTheme(theme)
+	).WithShowHelp(false).WithTheme(huh.ThemeFunc(customTheme))
 
 	progress := progress.New()
 	progress.FullColor = focusColor
