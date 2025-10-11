@@ -173,6 +173,11 @@ func (f *FilePicker) Zoom() bool {
 	return f.picking
 }
 
+// Hide returns whether this input should be hidden and not updated.
+func (*FilePicker) Hide() bool {
+    return false
+}
+
 // Focus focuses the file field.
 func (f *FilePicker) Focus() tea.Cmd {
 	f.focused = true
