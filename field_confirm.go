@@ -2,14 +2,23 @@ package huh
 
 import (
 	"cmp"
+	"fmt"
 	"io"
 	"os"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/internal/accessibility"
 	"github.com/charmbracelet/lipgloss"
+
+	"github.com/charmbracelet/huh/internal/accessibility"
+)
+
+// Use unicode block spaces for consistent spacing and calculate max width for alignment
+const (
+	markerSelected   = "▶ "  // Unicode triangle marker for selected option
+	markerUnselected = "  "  // Two unicode block spaces for unselected option
+	separator        = "   " // Three unicode block spaces for separation between options
 )
 
 // Confirm is a form confirm field.
@@ -262,25 +271,45 @@ func (c *Confirm) View() string {
 		sb.WriteString("\n")
 	}
 
+	// Calculate the maximum width needed for both options to ensure consistent layout
+	maxOptionWidth := max(len(c.affirmative), len(c.negative))
+
+	// Format options with consistent width padding
+	yesText := c.affirmative
+	noText := c.negative
+
+	// Pad options to ensure consistent width
+	yesTextPadded := fmt.Sprintf("%-*s", maxOptionWidth, yesText)
+	noTextPadded := fmt.Sprintf("%-*s", maxOptionWidth, noText)
+
+	var yesDisplay, noDisplay string
 	var negative string
 	var affirmative string
 	if c.negative != "" {
 		if c.accessor.Get() {
-			affirmative = styles.FocusedButton.Render(c.affirmative)
-			negative = styles.BlurredButton.Render(c.negative)
+			yesDisplay = markerSelected + yesTextPadded
+			noDisplay = markerUnselected + noTextPadded
 		} else {
-			affirmative = styles.BlurredButton.Render(c.affirmative)
-			negative = styles.FocusedButton.Render(c.negative)
+			yesDisplay = markerUnselected + yesTextPadded
+			noDisplay = markerSelected + noTextPadded
 		}
+
+		affirmative = styles.FocusedButton.Render(yesDisplay)
+		negative = styles.BlurredButton.Render(noDisplay)
+		if !c.accessor.Get() {
+			affirmative, negative = styles.BlurredButton.Render(yesDisplay), styles.FocusedButton.Render(noDisplay)
+		}
+
 		c.keymap.Reject.SetHelp("n", c.negative)
 	} else {
-		affirmative = styles.FocusedButton.Render(c.affirmative)
+		yesDisplay = markerSelected + yesTextPadded
+		affirmative = styles.FocusedButton.Render(yesDisplay)
 		c.keymap.Reject.SetEnabled(false)
 	}
 
 	c.keymap.Accept.SetHelp("y", c.affirmative)
 
-	buttonsRow := lipgloss.JoinHorizontal(c.buttonAlignment, affirmative, negative)
+	buttonsRow := lipgloss.JoinHorizontal(lipgloss.Left, affirmative, separator, negative)
 
 	promptWidth := lipgloss.Width(sb.String())
 	buttonsWidth := lipgloss.Width(buttonsRow)
