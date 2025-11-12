@@ -73,17 +73,28 @@ func NewModel() Model {
 	m.lg = lipgloss.DefaultRenderer()
 	m.styles = NewStyles(m.lg)
 
+	var class string
+
 	m.form = huh.NewForm(
 		huh.NewGroup(
 			huh.NewSelect[string]().
 				Key("class").
+				Value(&class).
 				Options(huh.NewOptions("Warrior", "Mage", "Rogue")...).
 				Title("Choose your class").
 				Description("This will determine your department"),
 
 			huh.NewSelect[string]().
 				Key("level").
-				Options(huh.NewOptions("1", "20", "9999")...).
+				OptionsFunc(func() []huh.Option[string] {
+					switch class {
+					case "Warrior":
+						return huh.NewOptions("1", "20", "9999")
+					case "Mage":
+						return huh.NewOptions("10", "100", "1000")
+					}
+					return huh.NewOptions("1", "20", "9999")
+				}, &class).
 				Title("Choose your level").
 				Description("This will determine your benefits package"),
 
@@ -123,9 +134,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = min(msg.Width, maxWidth) - m.styles.Base.GetHorizontalFrameSize()
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "ctrl+c":
-			return m, tea.Interrupt
-		case "esc", "q":
+		case "esc", "ctrl+c", "q":
 			return m, tea.Quit
 		}
 	}
@@ -269,7 +278,7 @@ func (m Model) getRole() (string, string) {
 	case "Rogue":
 		switch level {
 		case "1":
-			return "Stealth Junior Designer", "Designs rogue-like activities. Reports to Stealth Lead."
+			return "Stealth Junior Designer", "Designs rougue-like activities. Reports to Stealth Lead."
 		case "9999":
 			return "Stealth Lead", "Lead designer for all things stealth. Some travel required."
 		default:

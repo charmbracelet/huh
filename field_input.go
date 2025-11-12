@@ -1,13 +1,17 @@
 package huh
 
 import (
+	"cmp"
+	"errors"
 	"fmt"
+	"io"
+	"os"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/accessibility"
+	"github.com/charmbracelet/huh/internal/accessibility"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -34,9 +38,9 @@ type Input struct {
 	err      error
 	focused  bool
 
-	accessible bool
+	accessible bool // Deprecated: use RunAccessible instead.
 	width      int
-	height     int // not really used anywhere
+	height     int
 
 	theme  *Theme
 	keymap InputKeyMap
@@ -174,15 +178,15 @@ func (i *Input) SuggestionsFunc(f func() []string, bindings any) *Input {
 type EchoMode textinput.EchoMode
 
 const (
-	// EchoNormal displays text as is.
+	// EchoModeNormal displays text as is.
 	// This is the default behavior.
 	EchoModeNormal EchoMode = EchoMode(textinput.EchoNormal)
 
-	// EchoPassword displays the EchoCharacter mask instead of actual characters.
+	// EchoModePassword displays the EchoCharacter mask instead of actual characters.
 	// This is commonly used for password fields.
 	EchoModePassword EchoMode = EchoMode(textinput.EchoPassword)
 
-	// EchoNone displays nothing as characters are entered.
+	// EchoModeNone displays nothing as characters are entered.
 	// This is commonly seen for password fields on the command line.
 	EchoModeNone EchoMode = EchoMode(textinput.EchoNone)
 )
@@ -342,11 +346,6 @@ func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		switch {
 		case key.Matches(msg, i.keymap.Prev):
-			value := i.textinput.Value()
-			i.err = i.validate(value)
-			if i.err != nil {
-				return i, nil
-			}
 			cmds = append(cmds, PrevField)
 		case key.Matches(msg, i.keymap.Next, i.keymap.Submit):
 			value := i.textinput.Value()
@@ -379,6 +378,7 @@ func (i *Input) activeStyles() *FieldStyles {
 // View renders the input field.
 func (i *Input) View() string {
 	styles := i.activeStyles()
+	maxWidth := i.width - styles.Base.GetHorizontalFrameSize()
 
 	// NB: since the method is on a pointer receiver these are being mutated.
 	// Because this runs on every render this shouldn't matter in practice,
@@ -391,31 +391,34 @@ func (i *Input) View() string {
 
 	// Adjust text input size to its char limit if it fit in its width
 	if i.textinput.CharLimit > 0 {
-		i.textinput.Width = min(i.textinput.CharLimit, i.textinput.Width)
+		i.textinput.Width = max(min(i.textinput.CharLimit, i.textinput.Width, maxWidth), 0)
 	}
 
 	var sb strings.Builder
 	if i.title.val != "" || i.title.fn != nil {
-		sb.WriteString(styles.Title.Render(i.title.val))
+		sb.WriteString(styles.Title.Render(wrap(i.title.val, maxWidth)))
 		if !i.inline {
 			sb.WriteString("\n")
 		}
 	}
 	if i.description.val != "" || i.description.fn != nil {
-		sb.WriteString(styles.Description.Render(i.description.val))
+		sb.WriteString(styles.Description.Render(wrap(i.description.val, maxWidth)))
 		if !i.inline {
 			sb.WriteString("\n")
 		}
 	}
 	sb.WriteString(i.textinput.View())
 
-	return styles.Base.Render(sb.String())
+	return styles.Base.
+		Width(i.width).
+		Height(i.height).
+		Render(sb.String())
 }
 
 // Run runs the input field in accessible mode.
 func (i *Input) Run() error {
-	if i.accessible {
-		return i.runAccessible()
+	if i.accessible { // TODO: remove in a future release.
+		return i.RunAccessible(os.Stdout, os.Stdin)
 	}
 	return i.run()
 }
@@ -425,14 +428,38 @@ func (i *Input) run() error {
 	return Run(i)
 }
 
-// runAccessible runs the input field in accessible mode.
-func (i *Input) runAccessible() error {
+// RunAccessible runs the input field in accessible mode.
+func (i *Input) RunAccessible(w io.Writer, r io.Reader) error {
 	styles := i.activeStyles()
-	fmt.Println(styles.Title.Render(i.title.val))
-	fmt.Println()
-	i.accessor.Set(accessibility.PromptString("Input: ", i.validate))
-	fmt.Println(styles.SelectedOption.Render("Input: " + i.accessor.Get() + "\n"))
-	return nil
+	validator := func(input string) error {
+		if i.textinput.CharLimit > 0 && len(input) > i.textinput.CharLimit {
+			return fmt.Errorf("Input cannot exceed %d characters", i.textinput.CharLimit)
+		}
+		return i.validate(input)
+	}
+
+	switch i.textinput.EchoMode { //nolint:exhaustive
+	case textinput.EchoNormal:
+		prompt := styles.Title.
+			PaddingRight(1).
+			Render(cmp.Or(i.title.val, "Input:"))
+		value := accessibility.PromptString(w, r, prompt, i.GetValue().(string), validator)
+		i.accessor.Set(value)
+		return nil
+	default:
+		prompt := styles.Title.
+			PaddingRight(1).
+			Render(cmp.Or(i.title.val, "Password:"))
+		if fd, ok := r.(interface{ Fd() uintptr }); ok {
+			value, err := accessibility.PromptPassword(w, fd.Fd(), prompt, validator)
+			if err != nil {
+				return err //nolint:wrapcheck
+			}
+			i.accessor.Set(value)
+			return nil
+		}
+		return errors.New("password asking needs a tty")
+	}
 }
 
 // WithKeyMap sets the keymap on an input field.
@@ -443,6 +470,9 @@ func (i *Input) WithKeyMap(k *KeyMap) Field {
 }
 
 // WithAccessible sets the accessible mode of the input field.
+//
+// Deprecated: you may now call [Input.RunAccessible] directly to run the
+// field in accessible mode.
 func (i *Input) WithAccessible(accessible bool) Field {
 	i.accessible = accessible
 	return i

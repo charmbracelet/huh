@@ -4,14 +4,14 @@ jobs:
   test:
     strategy:
       matrix:
-        go-version: [1.22, stable]
+        go-version: [oldstable, stable]
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     env:
       GO111MODULE: "on"
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: ${{ matrix.go-version }}
           cache: true
@@ -21,18 +21,17 @@ jobs:
   spinner:
     strategy:
       matrix:
-        go-version: [1.22, stable]
+        go-version: [oldstable, stable]
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     env:
       GO111MODULE: "on"
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: ${{ matrix.go-version }}
           cache: true
-          working-directory: ./spinner
       - run: go mod download
         working-directory: ./spinner
       - run: go build -v ./...
@@ -42,16 +41,15 @@ jobs:
   examples:
     strategy:
       matrix:
-        go-version: [1.22, stable]
+        go-version: [oldstable, stable]
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     env:
       GO111MODULE: "on"
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
         with:
-          working-directory: ./examples
           go-version: ${{ matrix.go-version }}
           cache: true
       - run: go mod download

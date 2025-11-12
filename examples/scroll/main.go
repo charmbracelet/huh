@@ -12,7 +12,7 @@ func main() {
 			huh.NewInput().Title("Fifth"),
 			huh.NewInput().Title("Sixth"),
 			huh.NewInput().Title("Seventh"),
-			huh.NewInput().Title("Eigth"),
+			huh.NewInput().Title("Eighth"),
 			huh.NewInput().Title("Nineth"),
 			huh.NewInput().Title("Tenth"),
 		),

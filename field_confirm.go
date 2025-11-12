@@ -1,12 +1,14 @@
 package huh
 
 import (
-	"fmt"
+	"cmp"
+	"io"
+	"os"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/accessibility"
+	"github.com/charmbracelet/huh/internal/accessibility"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -33,7 +35,7 @@ type Confirm struct {
 	width           int
 	height          int
 	inline          bool
-	accessible      bool
+	accessible      bool // Deprecated: use RunAccessible instead.
 	theme           *Theme
 	keymap          ConfirmKeyMap
 	buttonAlignment lipgloss.Position
@@ -233,21 +235,29 @@ func (c *Confirm) activeStyles() *FieldStyles {
 // View renders the confirm field.
 func (c *Confirm) View() string {
 	styles := c.activeStyles()
+	maxWidth := c.width - styles.Base.GetHorizontalFrameSize()
 
+	var wroteHeader bool
 	var sb strings.Builder
-	sb.WriteString(styles.Title.Render(c.title.val))
+	if c.title.val != "" {
+		sb.WriteString(styles.Title.Render(wrap(c.title.val, maxWidth)))
+		wroteHeader = true
+	}
 	if c.err != nil {
 		sb.WriteString(styles.ErrorIndicator.String())
+		wroteHeader = true
 	}
 
-	description := styles.Description.Render(c.description.val)
-
-	if !c.inline && (c.description.val != "" || c.description.fn != nil) {
-		sb.WriteString("\n")
+	if c.description.val != "" {
+		description := styles.Description.Render(wrap(c.description.val, maxWidth))
+		if !c.inline && (c.description.val != "" || c.description.fn != nil) {
+			sb.WriteString("\n")
+		}
+		sb.WriteString(description)
+		wroteHeader = true
 	}
-	sb.WriteString(description)
 
-	if !c.inline {
+	if !c.inline && wroteHeader {
 		sb.WriteString("\n")
 		sb.WriteString("\n")
 	}
@@ -275,32 +285,35 @@ func (c *Confirm) View() string {
 	promptWidth := lipgloss.Width(sb.String())
 	buttonsWidth := lipgloss.Width(buttonsRow)
 
-	renderWidth := promptWidth
-	if buttonsWidth > renderWidth {
-		renderWidth = buttonsWidth
-	}
+	renderWidth := max(buttonsWidth, promptWidth)
 
 	style := lipgloss.NewStyle().Width(renderWidth).Align(c.buttonAlignment)
 
 	sb.WriteString(style.Render(buttonsRow))
-	return styles.Base.Render(sb.String())
+	return styles.Base.Width(c.width).Height(c.height).
+		Render(sb.String())
 }
 
 // Run runs the confirm field in accessible mode.
 func (c *Confirm) Run() error {
-	if c.accessible {
-		return c.runAccessible()
+	if c.accessible { // TODO: remove in a future release.
+		return c.RunAccessible(os.Stdout, os.Stdin)
 	}
 	return Run(c)
 }
 
-// runAccessible runs the confirm field in accessible mode.
-func (c *Confirm) runAccessible() error {
+// RunAccessible runs the confirm field in accessible mode.
+func (c *Confirm) RunAccessible(w io.Writer, r io.Reader) error {
 	styles := c.activeStyles()
-	fmt.Println(styles.Title.Render(c.title.val))
-	fmt.Println()
-	c.accessor.Set(accessibility.PromptBool())
-	fmt.Println(styles.SelectedOption.Render("Chose: "+c.String()) + "\n")
+	defaultValue := c.GetValue().(bool)
+	opts := "[y/N]"
+	if defaultValue {
+		opts = "[Y/n]"
+	}
+	prompt := styles.Title.
+		PaddingRight(1).
+		Render(cmp.Or(c.title.val, "Choose"), opts)
+	c.accessor.Set(accessibility.PromptBool(w, r, prompt, defaultValue))
 	return nil
 }
 
@@ -327,6 +340,9 @@ func (c *Confirm) WithKeyMap(k *KeyMap) Field {
 }
 
 // WithAccessible sets the accessible mode of the confirm field.
+//
+// Deprecated: you may now call [Confirm.RunAccessible] directly to run the
+// field in accessible mode.
 func (c *Confirm) WithAccessible(accessible bool) Field {
 	c.accessible = accessible
 	return c

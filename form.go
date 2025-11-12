@@ -1,6 +1,7 @@
 package huh
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -82,11 +83,16 @@ type Form struct {
 	// options
 	width      int
 	height     int
+	theme      *Theme
 	keymap     *KeyMap
 	timeout    time.Duration
 	teaOptions []tea.ProgramOption
 
 	layout Layout
+
+	// accessible mode IO
+	output io.Writer
+	input  io.Reader
 }
 
 // NewForm returns a form with the given groups and default themes and
@@ -104,6 +110,7 @@ func NewForm(groups ...*Group) *Form {
 		layout:   LayoutDefault,
 		teaOptions: []tea.ProgramOption{
 			tea.WithOutput(os.Stderr),
+			tea.WithReportFocus(),
 		},
 	}
 
@@ -144,6 +151,9 @@ type Field interface {
 	// Run runs the field individually.
 	Run() error
 
+	// RunAccessible runs the field in accessible mode with the given IO.
+	RunAccessible(w io.Writer, r io.Reader) error
+
 	// Skip returns whether this input should be skipped or not.
 	Skip() bool
 
@@ -158,6 +168,8 @@ type Field interface {
 	WithTheme(*Theme) Field
 
 	// WithAccessible sets whether the field should run in accessible mode.
+	//
+	// Deprecated: you may now call [Field.RunAccessible] directly to run the field in accessible mode.
 	WithAccessible(bool) Field
 
 	// WithKeyMap sets the keymap on a field.
@@ -260,6 +272,7 @@ func (f *Form) WithTheme(theme *Theme) *Form {
 	if theme == nil {
 		return f
 	}
+	f.theme = theme
 	f.selector.Range(func(_ int, group *Group) bool {
 		group.WithTheme(theme)
 		return true
@@ -315,13 +328,17 @@ func (f *Form) WithHeight(height int) *Form {
 }
 
 // WithOutput sets the io.Writer to output the form.
+// Default is STDOUT when [Form] is accessible (set with [Form.WithAccessible], STDERR otherwise.
 func (f *Form) WithOutput(w io.Writer) *Form {
+	f.output = w
 	f.teaOptions = append(f.teaOptions, tea.WithOutput(w))
 	return f
 }
 
 // WithInput sets the io.Reader to the input form.
+// Default is STDIN.
 func (f *Form) WithInput(r io.Reader) *Form {
+	f.input = r
 	f.teaOptions = append(f.teaOptions, tea.WithInput(r))
 	return f
 }
@@ -473,20 +490,25 @@ func (f *Form) NextField() tea.Cmd {
 	return cmd
 }
 
-// NextField moves the form to the next field.
+// PrevField moves the form to the next field.
 func (f *Form) PrevField() tea.Cmd {
 	_, cmd := f.Update(PrevField())
 	return cmd
 }
 
+// GetFocusedField returns the focused form field.
+func (f *Form) GetFocusedField() Field {
+	return f.selector.Selected().selector.Selected()
+}
+
 // Init initializes the form.
 func (f *Form) Init() tea.Cmd {
-	cmds := make([]tea.Cmd, f.selector.Total())
+	var cmds []tea.Cmd
 	f.selector.Range(func(i int, group *Group) bool {
 		if i == 0 {
 			group.active = true
 		}
-		cmds[i] = group.Init()
+		cmds = append(cmds, group.Init())
 		return true
 	})
 
@@ -494,7 +516,8 @@ func (f *Form) Init() tea.Cmd {
 		cmds = append(cmds, nextGroup)
 	}
 
-	return tea.Batch(cmds...)
+	cmds = append(cmds, tea.WindowSize())
+	return tea.Sequence(cmds...)
 }
 
 // Update updates the form.
@@ -508,23 +531,28 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		if f.width > 0 {
-			break
+		if f.width == 0 {
+			f.selector.Range(func(_ int, group *Group) bool {
+				width := f.layout.GroupWidth(f, group, msg.Width)
+				group.WithWidth(width)
+				return true
+			})
 		}
-		f.selector.Range(func(_ int, group *Group) bool {
-			width := f.layout.GroupWidth(f, group, msg.Width)
-			group.WithWidth(width)
-			return true
-		})
-		if f.height > 0 {
-			break
+		if f.height == 0 {
+			// calculate the needed height, which is the height of the
+			// heightest group, accounting for the width, wraps, etc.
+			neededHeight := 0
+			f.selector.Range(func(_ int, group *Group) bool {
+				neededHeight = max(neededHeight, group.rawHeight())
+				return true
+			})
+
+			f.selector.Range(func(_ int, group *Group) bool {
+				group.WithHeight(min(neededHeight, msg.Height))
+				return true
+			})
 		}
-		f.selector.Range(func(_ int, group *Group) bool {
-			if group.fullHeight() > msg.Height {
-				group.WithHeight(msg.Height)
-			}
-			return true
-		})
+
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, f.keymap.Quit):
@@ -605,13 +633,24 @@ func (f *Form) isGroupHidden(group *Group) bool {
 	return hide()
 }
 
+func (f *Form) getTheme() *Theme {
+	if f.theme != nil {
+		return f.theme
+	}
+	return ThemeCharm()
+}
+
+func (f *Form) styles() FormStyles {
+	return f.getTheme().Form
+}
+
 // View renders the form.
 func (f *Form) View() string {
 	if f.quitting {
 		return ""
 	}
 
-	return f.layout.View(f)
+	return f.styles().Base.Render(f.layout.View(f))
 }
 
 // Run runs the form.
@@ -622,14 +661,17 @@ func (f *Form) Run() error {
 // RunWithContext runs the form with the given context.
 func (f *Form) RunWithContext(ctx context.Context) error {
 	f.SubmitCmd = tea.Quit
-	f.CancelCmd = tea.Quit
+	f.CancelCmd = tea.Interrupt
 
 	if f.selector.Total() == 0 {
 		return nil
 	}
 
 	if f.accessible {
-		return f.runAccessible()
+		return f.runAccessible(
+			cmp.Or[io.Writer](f.output, os.Stdout),
+			cmp.Or[io.Reader](f.input, os.Stdin),
+		)
 	}
 
 	return f.run(ctx)
@@ -637,16 +679,15 @@ func (f *Form) RunWithContext(ctx context.Context) error {
 
 // run runs the form in normal mode.
 func (f *Form) run(ctx context.Context) error {
+	var cancel context.CancelFunc
 	if f.timeout > 0 {
-		ctx, cancel := context.WithTimeout(ctx, f.timeout)
+		ctx, cancel = context.WithTimeout(ctx, f.timeout)
 		defer cancel()
-		f.teaOptions = append(f.teaOptions, tea.WithContext(ctx), tea.WithReportFocus())
-	} else {
-		f.teaOptions = append(f.teaOptions, tea.WithContext(ctx), tea.WithReportFocus())
 	}
 
+	f.teaOptions = append(f.teaOptions, tea.WithContext(ctx))
 	m, err := tea.NewProgram(f, f.teaOptions...).Run()
-	if m.(*Form).aborted {
+	if m.(*Form).aborted || errors.Is(err, tea.ErrInterrupted) {
 		return ErrUserAborted
 	}
 	if errors.Is(err, tea.ErrProgramKilled) {
@@ -659,7 +700,7 @@ func (f *Form) run(ctx context.Context) error {
 }
 
 // runAccessible runs the form in accessible mode.
-func (f *Form) runAccessible() error {
+func (f *Form) runAccessible(w io.Writer, r io.Reader) error {
 	// Timeouts are not supported in this mode.
 	if f.timeout > 0 {
 		return ErrTimeoutUnsupported
@@ -669,7 +710,8 @@ func (f *Form) runAccessible() error {
 		group.selector.Range(func(_ int, field Field) bool {
 			field.Init()
 			field.Focus()
-			_ = field.WithAccessible(true).Run()
+			_ = field.WithAccessible(true).RunAccessible(w, r)
+			_, _ = fmt.Fprintln(w)
 			return true
 		})
 		return true

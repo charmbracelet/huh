@@ -1,12 +1,11 @@
 package spinner
 
 import (
+	"cmp"
 	"context"
-	"errors"
-	"fmt"
+	"io"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
@@ -23,12 +22,13 @@ import (
 // ⣾  Loading...
 type Spinner struct {
 	spinner    spinner.Model
-	action     func()
+	action     func(ctx context.Context) error
 	ctx        context.Context
 	accessible bool
-	output     *termenv.Output
 	title      string
 	titleStyle lipgloss.Style
+	output     io.Writer
+	err        error
 }
 
 type Type spinner.Spinner
@@ -60,8 +60,27 @@ func (s *Spinner) Title(title string) *Spinner {
 	return s
 }
 
+// Output set the output for the spinner.
+// Default is STDOUT when [Spinner.Accessible], STDERR otherwise.
+func (s *Spinner) Output(w io.Writer) *Spinner {
+	s.output = w
+	return s
+}
+
 // Action sets the action of the spinner.
 func (s *Spinner) Action(action func()) *Spinner {
+	s.action = func(context.Context) error {
+		action()
+		return nil
+	}
+	return s
+}
+
+// ActionWithErr sets the action of the spinner.
+//
+// This is just like [Spinner.Action], but allows the action to use a `context.Context`
+// and to return an error.
+func (s *Spinner) ActionWithErr(action func(context.Context) error) *Spinner {
 	s.action = action
 	return s
 }
@@ -98,28 +117,33 @@ func New() *Spinner {
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("#F780E2"))
 
 	return &Spinner{
-		action:     func() { time.Sleep(time.Second) },
 		spinner:    s,
 		title:      "Loading...",
 		titleStyle: lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#00020A", Dark: "#FFFDF5"}),
-		output:     termenv.NewOutput(os.Stdout),
-		ctx:        nil,
 	}
 }
 
 // Init initializes the spinner.
 func (s *Spinner) Init() tea.Cmd {
-	return s.spinner.Tick
+	return tea.Batch(s.spinner.Tick, func() tea.Msg {
+		if s.action != nil {
+			err := s.action(s.ctx)
+			return doneMsg{err}
+		}
+		return nil
+	})
 }
 
 // Update updates the spinner.
 func (s *Spinner) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case spinner.TickMsg:
+	case doneMsg:
+		s.err = msg.err
+		return s, tea.Quit
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c":
-			return s, tea.Quit
+			return s, tea.Interrupt
 		}
 	}
 
@@ -132,74 +156,71 @@ func (s *Spinner) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (s *Spinner) View() string {
 	var title string
 	if s.title != "" {
-		title = s.titleStyle.Render(s.title) + " "
+		title = s.titleStyle.Render(s.title)
 	}
 	return s.spinner.View() + title
 }
 
 // Run runs the spinner.
 func (s *Spinner) Run() error {
-	if s.accessible {
-		return s.runAccessible()
-	}
-
-	hasCtx := s.ctx != nil
-	hasCtxErr := hasCtx && s.ctx.Err() != nil
-
-	if hasCtxErr {
-		if errors.Is(s.ctx.Err(), context.Canceled) {
-			return nil
-		}
-		return s.ctx.Err()
-	}
-
-	p := tea.NewProgram(s, tea.WithContext(s.ctx), tea.WithOutput(os.Stderr))
-	if s.ctx == nil {
-		go func() {
-			s.action()
-			p.Quit()
-		}()
-	}
-
-	_, err := p.Run()
-	if errors.Is(err, tea.ErrProgramKilled) {
+	if s.ctx == nil && s.action == nil {
 		return nil
-	} else {
+	}
+	if s.ctx == nil {
+		s.ctx = context.Background()
+	}
+	if err := s.ctx.Err(); err != nil {
 		return err
 	}
+
+	if s.accessible {
+		out := cmp.Or[io.Writer](s.output, os.Stdout)
+		return s.runAccessible(out)
+	}
+
+	m, err := tea.NewProgram(
+		s,
+		tea.WithContext(s.ctx),
+		tea.WithOutput(s.output),
+		tea.WithInput(nil),
+	).Run()
+	mm := m.(*Spinner)
+	if mm.err != nil {
+		return mm.err
+	}
+	return err
 }
 
 // runAccessible runs the spinner in an accessible mode (statically).
-func (s *Spinner) runAccessible() error {
-	s.output.HideCursor()
+func (s *Spinner) runAccessible(out io.Writer) error {
+	output := termenv.NewOutput(out)
+	output.HideCursor()
 	frame := s.spinner.Style.Render("...")
 	title := s.titleStyle.Render(strings.TrimSuffix(s.title, "..."))
-	fmt.Println(title + frame)
+	_, _ = io.WriteString(out, title+frame)
 
-	if s.ctx == nil {
-		s.action()
-		s.output.ShowCursor()
-		s.output.CursorBack(len(frame) + len(title))
-		return nil
-	}
-
-	actionDone := make(chan struct{})
-
-	go func() {
-		s.action()
-		actionDone <- struct{}{}
+	defer func() {
+		output.ShowCursor()
+		output.CursorBack(len(frame) + len(title))
 	}()
+
+	actionDone := make(chan error)
+	if s.action != nil {
+		go func() {
+			actionDone <- s.action(s.ctx)
+		}()
+	}
 
 	for {
 		select {
 		case <-s.ctx.Done():
-			s.output.ShowCursor()
-			s.output.CursorBack(len(frame) + len(title))
 			return s.ctx.Err()
-		case <-actionDone:
-			s.output.ShowCursor()
-			s.output.CursorBack(len(frame) + len(title))
-			return nil
+		case err := <-actionDone:
+			return err
 		}
 	}
+}
+
+type doneMsg struct {
+	err error
 }

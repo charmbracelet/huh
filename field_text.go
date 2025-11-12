@@ -1,7 +1,9 @@
 package huh
 
 import (
+	"cmp"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"strings"
@@ -9,7 +11,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/accessibility"
+	"github.com/charmbracelet/huh/internal/accessibility"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -27,6 +29,7 @@ type Text struct {
 	description Eval[string]
 	placeholder Eval[string]
 
+	externalEditor  bool
 	editorCmd       string
 	editorArgs      []string
 	editorExtension string
@@ -37,7 +40,7 @@ type Text struct {
 	validate func(string) error
 	err      error
 
-	accessible bool
+	accessible bool // Deprecated: use RunAccessible instead.
 	width      int
 
 	theme  *Theme
@@ -62,6 +65,7 @@ func NewText() *Text {
 		id:              nextID(),
 		textarea:        text,
 		validate:        func(string) error { return nil },
+		externalEditor:  true,
 		editorCmd:       editorCmd,
 		editorArgs:      editorArgs,
 		editorExtension: "md",
@@ -180,6 +184,12 @@ func (t *Text) Validate(validate func(string) error) *Text {
 	return t
 }
 
+// ExternalEditor sets whether option to launch an editor is available.
+func (t *Text) ExternalEditor(enabled bool) *Text {
+	t.externalEditor = enabled
+	return t
+}
+
 const defaultEditor = "nano"
 
 // getEditor returns the editor command and arguments.
@@ -237,6 +247,7 @@ func (t *Text) Blur() tea.Cmd {
 
 // KeyBinds returns the help message for the text field.
 func (t *Text) KeyBinds() []key.Binding {
+	t.keymap.Editor.SetEnabled(t.externalEditor)
 	return []key.Binding{t.keymap.NewLine, t.keymap.Editor, t.keymap.Prev, t.keymap.Submit, t.keymap.Next}
 }
 
@@ -377,48 +388,55 @@ func (t *Text) View() string {
 	t.textarea.Cursor.Style = styles.TextInput.Cursor
 	t.textarea.Cursor.TextStyle = styles.TextInput.CursorText
 
-	var sb strings.Builder
+	maxWidth := t.width - styles.Base.GetHorizontalFrameSize()
+	var parts []string
 	if t.title.val != "" || t.title.fn != nil {
-		sb.WriteString(styles.Title.Render(t.title.val))
+		header := styles.Title.Render(wrap(t.title.val, maxWidth))
 		if t.err != nil {
-			sb.WriteString(styles.ErrorIndicator.String())
+			header += styles.ErrorIndicator.String()
 		}
-		sb.WriteString("\n")
+		parts = append(parts, header)
 	}
 	if t.description.val != "" || t.description.fn != nil {
-		sb.WriteString(styles.Description.Render(t.description.val))
-		sb.WriteString("\n")
+		parts = append(parts, styles.Description.Render(wrap(t.description.val, maxWidth)))
 	}
-	sb.WriteString(t.textarea.View())
+	parts = append(parts, t.textarea.View())
 
-	return styles.Base.Render(sb.String())
+	return styles.Base.
+		Render(strings.Join(parts, "\n"))
 }
 
 // Run runs the text field.
 func (t *Text) Run() error {
-	if t.accessible {
-		return t.runAccessible()
+	if t.accessible { // TODO: remove in a future release.
+		return t.RunAccessible(os.Stdout, os.Stdin)
 	}
 	return Run(t)
 }
 
-// runAccessible runs an accessible text field.
-func (t *Text) runAccessible() error {
+// RunAccessible runs an accessible text field.
+func (t *Text) RunAccessible(w io.Writer, r io.Reader) error {
 	styles := t.activeStyles()
-	fmt.Println(styles.Title.Render(t.title.val))
-	fmt.Println()
-	t.accessor.Set(accessibility.PromptString("Input: ", func(input string) error {
-		if err := t.validate(input); err != nil {
-			// Handle the error from t.validate, return it
-			return err
-		}
+	prompt := styles.Title.
+		PaddingRight(1).
+		Render(cmp.Or(t.title.val, "Input:"))
+	t.accessor.Set(accessibility.PromptString(
+		w,
+		r,
+		prompt,
+		t.GetValue().(string),
+		func(input string) error {
+			if err := t.validate(input); err != nil {
+				// Handle the error from t.validate, return it
+				return err
+			}
 
-		if len(input) > t.textarea.CharLimit {
-			return fmt.Errorf("Input cannot exceed %d characters", t.textarea.CharLimit)
-		}
-		return nil
-	}))
-	fmt.Println()
+			if t.textarea.CharLimit > 0 && len(input) > t.textarea.CharLimit {
+				return fmt.Errorf("Input cannot exceed %d characters", t.textarea.CharLimit)
+			}
+			return nil
+		},
+	))
 	return nil
 }
 
@@ -439,6 +457,9 @@ func (t *Text) WithKeyMap(k *KeyMap) Field {
 }
 
 // WithAccessible sets the accessible mode of the text field.
+//
+// Deprecated: you may now call [Text.RunAccessible] directly to run the
+// field in accessible mode.
 func (t *Text) WithAccessible(accessible bool) Field {
 	t.accessible = accessible
 	return t

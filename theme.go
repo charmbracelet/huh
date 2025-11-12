@@ -9,12 +9,24 @@ import (
 // Theme is a collection of styles for components of the form.
 // Themes can be applied to a form using the WithTheme option.
 type Theme struct {
-	Form           lipgloss.Style
-	Group          lipgloss.Style
+	Form           FormStyles
+	Group          GroupStyles
 	FieldSeparator lipgloss.Style
 	Blurred        FieldStyles
 	Focused        FieldStyles
 	Help           help.Styles
+}
+
+// FormStyles are the styles for a form.
+type FormStyles struct {
+	Base lipgloss.Style
+}
+
+// GroupStyles are the styles for a group.
+type GroupStyles struct {
+	Base        lipgloss.Style
+	Title       lipgloss.Style
+	Description lipgloss.Style
 }
 
 // FieldStyles are the styles for input fields.
@@ -74,6 +86,8 @@ const (
 func ThemeBase() *Theme {
 	var t Theme
 
+	t.Form.Base = lipgloss.NewStyle()
+	t.Group.Base = lipgloss.NewStyle()
 	t.FieldSeparator = lipgloss.NewStyle().SetString("\n\n")
 
 	button := lipgloss.NewStyle().
@@ -82,7 +96,7 @@ func ThemeBase() *Theme {
 
 	// Focused styles.
 	t.Focused.Base = lipgloss.NewStyle().PaddingLeft(1).BorderStyle(lipgloss.ThickBorder()).BorderLeft(true)
-	t.Focused.Card = lipgloss.NewStyle().PaddingLeft(1)
+	t.Focused.Card = t.Focused.Base
 	t.Focused.ErrorIndicator = lipgloss.NewStyle().SetString(" *")
 	t.Focused.ErrorMessage = lipgloss.NewStyle().SetString(" *")
 	t.Focused.SelectSelector = lipgloss.NewStyle().SetString("> ")
@@ -100,6 +114,7 @@ func ThemeBase() *Theme {
 	// Blurred styles.
 	t.Blurred = t.Focused
 	t.Blurred.Base = t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
+	t.Blurred.Card = t.Blurred.Base
 	t.Blurred.MultiSelectSelector = lipgloss.NewStyle().SetString("  ")
 	t.Blurred.NextIndicator = lipgloss.NewStyle()
 	t.Blurred.PrevIndicator = lipgloss.NewStyle()
@@ -121,6 +136,7 @@ func ThemeCharm() *Theme {
 	)
 
 	t.Focused.Base = t.Focused.Base.BorderForeground(lipgloss.Color("238"))
+	t.Focused.Card = t.Focused.Base
 	t.Focused.Title = t.Focused.Title.Foreground(indigo).Bold(true)
 	t.Focused.NoteTitle = t.Focused.NoteTitle.Foreground(indigo).Bold(true).MarginBottom(1)
 	t.Focused.Directory = t.Focused.Directory.Foreground(indigo)
@@ -146,9 +162,12 @@ func ThemeCharm() *Theme {
 
 	t.Blurred = t.Focused
 	t.Blurred.Base = t.Focused.Base.BorderStyle(lipgloss.HiddenBorder())
+	t.Blurred.Card = t.Blurred.Base
 	t.Blurred.NextIndicator = lipgloss.NewStyle()
 	t.Blurred.PrevIndicator = lipgloss.NewStyle()
 
+	t.Group.Title = t.Focused.Title
+	t.Group.Description = t.Focused.Description
 	return t
 }
 
@@ -168,6 +187,7 @@ func ThemeDracula() *Theme {
 	)
 
 	t.Focused.Base = t.Focused.Base.BorderForeground(selection)
+	t.Focused.Card = t.Focused.Base
 	t.Focused.Title = t.Focused.Title.Foreground(purple)
 	t.Focused.NoteTitle = t.Focused.NoteTitle.Foreground(purple)
 	t.Focused.Description = t.Focused.Description.Foreground(comment)
@@ -193,9 +213,12 @@ func ThemeDracula() *Theme {
 
 	t.Blurred = t.Focused
 	t.Blurred.Base = t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
+	t.Blurred.Card = t.Blurred.Base
 	t.Blurred.NextIndicator = lipgloss.NewStyle()
 	t.Blurred.PrevIndicator = lipgloss.NewStyle()
 
+	t.Group.Title = t.Focused.Title
+	t.Group.Description = t.Focused.Description
 	return t
 }
 
@@ -204,6 +227,7 @@ func ThemeBase16() *Theme {
 	t := ThemeBase()
 
 	t.Focused.Base = t.Focused.Base.BorderForeground(lipgloss.Color("8"))
+	t.Focused.Card = t.Focused.Base
 	t.Focused.Title = t.Focused.Title.Foreground(lipgloss.Color("6"))
 	t.Focused.NoteTitle = t.Focused.NoteTitle.Foreground(lipgloss.Color("6"))
 	t.Focused.Directory = t.Focused.Directory.Foreground(lipgloss.Color("6"))
@@ -227,6 +251,7 @@ func ThemeBase16() *Theme {
 
 	t.Blurred = t.Focused
 	t.Blurred.Base = t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
+	t.Blurred.Card = t.Blurred.Base
 	t.Blurred.NoteTitle = t.Blurred.NoteTitle.Foreground(lipgloss.Color("8"))
 	t.Blurred.Title = t.Blurred.NoteTitle.Foreground(lipgloss.Color("8"))
 
@@ -235,6 +260,9 @@ func ThemeBase16() *Theme {
 
 	t.Blurred.NextIndicator = lipgloss.NewStyle()
 	t.Blurred.PrevIndicator = lipgloss.NewStyle()
+
+	t.Group.Title = t.Focused.Title
+	t.Group.Description = t.Focused.Description
 
 	return t
 }
@@ -260,6 +288,7 @@ func ThemeCatppuccin() *Theme {
 	)
 
 	t.Focused.Base = t.Focused.Base.BorderForeground(subtext1)
+	t.Focused.Card = t.Focused.Base
 	t.Focused.Title = t.Focused.Title.Foreground(mauve)
 	t.Focused.NoteTitle = t.Focused.NoteTitle.Foreground(mauve)
 	t.Focused.Directory = t.Focused.Directory.Foreground(mauve)
@@ -284,6 +313,7 @@ func ThemeCatppuccin() *Theme {
 
 	t.Blurred = t.Focused
 	t.Blurred.Base = t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
+	t.Blurred.Card = t.Blurred.Base
 
 	t.Help.Ellipsis = t.Help.Ellipsis.Foreground(subtext0)
 	t.Help.ShortKey = t.Help.ShortKey.Foreground(subtext0)
@@ -293,5 +323,7 @@ func ThemeCatppuccin() *Theme {
 	t.Help.FullDesc = t.Help.FullDesc.Foreground(overlay1)
 	t.Help.FullSeparator = t.Help.FullSeparator.Foreground(subtext0)
 
+	t.Group.Title = t.Focused.Title
+	t.Group.Description = t.Focused.Description
 	return t
 }
