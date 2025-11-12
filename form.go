@@ -77,8 +77,12 @@ type Form struct {
 	// to be more accessible to screen readers.
 	accessible bool
 
-	quitting bool
-	aborted  bool
+	// whether to quit the form after Submitting or not,
+	// defaults to true
+	QuitAfterSubmit bool
+	prevShowHelp    bool
+	quitting        bool
+	aborted         bool
 
 	// options
 	width      int
@@ -112,6 +116,8 @@ func NewForm(groups ...*Group) *Form {
 			tea.WithOutput(os.Stderr),
 			tea.WithReportFocus(),
 		},
+		QuitAfterSubmit: true,
+		prevShowHelp:    true,
 	}
 
 	// NB: If dynamic forms come into play this will need to be applied when
@@ -516,6 +522,8 @@ func (f *Form) Init() tea.Cmd {
 		cmds = append(cmds, nextGroup)
 	}
 
+	f.selector.Selected().showHelp = f.prevShowHelp
+
 	cmds = append(cmds, tea.WindowSize())
 	return tea.Sequence(cmds...)
 }
@@ -579,6 +587,8 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		if f.selector.OnLast() {
+			f.prevShowHelp = f.selector.Selected().showHelp
+			f.selector.Selected().showHelp = false
 			return submit()
 		}
 
@@ -646,7 +656,7 @@ func (f *Form) styles() FormStyles {
 
 // View renders the form.
 func (f *Form) View() string {
-	if f.quitting {
+	if f.quitting && f.QuitAfterSubmit {
 		return ""
 	}
 
