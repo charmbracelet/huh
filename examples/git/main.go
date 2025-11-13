@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/charmbracelet/huh"
+	"github.com/charmbracelet/huh/v2"
 )
 
 // types is the possible commit types specified by the conventional commit spec.

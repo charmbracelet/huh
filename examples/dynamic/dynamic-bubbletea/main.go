@@ -2,21 +2,16 @@ package main
 
 import (
 	"fmt"
+	"image/color"
 	"os"
 	"strings"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh"
-	"github.com/charmbracelet/lipgloss"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/huh/v2"
+	"github.com/charmbracelet/lipgloss/v2"
 )
 
 const maxWidth = 80
-
-var (
-	red    = lipgloss.AdaptiveColor{Light: "#FE5F86", Dark: "#FE5F86"}
-	indigo = lipgloss.AdaptiveColor{Light: "#5A56E0", Dark: "#7571F9"}
-	green  = lipgloss.AdaptiveColor{Light: "#02BA84", Dark: "#02BF87"}
-)
 
 type Styles struct {
 	Base,
@@ -26,29 +21,38 @@ type Styles struct {
 	Highlight,
 	ErrorHeaderText,
 	Help lipgloss.Style
+
+	Red, Indigo, Green color.Color
 }
 
-func NewStyles(lg *lipgloss.Renderer) *Styles {
-	s := Styles{}
-	s.Base = lg.NewStyle().
+func NewStyles(hasDarkBg bool) *Styles {
+	var (
+		s         = Styles{}
+		lightDark = lipgloss.LightDark(hasDarkBg)
+	)
+
+	s.Red = lightDark(lipgloss.Color("#FE5F86"), lipgloss.Color("#FE5F86"))
+	s.Indigo = lightDark(lipgloss.Color("#5A56E0"), lipgloss.Color("#7571F9"))
+	s.Green = lightDark(lipgloss.Color("#02BA84"), lipgloss.Color("#02BF87"))
+	s.Base = lipgloss.NewStyle().
 		Padding(1, 4, 0, 1)
-	s.HeaderText = lg.NewStyle().
-		Foreground(indigo).
+	s.HeaderText = lipgloss.NewStyle().
+		Foreground(s.Indigo).
 		Bold(true).
 		Padding(0, 1, 0, 2)
-	s.Status = lg.NewStyle().
+	s.Status = lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
-		BorderForeground(indigo).
+		BorderForeground(s.Indigo).
 		PaddingLeft(1).
 		MarginTop(1)
-	s.StatusHeader = lg.NewStyle().
-		Foreground(green).
+	s.StatusHeader = lipgloss.NewStyle().
+		Foreground(s.Green).
 		Bold(true)
-	s.Highlight = lg.NewStyle().
+	s.Highlight = lipgloss.NewStyle().
 		Foreground(lipgloss.Color("212"))
 	s.ErrorHeaderText = s.HeaderText.
-		Foreground(red)
-	s.Help = lg.NewStyle().
+		Foreground(s.Red)
+	s.Help = lipgloss.NewStyle().
 		Foreground(lipgloss.Color("240"))
 	return &s
 }
@@ -61,17 +65,15 @@ const (
 )
 
 type Model struct {
-	state  state
-	lg     *lipgloss.Renderer
-	styles *Styles
-	form   *huh.Form
-	width  int
+	state     state
+	styles    func(bool) *Styles
+	hasDarkBg bool
+	form      *huh.Form
+	width     int
 }
 
 func NewModel() Model {
-	m := Model{width: maxWidth}
-	m.lg = lipgloss.DefaultRenderer()
-	m.styles = NewStyles(m.lg)
+	m := Model{width: maxWidth, styles: NewStyles}
 
 	var class string
 
@@ -130,8 +132,11 @@ func min(x, y int) int {
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.BackgroundColorMsg:
+		m.hasDarkBg = msg.IsDark()
 	case tea.WindowSizeMsg:
-		m.width = min(msg.Width, maxWidth) - m.styles.Base.GetHorizontalFrameSize()
+		s := m.styles(m.hasDarkBg)
+		m.width = min(msg.Width, maxWidth) - s.Base.GetHorizontalFrameSize()
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "esc", "ctrl+c", "q":
@@ -157,7 +162,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	s := m.styles
+	s := m.styles(m.hasDarkBg)
 
 	switch m.form.State {
 	case huh.StateCompleted:
@@ -176,7 +181,7 @@ func (m Model) View() string {
 
 		// Form (left side)
 		v := strings.TrimSuffix(m.form.View(), "\n\n")
-		form := m.lg.NewStyle().Margin(1, 0).Render(v)
+		form := lipgloss.NewStyle().Margin(1, 0).Render(v)
 
 		// Status (right side)
 		var status string
@@ -235,22 +240,24 @@ func (m Model) errorView() string {
 }
 
 func (m Model) appBoundaryView(text string) string {
+	s := m.styles(m.hasDarkBg)
 	return lipgloss.PlaceHorizontal(
 		m.width,
 		lipgloss.Left,
-		m.styles.HeaderText.Render(text),
+		s.HeaderText.Render(text),
 		lipgloss.WithWhitespaceChars("/"),
-		lipgloss.WithWhitespaceForeground(indigo),
+		lipgloss.WithWhitespaceStyle(lipgloss.NewStyle().Foreground(s.Indigo)),
 	)
 }
 
 func (m Model) appErrorBoundaryView(text string) string {
+	s := m.styles(m.hasDarkBg)
 	return lipgloss.PlaceHorizontal(
 		m.width,
 		lipgloss.Left,
-		m.styles.ErrorHeaderText.Render(text),
+		s.ErrorHeaderText.Render(text),
 		lipgloss.WithWhitespaceChars("/"),
-		lipgloss.WithWhitespaceForeground(red),
+		lipgloss.WithWhitespaceStyle(lipgloss.NewStyle().Foreground(s.Red)),
 	)
 }
 

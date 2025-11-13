@@ -4,34 +4,33 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/charmbracelet/huh"
+	"github.com/charmbracelet/huh/v2"
 )
 
+var themes = map[string]huh.Theme{
+	"default":    huh.ThemeFunc(huh.ThemeBase),
+	"dracula":    huh.ThemeFunc(huh.ThemeDracula),
+	"base16":     huh.ThemeFunc(huh.ThemeBase16),
+	"charm":      huh.ThemeFunc(huh.ThemeCharm),
+	"catppuccin": huh.ThemeFunc(huh.ThemeCatppuccin),
+}
+
 func main() {
-	var base *huh.Theme = huh.ThemeBase()
-	var dracula *huh.Theme = huh.ThemeDracula()
-	var base16 *huh.Theme = huh.ThemeBase16()
-	var charm *huh.Theme = huh.ThemeCharm()
-	var catppuccin *huh.Theme = huh.ThemeCatppuccin()
-	var exit *huh.Theme = nil
-
-	var theme *huh.Theme = base16
-
+	theme := "base16"
 	repeat := true
 
 	for {
-		err := huh.NewSelect[*huh.Theme]().
+		err := huh.NewSelect[string]().
 			Title("Theme").
 			Value(&theme).
 			Options(
-				huh.NewOption("Default", base),
-				huh.NewOption("Dracula", dracula),
-				huh.NewOption("Base 16", base16),
-				huh.NewOption("Charm", charm),
-				huh.NewOption("Catppuccin", catppuccin),
-				huh.NewOption("Exit", exit),
+				huh.NewOption("Default", "default"),
+				huh.NewOption("Dracula", "dracula"),
+				huh.NewOption("Base 16", "base16"),
+				huh.NewOption("Charm", "charm"),
+				huh.NewOption("Catppuccin", "catppuccin"),
+				huh.NewOption("Exit", ""),
 			).Run()
-
 		if err != nil {
 			if err == huh.ErrUserAborted {
 				os.Exit(130)
@@ -39,7 +38,7 @@ func main() {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		if theme == nil {
+		if theme == "" {
 			break
 		}
 
@@ -52,7 +51,7 @@ func main() {
 				huh.NewMultiSelect[string]().Options(huh.NewOptions("Red", "Green", "Yellow")...).Title("Letters"),
 				huh.NewConfirm().Title("Again?").Description("Try another theme").Value(&repeat),
 			),
-		).WithTheme(theme).Run()
+		).WithTheme(themes[theme]).Run()
 		if err != nil {
 			if err == huh.ErrUserAborted {
 				os.Exit(130)

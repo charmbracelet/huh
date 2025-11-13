@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"github.com/charmbracelet/glamour"
-	"github.com/charmbracelet/huh"
+	"github.com/charmbracelet/glamour/v2"
+	"github.com/charmbracelet/huh/v2"
 )
 
 func main() {

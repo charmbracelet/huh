@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/charmbracelet/huh"
+	"github.com/charmbracelet/huh/v2"
 )
 
 func main() {
-
 	count := 0
 	go func() {
 		for {
@@ -29,5 +28,4 @@ func main() {
 			Title("Fill in the input").
 			DescriptionFunc(descriptionFunc, &count),
 	)).Run()
-
 }

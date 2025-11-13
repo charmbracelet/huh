@@ -8,11 +8,11 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/textarea"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/internal/accessibility"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/bubbles/v2/key"
+	"github.com/charmbracelet/bubbles/v2/textarea"
+	tea "github.com/charmbracelet/bubbletea/v2"
+	"github.com/charmbracelet/huh/v2/internal/accessibility"
+	"github.com/charmbracelet/lipgloss/v2"
 )
 
 // Text is a text field.
@@ -34,17 +34,17 @@ type Text struct {
 	editorArgs      []string
 	editorExtension string
 
-	textarea textarea.Model
+	textarea *textarea.Model
 
 	focused  bool
 	validate func(string) error
 	err      error
 
-	accessible bool // Deprecated: use RunAccessible instead.
-	width      int
+	width int
 
-	theme  *Theme
-	keymap TextKeyMap
+	theme     Theme
+	hasDarkBg bool
+	keymap    TextKeyMap
 }
 
 // NewText creates a new text field.
@@ -56,7 +56,9 @@ func NewText() *Text {
 	text := textarea.New()
 	text.ShowLineNumbers = false
 	text.Prompt = ""
-	text.FocusedStyle.CursorLine = lipgloss.NewStyle()
+	st := text.Styles()
+	st.Focused.CursorLine = lipgloss.NewStyle()
+	text.SetStyles(st)
 
 	editorCmd, editorArgs := getEditor()
 
@@ -265,6 +267,8 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
+	case tea.BackgroundColorMsg:
+		t.hasDarkBg = msg.IsDark()
 	case updateValueMsg:
 		t.textarea.SetValue(string(msg))
 		t.textarea, cmd = t.textarea.Update(msg)
@@ -355,38 +359,32 @@ func (t *Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (t *Text) activeStyles() *FieldStyles {
 	theme := t.theme
 	if theme == nil {
-		theme = ThemeCharm()
+		theme = ThemeFunc(ThemeCharm)
 	}
 	if t.focused {
-		return &theme.Focused
+		return &theme.Theme(t.hasDarkBg).Focused
 	}
-	return &theme.Blurred
-}
-
-func (t *Text) activeTextAreaStyles() *textarea.Style {
-	if t.theme == nil {
-		return &t.textarea.BlurredStyle
-	}
-	if t.focused {
-		return &t.textarea.FocusedStyle
-	}
-	return &t.textarea.BlurredStyle
+	return &theme.Theme(t.hasDarkBg).Blurred
 }
 
 // View renders the text field.
 func (t *Text) View() string {
 	styles := t.activeStyles()
-	textareaStyles := t.activeTextAreaStyles()
+	st := t.textarea.Styles()
 
-	// NB: since the method is on a pointer receiver these are being mutated.
-	// Because this runs on every render this shouldn't matter in practice,
-	// however.
-	textareaStyles.Placeholder = styles.TextInput.Placeholder
-	textareaStyles.Text = styles.TextInput.Text
-	textareaStyles.Prompt = styles.TextInput.Prompt
-	textareaStyles.CursorLine = styles.TextInput.Text
-	t.textarea.Cursor.Style = styles.TextInput.Cursor
-	t.textarea.Cursor.TextStyle = styles.TextInput.CursorText
+	if t.focused {
+		st.Focused.Placeholder = styles.TextInput.Placeholder
+		st.Focused.Text = styles.TextInput.Text
+		st.Focused.Prompt = styles.TextInput.Prompt
+		st.Focused.CursorLine = styles.TextInput.Text
+	} else {
+		st.Blurred.Placeholder = styles.TextInput.Placeholder
+		st.Blurred.Text = styles.TextInput.Text
+		st.Blurred.Prompt = styles.TextInput.Prompt
+		st.Blurred.CursorLine = styles.TextInput.Text
+	}
+	st.Cursor.Color = styles.TextInput.Cursor.GetBackground()
+	t.textarea.SetStyles(st)
 
 	maxWidth := t.width - styles.Base.GetHorizontalFrameSize()
 	var parts []string
@@ -408,9 +406,6 @@ func (t *Text) View() string {
 
 // Run runs the text field.
 func (t *Text) Run() error {
-	if t.accessible { // TODO: remove in a future release.
-		return t.RunAccessible(os.Stdout, os.Stdin)
-	}
 	return Run(t)
 }
 
@@ -441,7 +436,7 @@ func (t *Text) RunAccessible(w io.Writer, r io.Reader) error {
 }
 
 // WithTheme sets the theme on a text field.
-func (t *Text) WithTheme(theme *Theme) Field {
+func (t *Text) WithTheme(theme Theme) Field {
 	if t.theme != nil {
 		return t
 	}
@@ -453,15 +448,6 @@ func (t *Text) WithTheme(theme *Theme) Field {
 func (t *Text) WithKeyMap(k *KeyMap) Field {
 	t.keymap = k.Text
 	t.textarea.KeyMap.InsertNewline.SetKeys(t.keymap.NewLine.Keys()...)
-	return t
-}
-
-// WithAccessible sets the accessible mode of the text field.
-//
-// Deprecated: you may now call [Text.RunAccessible] directly to run the
-// field in accessible mode.
-func (t *Text) WithAccessible(accessible bool) Field {
-	t.accessible = accessible
 	return t
 }
 
