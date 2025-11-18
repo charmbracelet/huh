@@ -91,6 +91,7 @@ type Form struct {
 	keymap     *KeyMap
 	timeout    time.Duration
 	teaOptions []tea.ProgramOption
+	viewHook   types.ViewHook
 
 	layout Layout
 
@@ -348,6 +349,12 @@ func (f *Form) WithTimeout(t time.Duration) *Form {
 // WithProgramOptions sets the tea options of the form.
 func (f *Form) WithProgramOptions(opts ...tea.ProgramOption) *Form {
 	f.teaOptions = opts
+	return f
+}
+
+// WithViewHook allows to set a [types.ViewHook].
+func (f *Form) WithViewHook(hook types.ViewHook) *Form {
+	f.viewHook = hook
 	return f
 }
 
@@ -687,9 +694,12 @@ func (f *Form) run(ctx context.Context) error {
 	m, err := tea.NewProgram(
 		types.ViewModel{
 			Model: f,
-			ViewHook: func(view tea.View) tea.View {
-				view.ReportFocus = true
-				return view
+			ViewHook: func(v tea.View) tea.View {
+				v.ReportFocus = true
+				if f.viewHook == nil {
+					return v
+				}
+				return f.viewHook(v)
 			},
 		},
 		f.teaOptions...,

@@ -1,23 +1,33 @@
+// Package types provides common types used across the application.
 package types
 
 import tea "charm.land/bubbletea/v2"
 
+// Model is a bubbletea v1 [tea.Model].
 type Model interface {
 	Init() tea.Cmd
 	Update(msg tea.Msg) (Model, tea.Cmd)
 	View() string
 }
 
+// ViewHook is a function that modifies a [tea.View].
+type ViewHook = func(tea.View) tea.View
+
 type ViewModel struct {
 	Model
-	ViewHook func(view tea.View) tea.View
+	ViewHook ViewHook
 }
 
+// Update implements [tea.Model].
 func (w ViewModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m, cmd := w.Model.Update(msg)
-	return ViewModel{Model: m}, cmd
+	return ViewModel{
+		Model:    m,
+		ViewHook: w.ViewHook,
+	}, cmd
 }
 
+// View implements [tea.Model].
 func (w ViewModel) View() tea.View {
 	var view tea.View
 	if w.ViewHook != nil {

@@ -32,6 +32,7 @@ type Spinner struct {
 	title      string
 	err        error
 	teaOptions []tea.ProgramOption
+	viewHook   types.ViewHook
 	theme      Theme
 	output     io.Writer // acessible mode output
 	input      io.Reader // acessible mode output
@@ -115,6 +116,12 @@ func (s *Spinner) WithInput(r io.Reader) *Spinner {
 	return s
 }
 
+// WithViewHook allows to set a [types.ViewHook].
+func (s *Spinner) WithViewHook(hook types.ViewHook) *Spinner {
+	s.viewHook = hook
+	return s
+}
+
 // Action sets the action of the spinner.
 func (s *Spinner) Action(action func()) *Spinner {
 	s.action = func(context.Context) error {
@@ -167,7 +174,7 @@ func (s *Spinner) WithTheme(theme Theme) *Spinner {
 }
 
 // Init initializes the spinner.
-func (s Spinner) Init() tea.Cmd {
+func (s *Spinner) Init() tea.Cmd {
 	return tea.Batch(
 		tea.RequestBackgroundColor,
 		s.spinner.Tick,
@@ -182,7 +189,7 @@ func (s Spinner) Init() tea.Cmd {
 }
 
 // Update updates the spinner.
-func (s Spinner) Update(msg tea.Msg) (Model, tea.Cmd) {
+func (s *Spinner) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.BackgroundColorMsg:
 		s.hasDarkBg = msg.IsDark()
@@ -202,7 +209,7 @@ func (s Spinner) Update(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 // View returns the spinner view.
-func (s Spinner) View() string {
+func (s *Spinner) View() string {
 	styles := s.theme.Theme(s.hasDarkBg)
 	s.spinner.Style = styles.Spinner
 	var title string
@@ -237,7 +244,10 @@ func (s *Spinner) Run() error {
 	if s.input != nil {
 		opts = append(opts, tea.WithInput(s.input))
 	}
-	m, err := tea.NewProgram(types.ViewModel{Model: s}, opts...).Run()
+	m, err := tea.NewProgram(types.ViewModel{
+		Model:    s,
+		ViewHook: s.viewHook,
+	}, opts...).Run()
 	mm := m.(types.ViewModel).Model.(*Spinner)
 	if mm.err != nil {
 		return mm.err
