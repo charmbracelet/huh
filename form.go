@@ -13,8 +13,8 @@ import (
 	"charm.land/bubbles/v2/help"
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
+	"charm.land/huh/v2/internal/compat"
 	"charm.land/huh/v2/internal/selector"
-	"charm.land/huh/v2/internal/types"
 )
 
 const defaultWidth = 80
@@ -34,7 +34,8 @@ func nextID() int {
 	return lastID
 }
 
-type Model = types.Model
+// Model is an alias to [compat.Model].
+type Model = compat.Model
 
 // FormState represents the current state of the form.
 type FormState int
@@ -91,7 +92,7 @@ type Form struct {
 	keymap     *KeyMap
 	timeout    time.Duration
 	teaOptions []tea.ProgramOption
-	viewHook   types.ViewHook
+	viewHook   compat.ViewHook
 
 	layout Layout
 
@@ -352,8 +353,8 @@ func (f *Form) WithProgramOptions(opts ...tea.ProgramOption) *Form {
 	return f
 }
 
-// WithViewHook allows to set a [types.ViewHook].
-func (f *Form) WithViewHook(hook types.ViewHook) *Form {
+// WithViewHook allows to set a [compat.ViewHook].
+func (f *Form) WithViewHook(hook compat.ViewHook) *Form {
 	f.viewHook = hook
 	return f
 }
@@ -692,7 +693,7 @@ func (f *Form) run(ctx context.Context) error {
 
 	f.teaOptions = append(f.teaOptions, tea.WithContext(ctx))
 	m, err := tea.NewProgram(
-		types.ViewModel{
+		compat.ViewModel{
 			Model: f,
 			ViewHook: func(v tea.View) tea.View {
 				v.ReportFocus = true
@@ -704,7 +705,7 @@ func (f *Form) run(ctx context.Context) error {
 		},
 		f.teaOptions...,
 	).Run()
-	if m.(types.ViewModel).Model.(*Form).aborted || errors.Is(err, tea.ErrInterrupted) {
+	if m.(compat.ViewModel).Model.(*Form).aborted || errors.Is(err, tea.ErrInterrupted) {
 		return ErrUserAborted
 	}
 	if errors.Is(err, tea.ErrProgramKilled) {

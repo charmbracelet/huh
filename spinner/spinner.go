@@ -1,3 +1,4 @@
+// Package spinner provides a loading spinner.
 package spinner
 
 import (
@@ -9,13 +10,14 @@ import (
 
 	"charm.land/bubbles/v2/spinner"
 	tea "charm.land/bubbletea/v2"
-	"charm.land/huh/v2/internal/types"
+	"charm.land/huh/v2/internal/compat"
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
 	"github.com/charmbracelet/x/term"
 )
 
-type Model = types.Model
+// Model is an alias to [compat.Model].
+type Model = compat.Model
 
 // Spinner represents a loading spinner.
 // To get started simply create a new spinner and call `Run`.
@@ -32,7 +34,7 @@ type Spinner struct {
 	title      string
 	err        error
 	teaOptions []tea.ProgramOption
-	viewHook   types.ViewHook
+	viewHook   compat.ViewHook
 	theme      Theme
 	output     io.Writer // acessible mode output
 	input      io.Reader // acessible mode output
@@ -73,6 +75,7 @@ func ThemeDefault(isDark bool) *Styles {
 // Type is a set of frames used in animating the spinner.
 type Type spinner.Spinner
 
+// Spinner [Type]s.
 var (
 	Line      = Type(spinner.Line)
 	Dots      = Type(spinner.Dot)
@@ -116,8 +119,8 @@ func (s *Spinner) WithInput(r io.Reader) *Spinner {
 	return s
 }
 
-// WithViewHook allows to set a [types.ViewHook].
-func (s *Spinner) WithViewHook(hook types.ViewHook) *Spinner {
+// WithViewHook allows to set a [compat.ViewHook].
+func (s *Spinner) WithViewHook(hook compat.ViewHook) *Spinner {
 	s.viewHook = hook
 	return s
 }
@@ -228,7 +231,7 @@ func (s *Spinner) Run() error {
 		s.ctx = context.Background()
 	}
 	if err := s.ctx.Err(); err != nil {
-		return err
+		return err //nolint:wrapcheck
 	}
 
 	if s.accessible {
@@ -244,15 +247,15 @@ func (s *Spinner) Run() error {
 	if s.input != nil {
 		opts = append(opts, tea.WithInput(s.input))
 	}
-	m, err := tea.NewProgram(types.ViewModel{
+	m, err := tea.NewProgram(compat.ViewModel{
 		Model:    s,
 		ViewHook: s.viewHook,
 	}, opts...).Run()
-	mm := m.(types.ViewModel).Model.(*Spinner)
+	mm := m.(compat.ViewModel).Model.(*Spinner)
 	if mm.err != nil {
 		return mm.err
 	}
-	return err
+	return err //nolint:wrapcheck
 }
 
 // runAccessible runs the spinner in an accessible mode (statically).
@@ -286,7 +289,7 @@ func (s *Spinner) runAccessible(in io.Reader, out io.Writer) error {
 	for {
 		select {
 		case <-s.ctx.Done():
-			return s.ctx.Err()
+			return s.ctx.Err() //nolint:wrapcheck
 		case err := <-actionDone:
 			return err
 		}

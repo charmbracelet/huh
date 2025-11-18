@@ -17,6 +17,8 @@ import (
 	"github.com/charmbracelet/x/xpty"
 )
 
+const text = "Huh"
+
 var pretty = lipgloss.NewStyle().
 	Width(60).
 	Border(lipgloss.NormalBorder()).
@@ -288,12 +290,12 @@ func TestInput(t *testing.T) {
 	}
 
 	// Type Huh in the form.
-	f = typeText(f, "Huh")
+	f = typeText(f, text)
 	view = viewModel(f)
 
-	if !strings.Contains(view, "Huh") {
+	if !strings.Contains(view, text) {
 		t.Log(pretty.Render(view))
-		t.Error("Expected field to contain Huh.")
+		t.Error("Expected field to contain " + text)
 	}
 
 	if !strings.Contains(view, "enter submit") {
@@ -301,8 +303,8 @@ func TestInput(t *testing.T) {
 		t.Error("Expected field to contain help.")
 	}
 
-	if field.GetValue() != "Huh" {
-		t.Error("Expected field value to be Huh")
+	if field.GetValue() != text {
+		t.Error("Expected field value to be " + text)
 	}
 }
 
@@ -324,12 +326,12 @@ func TestInlineInput(t *testing.T) {
 	}
 
 	// Type Huh in the form.
-	f = typeText(f, "Huh")
+	f = typeText(f, text)
 	view = viewModel(f)
 
-	if !strings.Contains(view, "Huh") {
+	if !strings.Contains(view, text) {
 		t.Log(pretty.Render(view))
-		t.Error("Expected field to contain Huh.")
+		t.Error("Expected field to contain " + text)
 	}
 
 	if !strings.Contains(view, "enter submit") {
@@ -337,13 +339,13 @@ func TestInlineInput(t *testing.T) {
 		t.Error("Expected field to contain help.")
 	}
 
-	if !strings.Contains(view, "┃ Input Description: Huh") {
+	if !strings.Contains(view, "┃ Input Description: "+text) {
 		t.Log(pretty.Render(view))
 		t.Error("Expected field to contain help.")
 	}
 
-	if field.GetValue() != "Huh" {
-		t.Error("Expected field value to be Huh")
+	if field.GetValue() != text {
+		t.Error("Expected field value to be " + text)
 	}
 }
 
@@ -353,12 +355,12 @@ func TestText(t *testing.T) {
 	f.Update(f.Init())
 
 	// Type Huh in the form.
-	f = typeText(f, "Huh")
+	f = typeText(f, text)
 	view := viewModel(f)
 
-	if !strings.Contains(view, "Huh") {
+	if !strings.Contains(view, text) {
 		t.Log(pretty.Render(view))
-		t.Error("Expected field to contain Huh.")
+		t.Error("Expected field to contain " + text)
 	}
 
 	if !strings.Contains(view, "alt+enter / ctrl+j new line • ctrl+e open editor • enter submit") {
@@ -366,8 +368,8 @@ func TestText(t *testing.T) {
 		t.Error("Expected field to contain help.")
 	}
 
-	if field.GetValue() != "Huh" {
-		t.Error("Expected field value to be Huh")
+	if field.GetValue() != text {
+		t.Error("Expected field value to be " + text)
 	}
 }
 
@@ -377,12 +379,12 @@ func TestTextExternalEditorHidden(t *testing.T) {
 	f.Update(f.Init())
 
 	// Type Huh in the form.
-	f = typeText(f, "Huh")
+	f = typeText(f, text)
 	view := viewModel(f)
 
-	if !strings.Contains(view, "Huh") {
+	if !strings.Contains(view, text) {
 		t.Log(pretty.Render(view))
-		t.Error("Expected field to contain Huh.")
+		t.Error("Expected field to contain " + text)
 	}
 
 	if strings.Contains(view, "ctrl+e open editor") {
@@ -390,8 +392,8 @@ func TestTextExternalEditorHidden(t *testing.T) {
 		t.Error("Expected field to contain help without ctrl+e.")
 	}
 
-	if field.GetValue() != "Huh" {
-		t.Error("Expected field value to be Huh")
+	if field.GetValue() != text {
+		t.Error("Expected field value to be " + text)
 	}
 }
 
@@ -670,15 +672,16 @@ func TestMultiSelect(t *testing.T) {
 	f.Update(codeKeypress(tea.KeyEnter))
 
 	value := field.GetValue()
-	if value, ok := value.([]string); !ok {
+	v, ok := value.([]string)
+	if !ok {
 		t.Error("Expected field value to a slice of string")
+		return
+	}
+	if len(v) != 1 {
+		t.Error("Expected field value length to be 1")
 	} else {
-		if len(value) != 1 {
-			t.Error("Expected field value length to be 1")
-		} else {
-			if value[0] != "Bar\nLine2" {
-				t.Error("Expected first field value to be Bar")
-			}
+		if v[0] != "Bar\nLine2" {
+			t.Error("Expected first field value to be Bar")
 		}
 	}
 }
@@ -1548,7 +1551,7 @@ func TestInputPasswordAccessible(t *testing.T) {
 			errs <- input.RunAccessible(&out, upty.Slave())
 		}()
 
-		upty.Master().Write([]byte("a password\n"))
+		_, _ = upty.Master().Write([]byte("a password\n"))
 
 		if err := <-errs; err != nil {
 			t.Errorf("expected no error, got %v", err)
@@ -1574,4 +1577,4 @@ func requireContains(tb testing.TB, s, subtr string) {
 	}
 }
 
-func viewModel(m Model) string { return ansi.Strip(m.(Model).View()) }
+func viewModel(m Model) string { return ansi.Strip(m.View()) }

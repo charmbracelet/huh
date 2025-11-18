@@ -1,5 +1,5 @@
-// Package types provides common types used across the application.
-package types
+// Package compat provides common types used across the application.
+package compat
 
 import tea "charm.land/bubbletea/v2"
 
@@ -13,6 +13,7 @@ type Model interface {
 // ViewHook is a function that modifies a [tea.View].
 type ViewHook = func(tea.View) tea.View
 
+// ViewModel wraps a [Model] and [ViewHook].
 type ViewModel struct {
 	Model
 	ViewHook ViewHook
