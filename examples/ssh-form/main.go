@@ -13,10 +13,10 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/huh/v2"
 	"charm.land/lipgloss/v2"
+	"charm.land/log/v2"
 	"charm.land/wish/v2"
 	"charm.land/wish/v2/activeterm"
 	"charm.land/wish/v2/bubbletea"
-	"github.com/charmbracelet/log/v2"
 	"github.com/charmbracelet/ssh"
 )
 

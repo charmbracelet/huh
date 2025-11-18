@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"charm.land/huh/v2"
-	"github.com/charmbracelet/log"
+	"charm.land/log/v2"
 )
 
 func main() {
