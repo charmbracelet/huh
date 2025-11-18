@@ -3,13 +3,12 @@ package huh
 import (
 	"cmp"
 	"io"
-	"os"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/key"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/internal/accessibility"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/key"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/huh/v2/internal/accessibility"
+	"charm.land/lipgloss/v2"
 )
 
 // Confirm is a form confirm field.
@@ -35,8 +34,8 @@ type Confirm struct {
 	width           int
 	height          int
 	inline          bool
-	accessible      bool // Deprecated: use RunAccessible instead.
-	theme           *Theme
+	theme           Theme
+	hasDarkBg       bool
 	keymap          ConfirmKeyMap
 	buttonAlignment lipgloss.Position
 }
@@ -163,10 +162,12 @@ func (c *Confirm) Init() tea.Cmd {
 }
 
 // Update updates the confirm field.
-func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (c *Confirm) Update(msg tea.Msg) (Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
+	case tea.BackgroundColorMsg:
+		c.hasDarkBg = msg.IsDark()
 	case updateFieldMsg:
 		if ok, hash := c.title.shouldUpdate(); ok {
 			c.title.bindingsHash = hash
@@ -224,12 +225,12 @@ func (c *Confirm) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (c *Confirm) activeStyles() *FieldStyles {
 	theme := c.theme
 	if theme == nil {
-		theme = ThemeCharm()
+		theme = ThemeFunc(ThemeCharm)
 	}
 	if c.focused {
-		return &theme.Focused
+		return &theme.Theme(c.hasDarkBg).Focused
 	}
-	return &theme.Blurred
+	return &theme.Theme(c.hasDarkBg).Blurred
 }
 
 // View renders the confirm field.
@@ -296,9 +297,6 @@ func (c *Confirm) View() string {
 
 // Run runs the confirm field in accessible mode.
 func (c *Confirm) Run() error {
-	if c.accessible { // TODO: remove in a future release.
-		return c.RunAccessible(os.Stdout, os.Stdin)
-	}
 	return Run(c)
 }
 
@@ -325,7 +323,7 @@ func (c *Confirm) String() string {
 }
 
 // WithTheme sets the theme of the confirm field.
-func (c *Confirm) WithTheme(theme *Theme) Field {
+func (c *Confirm) WithTheme(theme Theme) Field {
 	if c.theme != nil {
 		return c
 	}
@@ -336,15 +334,6 @@ func (c *Confirm) WithTheme(theme *Theme) Field {
 // WithKeyMap sets the keymap of the confirm field.
 func (c *Confirm) WithKeyMap(k *KeyMap) Field {
 	c.keymap = k.Confirm
-	return c
-}
-
-// WithAccessible sets the accessible mode of the confirm field.
-//
-// Deprecated: you may now call [Confirm.RunAccessible] directly to run the
-// field in accessible mode.
-func (c *Confirm) WithAccessible(accessible bool) Field {
-	c.accessible = accessible
 	return c
 }
 

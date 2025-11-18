@@ -4,18 +4,18 @@ import (
 	"cmp"
 	"fmt"
 	"io"
-	"os"
 	"slices"
 	"strings"
 	"time"
 
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/spinner"
-	"github.com/charmbracelet/bubbles/textinput"
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/internal/accessibility"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/key"
+	"charm.land/bubbles/v2/spinner"
+	"charm.land/bubbles/v2/textinput"
+	"charm.land/bubbles/v2/viewport"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/huh/v2/internal/accessibility"
+	"charm.land/lipgloss/v2"
+	"github.com/charmbracelet/x/exp/ordered"
 )
 
 // MultiSelect is a form multi-select field.
@@ -31,7 +31,6 @@ type MultiSelect[T comparable] struct {
 	filterable      bool
 	filteredOptions []Option[T]
 	limit           int
-	height          int
 
 	// error handling
 	validate func([]T) error
@@ -46,10 +45,11 @@ type MultiSelect[T comparable] struct {
 	spinner   spinner.Model
 
 	// options
-	width      int
-	accessible bool // Deprecated: use RunAccessible instead.
-	theme      *Theme
-	keymap     MultiSelectKeyMap
+	width     int
+	height    int
+	theme     Theme
+	hasDarkBg bool
+	keymap    MultiSelectKeyMap
 }
 
 // NewMultiSelect returns a new multi-select field.
@@ -132,7 +132,7 @@ func (m *MultiSelect[T]) Options(options ...Option[T]) *MultiSelect[T] {
 	m.options.val = options
 	m.filteredOptions = options
 	m.selectOptions()
-	m.updateViewportHeight()
+	m.updateViewportSize()
 	return m
 }
 
@@ -151,7 +151,7 @@ func (m *MultiSelect[T]) selectOptions() {
 			continue
 		}
 		m.cursor = i
-		m.viewport.YOffset = i
+		m.viewport.SetYOffset(i)
 		break
 	}
 }
@@ -165,7 +165,10 @@ func (m *MultiSelect[T]) OptionsFunc(f func() []Option[T], bindings any) *MultiS
 	// options are possibly dynamic.
 	if m.height <= 0 {
 		m.height = defaultHeight
-		m.updateViewportHeight()
+		m.updateViewportSize()
+	}
+	if m.width <= 0 {
+		m.Width(20)
 	}
 	return m
 }
@@ -190,12 +193,21 @@ func (m *MultiSelect[T]) Limit(limit int) *MultiSelect[T] {
 	return m
 }
 
+// Width sets the width of the multi-select field.
+func (m *MultiSelect[T]) Width(width int) *MultiSelect[T] {
+	// What we really want to do is set the width of the viewport, but we
+	// need a theme applied before we can calcualate its width.
+	m.width = width
+	m.updateViewportSize()
+	return m
+}
+
 // Height sets the height of the multi-select field.
 func (m *MultiSelect[T]) Height(height int) *MultiSelect[T] {
 	// What we really want to do is set the height of the viewport, but we
 	// need a theme applied before we can calcualate its height.
 	m.height = height
-	m.updateViewportHeight()
+	m.updateViewportSize()
 	return m
 }
 
@@ -278,12 +290,12 @@ func (m *MultiSelect[T]) Init() tea.Cmd {
 }
 
 // Update updates the multi-select field.
-func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *MultiSelect[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	// Enforce height on the viewport during update as we need themes to
 	// be applied before we can calculate the height.
-	m.updateViewportHeight()
+	m.updateViewportSize()
 
 	var cmd tea.Cmd
 	if m.filtering {
@@ -293,6 +305,8 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	switch msg := msg.(type) {
+	case tea.BackgroundColorMsg:
+		m.hasDarkBg = msg.IsDark()
 	case updateFieldMsg:
 		var fieldCmds []tea.Cmd
 		if ok, hash := m.title.shouldUpdate(); ok {
@@ -318,7 +332,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.options.loadFromCache() {
 				m.filteredOptions = m.options.val
 				m.updateValue()
-				m.cursor = clamp(m.cursor, 0, len(m.filteredOptions)-1)
+				m.cursor = ordered.Clamp(m.cursor, 0, len(m.filteredOptions)-1)
 			} else {
 				m.options.loading = true
 				m.options.loadingStart = time.Now()
@@ -352,7 +366,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// since we're updating the options, we need to reset the cursor.
 			m.filteredOptions = m.options.val
 			m.updateValue()
-			m.cursor = clamp(m.cursor, 0, len(m.filteredOptions)-1)
+			m.cursor = ordered.Clamp(m.cursor, 0, len(m.filteredOptions)-1)
 		}
 	case tea.KeyMsg:
 		m.err = nil
@@ -378,7 +392,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			m.cursor = max(m.cursor-1, 0)
-			if m.cursor < m.viewport.YOffset {
+			if m.cursor < m.viewport.YOffset() {
 				m.viewport.SetYOffset(m.cursor)
 			}
 		case key.Matches(msg, m.keymap.Down):
@@ -389,7 +403,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			m.cursor = min(m.cursor+1, len(m.filteredOptions)-1)
-			if m.cursor >= m.viewport.YOffset+m.viewport.Height {
+			if m.cursor >= m.viewport.YOffset()+m.viewport.Height() {
 				m.viewport.ScrollDown(1)
 			}
 		case key.Matches(msg, m.keymap.GotoTop):
@@ -405,10 +419,10 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.cursor = len(m.filteredOptions) - 1
 			m.viewport.GotoBottom()
 		case key.Matches(msg, m.keymap.HalfPageUp):
-			m.cursor = max(m.cursor-m.viewport.Height/2, 0)
+			m.cursor = max(m.cursor-m.viewport.Height()/2, 0)
 			m.viewport.HalfPageUp()
 		case key.Matches(msg, m.keymap.HalfPageDown):
-			m.cursor = min(m.cursor+m.viewport.Height/2, len(m.filteredOptions)-1)
+			m.cursor = min(m.cursor+m.viewport.Height()/2, len(m.filteredOptions)-1)
 			m.viewport.HalfPageDown()
 		case key.Matches(msg, m.keymap.Toggle) && !m.filtering:
 			for i, option := range m.options.val {
@@ -475,7 +489,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 		_, offset, height := m.optionsView()
-		if offset > -1 && height > 0 && (offset < m.viewport.YOffset || height+offset >= m.viewport.YOffset+m.viewport.Height) {
+		if offset > -1 && height > 0 && (offset < m.viewport.YOffset() || height+offset >= m.viewport.YOffset()+m.viewport.Height()) {
 			m.viewport.SetYOffset(offset)
 		}
 	}
@@ -483,25 +497,28 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-// updateViewportHeight updates the viewport size according to the Height setting
+// updateViewportSize updates the viewport size according to the Height setting
 // on this multi-select field.
-func (m *MultiSelect[T]) updateViewportHeight() {
-	// If no height is set size the viewport to the height of the options.
-	if m.height <= 0 {
-		v, _, _ := m.optionsView()
-		m.viewport.Height = lipgloss.Height(v)
-		return
-	}
-
-	offset := 0
+func (m *MultiSelect[T]) updateViewportSize() {
+	yoffset := 0
 	if ss := m.titleView(); ss != "" {
-		offset += lipgloss.Height(ss)
+		yoffset += lipgloss.Height(ss)
 	}
 	if ss := m.descriptionView(); ss != "" {
-		offset += lipgloss.Height(ss)
+		yoffset += lipgloss.Height(ss)
+	}
+	v, _, _ := m.optionsView()
+	height := m.height
+	if height <= 0 {
+		height = lipgloss.Height(v)
+	}
+	width := m.width
+	if m.width <= 0 {
+		width = lipgloss.Width(v)
 	}
 
-	m.viewport.Height = max(minHeight, m.height-offset)
+	m.viewport.SetWidth(width)
+	m.viewport.SetHeight(max(minHeight, height) - yoffset)
 }
 
 // numSelected returns the total number of selected options.
@@ -541,12 +558,12 @@ func (m *MultiSelect[T]) updateValue() {
 func (m *MultiSelect[T]) activeStyles() *FieldStyles {
 	theme := m.theme
 	if theme == nil {
-		theme = ThemeCharm()
+		theme = ThemeFunc(ThemeCharm)
 	}
 	if m.focused {
-		return &theme.Focused
+		return &theme.Theme(m.hasDarkBg).Focused
 	}
-	return &theme.Blurred
+	return &theme.Theme(m.hasDarkBg).Blurred
 }
 
 func (m *MultiSelect[T]) titleView() string {
@@ -700,9 +717,6 @@ func (m *MultiSelect[T]) setSelectAllHelp() {
 
 // Run runs the multi-select field.
 func (m *MultiSelect[T]) Run() error {
-	if m.accessible { // TODO: remove in a future release.
-		return m.RunAccessible(os.Stdout, os.Stdin)
-	}
 	return Run(m)
 }
 
@@ -748,17 +762,21 @@ func (m *MultiSelect[T]) RunAccessible(w io.Writer, r io.Reader) error {
 }
 
 // WithTheme sets the theme of the multi-select field.
-func (m *MultiSelect[T]) WithTheme(theme *Theme) Field {
+func (m *MultiSelect[T]) WithTheme(theme Theme) Field {
 	if m.theme != nil {
 		return m
 	}
 	m.theme = theme
-	m.filter.Cursor.Style = theme.Focused.TextInput.Cursor
-	m.filter.Cursor.TextStyle = theme.Focused.TextInput.CursorText
-	m.filter.PromptStyle = theme.Focused.TextInput.Prompt
-	m.filter.TextStyle = theme.Focused.TextInput.Text
-	m.filter.PlaceholderStyle = theme.Focused.TextInput.Placeholder
-	m.updateViewportHeight()
+	styles := m.theme.Theme(m.hasDarkBg)
+
+	st := m.filter.Styles()
+	st.Cursor.Color = styles.Focused.TextInput.Cursor.GetForeground()
+	st.Focused.Prompt = styles.Focused.TextInput.Prompt
+	st.Focused.Text = styles.Focused.TextInput.Text
+	st.Focused.Placeholder = styles.Focused.TextInput.Placeholder
+	m.filter.SetStyles(st)
+
+	m.updateViewportSize()
 	return m
 }
 
@@ -770,15 +788,6 @@ func (m *MultiSelect[T]) WithKeyMap(k *KeyMap) Field {
 		m.keymap.ClearFilter.SetEnabled(false)
 		m.keymap.SetFilter.SetEnabled(false)
 	}
-	return m
-}
-
-// WithAccessible sets the accessible mode of the multi-select field.
-//
-// Deprecated: you may now call [MultiSelect.RunAccessible] directly to run the
-// field in accessible mode.
-func (m *MultiSelect[T]) WithAccessible(accessible bool) Field {
-	m.accessible = accessible
 	return m
 }
 

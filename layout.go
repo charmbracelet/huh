@@ -3,7 +3,7 @@ package huh
 import (
 	"strings"
 
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/lipgloss/v2"
 )
 
 // A Layout is responsible for laying out groups in a form.

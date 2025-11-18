@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/charmbracelet/huh/spinner"
+	"charm.land/huh/v2/spinner"
 )
 
 func main() {
@@ -14,7 +14,7 @@ func main() {
 
 	err := spinner.New().
 		Context(ctx).
-		Accessible(true).
+		WithAccessible(true).
 		Run()
 	if err != nil {
 		log.Fatalln(err)

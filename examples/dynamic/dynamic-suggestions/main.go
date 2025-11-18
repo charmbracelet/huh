@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/charmbracelet/huh"
-	"github.com/charmbracelet/huh/spinner"
+	"charm.land/huh/v2"
+	"charm.land/huh/v2/spinner"
 )
 
 func main() {
