@@ -7,11 +7,11 @@ import (
 	"io"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/v2/key"
-	"github.com/charmbracelet/bubbles/v2/textinput"
-	tea "github.com/charmbracelet/bubbletea/v2"
-	"github.com/charmbracelet/huh/v2/internal/accessibility"
-	"github.com/charmbracelet/lipgloss/v2"
+	"charm.land/bubbles/v2/key"
+	"charm.land/bubbles/v2/textinput"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/huh/v2/internal/accessibility"
+	"charm.land/lipgloss/v2"
 )
 
 // Input is a input field.
@@ -272,7 +272,7 @@ func (i *Input) Init() tea.Cmd {
 }
 
 // Update updates the input field.
-func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (i *Input) Update(msg tea.Msg) (Model, tea.Cmd) {
 	var cmds []tea.Cmd
 	var cmd tea.Cmd
 

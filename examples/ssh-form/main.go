@@ -10,14 +10,14 @@ import (
 	"syscall"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea/v2"
-	"github.com/charmbracelet/huh/v2"
-	"github.com/charmbracelet/lipgloss/v2"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/huh/v2"
+	"charm.land/lipgloss/v2"
+	"charm.land/wish/v2"
+	"charm.land/wish/v2/activeterm"
+	"charm.land/wish/v2/bubbletea"
 	"github.com/charmbracelet/log/v2"
 	"github.com/charmbracelet/ssh"
-	"github.com/charmbracelet/wish/v2"
-	"github.com/charmbracelet/wish/v2/activeterm"
-	"github.com/charmbracelet/wish/v2/bubbletea"
 )
 
 const (
@@ -90,7 +90,7 @@ func teaHandler(s ssh.Session) (tea.Model, []tea.ProgramOption) {
 		BorderForeground(lipgloss.Color("#444444")).
 		Foreground(lipgloss.Color("#7571F9"))
 	m := model{form: form, style: style}
-	return m, []tea.ProgramOption{tea.WithAltScreen()}
+	return m, nil
 }
 
 type model struct {
@@ -126,12 +126,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m model) View() string {
-	if m.form == nil {
-		return "Starting..."
+func (m model) View() tea.View {
+	var view tea.View
+	view.AltScreen = true
+
+	switch {
+	case m.form == nil:
+		view.SetContent("Starting...")
+	case m.loggedIn:
+		view.SetContent(m.style.Render("Welcome, " + m.form.GetString("username") + "!"))
+	default:
+		view.SetContent(m.form.View())
 	}
-	if m.loggedIn {
-		return m.style.Render("Welcome, " + m.form.GetString("username") + "!")
-	}
-	return m.form.View()
+	return view
 }

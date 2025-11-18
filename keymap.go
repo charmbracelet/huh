@@ -1,6 +1,6 @@
 package huh
 
-import "github.com/charmbracelet/bubbles/v2/key"
+import "charm.land/bubbles/v2/key"
 
 // KeyMap is the keybindings to navigate the form.
 type KeyMap struct {

@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea/v2"
-	"github.com/charmbracelet/lipgloss/v2"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
 	"github.com/charmbracelet/x/xpty"
 )
@@ -1196,7 +1196,7 @@ func formProgram() *Form {
 		WithAccessible(false)
 }
 
-func batchUpdate(m tea.Model, cmd tea.Cmd) tea.Model {
+func batchUpdate(m Model, cmd tea.Cmd) Model {
 	if cmd == nil {
 		return m
 	}
@@ -1224,8 +1224,8 @@ func keypress(r rune) tea.KeyMsg {
 	})
 }
 
-func typeText[T tea.Model](m T, s string) T {
-	var tm tea.Model = m
+func typeText[T Model](m T, s string) T {
+	var tm Model = m
 	for _, r := range s {
 		tm, _ = tm.Update(keypress(r))
 	}
@@ -1574,4 +1574,4 @@ func requireContains(tb testing.TB, s, subtr string) {
 	}
 }
 
-func viewModel(m tea.Model) string { return ansi.Strip(m.(tea.ViewModel).View()) }
+func viewModel(m Model) string { return ansi.Strip(m.(Model).View()) }

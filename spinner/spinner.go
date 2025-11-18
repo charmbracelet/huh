@@ -7,12 +7,15 @@ import (
 	"os"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/v2/spinner"
-	tea "github.com/charmbracelet/bubbletea/v2"
-	"github.com/charmbracelet/lipgloss/v2"
+	"charm.land/bubbles/v2/spinner"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/huh/v2/internal/types"
+	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
 	"github.com/charmbracelet/x/term"
 )
+
+type Model = types.Model
 
 // Spinner represents a loading spinner.
 // To get started simply create a new spinner and call `Run`.
@@ -164,7 +167,7 @@ func (s *Spinner) WithTheme(theme Theme) *Spinner {
 }
 
 // Init initializes the spinner.
-func (s *Spinner) Init() tea.Cmd {
+func (s Spinner) Init() tea.Cmd {
 	return tea.Batch(
 		tea.RequestBackgroundColor,
 		s.spinner.Tick,
@@ -179,7 +182,7 @@ func (s *Spinner) Init() tea.Cmd {
 }
 
 // Update updates the spinner.
-func (s *Spinner) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (s Spinner) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.BackgroundColorMsg:
 		s.hasDarkBg = msg.IsDark()
@@ -199,7 +202,7 @@ func (s *Spinner) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 // View returns the spinner view.
-func (s *Spinner) View() string {
+func (s Spinner) View() string {
 	styles := s.theme.Theme(s.hasDarkBg)
 	s.spinner.Style = styles.Spinner
 	var title string
@@ -234,8 +237,8 @@ func (s *Spinner) Run() error {
 	if s.input != nil {
 		opts = append(opts, tea.WithInput(s.input))
 	}
-	m, err := tea.NewProgram(s, opts...).Run()
-	mm := m.(*Spinner)
+	m, err := tea.NewProgram(types.ViewModel{Model: s}, opts...).Run()
+	mm := m.(types.ViewModel).Model.(*Spinner)
 	if mm.err != nil {
 		return mm.err
 	}

@@ -8,13 +8,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/charmbracelet/bubbles/v2/key"
-	"github.com/charmbracelet/bubbles/v2/spinner"
-	"github.com/charmbracelet/bubbles/v2/textinput"
-	"github.com/charmbracelet/bubbles/v2/viewport"
-	tea "github.com/charmbracelet/bubbletea/v2"
-	"github.com/charmbracelet/huh/v2/internal/accessibility"
-	"github.com/charmbracelet/lipgloss/v2"
+	"charm.land/bubbles/v2/key"
+	"charm.land/bubbles/v2/spinner"
+	"charm.land/bubbles/v2/textinput"
+	"charm.land/bubbles/v2/viewport"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/huh/v2/internal/accessibility"
+	"charm.land/lipgloss/v2"
 )
 
 // MultiSelect is a form multi-select field.
@@ -289,7 +289,7 @@ func (m *MultiSelect[T]) Init() tea.Cmd {
 }
 
 // Update updates the multi-select field.
-func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *MultiSelect[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	// Enforce height on the viewport during update as we need themes to

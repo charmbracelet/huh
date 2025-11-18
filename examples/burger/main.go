@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/charmbracelet/huh/v2"
-	"github.com/charmbracelet/huh/v2/spinner"
-	"github.com/charmbracelet/lipgloss/v2"
+	"charm.land/huh/v2"
+	"charm.land/huh/v2/spinner"
+	"charm.land/lipgloss/v2"
 	xstrings "github.com/charmbracelet/x/exp/strings"
 )
 

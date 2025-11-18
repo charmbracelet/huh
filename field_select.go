@@ -7,13 +7,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/charmbracelet/bubbles/v2/key"
-	"github.com/charmbracelet/bubbles/v2/spinner"
-	"github.com/charmbracelet/bubbles/v2/textinput"
-	"github.com/charmbracelet/bubbles/v2/viewport"
-	tea "github.com/charmbracelet/bubbletea/v2"
-	"github.com/charmbracelet/huh/v2/internal/accessibility"
-	"github.com/charmbracelet/lipgloss/v2"
+	"charm.land/bubbles/v2/key"
+	"charm.land/bubbles/v2/spinner"
+	"charm.land/bubbles/v2/textinput"
+	"charm.land/bubbles/v2/viewport"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/huh/v2/internal/accessibility"
+	"charm.land/lipgloss/v2"
 )
 
 const (
@@ -324,7 +324,7 @@ func (s *Select[T]) Init() tea.Cmd {
 }
 
 // Update updates the select field.
-func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (s *Select[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 	s.updateViewportSize()
 
 	var cmd tea.Cmd

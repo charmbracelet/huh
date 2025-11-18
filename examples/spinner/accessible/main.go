@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/charmbracelet/huh/v2/spinner"
+	"charm.land/huh/v2/spinner"
 )
 
 func main() {

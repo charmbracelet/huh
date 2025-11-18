@@ -1,6 +1,6 @@
 package main
 
-import "github.com/charmbracelet/huh/v2"
+import "charm.land/huh/v2"
 
 type Pokemon struct {
 	id   int

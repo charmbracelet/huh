@@ -5,8 +5,8 @@ import (
 	"io"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/v2/key"
-	tea "github.com/charmbracelet/bubbletea/v2"
+	"charm.land/bubbles/v2/key"
+	tea "charm.land/bubbletea/v2"
 )
 
 // Note is a note field.
@@ -161,7 +161,7 @@ func (n *Note) KeyBinds() []key.Binding {
 func (n *Note) Init() tea.Cmd { return nil }
 
 // Update updates the note field.
-func (n *Note) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (n *Note) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.BackgroundColorMsg:
 		n.hasDarkBg = msg.IsDark()

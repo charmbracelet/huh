@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/charmbracelet/huh/v2"
+	"charm.land/huh/v2"
 )
 
 type consumable int

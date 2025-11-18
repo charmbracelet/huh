@@ -6,9 +6,9 @@ import (
 	"os"
 	"strings"
 
-	tea "github.com/charmbracelet/bubbletea/v2"
-	"github.com/charmbracelet/huh/v2"
-	"github.com/charmbracelet/lipgloss/v2"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/huh/v2"
+	"charm.land/lipgloss/v2"
 )
 
 const maxWidth = 80
@@ -155,7 +155,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m Model) View() string {
+func (m Model) View() tea.View {
 	s := m.styles(m.hasDarkBg)
 
 	switch m.form.State {
@@ -165,7 +165,7 @@ func (m Model) View() string {
 		var b strings.Builder
 		fmt.Fprintf(&b, "Congratulations, you’re Charm’s newest\n%s!\n\n", title)
 		fmt.Fprintf(&b, "Your job description is as follows:\n\n%s\n\nPlease proceed to HR immediately.", role)
-		return s.Status.Margin(0, 1).Padding(1, 2).Width(48).Render(b.String()) + "\n\n"
+		return tea.NewView(s.Status.Margin(0, 1).Padding(1, 2).Width(48).Render(b.String()) + "\n\n")
 	default:
 
 		var class string
@@ -221,7 +221,7 @@ func (m Model) View() string {
 			footer = m.appErrorBoundaryView("")
 		}
 
-		return s.Base.Render(header + "\n" + body + "\n\n" + footer)
+		return tea.NewView(s.Base.Render(header + "\n" + body + "\n\n" + footer))
 	}
 }
 

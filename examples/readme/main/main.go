@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/charmbracelet/huh/v2"
+	"charm.land/huh/v2"
 )
 
 // TODO: ensure input is not plagiarized.

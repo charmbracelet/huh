@@ -9,11 +9,11 @@ import (
 
 	xstrings "github.com/charmbracelet/x/exp/strings"
 
-	"github.com/charmbracelet/bubbles/v2/filepicker"
-	"github.com/charmbracelet/bubbles/v2/key"
-	tea "github.com/charmbracelet/bubbletea/v2"
-	"github.com/charmbracelet/huh/v2/internal/accessibility"
-	"github.com/charmbracelet/lipgloss/v2"
+	"charm.land/bubbles/v2/filepicker"
+	"charm.land/bubbles/v2/key"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/huh/v2/internal/accessibility"
+	"charm.land/lipgloss/v2"
 )
 
 // FilePicker is a form file file field.
@@ -199,7 +199,7 @@ func (f *FilePicker) Init() tea.Cmd {
 }
 
 // Update updates the file field.
-func (f *FilePicker) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (f *FilePicker) Update(msg tea.Msg) (Model, tea.Cmd) {
 	f.err = nil
 
 	switch msg := msg.(type) {

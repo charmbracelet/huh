@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	tea "github.com/charmbracelet/bubbletea/v2"
-	"github.com/charmbracelet/huh/v2"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/huh/v2"
 )
 
 func main() {

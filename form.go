@@ -10,10 +10,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/charmbracelet/bubbles/v2/help"
-	"github.com/charmbracelet/bubbles/v2/key"
-	tea "github.com/charmbracelet/bubbletea/v2"
-	"github.com/charmbracelet/huh/v2/internal/selector"
+	"charm.land/bubbles/v2/help"
+	"charm.land/bubbles/v2/key"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/huh/v2/internal/selector"
+	"charm.land/huh/v2/internal/types"
 )
 
 const defaultWidth = 80
@@ -32,6 +33,8 @@ func nextID() int {
 	lastID++
 	return lastID
 }
+
+type Model = types.Model
 
 // FormState represents the current state of the form.
 type FormState int
@@ -111,7 +114,6 @@ func NewForm(groups ...*Group) *Form {
 		layout:   LayoutDefault,
 		teaOptions: []tea.ProgramOption{
 			tea.WithOutput(os.Stderr),
-			tea.WithReportFocus(),
 		},
 	}
 
@@ -138,9 +140,7 @@ func NewForm(groups ...*Group) *Form {
 // Each field implements the Bubble Tea Model interface.
 type Field interface {
 	// Bubble Tea Model
-	Init() tea.Cmd
-	Update(tea.Msg) (tea.Model, tea.Cmd)
-	View() string
+	Model
 
 	// Bubble Tea Events
 	Blur() tea.Cmd
@@ -517,7 +517,7 @@ func (f *Form) Init() tea.Cmd {
 }
 
 // Update updates the form.
-func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (f *Form) Update(msg tea.Msg) (Model, tea.Cmd) {
 	// If the form is aborted or completed there's no need to update it.
 	if f.State != StateNormal {
 		return f, nil
@@ -570,7 +570,7 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return f, nil
 		}
 
-		submit := func() (tea.Model, tea.Cmd) {
+		submit := func() (Model, tea.Cmd) {
 			f.quitting = true
 			f.State = StateCompleted
 			return f, f.SubmitCmd
@@ -684,8 +684,17 @@ func (f *Form) run(ctx context.Context) error {
 	}
 
 	f.teaOptions = append(f.teaOptions, tea.WithContext(ctx))
-	m, err := tea.NewProgram(f, f.teaOptions...).Run()
-	if m.(*Form).aborted || errors.Is(err, tea.ErrInterrupted) {
+	m, err := tea.NewProgram(
+		types.ViewModel{
+			Model: f,
+			ViewHook: func(view tea.View) tea.View {
+				view.ReportFocus = true
+				return view
+			},
+		},
+		f.teaOptions...,
+	).Run()
+	if m.(types.ViewModel).Model.(*Form).aborted || errors.Is(err, tea.ErrInterrupted) {
 		return ErrUserAborted
 	}
 	if errors.Is(err, tea.ErrProgramKilled) {

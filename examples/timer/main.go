@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/charmbracelet/bubbles/v2/progress"
-	tea "github.com/charmbracelet/bubbletea/v2"
-	"github.com/charmbracelet/huh/v2"
-	"github.com/charmbracelet/lipgloss/v2"
+	"charm.land/bubbles/v2/progress"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/huh/v2"
+	"charm.land/lipgloss/v2"
 )
 
 var (
@@ -128,18 +128,18 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m Model) View() string {
+func (m Model) View() tea.View {
 	if m.quitting {
-		return ""
+		return tea.NewView("")
 	}
 
 	if m.form.State != huh.StateCompleted {
-		return m.form.View()
+		return tea.NewView(m.form.View())
 	}
 
 	var s strings.Builder
 
-	elapsed := time.Now().Sub(m.startTime)
+	elapsed := time.Since(m.startTime)
 	var percent float64
 	switch m.mode {
 	case Focusing:
@@ -162,7 +162,7 @@ func (m Model) View() string {
 		s.WriteString(helpStyle.Render("press 'q' to quit"))
 	}
 
-	return baseTimerStyle.Render(s.String())
+	return tea.NewView(baseTimerStyle.Render(s.String()))
 }
 
 func customTheme(isDark bool) *huh.Styles {

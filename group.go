@@ -3,11 +3,11 @@ package huh
 import (
 	"strings"
 
-	"github.com/charmbracelet/bubbles/v2/help"
-	"github.com/charmbracelet/bubbles/v2/viewport"
-	tea "github.com/charmbracelet/bubbletea/v2"
-	"github.com/charmbracelet/huh/v2/internal/selector"
-	"github.com/charmbracelet/lipgloss/v2"
+	"charm.land/bubbles/v2/help"
+	"charm.land/bubbles/v2/viewport"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/huh/v2/internal/selector"
+	"charm.land/lipgloss/v2"
 )
 
 // Group is a collection of fields that are displayed together with a page of
@@ -119,7 +119,7 @@ func (g *Group) WithKeyMap(k *KeyMap) *Group {
 func (g *Group) WithWidth(width int) *Group {
 	g.width = width
 	g.viewport.SetWidth(width)
-	g.help.Width = width
+	g.help.SetWidth(width)
 	g.selector.Range(func(_ int, field Field) bool {
 		field.WithWidth(width)
 		return true
@@ -253,7 +253,7 @@ func (g *Group) prevField() []tea.Cmd {
 }
 
 // Update updates the group.
-func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (g *Group) Update(msg tea.Msg) (Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	// Update all the fields in the group.

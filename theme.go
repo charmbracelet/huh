@@ -2,8 +2,8 @@ package huh
 
 import (
 	catppuccin "github.com/catppuccin/go"
-	"github.com/charmbracelet/bubbles/v2/help"
-	"github.com/charmbracelet/lipgloss/v2"
+	"charm.land/bubbles/v2/help"
+	"charm.land/lipgloss/v2"
 )
 
 // Theme represents a theme for a huh.
