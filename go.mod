@@ -9,6 +9,7 @@ require (
 	github.com/catppuccin/go v0.2.0
 	github.com/charmbracelet/x/ansi v0.11.1
 	github.com/charmbracelet/x/cellbuf v0.0.14
+	github.com/charmbracelet/x/exp/ordered v0.1.0
 	github.com/charmbracelet/x/exp/strings v0.0.0-20240722160745-212f7b056ed0
 	github.com/charmbracelet/x/term v0.2.2
 	github.com/charmbracelet/x/xpty v0.1.3

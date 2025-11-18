@@ -15,6 +15,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/huh/v2/internal/accessibility"
 	"charm.land/lipgloss/v2"
+	"github.com/charmbracelet/x/exp/ordered"
 )
 
 // MultiSelect is a form multi-select field.
@@ -331,7 +332,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 			if m.options.loadFromCache() {
 				m.filteredOptions = m.options.val
 				m.updateValue()
-				m.cursor = clamp(m.cursor, 0, len(m.filteredOptions)-1)
+				m.cursor = ordered.Clamp(m.cursor, 0, len(m.filteredOptions)-1)
 			} else {
 				m.options.loading = true
 				m.options.loadingStart = time.Now()
@@ -365,7 +366,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 			// since we're updating the options, we need to reset the cursor.
 			m.filteredOptions = m.options.val
 			m.updateValue()
-			m.cursor = clamp(m.cursor, 0, len(m.filteredOptions)-1)
+			m.cursor = ordered.Clamp(m.cursor, 0, len(m.filteredOptions)-1)
 		}
 	case tea.KeyMsg:
 		m.err = nil

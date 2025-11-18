@@ -14,6 +14,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/huh/v2/internal/accessibility"
 	"charm.land/lipgloss/v2"
+	"github.com/charmbracelet/x/exp/ordered"
 )
 
 const (
@@ -360,7 +361,7 @@ func (s *Select[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 			s.options.bindingsHash = hash
 			if s.options.loadFromCache() {
 				s.filteredOptions = s.options.val
-				s.selected = clamp(s.selected, 0, len(s.options.val)-1)
+				s.selected = ordered.Clamp(s.selected, 0, len(s.options.val)-1)
 			} else {
 				s.options.loading = true
 				s.options.loadingStart = time.Now()
@@ -393,7 +394,7 @@ func (s *Select[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 			// since we're updating the options, we need to update the selected
 			// cursor position and filteredOptions.
-			s.selected = clamp(s.selected, 0, len(msg.options)-1)
+			s.selected = ordered.Clamp(s.selected, 0, len(msg.options)-1)
 			s.filteredOptions = msg.options
 			s.updateValue()
 		}
