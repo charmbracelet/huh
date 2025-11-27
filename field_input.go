@@ -278,7 +278,7 @@ func (i *Input) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
-	case updateFieldMsg:
+	case UpdateFieldMsg:
 		var cmds []tea.Cmd
 		if ok, hash := i.title.shouldUpdate(); ok {
 			i.title.bindingsHash = hash
