@@ -723,7 +723,7 @@ func (m *MultiSelect[T]) RunAccessible(w io.Writer, r io.Reader) error {
 	for {
 		m.printOptions(w)
 
-		prompt := fmt.Sprintf("Input a number between %d and %d: ", 0, len(m.options.val))
+		prompt := fmt.Sprintf("Enter a number between %d and %d: ", 0, len(m.options.val))
 		choice = accessibility.PromptInt(w, r, prompt, 0, len(m.options.val), nil)
 		if choice <= 0 {
 			m.updateValue()
