@@ -254,15 +254,18 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	// Update all the fields in the group.
 	g.selector.Range(func(i int, field Field) bool {
+		isSelectedField := g.selector.Index() == i
+		
 		switch msg := msg.(type) {
 		case tea.KeyMsg:
-			break
+			// KeyMsg should only go to the selected field
+			if isSelectedField {
+				m, cmd := field.Update(msg)
+				g.selector.Set(i, m.(Field))
+				cmds = append(cmds, cmd)
+			}
 		default:
-			m, cmd := field.Update(msg)
-			g.selector.Set(i, m.(Field))
-			cmds = append(cmds, cmd)
-		}
-		if g.selector.Index() == i {
+			// Non-key messages go to all fields
 			m, cmd := field.Update(msg)
 			g.selector.Set(i, m.(Field))
 			cmds = append(cmds, cmd)
