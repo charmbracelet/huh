@@ -293,7 +293,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	switch msg := msg.(type) {
-	case updateFieldMsg:
+	case UpdateFieldMsg:
 		var fieldCmds []tea.Cmd
 		if ok, hash := m.title.shouldUpdate(); ok {
 			m.title.bindingsHash = hash
