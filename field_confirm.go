@@ -76,6 +76,11 @@ func (*Confirm) Zoom() bool {
 	return false
 }
 
+// Hide returns whether this input should be hidden and not updated.
+func (*Confirm) Hide() bool {
+	return false
+}
+
 // Affirmative sets the affirmative value of the confirm field.
 func (c *Confirm) Affirmative(affirmative string) *Confirm {
 	c.affirmative = affirmative

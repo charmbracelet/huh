@@ -161,6 +161,9 @@ type Field interface {
 	// Zoom allows the field to take focus of the group / form height.
 	Zoom() bool
 
+    // Hide returns whether this input should be hidden and not updated.
+	Hide() bool
+
 	// KeyBinds returns help keybindings.
 	KeyBinds() []key.Binding
 
