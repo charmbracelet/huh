@@ -39,6 +39,7 @@ type Select[T comparable] struct {
 	description     Eval[string]
 	options         Eval[[]Option[T]]
 	filteredOptions []Option[T]
+	filterFunc      FilterFunc
 
 	validate func(T) error
 	err      error
@@ -74,6 +75,7 @@ func NewSelect[T comparable]() *Select[T] {
 		validate:    func(T) error { return nil },
 		filtering:   false,
 		filter:      filter,
+		filterFunc:  defaultFilterFunc,
 		id:          nextID(),
 		options:     Eval[[]Option[T]]{cache: make(map[uint64][]Option[T])},
 		title:       Eval[string]{cache: make(map[uint64]string)},
@@ -496,7 +498,7 @@ func (s *Select[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if s.filter.Value() != "" {
 				s.filteredOptions = nil
 				for _, option := range s.options.val {
-					if s.filterFunc(option.Key) {
+					if s.filterFunc(option.Key, s.filter.Value()) {
 						s.filteredOptions = append(s.filteredOptions, option)
 					}
 				}
@@ -694,12 +696,6 @@ func (s *Select[T]) setFiltering(filtering bool) {
 	s.keymap.ClearFilter.SetEnabled(!filtering && s.filter.Value() != "")
 }
 
-// filterFunc returns true if the option matches the filter.
-func (s *Select[T]) filterFunc(option string) bool {
-	// XXX: remove diacritics or allow customization of filter function.
-	return strings.Contains(strings.ToLower(option), strings.ToLower(s.filter.Value()))
-}
-
 // Run runs the select field.
 func (s *Select[T]) Run() error {
 	if s.accessible { // TODO: remove in a future release.
@@ -774,6 +770,13 @@ func (s *Select[T]) WithKeyMap(k *KeyMap) Field {
 // field in accessible mode.
 func (s *Select[T]) WithAccessible(accessible bool) Field {
 	s.accessible = accessible
+	return s
+}
+
+// WithFilterFunc sets the function used to compare the list option to the filter
+func (s *Select[T]) WithFilterFunc(fn FilterFunc) Field {
+	s.filterFunc = fn
+
 	return s
 }
 
