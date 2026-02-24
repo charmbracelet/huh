@@ -256,13 +256,12 @@ func (g *Group) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	g.selector.Range(func(i int, field Field) bool {
 		switch msg := msg.(type) {
 		case tea.KeyMsg:
-			break
+			if g.selector.Index() == i {
+				m, cmd := field.Update(msg)
+				g.selector.Set(i, m.(Field))
+				cmds = append(cmds, cmd)
+			}
 		default:
-			m, cmd := field.Update(msg)
-			g.selector.Set(i, m.(Field))
-			cmds = append(cmds, cmd)
-		}
-		if g.selector.Index() == i {
 			m, cmd := field.Update(msg)
 			g.selector.Set(i, m.(Field))
 			cmds = append(cmds, cmd)
