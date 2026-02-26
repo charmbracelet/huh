@@ -7,12 +7,13 @@ import (
 	"os"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/filepicker"
-	"github.com/charmbracelet/bubbles/key"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/internal/accessibility"
-	"github.com/charmbracelet/lipgloss"
 	xstrings "github.com/charmbracelet/x/exp/strings"
+
+	"charm.land/bubbles/v2/filepicker"
+	"charm.land/bubbles/v2/key"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/huh/v2/internal/accessibility"
+	"charm.land/lipgloss/v2"
 )
 
 // FilePicker is a form file file field.
@@ -34,11 +35,11 @@ type FilePicker struct {
 	err      error
 
 	// options
-	width      int
-	height     int
-	accessible bool // Deprecated: use RunAccessible instead.
-	theme      *Theme
-	keymap     FilePickerKeyMap
+	width     int
+	height    int
+	theme     Theme
+	hasDarkBg bool
+	keymap    FilePickerKeyMap
 }
 
 // NewFilePicker returns a new file field.
@@ -198,10 +199,12 @@ func (f *FilePicker) Init() tea.Cmd {
 }
 
 // Update updates the file field.
-func (f *FilePicker) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (f *FilePicker) Update(msg tea.Msg) (Model, tea.Cmd) {
 	f.err = nil
 
 	switch msg := msg.(type) {
+	case tea.BackgroundColorMsg:
+		f.hasDarkBg = msg.IsDark()
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, f.keymap.Open):
@@ -242,12 +245,12 @@ func (f *FilePicker) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (f *FilePicker) activeStyles() *FieldStyles {
 	theme := f.theme
 	if theme == nil {
-		theme = ThemeCharm()
+		theme = ThemeFunc(ThemeCharm)
 	}
 	if f.focused {
-		return &theme.Focused
+		return &theme.Theme(f.hasDarkBg).Focused
 	}
-	return &theme.Blurred
+	return &theme.Theme(f.hasDarkBg).Blurred
 }
 
 func (f *FilePicker) renderTitle() string {
@@ -308,9 +311,6 @@ func (f *FilePicker) setPicking(v bool) {
 
 // Run runs the file field.
 func (f *FilePicker) Run() error {
-	if f.accessible { // TODO: remove in a future release.
-		return f.RunAccessible(os.Stdout, os.Stdin)
-	}
 	return Run(f)
 }
 
@@ -360,25 +360,26 @@ const (
 )
 
 // WithTheme sets the theme of the file field.
-func (f *FilePicker) WithTheme(theme *Theme) Field {
+func (f *FilePicker) WithTheme(theme Theme) Field {
 	if f.theme != nil || theme == nil {
 		return f
 	}
 	f.theme = theme
+	styles := f.theme.Theme(f.hasDarkBg)
 
 	// XXX: add specific themes
 	f.picker.Styles = filepicker.Styles{
 		DisabledCursor:   lipgloss.Style{},
-		Cursor:           theme.Focused.TextInput.Prompt,
+		Cursor:           styles.Focused.TextInput.Prompt,
 		Symlink:          lipgloss.NewStyle(),
-		Directory:        theme.Focused.Directory,
-		File:             theme.Focused.File,
-		DisabledFile:     theme.Focused.TextInput.Placeholder,
-		Permission:       theme.Focused.TextInput.Placeholder,
-		Selected:         theme.Focused.SelectedOption,
-		DisabledSelected: theme.Focused.TextInput.Placeholder,
-		FileSize:         theme.Focused.TextInput.Placeholder.Width(fileSizeWidth).Align(lipgloss.Right),
-		EmptyDirectory:   theme.Focused.TextInput.Placeholder.PaddingLeft(paddingLeft).SetString("No files found."),
+		Directory:        styles.Focused.Directory,
+		File:             styles.Focused.File,
+		DisabledFile:     styles.Focused.TextInput.Placeholder,
+		Permission:       styles.Focused.TextInput.Placeholder,
+		Selected:         styles.Focused.SelectedOption,
+		DisabledSelected: styles.Focused.TextInput.Placeholder,
+		FileSize:         styles.Focused.TextInput.Placeholder.Width(fileSizeWidth).Align(lipgloss.Right),
+		EmptyDirectory:   styles.Focused.TextInput.Placeholder.PaddingLeft(paddingLeft).SetString("No files found."),
 	}
 
 	return f
@@ -399,15 +400,6 @@ func (f *FilePicker) WithKeyMap(k *KeyMap) Field {
 		Select:   k.FilePicker.Select,
 	}
 	f.setPicking(f.picking)
-	return f
-}
-
-// WithAccessible sets the accessible mode of the file field.
-//
-// Deprecated: you may now call [FilePicker.RunAccessible] directly to run the
-// field in accessible mode.
-func (f *FilePicker) WithAccessible(accessible bool) Field {
-	f.accessible = accessible
 	return f
 }
 

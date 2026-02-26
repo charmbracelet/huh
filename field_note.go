@@ -3,11 +3,10 @@ package huh
 import (
 	"fmt"
 	"io"
-	"os"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/key"
-	tea "github.com/charmbracelet/bubbletea"
+	"charm.land/bubbles/v2/key"
+	tea "charm.land/bubbletea/v2"
 )
 
 // Note is a note field.
@@ -26,12 +25,12 @@ type Note struct {
 	showNextButton bool
 	skip           bool
 
-	accessible bool // Deprecated: use RunAccessible instead.
-	height     int
-	width      int
+	height int
+	width  int
 
-	theme  *Theme
-	keymap NoteKeyMap
+	theme     Theme
+	hasDarkBg bool
+	keymap    NoteKeyMap
 }
 
 // NewNote creates a new note field.
@@ -162,8 +161,10 @@ func (n *Note) KeyBinds() []key.Binding {
 func (n *Note) Init() tea.Cmd { return nil }
 
 // Update updates the note field.
-func (n *Note) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (n *Note) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.BackgroundColorMsg:
+		n.hasDarkBg = msg.IsDark()
 	case updateFieldMsg:
 		var cmds []tea.Cmd
 		if ok, hash := n.title.shouldUpdate(); ok {
@@ -208,12 +209,12 @@ func (n *Note) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (n *Note) activeStyles() *FieldStyles {
 	theme := n.theme
 	if theme == nil {
-		theme = ThemeCharm()
+		theme = ThemeFunc(ThemeCharm)
 	}
 	if n.focused {
-		return &theme.Focused
+		return &theme.Theme(n.hasDarkBg).Focused
 	}
-	return &theme.Blurred
+	return &theme.Theme(n.hasDarkBg).Blurred
 }
 
 // View renders the note field.
@@ -242,9 +243,6 @@ func (n *Note) View() string {
 
 // Run runs the note field.
 func (n *Note) Run() error {
-	if n.accessible { // TODO: remove in a future release.
-		return n.RunAccessible(os.Stdout, os.Stdin)
-	}
 	return Run(n)
 }
 
@@ -261,7 +259,7 @@ func (n *Note) RunAccessible(w io.Writer, _ io.Reader) error {
 }
 
 // WithTheme sets the theme on a note field.
-func (n *Note) WithTheme(theme *Theme) Field {
+func (n *Note) WithTheme(theme Theme) Field {
 	if n.theme != nil {
 		return n
 	}
@@ -272,15 +270,6 @@ func (n *Note) WithTheme(theme *Theme) Field {
 // WithKeyMap sets the keymap on a note field.
 func (n *Note) WithKeyMap(k *KeyMap) Field {
 	n.keymap = k.Note
-	return n
-}
-
-// WithAccessible sets the accessible mode of the note field.
-//
-// Deprecated: you may now call [Note.RunAccessible] directly to run the
-// field in accessible mode.
-func (n *Note) WithAccessible(accessible bool) Field {
-	n.accessible = accessible
 	return n
 }
 

@@ -3,15 +3,18 @@ package main
 import (
 	"fmt"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/huh/v2"
 )
 
 func main() {
 	var name string
 	form := huh.NewForm(
 		huh.NewGroup(huh.NewInput().Description("What should we call you?").Value(&name)),
-	).WithProgramOptions(tea.WithAltScreen())
+	).WithViewHook(func(v tea.View) tea.View {
+		v.AltScreen = true
+		return v
+	})
 
 	err := form.Run()
 	if err != nil {

@@ -4,10 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"math/rand"
 	"time"
 
-	"github.com/charmbracelet/huh/spinner"
+	"charm.land/huh/v2/spinner"
 )
 
 func main() {
@@ -16,10 +15,11 @@ func main() {
 
 	err := spinner.New().
 		Context(ctx).
-		Action(func() {
-			time.Sleep(time.Minute)
+		ActionWithErr(func(context.Context) error {
+			time.Sleep(5 * time.Second)
+			return nil
 		}).
-		Accessible(rand.Int()%2 == 0).
+		WithAccessible(false).
 		Run()
 	if err != nil {
 		log.Fatalln(err)

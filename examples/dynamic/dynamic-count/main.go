@@ -6,7 +6,7 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/charmbracelet/huh"
+	"charm.land/huh/v2"
 )
 
 func main() {

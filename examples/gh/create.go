@@ -5,9 +5,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/charmbracelet/huh"
-	"github.com/charmbracelet/huh/spinner"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/huh/v2"
+	"charm.land/huh/v2/spinner"
+	"charm.land/lipgloss/v2"
 )
 
 type Action int
@@ -21,14 +21,23 @@ const (
 
 var highlight = lipgloss.NewStyle().Foreground(lipgloss.Color("#00D7D7"))
 
-func main() {
-	var action Action
-	spinnerStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("4"))
-
-	repo := "charmbracelet/huh"
-	theme := huh.ThemeBase16()
+func customTheme(isDark bool) *huh.Styles {
+	theme := huh.ThemeBase16(isDark)
 	theme.FieldSeparator = lipgloss.NewStyle().SetString("\n")
 	theme.Help.FullKey.MarginTop(1)
+	return theme
+}
+
+func main() {
+	var action Action
+
+	repo := "charmbracelet/huh"
+
+	theme := spinner.ThemeFunc(func(isDark bool) *spinner.Styles {
+		d := spinner.ThemeDefault(isDark)
+		d.Spinner = lipgloss.NewStyle().Foreground(lipgloss.Color("4"))
+		return d
+	})
 
 	f := huh.NewForm(
 		huh.NewGroup(
@@ -42,7 +51,7 @@ func main() {
 				).
 				Title("Where should we push the 'feature' branch?"),
 		),
-	).WithTheme(theme)
+	).WithTheme(huh.ThemeFunc(customTheme))
 
 	err := f.Run()
 	if err != nil {
@@ -51,7 +60,7 @@ func main() {
 
 	switch action {
 	case Push:
-		_ = spinner.New().Title("Pushing to charmbracelet/huh").Style(spinnerStyle).Run()
+		_ = spinner.New().Title("Pushing to charmbracelet/huh").WithTheme(theme).Run()
 		fmt.Println("Pushed to charmbracelet/huh")
 	case Fork:
 		fmt.Println("Creating a fork of charmbracelet/huh...")
@@ -80,7 +89,7 @@ func main() {
 				Options(huh.NewOptions("Submit", "Submit as draft", "Continue in browser", "Add metadata", "Cancel")...).
 				Title("What's next?").Value(&nextAction),
 		),
-	).WithTheme(theme)
+	).WithTheme(huh.ThemeFunc(customTheme))
 
 	err = f.Run()
 	if err != nil {
@@ -88,7 +97,7 @@ func main() {
 	}
 
 	if nextAction == "Submit" {
-		_ = spinner.New().Title("Submitting...").Style(spinnerStyle).Run()
+		_ = spinner.New().Title("Submitting...").WithTheme(theme).Run()
 		fmt.Println("Pull request submitted!")
 	}
 }
