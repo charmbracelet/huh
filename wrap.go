@@ -1,7 +1,7 @@
 package huh
 
-import "github.com/charmbracelet/x/cellbuf"
+import "charm.land/lipgloss/v2"
 
 func wrap(s string, limit int) string {
-	return cellbuf.Wrap(s, limit, ",.-; ")
+	return lipgloss.Wrap(s, limit, ",.-; ")
 }

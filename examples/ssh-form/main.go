@@ -10,14 +10,14 @@ import (
 	"syscall"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh"
-	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/log"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/huh/v2"
+	"charm.land/lipgloss/v2"
+	"charm.land/log/v2"
+	"charm.land/wish/v2"
+	"charm.land/wish/v2/activeterm"
+	"charm.land/wish/v2/bubbletea"
 	"github.com/charmbracelet/ssh"
-	"github.com/charmbracelet/wish"
-	"github.com/charmbracelet/wish/activeterm"
-	"github.com/charmbracelet/wish/bubbletea"
 )
 
 const (
@@ -59,39 +59,38 @@ func main() {
 	}
 }
 
+func customTheme(hasDarkBg bool) *huh.Styles {
+	custom := huh.ThemeBase(hasDarkBg)
+	custom.Blurred.Title = lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#444"))
+	custom.Blurred.TextInput.Prompt = lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#444"))
+	custom.Blurred.TextInput.Text = lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#444"))
+	custom.Focused.TextInput.Cursor = lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#7571F9"))
+	custom.Focused.Base = lipgloss.NewStyle().
+		Padding(0, 1).
+		Border(lipgloss.ThickBorder(), false).
+		BorderLeft(true).
+		BorderForeground(lipgloss.Color("#7571F9"))
+	return custom
+}
+
 func teaHandler(s ssh.Session) (tea.Model, []tea.ProgramOption) {
 	form := huh.NewForm(
 		huh.NewGroup(
 			huh.NewInput().Title("Username").Key("username"),
 			huh.NewInput().Title("Password").EchoMode(huh.EchoModePassword),
 		),
-	)
-	r := bubbletea.MakeRenderer(s)
-	style := r.NewStyle().
+	).WithTheme(huh.ThemeFunc(customTheme))
+	style := lipgloss.NewStyle().
 		Border(lipgloss.NormalBorder()).
 		Padding(1, 2).
 		BorderForeground(lipgloss.Color("#444444")).
 		Foreground(lipgloss.Color("#7571F9"))
-
-	custom := huh.ThemeBase()
-	custom.Blurred.Title = r.NewStyle().
-		Foreground(lipgloss.Color("#444"))
-	custom.Blurred.TextInput.Prompt = r.NewStyle().
-		Foreground(lipgloss.Color("#444"))
-	custom.Blurred.TextInput.Text = r.NewStyle().
-		Foreground(lipgloss.Color("#444"))
-	custom.Focused.TextInput.Cursor = r.NewStyle().
-		Foreground(lipgloss.Color("#7571F9"))
-	custom.Focused.Base = r.NewStyle().
-		Padding(0, 1).
-		Border(lipgloss.ThickBorder(), false).
-		BorderLeft(true).
-		BorderForeground(lipgloss.Color("#7571F9"))
-
-	form.WithTheme(custom)
-
 	m := model{form: form, style: style}
-	return m, []tea.ProgramOption{tea.WithAltScreen()}
+	return m, nil
 }
 
 type model struct {
@@ -100,12 +99,7 @@ type model struct {
 	loggedIn bool
 }
 
-func (m model) Init() tea.Cmd {
-	if m.form == nil {
-		return nil
-	}
-	return m.form.Init()
-}
+func (m model) Init() tea.Cmd { return m.form.Init() }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
@@ -124,9 +118,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "ctrl+c":
-			return m, tea.Interrupt
-		case "q":
+		case "q", "ctrl+c":
 			return m, tea.Quit
 		}
 	}
@@ -134,12 +126,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m model) View() string {
-	if m.form == nil {
-		return "Starting..."
+func (m model) View() tea.View {
+	var view tea.View
+	view.AltScreen = true
+
+	switch {
+	case m.form == nil:
+		view.SetContent("Starting...")
+	case m.loggedIn:
+		view.SetContent(m.style.Render("Welcome, " + m.form.GetString("username") + "!"))
+	default:
+		view.SetContent(m.form.View())
 	}
-	if m.loggedIn {
-		return m.style.Render("Welcome, " + m.form.GetString("username") + "!")
-	}
-	return m.form.View()
+	return view
 }

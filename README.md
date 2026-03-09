@@ -26,7 +26,7 @@ define a few variables where we'll store answers.
 ```go
 package main
 
-import "github.com/charmbracelet/huh"
+import "charm.land/huh/v2"
 
 var (
     burger       string
@@ -129,7 +129,7 @@ If you need more dynamic forms that change based on input from previous fields,
 check out the [dynamic forms](#dynamic-forms) example.
 
 [burgersource]: ./examples/burger/main.go
-[docs]: https://pkg.go.dev/github.com/charmbracelet/huh?tab=doc
+[docs]: https://pkg.go.dev/charm.land/huh/v2?tab=doc
 
 ## Field Reference
 
@@ -276,7 +276,7 @@ choose from one of the five predefined themes:
 
 Themes can take advantage of the full range of
 [Lip Gloss][lipgloss] style options. For a high level theme reference see
-[the docs](https://pkg.go.dev/github.com/charmbracelet/huh#Theme).
+[the docs](https://pkg.go.dev/charm.land/huh/v2#Theme).
 
 [lipgloss]: https://github.com/charmbracelet/lipgloss
 
@@ -397,15 +397,15 @@ fmt.Println("Order up!")
 </table>
 
 For more on Spinners see the [spinner examples](./spinner/examples) and
-[the spinner docs](https://pkg.go.dev/github.com/charmbracelet/huh/spinner).
+[the spinner docs](https://pkg.go.dev/charm.land/huh/v2/spinner).
 
 ## What about Bubble Tea?
 
 <img alt="Bubbletea + Huh?" width="174" src="https://stuff.charm.sh/huh/bubbletea-huh.png">
 
-Huh is built on [Bubble Tea][tea] and, in addition to its standalone mode, 
-`huh?` has first-class support and can be easily integrated into 
-Bubble Tea applications. It’s very useful in portions of your Bubble Tea 
+Huh is built on [Bubble Tea][tea] and, in addition to its standalone mode,
+`huh?` has first-class support and can be easily integrated into
+Bubble Tea applications. It’s very useful in portions of your Bubble Tea
 application that need form-like input, and for times when you need more
 flexibility than `huh?` alone can offer.
 

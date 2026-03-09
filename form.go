@@ -10,10 +10,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/bubbles/key"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh/internal/selector"
+	"charm.land/bubbles/v2/help"
+	"charm.land/bubbles/v2/key"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/huh/v2/internal/compat"
+	"charm.land/huh/v2/internal/selector"
 )
 
 const defaultWidth = 80
@@ -32,6 +33,9 @@ func nextID() int {
 	lastID++
 	return lastID
 }
+
+// Model is an alias to [compat.Model].
+type Model = compat.Model
 
 // FormState represents the current state of the form.
 type FormState int
@@ -83,10 +87,12 @@ type Form struct {
 	// options
 	width      int
 	height     int
-	theme      *Theme
+	theme      Theme
+	hasDarkBg  bool
 	keymap     *KeyMap
 	timeout    time.Duration
 	teaOptions []tea.ProgramOption
+	viewHook   compat.ViewHook
 
 	layout Layout
 
@@ -110,7 +116,6 @@ func NewForm(groups ...*Group) *Form {
 		layout:   LayoutDefault,
 		teaOptions: []tea.ProgramOption{
 			tea.WithOutput(os.Stderr),
-			tea.WithReportFocus(),
 		},
 	}
 
@@ -137,9 +142,7 @@ func NewForm(groups ...*Group) *Form {
 // Each field implements the Bubble Tea Model interface.
 type Field interface {
 	// Bubble Tea Model
-	Init() tea.Cmd
-	Update(tea.Msg) (tea.Model, tea.Cmd)
-	View() string
+	Model
 
 	// Bubble Tea Events
 	Blur() tea.Cmd
@@ -165,12 +168,7 @@ type Field interface {
 	KeyBinds() []key.Binding
 
 	// WithTheme sets the theme on a field.
-	WithTheme(*Theme) Field
-
-	// WithAccessible sets whether the field should run in accessible mode.
-	//
-	// Deprecated: you may now call [Field.RunAccessible] directly to run the field in accessible mode.
-	WithAccessible(bool) Field
+	WithTheme(Theme) Field
 
 	// WithKeyMap sets the keymap on a field.
 	WithKeyMap(*KeyMap) Field
@@ -268,7 +266,7 @@ func (f *Form) WithShowErrors(v bool) *Form {
 // This allows all groups and fields to be themed consistently, however themes
 // can be applied to each group and field individually for more granular
 // control.
-func (f *Form) WithTheme(theme *Theme) *Form {
+func (f *Form) WithTheme(theme Theme) *Form {
 	if theme == nil {
 		return f
 	}
@@ -352,6 +350,12 @@ func (f *Form) WithTimeout(t time.Duration) *Form {
 // WithProgramOptions sets the tea options of the form.
 func (f *Form) WithProgramOptions(opts ...tea.ProgramOption) *Form {
 	f.teaOptions = opts
+	return f
+}
+
+// WithViewHook allows to set a [compat.ViewHook].
+func (f *Form) WithViewHook(hook compat.ViewHook) *Form {
+	f.viewHook = hook
 	return f
 }
 
@@ -516,12 +520,12 @@ func (f *Form) Init() tea.Cmd {
 		cmds = append(cmds, nextGroup)
 	}
 
-	cmds = append(cmds, tea.WindowSize())
+	cmds = append(cmds, tea.RequestWindowSize)
 	return tea.Sequence(cmds...)
 }
 
 // Update updates the form.
-func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (f *Form) Update(msg tea.Msg) (Model, tea.Cmd) {
 	// If the form is aborted or completed there's no need to update it.
 	if f.State != StateNormal {
 		return f, nil
@@ -530,6 +534,8 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	group := f.selector.Selected()
 
 	switch msg := msg.(type) {
+	case tea.BackgroundColorMsg:
+		f.hasDarkBg = msg.IsDark()
 	case tea.WindowSizeMsg:
 		if f.width == 0 {
 			f.selector.Range(func(_ int, group *Group) bool {
@@ -572,7 +578,7 @@ func (f *Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return f, nil
 		}
 
-		submit := func() (tea.Model, tea.Cmd) {
+		submit := func() (Model, tea.Cmd) {
 			f.quitting = true
 			f.State = StateCompleted
 			return f, f.SubmitCmd
@@ -633,11 +639,11 @@ func (f *Form) isGroupHidden(group *Group) bool {
 	return hide()
 }
 
-func (f *Form) getTheme() *Theme {
+func (f *Form) getTheme() *Styles {
 	if f.theme != nil {
-		return f.theme
+		return f.theme.Theme(f.hasDarkBg)
 	}
-	return ThemeCharm()
+	return ThemeCharm(f.hasDarkBg)
 }
 
 func (f *Form) styles() FormStyles {
@@ -686,8 +692,20 @@ func (f *Form) run(ctx context.Context) error {
 	}
 
 	f.teaOptions = append(f.teaOptions, tea.WithContext(ctx))
-	m, err := tea.NewProgram(f, f.teaOptions...).Run()
-	if m.(*Form).aborted || errors.Is(err, tea.ErrInterrupted) {
+	m, err := tea.NewProgram(
+		compat.ViewModel{
+			Model: f,
+			ViewHook: func(v tea.View) tea.View {
+				v.ReportFocus = true
+				if f.viewHook == nil {
+					return v
+				}
+				return f.viewHook(v)
+			},
+		},
+		f.teaOptions...,
+	).Run()
+	if m.(compat.ViewModel).Model.(*Form).aborted || errors.Is(err, tea.ErrInterrupted) {
 		return ErrUserAborted
 	}
 	if errors.Is(err, tea.ErrProgramKilled) {
@@ -710,7 +728,7 @@ func (f *Form) runAccessible(w io.Writer, r io.Reader) error {
 		group.selector.Range(func(_ int, field Field) bool {
 			field.Init()
 			field.Focus()
-			_ = field.WithAccessible(true).RunAccessible(w, r)
+			_ = field.RunAccessible(w, r)
 			_, _ = fmt.Fprintln(w)
 			return true
 		})
