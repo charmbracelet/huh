@@ -1,7 +1,7 @@
 # Huh?
 
 <p>
-  <img alt="Hey there! I’m Glenn!" title="Hey there! I’m Glenn!" src="https://stuff.charm.sh/huh/glenn.png" width="400" />
+  <img src="https://stuff.charm.sh/huh/glenn.png" width="400" />
   <br><br>
   <a href="https://github.com/charmbracelet/huh/releases"><img src="https://img.shields.io/github/release/charmbracelet/huh.svg" alt="Latest Release"></a>
   <a href="https://pkg.go.dev/github.com/charmbracelet/huh?tab=doc"><img src="https://godoc.org/github.com/golang/gddo?status.svg" alt="Go Docs"></a>
@@ -507,6 +507,6 @@ We’d love to hear your thoughts on this project. Feel free to drop us a note!
 
 Part of [Charm](https://charm.sh).
 
-<a href="https://charm.sh/"><img alt="The Charm logo" src="https://stuff.charm.sh/charm-badge.jpg" width="400"></a>
+<a href="https://charm.land/"><img alt="The Charm logo" src="https://stuff.charm.sh/charm-banner-next.jpg" width="400"></a>
 
 Charm热爱开源 • Charm loves open source • نحنُ نحب المصادر المفتوحة
