@@ -308,6 +308,18 @@ func TestInput(t *testing.T) {
 	}
 }
 
+func TestPasteNotDuplicated(t *testing.T) {
+	field := NewInput().Title("Name")
+	f := NewForm(NewGroup(field))
+	f.Update(f.Init())
+
+	f = batchUpdate(f.Update(tea.PasteMsg{Content: "hello"})).(*Form)
+
+	if field.GetValue() != "hello" {
+		t.Errorf("Expected field value to be %q, got %q (paste was duplicated)", "hello", field.GetValue())
+	}
+}
+
 func TestInlineInput(t *testing.T) {
 	field := NewInput().
 		Title("Input ").
