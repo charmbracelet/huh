@@ -259,7 +259,7 @@ func (g *Group) Update(msg tea.Msg) (Model, tea.Cmd) {
 	// Update all the fields in the group.
 	g.selector.Range(func(i int, field Field) bool {
 		switch msg := msg.(type) {
-		case tea.KeyMsg:
+		case tea.KeyMsg, tea.PasteMsg:
 			break
 		default:
 			m, cmd := field.Update(msg)
