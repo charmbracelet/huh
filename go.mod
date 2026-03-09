@@ -1,6 +1,6 @@
 module charm.land/huh/v2
 
-go 1.25.0
+go 1.25.8
 
 require (
 	charm.land/bubbles/v2 v2.0.0
