@@ -778,6 +778,7 @@ func (s *Select[T]) WithKeyMap(k *KeyMap) Field {
 // WithWidth sets the width of the select field.
 func (s *Select[T]) WithWidth(width int) Field {
 	s.width = width
+	s.updateViewportSize()
 	return s
 }
 
