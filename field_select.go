@@ -200,7 +200,7 @@ func (s *Select[T]) selectOption() {
 			break
 		}
 	}
-	s.viewport.SetYOffset(s.selected)
+	s.ensureCursorVisible()
 }
 
 // OptionsFunc sets the options func of the select field.
@@ -426,9 +426,8 @@ func (s *Select[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 			if s.selected < 0 {
 				s.selected = len(s.filteredOptions) - 1
 				s.viewport.GotoBottom()
-			}
-			if s.selected < s.viewport.YOffset() {
-				s.viewport.SetYOffset(s.selected)
+			} else {
+				s.ensureCursorVisible()
 			}
 			s.updateValue()
 		case key.Matches(msg, s.keymap.GotoTop):
@@ -446,11 +445,11 @@ func (s *Select[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 			s.viewport.GotoBottom()
 		case key.Matches(msg, s.keymap.HalfPageUp):
 			s.selected = max(s.selected-s.viewport.Height()/2, 0)
-			s.viewport.HalfPageUp()
+			s.ensureCursorVisible()
 			s.updateValue()
 		case key.Matches(msg, s.keymap.HalfPageDown):
 			s.selected = min(s.selected+s.viewport.Height()/2, len(s.filteredOptions)-1)
-			s.viewport.HalfPageDown()
+			s.ensureCursorVisible()
 			s.updateValue()
 		case key.Matches(msg, s.keymap.Down, s.keymap.Right):
 			// When filtering we should ignore j/k keybindings
@@ -463,9 +462,8 @@ func (s *Select[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 			if s.selected > len(s.filteredOptions)-1 {
 				s.selected = 0
 				s.viewport.GotoTop()
-			}
-			if s.selected >= s.viewport.YOffset()+s.viewport.Height() {
-				s.viewport.ScrollDown(1)
+			} else {
+				s.ensureCursorVisible()
 			}
 			s.updateValue()
 		case key.Matches(msg, s.keymap.Prev):
@@ -508,10 +506,7 @@ func (s *Select[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 			}
 		}
 
-		_, offset, height := s.optionsView()
-		if offset > -1 && height > 0 && (offset < s.viewport.YOffset() || height+offset >= s.viewport.YOffset()+s.viewport.Height()) {
-			s.viewport.SetYOffset(offset)
-		}
+		s.ensureCursorVisible()
 	}
 
 	return s, cmd
@@ -534,8 +529,8 @@ func (s *Select[T]) updateViewportSize() {
 		if ss := s.descriptionView(); ss != "" {
 			yoffset += lipgloss.Height(ss)
 		}
-		s.viewport.SetYOffset(s.selected)
 		s.viewport.SetHeight(max(minHeight, s.height-yoffset))
+		s.ensureCursorVisible()
 	} else {
 		// If no height is set size the viewport to the number of options.
 		v, _, _ := s.optionsView()
@@ -638,6 +633,43 @@ func (s *Select[T]) optionsView() (string, int, int) {
 	}
 
 	return sb.String(), cursorOffset, cursorHeight
+}
+
+// cursorLineOffset computes the line offset and height (in lines) for the
+// currently selected option without rendering the full options string.
+func (s *Select[T]) cursorLineOffset() (offset int, height int) {
+	for i, option := range s.filteredOptions {
+		line := s.renderOption(option, s.selected == i)
+		h := lipgloss.Height(line)
+		if i < s.selected {
+			offset += h
+		}
+		if i == s.selected {
+			height = h
+			return offset, height
+		}
+	}
+	return offset, height
+}
+
+// ensureVisible scrolls a viewport the minimum amount so that the region
+// [offset, offset+height) is within the visible area.
+func ensureVisible(vp *viewport.Model, offset, height int) {
+	if height <= 0 {
+		return
+	}
+	yOff := vp.YOffset()
+	vHeight := vp.Height()
+	if offset < yOff {
+		vp.ScrollUp(yOff - offset)
+	} else if offset+height > yOff+vHeight {
+		vp.ScrollDown(offset + height - yOff - vHeight)
+	}
+}
+
+func (s *Select[T]) ensureCursorVisible() {
+	offset, height := s.cursorLineOffset()
+	ensureVisible(&s.viewport, offset, height)
 }
 
 func (s *Select[T]) renderOption(option Option[T], selected bool) string {

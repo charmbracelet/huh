@@ -151,7 +151,7 @@ func (m *MultiSelect[T]) selectOptions() {
 			continue
 		}
 		m.cursor = i
-		m.viewport.SetYOffset(i)
+		m.ensureCursorVisible()
 		break
 	}
 }
@@ -392,9 +392,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 			}
 
 			m.cursor = max(m.cursor-1, 0)
-			if m.cursor < m.viewport.YOffset() {
-				m.viewport.SetYOffset(m.cursor)
-			}
+			m.ensureCursorVisible()
 		case key.Matches(msg, m.keymap.Down):
 			//nolint:godox
 			// FIXME: should use keys in keymap
@@ -403,9 +401,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 			}
 
 			m.cursor = min(m.cursor+1, len(m.filteredOptions)-1)
-			if m.cursor >= m.viewport.YOffset()+m.viewport.Height() {
-				m.viewport.ScrollDown(1)
-			}
+			m.ensureCursorVisible()
 		case key.Matches(msg, m.keymap.GotoTop):
 			if m.filtering {
 				break
@@ -420,10 +416,10 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 			m.viewport.GotoBottom()
 		case key.Matches(msg, m.keymap.HalfPageUp):
 			m.cursor = max(m.cursor-m.viewport.Height()/2, 0)
-			m.viewport.HalfPageUp()
+			m.ensureCursorVisible()
 		case key.Matches(msg, m.keymap.HalfPageDown):
 			m.cursor = min(m.cursor+m.viewport.Height()/2, len(m.filteredOptions)-1)
-			m.viewport.HalfPageDown()
+			m.ensureCursorVisible()
 		case key.Matches(msg, m.keymap.Toggle) && !m.filtering:
 			for i, option := range m.options.val {
 				if option.Key == m.filteredOptions[m.cursor].Key {
@@ -488,10 +484,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 				m.cursor = min(m.cursor, len(m.filteredOptions)-1)
 			}
 		}
-		_, offset, height := m.optionsView()
-		if offset > -1 && height > 0 && (offset < m.viewport.YOffset() || height+offset >= m.viewport.YOffset()+m.viewport.Height()) {
-			m.viewport.SetYOffset(offset)
-		}
+		m.ensureCursorVisible()
 	}
 
 	return m, tea.Batch(cmds...)
@@ -613,6 +606,28 @@ func (m *MultiSelect[T]) renderOption(option Option[T], cursor, selected bool) s
 		parts = append(parts, styles.UnselectedOption.Render(option.Key))
 	}
 	return lipgloss.JoinHorizontal(lipgloss.Left, parts...)
+}
+
+// cursorLineOffset computes the line offset and height (in lines) for the
+// current cursor position without rendering the full options string.
+func (m *MultiSelect[T]) cursorLineOffset() (offset int, height int) {
+	for i, option := range m.filteredOptions {
+		line := m.renderOption(option, m.cursor == i, m.filteredOptions[i].selected)
+		h := lipgloss.Height(line)
+		if i < m.cursor {
+			offset += h
+		}
+		if i == m.cursor {
+			height = h
+			return offset, height
+		}
+	}
+	return offset, height
+}
+
+func (m *MultiSelect[T]) ensureCursorVisible() {
+	offset, height := m.cursorLineOffset()
+	ensureVisible(&m.viewport, offset, height)
 }
 
 func (m *MultiSelect[T]) optionsView() (string, int, int) {
