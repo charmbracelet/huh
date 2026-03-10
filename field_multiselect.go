@@ -690,7 +690,7 @@ func (m *MultiSelect[T]) printOptions(w io.Writer) {
 		if option.selected {
 			sb.WriteString(styles.SelectedOption.Render(fmt.Sprintf("%d. %s %s", i+1, "✓", option.Key)))
 		} else {
-			sb.WriteString(fmt.Sprintf("%d.   %s", i+1, option.Key))
+			_, _ = fmt.Fprintf(&sb, "%d.   %s", i+1, option.Key)
 		}
 		sb.WriteString("\n")
 	}

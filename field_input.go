@@ -273,8 +273,7 @@ func (i *Input) Init() tea.Cmd {
 
 // Update updates the input field.
 func (i *Input) Update(msg tea.Msg) (Model, tea.Cmd) {
-	var cmds []tea.Cmd
-	var cmd tea.Cmd
+	var cmds []tea.Cmd //nolint:prealloc
 
 	switch msg := msg.(type) {
 	case tea.BackgroundColorMsg:
@@ -358,6 +357,7 @@ func (i *Input) Update(msg tea.Msg) (Model, tea.Cmd) {
 		}
 	}
 
+	var cmd tea.Cmd
 	i.textinput, cmd = i.textinput.Update(msg)
 	cmds = append(cmds, cmd)
 	i.accessor.Set(i.textinput.Value())
@@ -437,7 +437,7 @@ func (i *Input) RunAccessible(w io.Writer, r io.Reader) error {
 		return i.validate(input)
 	}
 
-	switch i.textinput.EchoMode { //nolint:exhaustive
+	switch i.textinput.EchoMode {
 	case textinput.EchoNormal:
 		prompt := styles.Title.
 			PaddingRight(1).
