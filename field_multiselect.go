@@ -794,6 +794,7 @@ func (m *MultiSelect[T]) WithKeyMap(k *KeyMap) Field {
 // WithWidth sets the width of the multi-select field.
 func (m *MultiSelect[T]) WithWidth(width int) Field {
 	m.width = width
+	m.updateViewportSize()
 	return m
 }
 
