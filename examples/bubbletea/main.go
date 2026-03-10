@@ -129,7 +129,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.hasDarkBg = msg.IsDark()
 	case tea.WindowSizeMsg:
 		m.width = min(msg.Width, maxWidth) - styles.Base.GetHorizontalFrameSize()
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "ctrl+c":
 			return m, tea.Interrupt

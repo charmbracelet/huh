@@ -137,7 +137,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		s := m.styles(m.hasDarkBg)
 		m.width = min(msg.Width, maxWidth) - s.Base.GetHorizontalFrameSize()
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "esc", "ctrl+c", "q":
 			return m, tea.Quit

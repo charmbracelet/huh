@@ -1,15 +1,15 @@
 module examples
 
-go 1.24.2
+go 1.25.8
 
 replace charm.land/huh/v2 => ../
 
 require (
 	charm.land/bubbles/v2 v2.0.0
-	charm.land/bubbletea/v2 v2.0.0
+	charm.land/bubbletea/v2 v2.0.2
 	charm.land/glamour/v2 v2.0.0-20251110203732-69649f93d3b1
 	charm.land/huh/v2 v2.0.0-00010101000000-000000000000
-	charm.land/lipgloss/v2 v2.0.0
+	charm.land/lipgloss/v2 v2.0.1
 	charm.land/log/v2 v2.0.0-20251110204020-529bb77f35da
 	charm.land/wish/v2 v2.0.0-20251118130305-6cd7463a7b97
 	github.com/charmbracelet/ssh v0.0.0-20250826160808-ebfa259c7309
@@ -53,6 +53,6 @@ require (
 	golang.org/x/exp v0.0.0-20251113190631-e25ba8c21ef6 // indirect
 	golang.org/x/net v0.46.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
-	golang.org/x/sys v0.41.0 // indirect
+	golang.org/x/sys v0.42.0 // indirect
 	golang.org/x/text v0.31.0 // indirect
 )
