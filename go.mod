@@ -6,10 +6,10 @@ require (
 	charm.land/bubbles/v2 v2.0.0
 	charm.land/bubbletea/v2 v2.0.2
 	charm.land/lipgloss/v2 v2.0.1
-	github.com/catppuccin/go v0.2.0
+	github.com/catppuccin/go v0.3.0
 	github.com/charmbracelet/x/ansi v0.11.6
 	github.com/charmbracelet/x/exp/ordered v0.1.0
-	github.com/charmbracelet/x/exp/strings v0.0.0-20240722160745-212f7b056ed0
+	github.com/charmbracelet/x/exp/strings v0.1.0
 	github.com/charmbracelet/x/term v0.2.2
 	github.com/charmbracelet/x/xpty v0.1.3
 	github.com/mitchellh/hashstructure/v2 v2.0.2
