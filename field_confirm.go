@@ -198,7 +198,7 @@ func (c *Confirm) Update(msg tea.Msg) (Model, tea.Cmd) {
 			c.description.val = msg.description
 			c.description.loading = false
 		}
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		c.err = nil
 		switch {
 		case key.Matches(msg, c.keymap.Toggle):

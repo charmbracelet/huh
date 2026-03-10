@@ -559,7 +559,7 @@ func (f *Form) Update(msg tea.Msg) (Model, tea.Cmd) {
 			})
 		}
 
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		switch {
 		case key.Matches(msg, f.keymap.Quit):
 			f.aborted = true
@@ -624,7 +624,7 @@ func (f *Form) Update(msg tea.Msg) (Model, tea.Cmd) {
 	// A user input a key, this could hide or show other groups,
 	// let's update all of their positions.
 	switch msg.(type) {
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		f.UpdateFieldPositions()
 	}
 

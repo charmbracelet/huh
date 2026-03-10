@@ -194,7 +194,7 @@ func (n *Note) Update(msg tea.Msg) (Model, tea.Cmd) {
 		if msg.id == n.id && msg.hash == n.description.bindingsHash {
 			n.description.update(msg.description)
 		}
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		switch {
 		case key.Matches(msg, n.keymap.Prev):
 			return n, PrevField

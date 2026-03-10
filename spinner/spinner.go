@@ -199,7 +199,7 @@ func (s *Spinner) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case doneMsg:
 		s.err = msg.err
 		return s, tea.Quit
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "ctrl+c":
 			return s, tea.Interrupt

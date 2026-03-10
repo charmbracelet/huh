@@ -398,7 +398,7 @@ func (s *Select[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 			s.filteredOptions = msg.options
 			s.updateValue()
 		}
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		s.err = nil
 		switch {
 		case key.Matches(msg, s.keymap.Filter):

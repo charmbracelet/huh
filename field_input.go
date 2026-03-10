@@ -342,7 +342,7 @@ func (i *Input) Update(msg tea.Msg) (Model, tea.Cmd) {
 			i.textinput.ShowSuggestions = len(msg.suggestions) > 0
 			i.textinput.SetSuggestions(msg.suggestions)
 		}
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		i.err = nil
 
 		switch {

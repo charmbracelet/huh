@@ -205,7 +205,7 @@ func (f *FilePicker) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.BackgroundColorMsg:
 		f.hasDarkBg = msg.IsDark()
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		switch {
 		case key.Matches(msg, f.keymap.Open):
 			if f.picking {

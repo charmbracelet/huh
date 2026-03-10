@@ -368,7 +368,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 			m.updateValue()
 			m.cursor = ordered.Clamp(m.cursor, 0, len(m.filteredOptions)-1)
 		}
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		m.err = nil
 		switch {
 		case key.Matches(msg, m.keymap.Filter):

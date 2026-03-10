@@ -1225,13 +1225,13 @@ func batchUpdate(m Model, cmd tea.Cmd) Model {
 	return m
 }
 
-func codeKeypress(r rune) tea.KeyMsg {
+func codeKeypress(r rune) tea.KeyPressMsg {
 	return tea.KeyPressMsg(tea.Key{
 		Code: r,
 	})
 }
 
-func keypress(r rune) tea.KeyMsg {
+func keypress(r rune) tea.KeyPressMsg {
 	return tea.KeyPressMsg(tea.Key{
 		Text:        string(r),
 		Code:        r,

@@ -319,7 +319,7 @@ func (t *Text) Update(msg tea.Msg) (Model, tea.Cmd) {
 		if t.id == msg.id && t.description.bindingsHash == msg.hash {
 			t.description.update(msg.description)
 		}
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		t.err = nil
 
 		switch {
