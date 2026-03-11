@@ -254,7 +254,10 @@ func (t *Text) KeyBinds() []key.Binding {
 	return []key.Binding{t.keymap.NewLine, t.keymap.Editor, t.keymap.Prev, t.keymap.Submit, t.keymap.Next}
 }
 
-type updateValueMsg []byte
+type updateValueMsg struct {
+	content []byte
+	id      int
+}
 
 // Init initializes the text field.
 func (t *Text) Init() tea.Cmd {
@@ -271,7 +274,10 @@ func (t *Text) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case tea.BackgroundColorMsg:
 		t.hasDarkBg = msg.IsDark()
 	case updateValueMsg:
-		t.textarea.SetValue(string(msg))
+		if t.id != msg.id {
+			break
+		}
+		t.textarea.SetValue(string(msg.content))
 		t.textarea, cmd = t.textarea.Update(msg)
 		cmds = append(cmds, cmd)
 		t.accessor.Set(t.textarea.Value())
@@ -336,7 +342,10 @@ func (t *Text) Update(msg tea.Msg) (Model, tea.Cmd) {
 			cmds = append(cmds, tea.ExecProcess(cmd, func(error) tea.Msg {
 				content, _ := os.ReadFile(tmpFile.Name())
 				_ = os.Remove(tmpFile.Name())
-				return updateValueMsg(content)
+				return updateValueMsg{
+					content: content,
+					id:      t.id,
+				}
 			}))
 		case key.Matches(msg, t.keymap.Next, t.keymap.Submit):
 			value := t.textarea.Value()
