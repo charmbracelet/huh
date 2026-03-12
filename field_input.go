@@ -253,7 +253,6 @@ func (i *Input) Blur() tea.Cmd {
 	i.focused = false
 	i.accessor.Set(i.textinput.Value())
 	i.textinput.Blur()
-	i.err = i.validate(i.accessor.Get())
 	return nil
 }
 
