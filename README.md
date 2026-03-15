@@ -70,7 +70,7 @@ form := huh.NewForm(
             Limit(4). // there’s a 4 topping limit!
             Value(&toppings),
 
-        // Option values in selects and multi selects can be any type you
+        // Option values in selects and multi-selects can be any type you
         // want. We’ve been recording strings above, but here we’ll store
         // answers as integers. Note the generic "[int]" directive below.
         huh.NewSelect[int]().
