@@ -7,11 +7,11 @@ replace charm.land/huh/v2 => ../
 require (
 	charm.land/bubbles/v2 v2.0.0
 	charm.land/bubbletea/v2 v2.0.2
-	charm.land/glamour/v2 v2.0.0-20251110203732-69649f93d3b1
+	charm.land/glamour/v2 v2.0.0
 	charm.land/huh/v2 v2.0.0-00010101000000-000000000000
-	charm.land/lipgloss/v2 v2.0.1
-	charm.land/log/v2 v2.0.0-20251110204020-529bb77f35da
-	charm.land/wish/v2 v2.0.0-20251118130305-6cd7463a7b97
+	charm.land/lipgloss/v2 v2.0.2
+	charm.land/log/v2 v2.0.0
+	charm.land/wish/v2 v2.0.0
 	github.com/charmbracelet/ssh v0.0.0-20250826160808-ebfa259c7309
 	github.com/charmbracelet/x/exp/strings v0.1.0
 )
@@ -49,10 +49,10 @@ require (
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	github.com/yuin/goldmark v1.7.8 // indirect
 	github.com/yuin/goldmark-emoji v1.0.5 // indirect
-	golang.org/x/crypto v0.44.0 // indirect
+	golang.org/x/crypto v0.48.0 // indirect
 	golang.org/x/exp v0.0.0-20251113190631-e25ba8c21ef6 // indirect
-	golang.org/x/net v0.46.0 // indirect
-	golang.org/x/sync v0.19.0 // indirect
+	golang.org/x/net v0.49.0 // indirect
+	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/sys v0.42.0 // indirect
-	golang.org/x/text v0.31.0 // indirect
+	golang.org/x/text v0.34.0 // indirect
 )
