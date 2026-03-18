@@ -4,7 +4,7 @@
   <img src="https://stuff.charm.sh/huh/glenn.png" width="400" />
   <br><br>
   <a href="https://github.com/charmbracelet/huh/releases"><img src="https://img.shields.io/github/release/charmbracelet/huh.svg" alt="Latest Release"></a>
-  <a href="https://pkg.go.dev/github.com/charmbracelet/huh?tab=doc"><img src="https://godoc.org/github.com/golang/gddo?status.svg" alt="Go Docs"></a>
+  <a href="https://pkg.go.dev/charm.land/huh/v2#section-documentation"><img src="https://godoc.org/github.com/golang/gddo?status.svg" alt="Go Docs"></a>
   <a href="https://github.com/charmbracelet/huh/actions"><img src="https://github.com/charmbracelet/huh/actions/workflows/build.yml/badge.svg?branch=main" alt="Build Status"></a>
 </p>
 
