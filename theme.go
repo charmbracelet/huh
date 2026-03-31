@@ -236,6 +236,62 @@ func ThemeDracula(isDark bool) *Styles {
 	return t
 }
 
+// ThemeGruvbox returns a new theme based on the Gruvbox dark color scheme.
+func ThemeGruvbox(isDark bool) *Styles {
+	t := ThemeBase(isDark)
+
+	var (
+		bg0      = lipgloss.Color("#282828")
+		bg1      = lipgloss.Color("#3c3836")
+		fg       = lipgloss.Color("#ebdbb2")
+		gray     = lipgloss.Color("#928374")
+		red      = lipgloss.Color("#fb4934")
+		green    = lipgloss.Color("#b8bb26")
+		yellow   = lipgloss.Color("#fabd2f")
+		blue     = lipgloss.Color("#83a598")
+		purple   = lipgloss.Color("#d3869b")
+		aqua     = lipgloss.Color("#8ec07c")
+		orange   = lipgloss.Color("#fe8019")
+	)
+
+	t.Focused.Base = t.Focused.Base.BorderForeground(bg1)
+	t.Focused.Card = t.Focused.Base
+	t.Focused.Title = t.Focused.Title.Foreground(yellow).Bold(true)
+	t.Focused.NoteTitle = t.Focused.NoteTitle.Foreground(yellow).Bold(true)
+	t.Focused.Directory = t.Focused.Directory.Foreground(blue)
+	t.Focused.File = t.Focused.File.Foreground(fg)
+	t.Focused.Description = t.Focused.Description.Foreground(gray)
+	t.Focused.ErrorIndicator = t.Focused.ErrorIndicator.Foreground(red)
+	t.Focused.ErrorMessage = t.Focused.ErrorMessage.Foreground(red)
+	t.Focused.SelectSelector = t.Focused.SelectSelector.Foreground(orange)
+	t.Focused.NextIndicator = t.Focused.NextIndicator.Foreground(orange)
+	t.Focused.PrevIndicator = t.Focused.PrevIndicator.Foreground(orange)
+	t.Focused.Option = t.Focused.Option.Foreground(fg)
+	t.Focused.MultiSelectSelector = t.Focused.MultiSelectSelector.Foreground(orange)
+	t.Focused.SelectedOption = t.Focused.SelectedOption.Foreground(green)
+	t.Focused.SelectedPrefix = t.Focused.SelectedPrefix.Foreground(green)
+	t.Focused.UnselectedOption = t.Focused.UnselectedOption.Foreground(fg)
+	t.Focused.UnselectedPrefix = t.Focused.UnselectedPrefix.Foreground(gray)
+	t.Focused.FocusedButton = t.Focused.FocusedButton.Foreground(bg0).Background(yellow).Bold(true)
+	t.Focused.BlurredButton = t.Focused.BlurredButton.Foreground(fg).Background(bg0)
+
+	t.Focused.TextInput.Cursor = t.Focused.TextInput.Cursor.Foreground(aqua)
+	t.Focused.TextInput.Placeholder = t.Focused.TextInput.Placeholder.Foreground(gray)
+	t.Focused.TextInput.Prompt = t.Focused.TextInput.Prompt.Foreground(orange)
+
+	t.Blurred = t.Focused
+	t.Blurred.Base = t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
+	t.Blurred.Card = t.Blurred.Base
+	t.Blurred.NextIndicator = lipgloss.NewStyle()
+	t.Blurred.PrevIndicator = lipgloss.NewStyle()
+
+	_ = purple // available for future use
+
+	t.Group.Title = t.Focused.Title
+	t.Group.Description = t.Focused.Description
+	return t
+}
+
 // ThemeBase16 returns a new theme based on the base16 color scheme.
 func ThemeBase16(isDark bool) *Styles {
 	t := ThemeBase(isDark)
