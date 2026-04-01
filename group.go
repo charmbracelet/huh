@@ -394,7 +394,11 @@ func (g *Group) Footer() string {
 	var parts []string
 	errors := g.Errors()
 	if g.showHelp && len(errors) <= 0 {
-		parts = append(parts, g.help.ShortHelpView(g.selector.Selected().KeyBinds()))
+		binds := g.selector.Selected().KeyBinds()
+		if g.keymap != nil {
+			binds = append(binds, g.keymap.Quit)
+		}
+		parts = append(parts, g.help.ShortHelpView(binds))
 	}
 	if g.showErrors {
 		for _, err := range errors {

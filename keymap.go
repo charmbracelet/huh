@@ -106,7 +106,7 @@ type ConfirmKeyMap struct {
 // NewDefaultKeyMap returns a new default keymap.
 func NewDefaultKeyMap() *KeyMap {
 	return &KeyMap{
-		Quit: key.NewBinding(key.WithKeys("ctrl+c")),
+		Quit: key.NewBinding(key.WithKeys("ctrl+c"), key.WithHelp("ctrl+c", "quit")),
 		Input: InputKeyMap{
 			AcceptSuggestion: key.NewBinding(key.WithKeys("ctrl+e"), key.WithHelp("ctrl+e", "complete")),
 			Prev:             key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "back")),
