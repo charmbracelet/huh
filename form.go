@@ -505,6 +505,16 @@ func (f *Form) GetFocusedField() Field {
 	return f.selector.Selected().selector.Selected()
 }
 
+// GroupIndex returns the index of the currently active group.
+func (f *Form) GroupIndex() int {
+	return f.selector.Index()
+}
+
+// GroupCount returns the total number of groups in the form.
+func (f *Form) GroupCount() int {
+	return f.selector.Total()
+}
+
 // Init initializes the form.
 func (f *Form) Init() tea.Cmd {
 	var cmds []tea.Cmd
