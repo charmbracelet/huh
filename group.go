@@ -34,6 +34,9 @@ type Group struct {
 	// errors
 	showErrors bool
 
+	// group validation
+	validate func() error
+
 	// group options
 	width     int
 	height    int
@@ -142,6 +145,16 @@ func (g *Group) WithHeight(height int) *Group {
 	return g
 }
 
+// Validate sets a validation function for the group.
+//
+// The validation function is called when the user attempts to navigate past
+// the group. If the function returns an error, the group will not progress
+// and the error will be displayed alongside any field-level errors.
+func (g *Group) Validate(validate func() error) *Group {
+	g.validate = validate
+	return g
+}
+
 // WithHide sets whether this group should be skipped.
 func (g *Group) WithHide(hide bool) *Group {
 	g.WithHideFunc(func() bool { return hide })
@@ -154,7 +167,7 @@ func (g *Group) WithHideFunc(hideFunc func() bool) *Group {
 	return g
 }
 
-// Errors returns the groups' fields' errors.
+// Errors returns the groups' fields' errors and any group-level validation error.
 func (g *Group) Errors() []error {
 	var errs []error
 	g.selector.Range(func(_ int, field Field) bool {
@@ -163,6 +176,11 @@ func (g *Group) Errors() []error {
 		}
 		return true
 	})
+	if g.validate != nil {
+		if err := g.validate(); err != nil {
+			errs = append(errs, err)
+		}
+	}
 	return errs
 }
 
