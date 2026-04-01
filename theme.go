@@ -118,8 +118,8 @@ func ThemeBase(bool) *Styles {
 	t.Focused.MultiSelectSelector = lipgloss.NewStyle().SetString("> ")
 	t.Focused.SelectedPrefix = lipgloss.NewStyle().SetString("[•] ")
 	t.Focused.UnselectedPrefix = lipgloss.NewStyle().SetString("[ ] ")
-	t.Focused.FocusedButton = button.Foreground(lipgloss.Color("0")).Background(lipgloss.Color("7"))
-	t.Focused.BlurredButton = button.Foreground(lipgloss.Color("7")).Background(lipgloss.Color("0"))
+	t.Focused.FocusedButton = button.Foreground(lipgloss.Color("0")).Background(lipgloss.Color("7")).Bold(true).Underline(true)
+	t.Focused.BlurredButton = button.Foreground(lipgloss.Color("8")).Background(lipgloss.Color("0")).Faint(true)
 	t.Focused.TextInput.Placeholder = lipgloss.NewStyle().Foreground(lipgloss.Color("8"))
 
 	t.Help = help.New().Styles
