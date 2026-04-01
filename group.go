@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"charm.land/bubbles/v2/help"
+	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/huh/v2/internal/selector"
@@ -28,8 +29,9 @@ type Group struct {
 	viewport viewport.Model
 
 	// help
-	showHelp bool
-	help     help.Model
+	showHelp  bool
+	help      help.Model
+	helpBinds []key.Binding
 
 	// errors
 	showErrors bool
@@ -82,6 +84,15 @@ func (g *Group) Description(description string) *Group {
 // WithShowHelp sets whether or not the group's help should be shown.
 func (g *Group) WithShowHelp(show bool) *Group {
 	g.showHelp = show
+	return g
+}
+
+// WithHelpBinds appends additional key bindings to the group's help display.
+//
+// This allows displaying custom key bindings in the help bar alongside the
+// field-specific bindings.
+func (g *Group) WithHelpBinds(binds ...key.Binding) *Group {
+	g.helpBinds = append(g.helpBinds, binds...)
 	return g
 }
 
@@ -394,7 +405,9 @@ func (g *Group) Footer() string {
 	var parts []string
 	errors := g.Errors()
 	if g.showHelp && len(errors) <= 0 {
-		parts = append(parts, g.help.ShortHelpView(g.selector.Selected().KeyBinds()))
+		binds := g.selector.Selected().KeyBinds()
+		binds = append(binds, g.helpBinds...)
+		parts = append(parts, g.help.ShortHelpView(binds))
 	}
 	if g.showErrors {
 		for _, err := range errors {

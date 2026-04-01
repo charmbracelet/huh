@@ -249,6 +249,19 @@ func (f *Form) WithShowHelp(v bool) *Form {
 	return f
 }
 
+// WithHelpBinds appends additional key bindings to the help display of all
+// groups in the form.
+//
+// This allows displaying custom key bindings in the help bar alongside the
+// field-specific bindings.
+func (f *Form) WithHelpBinds(binds ...key.Binding) *Form {
+	f.selector.Range(func(_ int, group *Group) bool {
+		group.WithHelpBinds(binds...)
+		return true
+	})
+	return f
+}
+
 // WithShowErrors sets whether or not the form should show errors.
 //
 // This allows the form groups and fields to show errors when the Validate
