@@ -583,10 +583,7 @@ func (s *Select[T]) descriptionView() string {
 }
 
 func (s *Select[T]) optionsView() (string, int, int) {
-	var (
-		styles = s.activeStyles()
-		sb     strings.Builder
-	)
+	var sb strings.Builder
 
 	if s.options.loading && time.Since(s.options.loadingStart) > spinnerShowThreshold {
 		s.spinner.Style = s.activeStyles().MultiSelectSelector.UnsetString()
@@ -595,6 +592,7 @@ func (s *Select[T]) optionsView() (string, int, int) {
 	}
 
 	if s.inline {
+		styles := s.activeStyles()
 		option := styles.TextInput.Placeholder.Render("No matches")
 		if len(s.filteredOptions) > 0 {
 			option = styles.SelectedOption.Render(s.filteredOptions[s.selected].Key)
@@ -610,24 +608,36 @@ func (s *Select[T]) optionsView() (string, int, int) {
 			-1, 1
 	}
 
-	var cursorOffset int
-	var cursorHeight int
-	for i, option := range s.filteredOptions {
-		selected := s.selected == i
-		line := s.renderOption(option, selected)
-		if i < s.selected {
-			cursorOffset += lipgloss.Height(line)
-		}
-		if selected {
-			cursorHeight = lipgloss.Height(line)
-		}
+	n := len(s.filteredOptions)
 
+	// Pass 1: compute per-item heights and cumulative line offsets.
+	heights := make([]int, n)
+	offsets := make([]int, n)
+	cum := 0
+	for i, option := range s.filteredOptions {
+		h := lipgloss.Height(s.renderOption(option, s.selected == i, false, false))
+		heights[i] = h
+		offsets[i] = cum
+		cum += h
+	}
+
+	var cursorOffset, cursorHeight int
+	if s.selected < n {
+		cursorOffset = offsets[s.selected]
+		cursorHeight = heights[s.selected]
+	}
+
+	// Determine scroll indicator positions.
+	firstVisible, lastVisible := scrollIndicators(offsets, heights, cum, s.selected, s.viewport.YOffset(), s.viewport.Height())
+
+	// Pass 2: render options with indicators.
+	for i, option := range s.filteredOptions {
+		line := s.renderOption(option, s.selected == i, i == firstVisible, i == lastVisible)
 		sb.WriteString(line)
 		if i < len(s.options.val)-1 {
 			sb.WriteString("\n")
 		}
 	}
-
 	for i := len(s.filteredOptions); i < len(s.options.val)-1; i++ {
 		sb.WriteString("\n")
 	}
@@ -635,21 +645,52 @@ func (s *Select[T]) optionsView() (string, int, int) {
 	return sb.String(), cursorOffset, cursorHeight
 }
 
-// cursorLineOffset computes the line offset and height (in lines) for the
-// currently selected option without rendering the full options string.
-func (s *Select[T]) cursorLineOffset() (offset int, height int) {
-	for i, option := range s.filteredOptions {
-		line := s.renderOption(option, s.selected == i)
-		h := lipgloss.Height(line)
-		if i < s.selected {
-			offset += h
+// scrollIndicators returns the indices of the first and last visible options
+// that should carry a scroll indicator (↑ / ↓), or -1 when none is needed.
+//
+// offsets and heights are parallel slices: offsets[i] is the starting row of
+// option i within the full (unclipped) content, heights[i] is how many rows it
+// occupies. totalHeight is the sum of all heights. viewTop and viewHeight
+// describe the visible window (viewport.YOffset() and viewport.Height()).
+// cursor is the index of the currently selected option.
+//
+// ↑ is placed on the first visible option when content is hidden above.
+// ↓ is placed on the last visible option when content is hidden below.
+// Either indicator is suppressed when it would land on the cursor line, and
+// both are suppressed when fewer than 3 options are visible (too few to
+// maintain the lookahead-scroll invariant that keeps an indicator visible
+// while the cursor is one step away from the edge).
+func scrollIndicators(offsets, heights []int, totalHeight, cursor, viewTop, viewHeight int) (first, last int) {
+	first, last = -1, -1
+	if viewHeight == 0 {
+		return
+	}
+	viewBottom := viewTop + viewHeight - 1
+
+	var visibleCount int
+	for i := range offsets {
+		if offsets[i] > viewBottom {
+			break
 		}
-		if i == s.selected {
-			height = h
-			return offset, height
+		if offsets[i]+heights[i]-1 >= viewTop {
+			if first < 0 {
+				first = i
+			}
+			last = i
+			visibleCount++
 		}
 	}
-	return offset, height
+
+	if visibleCount < 3 {
+		return -1, -1
+	}
+	if viewTop == 0 || first == cursor {
+		first = -1
+	}
+	if totalHeight <= viewTop+viewHeight || last == cursor || last == first {
+		last = -1
+	}
+	return
 }
 
 // ensureVisible scrolls a viewport the minimum amount so that the region
@@ -668,11 +709,44 @@ func ensureVisible(vp *viewport.Model, offset, height int) {
 }
 
 func (s *Select[T]) ensureCursorVisible() {
-	offset, height := s.cursorLineOffset()
-	ensureVisible(&s.viewport, offset, height)
+	n := len(s.filteredOptions)
+	if n == 0 {
+		return
+	}
+
+	// Single pass: collect prev, cursor, and next item offsets.
+	var prevOffset, prevHeight int
+	var cursorOffset, cursorHeight int
+	var nextOffset, nextHeight int
+	cum := 0
+	for i := 0; i < n && i <= s.selected+1; i++ {
+		h := lipgloss.Height(s.renderOption(s.filteredOptions[i], i == s.selected, false, false))
+		switch i {
+		case s.selected - 1:
+			prevOffset, prevHeight = cum, h
+		case s.selected:
+			cursorOffset, cursorHeight = cum, h
+		case s.selected + 1:
+			nextOffset, nextHeight = cum, h
+		}
+		cum += h
+	}
+
+	// When the viewport is tall enough for lookahead, ensure the adjacent items
+	// are visible so the scroll indicators remain on screen. The cursor call is
+	// last so it always wins if the viewport is too small to fit everything.
+	if s.viewport.Height() >= 3 {
+		if s.selected > 0 {
+			ensureVisible(&s.viewport, prevOffset, prevHeight)
+		}
+		if s.selected+1 < n {
+			ensureVisible(&s.viewport, nextOffset, nextHeight)
+		}
+	}
+	ensureVisible(&s.viewport, cursorOffset, cursorHeight)
 }
 
-func (s *Select[T]) renderOption(option Option[T], selected bool) string {
+func (s *Select[T]) renderOption(option Option[T], selected, showUp, showDown bool) string {
 	var (
 		styles   = s.activeStyles()
 		cursor   = styles.SelectSelector.String()
@@ -682,18 +756,22 @@ func (s *Select[T]) renderOption(option Option[T], selected bool) string {
 
 	key := wrap(option.Key, maxWidth)
 
-	if selected {
-		return lipgloss.JoinHorizontal(
-			lipgloss.Left,
-			cursor,
-			styles.SelectedOption.Render(key),
-		)
+	var cursorCol string
+	switch {
+	case showUp:
+		cursorCol = styles.ScrollUpIndicator.String()
+	case showDown:
+		cursorCol = styles.ScrollDownIndicator.String()
+	case selected:
+		cursorCol = cursor
+	default:
+		cursorCol = strings.Repeat(" ", lipgloss.Width(cursor))
 	}
-	return lipgloss.JoinHorizontal(
-		lipgloss.Left,
-		strings.Repeat(" ", cursorW),
-		styles.UnselectedOption.Render(key),
-	)
+
+	if selected {
+		return lipgloss.JoinHorizontal(lipgloss.Left, cursorCol, styles.SelectedOption.Render(key))
+	}
+	return lipgloss.JoinHorizontal(lipgloss.Left, cursorCol, styles.UnselectedOption.Render(key))
 }
 
 // View renders the select field.

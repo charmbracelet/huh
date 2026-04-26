@@ -1575,6 +1575,141 @@ func TestInputPasswordAccessible(t *testing.T) {
 	})
 }
 
+func TestScrollIndicators(t *testing.T) {
+	offsets := []int{0, 1, 2, 3, 4, 5, 6, 7}
+	heights := []int{1, 1, 1, 1, 1, 1, 1, 1}
+	const total = 8
+
+	for _, tc := range []struct {
+		name                        string
+		cursor, viewTop, viewHeight int
+		wantFirst, wantLast         int
+	}{
+		{"all fit", 0, 0, 8, -1, -1},
+		{"down indicator at top", 0, 0, 5, -1, 4},
+		{"up indicator at bottom", 7, 3, 5, 3, -1},
+		{"both in middle", 3, 1, 5, 1, 5},
+		{"cursor suppresses up", 1, 1, 5, -1, 5},
+		{"cursor suppresses down", 5, 1, 5, 1, -1},
+		{"too few visible", 0, 0, 2, -1, -1},
+		{"exactly 3 visible", 1, 0, 3, -1, 2},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			first, last := scrollIndicators(offsets, heights, total, tc.cursor, tc.viewTop, tc.viewHeight)
+			if first != tc.wantFirst || last != tc.wantLast {
+				t.Errorf("got (%d, %d), want (%d, %d)", first, last, tc.wantFirst, tc.wantLast)
+			}
+		})
+	}
+}
+
+func TestScrollIndicatorsView(t *testing.T) {
+	// 8 single-line options; height 6 → viewport 5 (minus 1 title line).
+	opts := NewOptions("Opt1", "Opt2", "Opt3", "Opt4", "Opt5", "Opt6", "Opt7", "Opt8")
+
+	type fieldCase struct {
+		makeField func(height int) Field
+		upPat     string
+		downPat   string
+	}
+	for name, tc := range map[string]fieldCase{
+		"select": {
+			makeField: func(h int) Field {
+				return NewSelect[string]().Title("Pick").Options(opts...).Height(h)
+			},
+			upPat:   "↑ Opt",
+			downPat: "↓ Opt",
+		},
+		"multiselect": {
+			makeField: func(h int) Field {
+				return NewMultiSelect[string]().Title("Pick").Options(opts...).Height(h)
+			},
+			upPat:   "↑ •",
+			downPat: "↓ •",
+		},
+	} {
+		makeField, upPat, downPat := tc.makeField, tc.upPat, tc.downPat
+		t.Run(name, func(t *testing.T) {
+			t.Run("down indicator at top", func(t *testing.T) {
+				f := NewForm(NewGroup(makeField(6)))
+				f.Update(f.Init())
+				view := viewModel(f)
+				if strings.Contains(view, upPat) {
+					t.Log(pretty.Render(view))
+					t.Error("expected no ↑ at top of list")
+				}
+				if !strings.Contains(view, downPat) {
+					t.Log(pretty.Render(view))
+					t.Error("expected ↓ when items extend below viewport")
+				}
+			})
+
+			t.Run("both indicators in middle", func(t *testing.T) {
+				f := NewForm(NewGroup(makeField(6)))
+				f.Update(f.Init())
+				// 4 presses: cursor reaches the lookahead threshold and the
+				// viewport scrolls, revealing hidden items above.
+				m := batchUpdate(f.Update(keypress('j')))
+				for range 3 {
+					m = batchUpdate(m.Update(keypress('j')))
+				}
+				view := viewModel(m)
+				if !strings.Contains(view, upPat) {
+					t.Log(pretty.Render(view))
+					t.Error("expected ↑ when items extend above viewport")
+				}
+				if !strings.Contains(view, downPat) {
+					t.Log(pretty.Render(view))
+					t.Error("expected ↓ when items extend below viewport")
+				}
+				for _, line := range strings.Split(view, "\n") {
+					if strings.Contains(line, "> ") && (strings.Contains(line, upPat) || strings.Contains(line, downPat)) {
+						t.Log(pretty.Render(view))
+						t.Errorf("scroll indicator must not appear on cursor line: %q", line)
+					}
+				}
+			})
+
+			t.Run("no down indicator at last item", func(t *testing.T) {
+				f := NewForm(NewGroup(makeField(6)))
+				f.Update(f.Init())
+				m := batchUpdate(f.Update(keypress('G')))
+				view := viewModel(m)
+				if strings.Contains(view, downPat) {
+					t.Log(pretty.Render(view))
+					t.Error("expected no ↓ at last item")
+				}
+			})
+
+			t.Run("no indicators when all fit", func(t *testing.T) {
+				// height 10 → viewport 9; all 8 options are visible.
+				f := NewForm(NewGroup(makeField(10)))
+				f.Update(f.Init())
+				view := viewModel(f)
+				if strings.Contains(view, upPat) || strings.Contains(view, downPat) {
+					t.Log(pretty.Render(view))
+					t.Error("expected no indicators when all options fit in the viewport")
+				}
+			})
+
+			t.Run("no indicators with small viewport", func(t *testing.T) {
+				// height 3 → viewport 2; below the 3-item threshold.
+				f := NewForm(NewGroup(makeField(3)))
+				f.Update(f.Init())
+				m := batchUpdate(f.Update(keypress('j')))
+				for range 3 {
+					m = batchUpdate(m.Update(keypress('j')))
+				}
+				view := viewModel(m)
+				if strings.Contains(view, upPat) || strings.Contains(view, downPat) {
+					t.Log(pretty.Render(view))
+					t.Error("expected no indicators when viewport is too small")
+				}
+			})
+		})
+	}
+}
+
 func requireEqual[T comparable](tb testing.TB, a, b T) {
 	tb.Helper()
 	if a != b {
