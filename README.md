@@ -396,7 +396,7 @@ fmt.Println("Order up!")
 </tr>
 </table>
 
-For more on Spinners see the [spinner examples](./spinner/examples) and
+For more on Spinners see the [spinner examples](./examples/spinner) and
 [the spinner docs](https://pkg.go.dev/charm.land/huh/v2/spinner).
 
 ## What about Bubble Tea?
