@@ -51,10 +51,12 @@ type FieldStyles struct {
 	ErrorMessage   lipgloss.Style
 
 	// Select styles.
-	SelectSelector lipgloss.Style // Selection indicator
-	Option         lipgloss.Style // Select options
-	NextIndicator  lipgloss.Style
-	PrevIndicator  lipgloss.Style
+	SelectSelector      lipgloss.Style // Selection indicator
+	Option              lipgloss.Style // Select options
+	NextIndicator       lipgloss.Style
+	PrevIndicator       lipgloss.Style
+	ScrollUpIndicator   lipgloss.Style
+	ScrollDownIndicator lipgloss.Style
 
 	// FilePicker styles.
 	Directory lipgloss.Style
@@ -115,6 +117,8 @@ func ThemeBase(bool) *Styles {
 	t.Focused.SelectSelector = lipgloss.NewStyle().SetString("> ")
 	t.Focused.NextIndicator = lipgloss.NewStyle().MarginLeft(1).SetString("→")
 	t.Focused.PrevIndicator = lipgloss.NewStyle().MarginRight(1).SetString("←")
+	t.Focused.ScrollUpIndicator = lipgloss.NewStyle().SetString("↑ ")
+	t.Focused.ScrollDownIndicator = lipgloss.NewStyle().SetString("↓ ")
 	t.Focused.MultiSelectSelector = lipgloss.NewStyle().SetString("> ")
 	t.Focused.SelectedPrefix = lipgloss.NewStyle().SetString("[•] ")
 	t.Focused.UnselectedPrefix = lipgloss.NewStyle().SetString("[ ] ")
@@ -131,6 +135,8 @@ func ThemeBase(bool) *Styles {
 	t.Blurred.MultiSelectSelector = lipgloss.NewStyle().SetString("  ")
 	t.Blurred.NextIndicator = lipgloss.NewStyle()
 	t.Blurred.PrevIndicator = lipgloss.NewStyle()
+	t.Blurred.ScrollUpIndicator = lipgloss.NewStyle().SetString("  ")
+	t.Blurred.ScrollDownIndicator = lipgloss.NewStyle().SetString("  ")
 
 	return &t
 }
@@ -160,6 +166,8 @@ func ThemeCharm(isDark bool) *Styles {
 	t.Focused.SelectSelector = t.Focused.SelectSelector.Foreground(fuchsia)
 	t.Focused.NextIndicator = t.Focused.NextIndicator.Foreground(fuchsia)
 	t.Focused.PrevIndicator = t.Focused.PrevIndicator.Foreground(fuchsia)
+	t.Focused.ScrollUpIndicator = t.Focused.ScrollUpIndicator.Foreground(fuchsia)
+	t.Focused.ScrollDownIndicator = t.Focused.ScrollDownIndicator.Foreground(fuchsia)
 	t.Focused.Option = t.Focused.Option.Foreground(normalFg)
 	t.Focused.MultiSelectSelector = t.Focused.MultiSelectSelector.Foreground(fuchsia)
 	t.Focused.SelectedOption = t.Focused.SelectedOption.Foreground(green)
@@ -179,6 +187,8 @@ func ThemeCharm(isDark bool) *Styles {
 	t.Blurred.Card = t.Blurred.Base
 	t.Blurred.NextIndicator = lipgloss.NewStyle()
 	t.Blurred.PrevIndicator = lipgloss.NewStyle()
+	t.Blurred.ScrollUpIndicator = lipgloss.NewStyle().SetString("  ")
+	t.Blurred.ScrollDownIndicator = lipgloss.NewStyle().SetString("  ")
 
 	t.Group.Title = t.Focused.Title
 	t.Group.Description = t.Focused.Description
@@ -212,6 +222,8 @@ func ThemeDracula(isDark bool) *Styles {
 	t.Focused.SelectSelector = t.Focused.SelectSelector.Foreground(yellow)
 	t.Focused.NextIndicator = t.Focused.NextIndicator.Foreground(yellow)
 	t.Focused.PrevIndicator = t.Focused.PrevIndicator.Foreground(yellow)
+	t.Focused.ScrollUpIndicator = t.Focused.ScrollUpIndicator.Foreground(yellow)
+	t.Focused.ScrollDownIndicator = t.Focused.ScrollDownIndicator.Foreground(yellow)
 	t.Focused.Option = t.Focused.Option.Foreground(foreground)
 	t.Focused.MultiSelectSelector = t.Focused.MultiSelectSelector.Foreground(yellow)
 	t.Focused.SelectedOption = t.Focused.SelectedOption.Foreground(green)
@@ -230,6 +242,8 @@ func ThemeDracula(isDark bool) *Styles {
 	t.Blurred.Card = t.Blurred.Base
 	t.Blurred.NextIndicator = lipgloss.NewStyle()
 	t.Blurred.PrevIndicator = lipgloss.NewStyle()
+	t.Blurred.ScrollUpIndicator = lipgloss.NewStyle().SetString("  ")
+	t.Blurred.ScrollDownIndicator = lipgloss.NewStyle().SetString("  ")
 
 	t.Group.Title = t.Focused.Title
 	t.Group.Description = t.Focused.Description
@@ -251,6 +265,8 @@ func ThemeBase16(isDark bool) *Styles {
 	t.Focused.SelectSelector = t.Focused.SelectSelector.Foreground(lipgloss.Color("3"))
 	t.Focused.NextIndicator = t.Focused.NextIndicator.Foreground(lipgloss.Color("3"))
 	t.Focused.PrevIndicator = t.Focused.PrevIndicator.Foreground(lipgloss.Color("3"))
+	t.Focused.ScrollUpIndicator = t.Focused.ScrollUpIndicator.Foreground(lipgloss.Color("3"))
+	t.Focused.ScrollDownIndicator = t.Focused.ScrollDownIndicator.Foreground(lipgloss.Color("3"))
 	t.Focused.Option = t.Focused.Option.Foreground(lipgloss.Color("7"))
 	t.Focused.MultiSelectSelector = t.Focused.MultiSelectSelector.Foreground(lipgloss.Color("3"))
 	t.Focused.SelectedOption = t.Focused.SelectedOption.Foreground(lipgloss.Color("2"))
@@ -274,6 +290,8 @@ func ThemeBase16(isDark bool) *Styles {
 
 	t.Blurred.NextIndicator = lipgloss.NewStyle()
 	t.Blurred.PrevIndicator = lipgloss.NewStyle()
+	t.Blurred.ScrollUpIndicator = lipgloss.NewStyle().SetString("  ")
+	t.Blurred.ScrollDownIndicator = lipgloss.NewStyle().SetString("  ")
 
 	t.Group.Title = t.Focused.Title
 	t.Group.Description = t.Focused.Description
@@ -314,6 +332,8 @@ func ThemeCatppuccin(isDark bool) *Styles {
 	t.Focused.SelectSelector = t.Focused.SelectSelector.Foreground(pink)
 	t.Focused.NextIndicator = t.Focused.NextIndicator.Foreground(pink)
 	t.Focused.PrevIndicator = t.Focused.PrevIndicator.Foreground(pink)
+	t.Focused.ScrollUpIndicator = t.Focused.ScrollUpIndicator.Foreground(pink)
+	t.Focused.ScrollDownIndicator = t.Focused.ScrollDownIndicator.Foreground(pink)
 	t.Focused.Option = t.Focused.Option.Foreground(text)
 	t.Focused.MultiSelectSelector = t.Focused.MultiSelectSelector.Foreground(pink)
 	t.Focused.SelectedOption = t.Focused.SelectedOption.Foreground(green)
