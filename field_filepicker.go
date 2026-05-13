@@ -21,6 +21,7 @@ type FilePicker struct {
 	accessor Accessor[string]
 	key      string
 	picker   filepicker.Model
+	formID   int
 
 	// state
 	focused bool
@@ -205,7 +206,12 @@ func (f *FilePicker) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.BackgroundColorMsg:
 		f.hasDarkBg = msg.IsDark()
+	case updateFieldMsg:
+		if msg.id != 0 {
+			f.formID = msg.id
+		}
 	case tea.KeyPressMsg:
+		id := f.formID
 		switch {
 		case key.Matches(msg, f.keymap.Open):
 			if f.picking {
@@ -215,13 +221,13 @@ func (f *FilePicker) Update(msg tea.Msg) (Model, tea.Cmd) {
 			return f, f.picker.Init()
 		case key.Matches(msg, f.keymap.Close):
 			f.setPicking(false)
-			return f, NextField
+			return f, func() tea.Msg { return nextFieldMsg{id: id} }
 		case key.Matches(msg, f.keymap.Next):
 			f.setPicking(false)
-			return f, NextField
+			return f, func() tea.Msg { return nextFieldMsg{id: id} }
 		case key.Matches(msg, f.keymap.Prev):
 			f.setPicking(false)
-			return f, PrevField
+			return f, func() tea.Msg { return prevFieldMsg{id: id} }
 		}
 	}
 
@@ -231,7 +237,8 @@ func (f *FilePicker) Update(msg tea.Msg) (Model, tea.Cmd) {
 	if didSelect {
 		f.accessor.Set(file)
 		f.setPicking(false)
-		return f, NextField
+		id := f.formID
+		return f, func() tea.Msg { return nextFieldMsg{id: id} }
 	}
 	didSelect, _ = f.picker.DidSelectDisabledFile(msg)
 	if didSelect {

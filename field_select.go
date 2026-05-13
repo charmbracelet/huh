@@ -30,6 +30,7 @@ const (
 // using j/k, up/down, or ctrl+n/ctrl+p keys.
 type Select[T comparable] struct {
 	id       int
+	formID   int
 	accessor Accessor[T]
 	key      string
 
@@ -337,6 +338,9 @@ func (s *Select[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case tea.BackgroundColorMsg:
 		s.hasDarkBg = msg.IsDark()
 	case updateFieldMsg:
+		if msg.id != 0 {
+			s.formID = msg.id
+		}
 		var cmds []tea.Cmd
 		if ok, hash := s.title.shouldUpdate(); ok {
 			s.title.bindingsHash = hash
@@ -476,7 +480,8 @@ func (s *Select[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 				return s, nil
 			}
 			s.updateValue()
-			return s, PrevField
+			id := s.formID
+			return s, func() tea.Msg { return prevFieldMsg{id: id} }
 		case key.Matches(msg, s.keymap.Next, s.keymap.Submit):
 			if s.selected >= len(s.filteredOptions) {
 				break
@@ -488,7 +493,8 @@ func (s *Select[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 				return s, nil
 			}
 			s.updateValue()
-			return s, NextField
+			id := s.formID
+			return s, func() tea.Msg { return nextFieldMsg{id: id} }
 		}
 
 		if s.filtering {
