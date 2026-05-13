@@ -17,6 +17,11 @@ import (
 // If any of the fields in a group have errors, the form will not be able to
 // progress to the next group.
 type Group struct {
+	// formID is the ID of the form this group belongs to.
+	// It's used to scope internal navigation messages so multiple forms in
+	// the same bubbletea program don't interfere with each other.
+	formID int
+
 	// collection of fields
 	selector *selector.Selector[Field]
 
@@ -171,26 +176,28 @@ func (g *Group) Errors() []error {
 //
 // This is used to update all TitleFunc, DescriptionFunc, and ...Func update
 // methods to make all fields dynamically update based on user input.
-type updateFieldMsg struct{}
+// updateFieldMsg triggers dynamic field updates (title, description, etc.).
+// id scopes the message to the form that sent it; 0 means accept from any.
+type updateFieldMsg struct{ id int }
 
-// nextFieldMsg is a message to move to the next field,
-//
-// each field controls when to send this message such that it is able to use
-// different key bindings or events to trigger group progression.
-type nextFieldMsg struct{}
+// nextFieldMsg is a message to move to the next field.
+// id scopes the message to the form that sent it; 0 means accept from any.
+type nextFieldMsg struct{ id int }
 
 // prevFieldMsg is a message to move to the previous field.
-//
-// each field controls when to send this message such that it is able to use
-// different key bindings or events to trigger group progression.
-type prevFieldMsg struct{}
+// id scopes the message to the form that sent it; 0 means accept from any.
+type prevFieldMsg struct{ id int }
 
 // NextField is the command to move to the next field.
+// This sends an unscoped message (id=0) and works with any form.
+// Fields inside a form use a scoped version automatically.
 func NextField() tea.Msg {
 	return nextFieldMsg{}
 }
 
 // PrevField is the command to move to the previous field.
+// This sends an unscoped message (id=0) and works with any form.
+// Fields inside a form use a scoped version automatically.
 func PrevField() tea.Msg {
 	return prevFieldMsg{}
 }
@@ -199,7 +206,7 @@ func PrevField() tea.Msg {
 func (g *Group) Init() tea.Cmd {
 	var cmds []tea.Cmd
 
-	cmds = append(cmds, func() tea.Msg { return updateFieldMsg{} })
+	cmds = append(cmds, func() tea.Msg { return updateFieldMsg{id: g.formID} })
 
 	if g.selector.Selected().Skip() {
 		if g.selector.OnLast() {
@@ -220,14 +227,16 @@ func (g *Group) Init() tea.Cmd {
 
 // nextField moves to the next field.
 func (g *Group) nextField() []tea.Cmd {
+	id := g.formID
+	nextGrp := func() tea.Msg { return nextGroupMsg{id: id} }
 	blurCmd := g.selector.Selected().Blur()
 	if g.selector.OnLast() {
-		return []tea.Cmd{blurCmd, nextGroup}
+		return []tea.Cmd{blurCmd, nextGrp}
 	}
 	g.selector.Next()
 	for g.selector.Selected().Skip() {
 		if g.selector.OnLast() {
-			return []tea.Cmd{blurCmd, nextGroup}
+			return []tea.Cmd{blurCmd, nextGrp}
 		}
 		g.selector.Next()
 	}
@@ -237,14 +246,16 @@ func (g *Group) nextField() []tea.Cmd {
 
 // prevField moves to the previous field.
 func (g *Group) prevField() []tea.Cmd {
+	id := g.formID
+	prevGrp := func() tea.Msg { return prevGroupMsg{id: id} }
 	blurCmd := g.selector.Selected().Blur()
 	if g.selector.OnFirst() {
-		return []tea.Cmd{blurCmd, prevGroup}
+		return []tea.Cmd{blurCmd, prevGrp}
 	}
 	g.selector.Prev()
 	for g.selector.Selected().Skip() {
 		if g.selector.OnFirst() {
-			return []tea.Cmd{blurCmd, prevGroup}
+			return []tea.Cmd{blurCmd, prevGrp}
 		}
 		g.selector.Prev()
 	}
@@ -271,7 +282,9 @@ func (g *Group) Update(msg tea.Msg) (Model, tea.Cmd) {
 			g.selector.Set(i, m.(Field))
 			cmds = append(cmds, cmd)
 		}
-		m, cmd := field.Update(updateFieldMsg{})
+		// Send a scoped updateFieldMsg so fields learn the form ID and can
+		// emit correctly-scoped navigation messages.
+		m, cmd := field.Update(updateFieldMsg{id: g.formID})
 		g.selector.Set(i, m.(Field))
 		cmds = append(cmds, cmd)
 		return true
@@ -281,8 +294,15 @@ func (g *Group) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case tea.BackgroundColorMsg:
 		g.hasDarkBg = msg.IsDark()
 	case nextFieldMsg:
+		// Ignore messages scoped to a different form.
+		if msg.id != 0 && msg.id != g.formID {
+			break
+		}
 		cmds = append(cmds, g.nextField()...)
 	case prevFieldMsg:
+		if msg.id != 0 && msg.id != g.formID {
+			break
+		}
 		cmds = append(cmds, g.prevField()...)
 	}
 

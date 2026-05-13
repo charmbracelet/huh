@@ -16,6 +16,7 @@ type Confirm struct {
 	accessor Accessor[bool]
 	key      string
 	id       int
+	formID   int
 
 	// customization
 	title       Eval[string]
@@ -169,6 +170,9 @@ func (c *Confirm) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case tea.BackgroundColorMsg:
 		c.hasDarkBg = msg.IsDark()
 	case updateFieldMsg:
+		if msg.id != 0 {
+			c.formID = msg.id
+		}
 		if ok, hash := c.title.shouldUpdate(); ok {
 			c.title.bindingsHash = hash
 			if !c.title.loadFromCache() {
@@ -207,15 +211,19 @@ func (c *Confirm) Update(msg tea.Msg) (Model, tea.Cmd) {
 			}
 			c.accessor.Set(!c.accessor.Get())
 		case key.Matches(msg, c.keymap.Prev):
-			cmds = append(cmds, PrevField)
+			id := c.formID
+			cmds = append(cmds, func() tea.Msg { return prevFieldMsg{id: id} })
 		case key.Matches(msg, c.keymap.Next, c.keymap.Submit):
-			cmds = append(cmds, NextField)
+			id := c.formID
+			cmds = append(cmds, func() tea.Msg { return nextFieldMsg{id: id} })
 		case key.Matches(msg, c.keymap.Accept):
 			c.accessor.Set(true)
-			cmds = append(cmds, NextField)
+			id := c.formID
+			cmds = append(cmds, func() tea.Msg { return nextFieldMsg{id: id} })
 		case key.Matches(msg, c.keymap.Reject):
 			c.accessor.Set(false)
-			cmds = append(cmds, NextField)
+			id := c.formID
+			cmds = append(cmds, func() tea.Msg { return nextFieldMsg{id: id} })
 		}
 	}
 

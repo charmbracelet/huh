@@ -23,6 +23,7 @@ type MultiSelect[T comparable] struct {
 	accessor Accessor[[]T]
 	key      string
 	id       int
+	formID   int
 
 	// customization
 	title           Eval[string]
@@ -308,6 +309,9 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case tea.BackgroundColorMsg:
 		m.hasDarkBg = msg.IsDark()
 	case updateFieldMsg:
+		if msg.id != 0 {
+			m.formID = msg.id
+		}
 		var fieldCmds []tea.Cmd
 		if ok, hash := m.title.shouldUpdate(); ok {
 			m.title.bindingsHash = hash
@@ -460,14 +464,16 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 			if m.err != nil {
 				return m, nil
 			}
-			return m, PrevField
+			id := m.formID
+			return m, func() tea.Msg { return prevFieldMsg{id: id} }
 		case key.Matches(msg, m.keymap.Next, m.keymap.Submit):
 			m.updateValue()
 			m.err = m.validate(m.accessor.Get())
 			if m.err != nil {
 				return m, nil
 			}
-			return m, NextField
+			id := m.formID
+			return m, func() tea.Msg { return nextFieldMsg{id: id} }
 		}
 
 		if m.filtering {
