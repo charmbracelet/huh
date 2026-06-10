@@ -725,6 +725,9 @@ func (f *Form) runAccessible(w io.Writer, r io.Reader) error {
 	}
 
 	f.selector.Range(func(_ int, group *Group) bool {
+		if f.isGroupHidden(group) {
+			return true
+		}
 		group.selector.Range(func(_ int, field Field) bool {
 			field.Init()
 			field.Focus()
