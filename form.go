@@ -603,10 +603,6 @@ func (f *Form) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return f, f.selector.Selected().Init()
 
 	case prevGroupMsg:
-		if len(group.Errors()) > 0 {
-			return f, nil
-		}
-
 		for i := f.selector.Index() - 1; i >= 0; i-- {
 			if !f.isGroupHidden(f.selector.Get(i)) {
 				f.selector.SetIndex(i)
