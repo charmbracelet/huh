@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"reflect"
 	"regexp"
 	"strings"
 	"testing"
@@ -519,21 +520,36 @@ func TestSelect(t *testing.T) {
 
 // doAllUpdates updates the form with the given command, then continues updating it with any resultant commands from the update until no more are returned.
 func doAllUpdates(f *Form, cmd tea.Cmd) {
-	if cmd == nil {
-		return
-	}
-	var cmds []tea.Cmd
-	switch msg := cmd().(type) {
-	case tea.BatchMsg:
-		for _, subcommand := range msg {
-			doAllUpdates(f, subcommand)
+	for cmd != nil {
+		msg := cmd()
+		if subcmds := extractCmds(msg); len(subcmds) > 0 {
+			for _, subcmd := range subcmds {
+				doAllUpdates(f, subcmd)
+			}
+			cmd = nil
+			continue
 		}
-		return
-	default:
-		_, result := f.Update(msg)
-		cmds = append(cmds, result)
+		_, cmd = f.Update(msg)
 	}
-	doAllUpdates(f, tea.Batch(cmds...))
+}
+
+func extractCmds(msg tea.Msg) []tea.Cmd {
+	switch m := msg.(type) {
+	case tea.BatchMsg:
+		return m
+	default:
+		if reflect.TypeOf(msg).Name() == "sequenceMsg" {
+			v := reflect.ValueOf(msg)
+			if v.Kind() == reflect.Slice {
+				cmds := make([]tea.Cmd, v.Len())
+				for i := range cmds {
+					cmds[i] = v.Index(i).Interface().(tea.Cmd)
+				}
+				return cmds
+			}
+		}
+	}
+	return nil
 }
 
 func TestSelectDynamic(t *testing.T) {
@@ -1055,6 +1071,83 @@ func TestSkip(t *testing.T) {
 	if !strings.Contains(view, "┃ First") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected first field to be focused")
+	}
+}
+
+func TestSkipSingleFieldGroup(t *testing.T) {
+	// A skippable note as the only field in a group should be skipped when
+	// other groups contain interactive fields.
+	f := NewForm(
+		NewGroup(
+			NewNote().Title("Welcome"),
+		),
+		NewGroup(
+			NewSelect[string]().
+				Options(NewOptions("A", "B")...).
+				Title("Choose"),
+		),
+	).WithWidth(30)
+
+	doAllUpdates(f, f.Init())
+	view := viewModel(f)
+
+	if strings.Contains(view, "Welcome") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected welcome note to be skipped")
+	}
+
+	if !strings.Contains(view, "Choose") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected select field to be focused")
+	}
+}
+
+func TestSkipSingleFieldOnlyGroup(t *testing.T) {
+	// A skippable note that is the only field in the entire form should still
+	// be shown.
+	f := NewForm(
+		NewGroup(
+			NewNote().Title("Welcome"),
+		),
+	).WithWidth(30)
+
+	f = batchUpdate(f, f.Init()).(*Form)
+	view := viewModel(f)
+
+	if !strings.Contains(view, "Welcome") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected welcome note to be shown when it is the only field")
+	}
+}
+
+func TestSkipNextButtonWelcomeGroup(t *testing.T) {
+	// A welcome note with an explicit next button should still be shown even
+	// when it is the only field in its group.
+	f := NewForm(
+		NewGroup(
+			NewNote().
+				Title("Welcome").
+				Description("Please read before continuing.").
+				Next(true),
+		),
+		NewGroup(
+			NewSelect[string]().
+				Options(NewOptions("A", "B")...).
+				Title("Choose"),
+		),
+	).WithWidth(30)
+
+	doAllUpdates(f, f.Init())
+	view := viewModel(f)
+
+	if !strings.Contains(view, "Welcome") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected welcome note with next button to be shown")
+	}
+
+	if strings.Contains(view, "Choose") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected select field to remain hidden until welcome is dismissed")
 	}
 }
 
