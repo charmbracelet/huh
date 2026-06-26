@@ -897,10 +897,10 @@ func TestHideGroup(t *testing.T) {
 
 func TestHideGroupLastAndFirstGroupsNotHidden(t *testing.T) {
 	f := NewForm(
-		NewGroup(NewNote().Description("Bar")),
+		NewGroup(NewNote().Description("Bar").Skippable(false)),
 		NewGroup(NewNote().Description("Foo")).
 			WithHide(true),
-		NewGroup(NewNote().Description("Baz")),
+		NewGroup(NewNote().Description("Baz").Skippable(false)),
 	)
 
 	f = batchUpdate(f, f.Init()).(*Form)
@@ -934,9 +934,9 @@ func TestHideGroupLastAndFirstGroupsNotHidden(t *testing.T) {
 
 func TestPrevGroup(t *testing.T) {
 	f := NewForm(
-		NewGroup(NewNote().Description("Bar")),
-		NewGroup(NewNote().Description("Foo")),
-		NewGroup(NewNote().Description("Baz")),
+		NewGroup(NewNote().Description("Bar").Skippable(false)),
+		NewGroup(NewNote().Description("Foo").Skippable(false)),
+		NewGroup(NewNote().Description("Baz").Skippable(false)),
 	)
 
 	f = batchUpdate(f, f.Init()).(*Form)
@@ -1008,6 +1008,54 @@ func TestDynamicHelp(t *testing.T) {
 	if strings.Contains(view, "shift+tab") || strings.Contains(view, "submit") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected help not to contain shift+tab or submit.")
+	}
+}
+
+func TestSkipLoneNoteGroup(t *testing.T) {
+	f := NewForm(
+		NewGroup(
+			NewNote().Title("Welcome").Description("Please read this message."),
+		),
+		NewGroup(
+			NewSelect[string]().
+				Options(NewOptions("A", "B")...).
+				Title("Choose one"),
+		),
+	).WithWidth(25)
+
+	f = batchUpdate(f, f.Init()).(*Form)
+	view := viewModel(f)
+
+	if strings.Contains(view, "Welcome") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected welcome note group to be skipped on init")
+	}
+
+	if !strings.Contains(view, "Choose one") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected select field to be focused")
+	}
+}
+
+func TestSkipLoneNoteGroupPrevNavigation(t *testing.T) {
+	f := NewForm(
+		NewGroup(
+			NewNote().Title("Welcome").Description("Please read this message."),
+		),
+		NewGroup(
+			NewSelect[string]().
+				Options(NewOptions("A", "B")...).
+				Title("Choose one"),
+		),
+	).WithWidth(25)
+
+	f = batchUpdate(f, f.Init()).(*Form)
+	f = batchUpdate(f, f.PrevGroup()).(*Form)
+	view := viewModel(f)
+
+	if !strings.Contains(view, "Welcome") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected welcome note when navigating back to the first group")
 	}
 }
 
