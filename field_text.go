@@ -355,7 +355,7 @@ func (t *Text) Update(msg tea.Msg) (Model, tea.Cmd) {
 		}
 	}
 
-	t.textarea, cmd = t.textarea.Update(msg)
+	t.textarea, cmd = t.textarea.Update(sanitizeKeyPressForInput(msg))
 	cmds = append(cmds, cmd)
 	t.accessor.Set(t.textarea.Value())
 

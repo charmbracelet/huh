@@ -330,7 +330,7 @@ func (s *Select[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 	var cmd tea.Cmd
 	if s.filtering {
-		s.filter, cmd = s.filter.Update(msg)
+		s.filter, cmd = s.filter.Update(sanitizeKeyPressForInput(msg))
 	}
 
 	switch msg := msg.(type) {
