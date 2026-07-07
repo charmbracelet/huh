@@ -423,7 +423,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 		case key.Matches(msg, m.keymap.Toggle) && !m.filtering:
 			for i, option := range m.options.val {
 				if option.Key == m.filteredOptions[m.cursor].Key {
-					if !m.options.val[m.cursor].selected && m.limit > 0 && m.numSelected() >= m.limit {
+					if !m.options.val[i].selected && m.limit > 0 && m.numSelected() >= m.limit {
 						break
 					}
 					selected := m.options.val[i].selected
