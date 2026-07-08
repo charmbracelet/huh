@@ -1,39 +1,32 @@
 package main
 
 import (
+	"fmt"
+
 	"charm.land/huh/v2"
 )
 
 func main() {
-	f := huh.NewForm(
+	var burger string
+
+	err := huh.NewForm(
+		// A lone skippable note in its own group is auto-skipped on start.
 		huh.NewGroup(
 			huh.NewNote().
-				Title("Charmburger").
-				Description("Welcome to _Charmburger™_."),
-
-			huh.NewSelect[string]().
-				Options(huh.NewOptions("Charmburger Classic", "Chickwich", "Fishburger", "Charmpossible™ Burger")...).
-				Title("Choose your burger").
-				Description("At Charm we truly have a burger for everyone."),
-
-			huh.NewNote().
-				Title("🍔"),
+				Title("Welcome").
+				Description("This note is skipped automatically so the form opens on the next group."),
 		),
 
 		huh.NewGroup(
-			huh.NewNote().
-				Title("Buy 1 get 1 free").
-				Description("Welcome back to _Charmburger™_."),
-
 			huh.NewSelect[string]().
-				Options(huh.NewOptions("Charmburger Classic", "Chickwich", "Fishburger", "Charmpossible™ Burger")...).
+				Options(huh.NewOptions("Charmburger Classic", "Chickwich", "Fishburger")...).
 				Title("Choose your burger").
-				Description("At Charm we truly have a burger for everyone."),
-
-			huh.NewNote().
-				Title("🍔"),
+				Value(&burger),
 		),
-	)
+	).Run()
+	if err != nil {
+		panic(err)
+	}
 
-	f.Run()
+	fmt.Printf("You chose %q\n", burger)
 }

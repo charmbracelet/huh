@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"reflect"
 	"regexp"
 	"strings"
 	"testing"
@@ -530,6 +531,14 @@ func doAllUpdates(f *Form, cmd tea.Cmd) {
 		}
 		return
 	default:
+		if v := reflect.ValueOf(msg); v.Kind() == reflect.Slice && v.Type().Name() == "sequenceMsg" {
+			for i := 0; i < v.Len(); i++ {
+				if sub, ok := v.Index(i).Interface().(tea.Cmd); ok {
+					doAllUpdates(f, sub)
+				}
+			}
+			return
+		}
 		_, result := f.Update(msg)
 		cmds = append(cmds, result)
 	}
@@ -854,8 +863,8 @@ func TestHideGroup(t *testing.T) {
 	f := NewForm(
 		NewGroup(NewNote().Description("Foo")).
 			WithHide(true),
-		NewGroup(NewNote().Description("Bar")),
-		NewGroup(NewNote().Description("Baz")),
+		NewGroup(NewInput().Title("Bar")),
+		NewGroup(NewInput().Title("Baz")),
 		NewGroup(NewNote().Description("Qux")).
 			WithHideFunc(func() bool { return false }).
 			WithHide(true),
@@ -869,21 +878,21 @@ func TestHideGroup(t *testing.T) {
 	}
 
 	// should have no effect as previous group is hidden
-	f.Update(prevGroup())
+	f.Update(func() tea.Msg { return prevGroup() })
 
 	if v := f.View(); !strings.Contains(v, "Bar") {
 		t.Log(pretty.Render(v))
 		t.Error("expected Bar to be visible")
 	}
 
-	f.Update(nextGroup())
+	f = batchUpdate(f, func() tea.Msg { return nextGroup() }).(*Form)
 
 	if v := f.View(); !strings.Contains(v, "Baz") {
 		t.Log(pretty.Render(v))
 		t.Error("expected Baz to be visible")
 	}
 
-	f.Update(nextGroup())
+	f = batchUpdate(f, func() tea.Msg { return nextGroup() }).(*Form)
 
 	if v := f.View(); strings.Contains(v, "Qux") {
 		t.Log(pretty.Render(v))
@@ -897,10 +906,10 @@ func TestHideGroup(t *testing.T) {
 
 func TestHideGroupLastAndFirstGroupsNotHidden(t *testing.T) {
 	f := NewForm(
-		NewGroup(NewNote().Description("Bar")),
+		NewGroup(NewInput().Title("Bar")),
 		NewGroup(NewNote().Description("Foo")).
 			WithHide(true),
-		NewGroup(NewNote().Description("Baz")),
+		NewGroup(NewInput().Title("Baz")),
 	)
 
 	f = batchUpdate(f, f.Init()).(*Form)
@@ -1008,6 +1017,61 @@ func TestDynamicHelp(t *testing.T) {
 	if strings.Contains(view, "shift+tab") || strings.Contains(view, "submit") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected help not to contain shift+tab or submit.")
+	}
+}
+
+func TestSkipSingleNoteGroup(t *testing.T) {
+	f := NewForm(
+		NewGroup(
+			NewNote().Title("Welcome"),
+		),
+		NewGroup(
+			NewSelect[string]().
+				Options(NewOptions("A", "B")...).
+				Title("Choose"),
+		),
+	).WithWidth(25)
+
+	doAllUpdates(f, f.Init())
+	view := viewModel(f)
+
+	if strings.Contains(view, "Welcome") {
+		t.Log(pretty.Render(view))
+		t.Error("expected welcome note group to be skipped on init")
+	}
+
+	if !strings.Contains(view, "Choose") {
+		t.Log(pretty.Render(view))
+		t.Error("expected select field to be focused")
+	}
+}
+
+func TestSkipInteractiveNoteGroup(t *testing.T) {
+	f := NewForm(
+		NewGroup(
+			NewNote().
+				Title("Charmburger").
+				Description("Welcome").
+				Next(true),
+		),
+		NewGroup(
+			NewSelect[string]().
+				Options(NewOptions("A", "B")...).
+				Title("Choose"),
+		),
+	).WithWidth(25)
+
+	doAllUpdates(f, f.Init())
+	view := viewModel(f)
+
+	if !strings.Contains(view, "Charmburger") {
+		t.Log(pretty.Render(view))
+		t.Error("expected interactive note group to remain visible on init")
+	}
+
+	if strings.Contains(view, "Choose") {
+		t.Log(pretty.Render(view))
+		t.Error("expected select field to remain unfocused until note is advanced")
 	}
 }
 
