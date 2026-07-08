@@ -215,11 +215,14 @@ func (s *Spinner) Update(msg tea.Msg) (Model, tea.Cmd) {
 func (s *Spinner) View() string {
 	styles := s.theme.Theme(s.hasDarkBg)
 	s.spinner.Style = styles.Spinner
-	var title string
+	view := s.spinner.View()
 	if s.title != "" {
-		title = styles.Title.Render(s.title)
+		if !strings.HasSuffix(ansi.Strip(view), " ") {
+			view += " "
+		}
+		view += styles.Title.Render(s.title)
 	}
-	return s.spinner.View() + title
+	return view
 }
 
 // Run runs the spinner.
