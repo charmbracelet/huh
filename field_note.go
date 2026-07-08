@@ -127,6 +127,12 @@ func (n *Note) NextLabel(label string) *Note {
 	return n
 }
 
+// Skippable sets whether the note is skipped during field navigation.
+func (n *Note) Skippable(skippable bool) *Note {
+	n.skip = skippable
+	return n
+}
+
 // Focus focuses the note field.
 func (n *Note) Focus() tea.Cmd {
 	n.focused = true
@@ -287,9 +293,9 @@ func (n *Note) WithHeight(height int) Field {
 
 // WithPosition sets the position information of the note field.
 func (n *Note) WithPosition(p FieldPosition) Field {
-	// if the note is the only field on the screen,
-	// we shouldn't skip the entire group.
-	if p.Field == p.FirstField && p.Field == p.LastField {
+	// If the note is the only field in the only group, keep it visible instead of
+	// skipping the entire form.
+	if p.Field == p.FirstField && p.Field == p.LastField && p.FirstGroup == p.LastGroup {
 		n.skip = false
 	}
 	n.keymap.Prev.SetEnabled(!p.IsFirst())

@@ -507,18 +507,14 @@ func (f *Form) GetFocusedField() Field {
 
 // Init initializes the form.
 func (f *Form) Init() tea.Cmd {
+	f.advancePastPassiveGroups()
+
 	var cmds []tea.Cmd
 	f.selector.Range(func(i int, group *Group) bool {
-		if i == 0 {
-			group.active = true
-		}
+		group.active = i == f.selector.Index()
 		cmds = append(cmds, group.Init())
 		return true
 	})
-
-	if f.isGroupHidden(f.selector.Selected()) {
-		cmds = append(cmds, nextGroup)
-	}
 
 	cmds = append(cmds, tea.RequestWindowSize)
 	return tea.Sequence(cmds...)
@@ -637,6 +633,43 @@ func (f *Form) isGroupHidden(group *Group) bool {
 		return false
 	}
 	return hide()
+}
+
+func (f *Form) isGroupSkippable(group *Group) bool {
+	if group.selector.Total() == 0 {
+		return false
+	}
+	skippable := true
+	group.selector.Range(func(_ int, field Field) bool {
+		if !field.Skip() {
+			skippable = false
+			return false
+		}
+		return true
+	})
+	return skippable
+}
+
+func (f *Form) advancePastPassiveGroups() {
+	for {
+		current := f.selector.Selected()
+		if !f.isGroupHidden(current) && !f.isGroupSkippable(current) {
+			return
+		}
+		advanced := false
+		for i := f.selector.Index() + 1; i < f.selector.Total(); i++ {
+			g := f.selector.Get(i)
+			if f.isGroupHidden(g) {
+				continue
+			}
+			f.selector.SetIndex(i)
+			advanced = true
+			break
+		}
+		if !advanced {
+			return
+		}
+	}
 }
 
 func (f *Form) getTheme() *Styles {
