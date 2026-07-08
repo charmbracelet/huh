@@ -1268,6 +1268,102 @@ func TestAccessibleForm(t *testing.T) {
 	}
 }
 
+func TestAccessibleFormSkipsHiddenGroup(t *testing.T) {
+	var out bytes.Buffer
+	var visible, hidden string
+
+	f := NewForm(
+		NewGroup(
+			NewInput().Title("Visible:").Value(&visible),
+		),
+		NewGroup(
+			NewInput().Title("Hidden:").Value(&hidden),
+		).WithHide(true),
+	).
+		WithAccessible(true).
+		WithOutput(&out).
+		WithInput(strings.NewReader("carlos\n"))
+
+	if err := f.Run(); err != nil {
+		t.Fatal(err)
+	}
+
+	if !strings.Contains(out.String(), "Visible:") {
+		t.Error("expected visible group to be prompted, output:\n", out.String())
+	}
+	if strings.Contains(out.String(), "Hidden:") {
+		t.Error("expected hidden group to be skipped, output:\n", out.String())
+	}
+	if visible != "carlos" {
+		t.Errorf("expected visible field value to be %q, got %q", "carlos", visible)
+	}
+	if hidden != "" {
+		t.Errorf("expected hidden field value to be empty, got %q", hidden)
+	}
+}
+
+func TestAccessibleFormSkipsDynamicallyHiddenGroup(t *testing.T) {
+	var out bytes.Buffer
+	var visible, hidden string
+
+	f := NewForm(
+		NewGroup(
+			NewInput().Title("Visible:").Value(&visible),
+		),
+		NewGroup(
+			NewInput().Title("Hidden:").Value(&hidden),
+		).WithHideFunc(func() bool { return true }),
+	).
+		WithAccessible(true).
+		WithOutput(&out).
+		WithInput(strings.NewReader("carlos\n"))
+
+	if err := f.Run(); err != nil {
+		t.Fatal(err)
+	}
+
+	if !strings.Contains(out.String(), "Visible:") {
+		t.Error("expected visible group to be prompted, output:\n", out.String())
+	}
+	if strings.Contains(out.String(), "Hidden:") {
+		t.Error("expected dynamically hidden group to be skipped, output:\n", out.String())
+	}
+	if visible != "carlos" {
+		t.Errorf("expected visible field value to be %q, got %q", "carlos", visible)
+	}
+	if hidden != "" {
+		t.Errorf("expected hidden field value to be empty, got %q", hidden)
+	}
+}
+
+func TestAccessibleFormAllGroupsHidden(t *testing.T) {
+	var out bytes.Buffer
+	var a, b string
+
+	f := NewForm(
+		NewGroup(
+			NewInput().Title("A:").Value(&a),
+		).WithHide(true),
+		NewGroup(
+			NewInput().Title("B:").Value(&b),
+		).WithHideFunc(func() bool { return true }),
+	).
+		WithAccessible(true).
+		WithOutput(&out).
+		WithInput(strings.NewReader(""))
+
+	if err := f.Run(); err != nil {
+		t.Fatal(err)
+	}
+
+	if strings.Contains(out.String(), "A:") || strings.Contains(out.String(), "B:") {
+		t.Error("expected no group to be prompted, output:\n", out.String())
+	}
+	if a != "" || b != "" {
+		t.Errorf("expected both field values to be empty, got a=%q b=%q", a, b)
+	}
+}
+
 func TestAccessibleFields(t *testing.T) {
 	for name, test := range map[string]struct {
 		Field       Field
