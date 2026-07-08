@@ -25,6 +25,7 @@ type Text struct {
 	accessor Accessor[string]
 	key      string
 	id       int
+	formID   int
 
 	title       Eval[string]
 	description Eval[string]
@@ -276,6 +277,9 @@ func (t *Text) Update(msg tea.Msg) (Model, tea.Cmd) {
 		cmds = append(cmds, cmd)
 		t.accessor.Set(t.textarea.Value())
 	case updateFieldMsg:
+		if msg.id != 0 {
+			t.formID = msg.id
+		}
 		var cmds []tea.Cmd
 		if ok, hash := t.placeholder.shouldUpdate(); ok {
 			t.placeholder.bindingsHash = hash
@@ -344,14 +348,16 @@ func (t *Text) Update(msg tea.Msg) (Model, tea.Cmd) {
 			if t.err != nil {
 				return t, nil
 			}
-			cmds = append(cmds, NextField)
+			id := t.formID
+			cmds = append(cmds, func() tea.Msg { return nextFieldMsg{id: id} })
 		case key.Matches(msg, t.keymap.Prev):
 			value := t.textarea.Value()
 			t.err = t.validate(value)
 			if t.err != nil {
 				return t, nil
 			}
-			cmds = append(cmds, PrevField)
+			id := t.formID
+			cmds = append(cmds, func() tea.Msg { return prevFieldMsg{id: id} })
 		}
 	}
 

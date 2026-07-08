@@ -869,21 +869,21 @@ func TestHideGroup(t *testing.T) {
 	}
 
 	// should have no effect as previous group is hidden
-	f.Update(prevGroup())
+	f.Update(prevGroupMsg{id: f.id})
 
 	if v := f.View(); !strings.Contains(v, "Bar") {
 		t.Log(pretty.Render(v))
 		t.Error("expected Bar to be visible")
 	}
 
-	f.Update(nextGroup())
+	f.Update(nextGroupMsg{id: f.id})
 
 	if v := f.View(); !strings.Contains(v, "Baz") {
 		t.Log(pretty.Render(v))
 		t.Error("expected Baz to be visible")
 	}
 
-	f.Update(nextGroup())
+	f.Update(nextGroupMsg{id: f.id})
 
 	if v := f.View(); strings.Contains(v, "Qux") {
 		t.Log(pretty.Render(v))
@@ -911,14 +911,14 @@ func TestHideGroupLastAndFirstGroupsNotHidden(t *testing.T) {
 	}
 
 	// should have no effect as there isn't any
-	f.Update(prevGroup())
+	f.Update(prevGroupMsg{id: f.id})
 
 	if v := f.View(); !strings.Contains(v, "Bar") {
 		t.Log(pretty.Render(v))
 		t.Error("expected Bar to not be hidden")
 	}
 
-	f.Update(nextGroup())
+	f.Update(nextGroupMsg{id: f.id})
 
 	if v := ansi.Strip(f.View()); !strings.Contains(v, "Baz") {
 		t.Log(pretty.Render(v))
@@ -926,7 +926,7 @@ func TestHideGroupLastAndFirstGroupsNotHidden(t *testing.T) {
 	}
 
 	// should submit the form
-	f.Update(nextGroup())
+	f.Update(nextGroupMsg{id: f.id})
 	if v := f.State; v != StateCompleted {
 		t.Error("should have been completed")
 	}
@@ -940,14 +940,40 @@ func TestPrevGroup(t *testing.T) {
 	)
 
 	f = batchUpdate(f, f.Init()).(*Form)
-	f.Update(nextGroup())
-	f.Update(nextGroup())
-	f.Update(prevGroup())
-	f.Update(prevGroup())
+	f.Update(nextGroupMsg{id: f.id})
+	f.Update(nextGroupMsg{id: f.id})
+	f.Update(prevGroupMsg{id: f.id})
+	f.Update(prevGroupMsg{id: f.id})
 
 	if v := ansi.Strip(f.View()); !strings.Contains(v, "Bar") {
 		t.Log(pretty.Render(v))
 		t.Error("expected Bar to not be hidden")
+	}
+}
+
+// TestMultiFormIsolation verifies that navigation messages from one form don't
+// bleed into a sibling form running in the same bubbletea program.
+func TestMultiFormIsolation(t *testing.T) {
+	f1 := NewForm(
+		NewGroup(NewNote().Description("f1-group1")),
+		NewGroup(NewNote().Description("f1-group2")),
+	)
+	f2 := NewForm(
+		NewGroup(NewNote().Description("f2-group1")),
+		NewGroup(NewNote().Description("f2-group2")),
+	)
+	f1 = batchUpdate(f1, f1.Init()).(*Form)
+	f2 = batchUpdate(f2, f2.Init()).(*Form)
+
+	// Advance f1 to its second group.
+	f1.Update(nextGroupMsg{id: f1.id})
+
+	if v := ansi.Strip(f1.View()); !strings.Contains(v, "f1-group2") {
+		t.Error("f1 should be on its second group")
+	}
+	// f2 should still be on its first group; f1's nextGroupMsg must not affect it.
+	if v := ansi.Strip(f2.View()); !strings.Contains(v, "f2-group1") {
+		t.Error("f2 should still be on its first group after f1 advanced")
 	}
 }
 
