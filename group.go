@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"charm.land/bubbles/v2/help"
+	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/huh/v2/internal/selector"
@@ -389,12 +390,21 @@ func (g *Group) Content() string {
 	return content
 }
 
+// KeyBinds returns the selected field's keybindings plus form-level bindings.
+func (g *Group) KeyBinds() []key.Binding {
+	binds := g.selector.Selected().KeyBinds()
+	if g.keymap != nil {
+		binds = append([]key.Binding{g.keymap.Quit}, binds...)
+	}
+	return binds
+}
+
 // Footer renders the group's footer only (no content).
 func (g *Group) Footer() string {
 	var parts []string
 	errors := g.Errors()
 	if g.showHelp && len(errors) <= 0 {
-		parts = append(parts, g.help.ShortHelpView(g.selector.Selected().KeyBinds()))
+		parts = append(parts, g.help.ShortHelpView(g.KeyBinds()))
 	}
 	if g.showErrors {
 		for _, err := range errors {

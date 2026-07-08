@@ -438,10 +438,17 @@ func (f *Form) Help() help.Model {
 	return f.selector.Selected().help
 }
 
-// KeyBinds returns the current fields' keybinds.
+// KeyBinds returns the current fields' keybinds plus form-level bindings.
 func (f *Form) KeyBinds() []key.Binding {
 	group := f.selector.Selected()
-	return group.selector.Selected().KeyBinds()
+	if group.keymap != nil {
+		return group.KeyBinds()
+	}
+	binds := group.selector.Selected().KeyBinds()
+	if f.keymap != nil {
+		binds = append([]key.Binding{f.keymap.Quit}, binds...)
+	}
+	return binds
 }
 
 // Get returns a result from the form.
