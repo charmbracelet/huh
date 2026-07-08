@@ -521,6 +521,7 @@ func (f *Form) Init() tea.Cmd {
 	}
 
 	cmds = append(cmds, tea.RequestWindowSize)
+	cmds = append(cmds, tea.RequestBackgroundColor)
 	return tea.Sequence(cmds...)
 }
 
@@ -536,6 +537,14 @@ func (f *Form) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.BackgroundColorMsg:
 		f.hasDarkBg = msg.IsDark()
+		// also propagate to non-selected groups
+		f.selector.Range(func(i int, g *Group) bool {
+			if i != f.selector.Index() {
+				m, _ := g.Update(msg)
+				f.selector.Set(i, m.(*Group))
+			}
+			return true
+		})
 	case tea.WindowSizeMsg:
 		if f.width == 0 {
 			f.selector.Range(func(_ int, group *Group) bool {
