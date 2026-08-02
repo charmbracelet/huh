@@ -329,6 +329,7 @@ func (s *Select[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 	s.updateViewportSize()
 
 	var cmd tea.Cmd
+	filterBefore := s.filter.Value()
 	if s.filtering {
 		s.filter, cmd = s.filter.Update(msg)
 	}
@@ -492,24 +493,36 @@ func (s *Select[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 		}
 
 		if s.filtering {
-			s.filteredOptions = s.options.val
-			if s.filter.Value() != "" {
-				s.filteredOptions = nil
-				for _, option := range s.options.val {
-					if s.filterFunc(option.Key) {
-						s.filteredOptions = append(s.filteredOptions, option)
-					}
-				}
-			}
-			if len(s.filteredOptions) > 0 {
-				s.selected = min(s.selected, len(s.filteredOptions)-1)
-			}
+			s.updateFilteredOptions(filterBefore)
 		}
 
 		s.ensureCursorVisible()
 	}
 
 	return s, cmd
+}
+
+func (s *Select[T]) updateFilteredOptions(previousFilter string) {
+	s.filteredOptions = s.options.val
+	if s.filter.Value() != "" {
+		s.filteredOptions = nil
+		for _, option := range s.options.val {
+			if s.filterFunc(option.Key) {
+				s.filteredOptions = append(s.filteredOptions, option)
+			}
+		}
+	}
+	if len(s.filteredOptions) == 0 {
+		return
+	}
+	if s.filter.Value() != previousFilter {
+		// ensureCursorVisible only scrolls the minimum needed, so the offset
+		// has to be reset too or earlier matches stay hidden above the window.
+		s.selected = 0
+		s.viewport.GotoTop()
+		return
+	}
+	s.selected = min(s.selected, len(s.filteredOptions)-1)
 }
 
 func (s *Select[T]) updateValue() {
