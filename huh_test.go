@@ -741,6 +741,37 @@ func TestMultiSelectFiltering(t *testing.T) {
 	})
 }
 
+func TestMultiSelectLimitWithFilter(t *testing.T) {
+	field := NewMultiSelect[string]().
+		Options(NewOptions("Foo", "Bar", "Baz", "Qux", "Quux")...).
+		Title("Which ones?").
+		Limit(2)
+	f := NewForm(NewGroup(field))
+	f.Update(f.Init())
+
+	// Select the first two options, reaching the limit.
+	f.Update(keypress('x')) // toggle Foo
+	f.Update(keypress('j')) // move to Bar
+	f.Update(keypress('x')) // toggle Bar
+
+	// Apply a filter that only shows the (unselected) Qux/Quux options, then
+	// accept it so filteredOptions is a strict subset while filtering is off.
+	f.Update(keypress('/'))
+	f.Update(keypress('Q'))
+	f.Update(codeKeypress(tea.KeyEnter))
+
+	// Attempting to select another option while at the limit must be a no-op.
+	f.Update(keypress('x'))
+
+	value, ok := field.GetValue().([]string)
+	if !ok {
+		t.Fatal("Expected multi-select value to be a slice of string")
+	}
+	if len(value) != 2 {
+		t.Errorf("Expected selection to remain at the limit of 2, got %d: %v", len(value), value)
+	}
+}
+
 func TestSelectPageNavigation(t *testing.T) {
 	opts := NewOptions(
 		"Qux",
