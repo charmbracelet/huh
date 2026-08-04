@@ -741,6 +741,31 @@ func TestMultiSelectFiltering(t *testing.T) {
 	})
 }
 
+func TestSelectFilteringShowsMatchesAboveTheCursor(t *testing.T) {
+	// Bar and Baz sit at opposite ends of the list, so filtering for "ba"
+	// while the cursor is at the bottom leaves Bar above the visible window.
+	opts := NewOptions("Bar", "Qux", "Quux", "Foo", "Corge", "Grault", "Garply", "Waldo", "Fred", "Baz")
+
+	field := NewSelect[string]().Options(opts...).Title("Choose")
+	f := NewForm(NewGroup(field)).WithHeight(6)
+	f.Update(f.Init())
+
+	// Move to the end of the list, scrolling the viewport away from the top.
+	batchUpdate(f.Update(keypress('G')))
+
+	batchUpdate(f.Update(keypress('/')))
+	batchUpdate(f.Update(keypress('b')))
+	m := batchUpdate(f.Update(keypress('a')))
+
+	view := viewModel(m)
+	for _, want := range []string{"Bar", "Baz"} {
+		if !strings.Contains(view, want) {
+			t.Log(pretty.Render(view))
+			t.Errorf("filtered list is missing %q, which matches the filter", want)
+		}
+	}
+}
+
 func TestSelectPageNavigation(t *testing.T) {
 	opts := NewOptions(
 		"Qux",
