@@ -11,13 +11,12 @@ require (
 	charm.land/huh/v2 v2.0.0-00010101000000-000000000000
 	charm.land/lipgloss/v2 v2.0.5
 	charm.land/log/v2 v2.0.0
+	charm.land/ssh v0.4.2
 	charm.land/wish/v2 v2.0.2
-	github.com/charmbracelet/ssh v0.0.0-20250826160808-ebfa259c7309
 	github.com/charmbracelet/x/exp/strings v0.1.0
 )
 
 require (
-	charm.land/ssh v0.4.1 // indirect
 	github.com/alecthomas/chroma/v2 v2.14.0 // indirect
 	github.com/anmitsu/go-shlex v0.0.0-20200514113438-38f4b401e2be // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
