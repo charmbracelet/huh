@@ -65,6 +65,10 @@ var ErrTimeoutUnsupported = errors.New("timeout is not supported in accessible m
 // The form can navigate between groups and is complete once all the groups are
 // complete.
 type Form struct {
+	// unique form ID, used to scope internal navigation messages so that
+	// multiple forms in the same bubbletea program don't interfere with each other.
+	id int
+
 	// collection of groups
 	selector *selector.Selector[*Group]
 
@@ -107,16 +111,24 @@ type Form struct {
 // Use With* methods to customize the form with options, such as setting
 // different themes and keybindings.
 func NewForm(groups ...*Group) *Form {
-	selector := selector.NewSelector(groups)
+	sel := selector.NewSelector(groups)
 
 	f := &Form{
-		selector: selector,
+		id:       nextID(),
+		selector: sel,
 		keymap:   NewDefaultKeyMap(),
 		results:  make(map[string]any),
 		layout:   LayoutDefault,
 		teaOptions: []tea.ProgramOption{
 			tea.WithOutput(os.Stderr),
 		},
+	}
+
+	// Inject the form ID into each group so that internal navigation messages
+	// can be scoped to this form and won't bleed into other forms running in
+	// the same bubbletea program.
+	for _, g := range groups {
+		g.formID = f.id
 	}
 
 	// NB: If dynamic forms come into play this will need to be applied when
@@ -211,19 +223,21 @@ func (p FieldPosition) IsLast() bool {
 }
 
 // nextGroupMsg is a message to move to the next group.
-type nextGroupMsg struct{}
+// id scopes the message to the form that sent it; 0 means accept from any.
+type nextGroupMsg struct{ id int }
 
 // prevGroupMsg is a message to move to the previous group.
-type prevGroupMsg struct{}
+// id scopes the message to the form that sent it; 0 means accept from any.
+type prevGroupMsg struct{ id int }
 
-// nextGroup is the command to move to the next group.
-func nextGroup() tea.Msg {
-	return nextGroupMsg{}
+// nextGroup returns a command that moves to the next group for form f.
+func (f *Form) nextGroup() tea.Cmd {
+	return func() tea.Msg { return nextGroupMsg{id: f.id} }
 }
 
-// prevGroup is the command to move to the previous group.
-func prevGroup() tea.Msg {
-	return prevGroupMsg{}
+// prevGroup returns a command that moves to the previous group for form f.
+func (f *Form) prevGroup() tea.Cmd {
+	return func() tea.Msg { return prevGroupMsg{id: f.id} }
 }
 
 // WithAccessible sets the form to run in accessible mode to avoid redrawing the
@@ -478,13 +492,13 @@ func (f *Form) GetBool(key string) bool {
 
 // NextGroup moves the form to the next group.
 func (f *Form) NextGroup() tea.Cmd {
-	_, cmd := f.Update(nextGroup())
+	_, cmd := f.Update(nextGroupMsg{id: f.id})
 	return cmd
 }
 
-// PrevGroup moves the form to the next group.
+// PrevGroup moves the form to the previous group.
 func (f *Form) PrevGroup() tea.Cmd {
-	_, cmd := f.Update(prevGroup())
+	_, cmd := f.Update(prevGroupMsg{id: f.id})
 	return cmd
 }
 
@@ -517,7 +531,7 @@ func (f *Form) Init() tea.Cmd {
 	})
 
 	if f.isGroupHidden(f.selector.Selected()) {
-		cmds = append(cmds, nextGroup)
+		cmds = append(cmds, f.nextGroup())
 	}
 
 	cmds = append(cmds, tea.RequestWindowSize)
@@ -569,11 +583,18 @@ func (f *Form) Update(msg tea.Msg) (Model, tea.Cmd) {
 		}
 
 	case nextFieldMsg:
+		// Ignore navigation messages scoped to a different form.
+		if msg.id != 0 && msg.id != f.id {
+			break
+		}
 		// Form is progressing to the next field, let's save the value of the current field.
 		field := group.selector.Selected()
 		f.results[field.GetKey()] = field.GetValue()
 
 	case nextGroupMsg:
+		if msg.id != 0 && msg.id != f.id {
+			break
+		}
 		if len(group.Errors()) > 0 {
 			return f, nil
 		}
@@ -603,6 +624,9 @@ func (f *Form) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return f, f.selector.Selected().Init()
 
 	case prevGroupMsg:
+		if msg.id != 0 && msg.id != f.id {
+			break
+		}
 		if len(group.Errors()) > 0 {
 			return f, nil
 		}

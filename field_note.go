@@ -15,7 +15,8 @@ import (
 // provide context around a different field. Generally, the notes are not
 // interacted with unless the note has a next button `Next(true)`.
 type Note struct {
-	id int
+	id     int
+	formID int
 
 	title       Eval[string]
 	description Eval[string]
@@ -166,6 +167,9 @@ func (n *Note) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case tea.BackgroundColorMsg:
 		n.hasDarkBg = msg.IsDark()
 	case updateFieldMsg:
+		if msg.id != 0 {
+			n.formID = msg.id
+		}
 		var cmds []tea.Cmd
 		if ok, hash := n.title.shouldUpdate(); ok {
 			n.title.bindingsHash = hash
@@ -195,13 +199,14 @@ func (n *Note) Update(msg tea.Msg) (Model, tea.Cmd) {
 			n.description.update(msg.description)
 		}
 	case tea.KeyPressMsg:
+		id := n.formID
 		switch {
 		case key.Matches(msg, n.keymap.Prev):
-			return n, PrevField
+			return n, func() tea.Msg { return prevFieldMsg{id: id} }
 		case key.Matches(msg, n.keymap.Next, n.keymap.Submit):
-			return n, NextField
+			return n, func() tea.Msg { return nextFieldMsg{id: id} }
 		}
-		return n, NextField
+		return n, func() tea.Msg { return nextFieldMsg{id: id} }
 	}
 	return n, nil
 }
