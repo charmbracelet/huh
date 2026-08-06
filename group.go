@@ -202,12 +202,17 @@ func (g *Group) Init() tea.Cmd {
 	cmds = append(cmds, func() tea.Msg { return updateFieldMsg{} })
 
 	if g.selector.Selected().Skip() {
-		if g.selector.OnLast() {
+		switch {
+		case g.selector.OnFirst() && g.selector.OnLast():
+			// Skippable-only groups are advanced in Form.Init. When the user
+			// navigates here explicitly, fall through and show the note.
+		case g.selector.OnLast():
 			cmds = append(cmds, g.prevField()...)
-		} else if g.selector.OnFirst() {
+			return tea.Batch(cmds...)
+		case g.selector.OnFirst():
 			cmds = append(cmds, g.nextField()...)
+			return tea.Batch(cmds...)
 		}
-		return tea.Batch(cmds...)
 	}
 
 	if g.active {
