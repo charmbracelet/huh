@@ -516,7 +516,7 @@ func (f *Form) Init() tea.Cmd {
 		return true
 	})
 
-	if f.isGroupHidden(f.selector.Selected()) {
+	if f.isGroupHidden(f.selector.Selected()) || f.allFieldsSkippable(f.selector.Selected()) {
 		cmds = append(cmds, nextGroup)
 	}
 
@@ -637,6 +637,21 @@ func (f *Form) isGroupHidden(group *Group) bool {
 		return false
 	}
 	return hide()
+}
+
+func (f *Form) allFieldsSkippable(group *Group) bool {
+	if group.selector.Total() == 0 {
+		return false
+	}
+	allSkippable := true
+	group.selector.Range(func(_ int, field Field) bool {
+		if !field.Skip() {
+			allSkippable = false
+			return false
+		}
+		return true
+	})
+	return allSkippable
 }
 
 func (f *Form) getTheme() *Styles {
