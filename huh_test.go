@@ -303,6 +303,11 @@ func TestInput(t *testing.T) {
 		t.Error("Expected field to contain help.")
 	}
 
+	if !strings.Contains(view, "ctrl+c quit") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field help to include quit keybind.")
+	}
+
 	if field.GetValue() != text {
 		t.Error("Expected field value to be " + text)
 	}
@@ -507,6 +512,11 @@ func TestSelect(t *testing.T) {
 	if !strings.Contains(view, "↑ up • ↓ down • / filter • enter submit") {
 		t.Log(pretty.Render(view))
 		t.Error("Expected field to contain help.")
+	}
+
+	if !strings.Contains(view, "ctrl+c quit") {
+		t.Log(pretty.Render(view))
+		t.Error("Expected field help to include quit keybind.")
 	}
 
 	// Submit
