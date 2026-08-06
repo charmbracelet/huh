@@ -201,7 +201,7 @@ func (g *Group) Init() tea.Cmd {
 
 	cmds = append(cmds, func() tea.Msg { return updateFieldMsg{} })
 
-	if g.selector.Selected().Skip() {
+	if g.selector.Selected().Skip() && g.selector.Total() > 1 {
 		if g.selector.OnLast() {
 			cmds = append(cmds, g.prevField()...)
 		} else if g.selector.OnFirst() {

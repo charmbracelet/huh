@@ -518,6 +518,8 @@ func (f *Form) Init() tea.Cmd {
 
 	if f.isGroupHidden(f.selector.Selected()) {
 		cmds = append(cmds, nextGroup)
+	} else if f.isGroupSkippable(f.selector.Selected()) {
+		cmds = append(cmds, nextGroup)
 	}
 
 	cmds = append(cmds, tea.RequestWindowSize)
@@ -600,6 +602,9 @@ func (f *Form) Update(msg tea.Msg) (Model, tea.Cmd) {
 			}
 		}
 		f.selector.Selected().active = true
+		if f.isGroupSkippable(f.selector.Selected()) {
+			return f, nextGroup
+		}
 		return f, f.selector.Selected().Init()
 
 	case prevGroupMsg:
@@ -629,6 +634,21 @@ func (f *Form) Update(msg tea.Msg) (Model, tea.Cmd) {
 	}
 
 	return f, cmd
+}
+
+func (f *Form) isGroupSkippable(group *Group) bool {
+	if group.selector.Total() == 0 {
+		return false
+	}
+	skippable := true
+	group.selector.Range(func(_ int, field Field) bool {
+		if !field.Skip() {
+			skippable = false
+			return false
+		}
+		return true
+	})
+	return skippable
 }
 
 func (f *Form) isGroupHidden(group *Group) bool {

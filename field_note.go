@@ -143,7 +143,7 @@ func (n *Note) Blur() tea.Cmd {
 func (n *Note) Error() error { return nil }
 
 // Skip returns whether the note should be skipped or should be blocking.
-func (n *Note) Skip() bool { return n.skip }
+func (n *Note) Skip() bool { return n.skip && !n.showNextButton }
 
 // Zoom returns whether the note should be zoomed.
 func (n *Note) Zoom() bool { return false }
@@ -287,9 +287,9 @@ func (n *Note) WithHeight(height int) Field {
 
 // WithPosition sets the position information of the note field.
 func (n *Note) WithPosition(p FieldPosition) Field {
-	// if the note is the only field on the screen,
+	// if the note is the only field in the entire form,
 	// we shouldn't skip the entire group.
-	if p.Field == p.FirstField && p.Field == p.LastField {
+	if p.IsFirst() && p.IsLast() {
 		n.skip = false
 	}
 	n.keymap.Prev.SetEnabled(!p.IsFirst())
