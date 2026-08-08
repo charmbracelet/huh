@@ -53,6 +53,11 @@ func (s *Selector[T]) Index() int {
 	return s.index
 }
 
+// Empty returns true if the selector has no items.
+func (s *Selector[T]) Empty() bool {
+	return len(s.items) == 0
+}
+
 // Total returns the total number of items.
 func (s *Selector[T]) Total() int {
 	return len(s.items)

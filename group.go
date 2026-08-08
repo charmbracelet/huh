@@ -201,6 +201,10 @@ func (g *Group) Init() tea.Cmd {
 
 	cmds = append(cmds, func() tea.Msg { return updateFieldMsg{} })
 
+	if g.selector.Empty() {
+		return tea.Batch(cmds...)
+	}
+
 	if g.selector.Selected().Skip() {
 		if g.selector.OnLast() {
 			cmds = append(cmds, g.prevField()...)
@@ -220,6 +224,9 @@ func (g *Group) Init() tea.Cmd {
 
 // nextField moves to the next field.
 func (g *Group) nextField() []tea.Cmd {
+	if g.selector.Empty() {
+		return []tea.Cmd{nextGroup}
+	}
 	blurCmd := g.selector.Selected().Blur()
 	if g.selector.OnLast() {
 		return []tea.Cmd{blurCmd, nextGroup}
@@ -237,6 +244,9 @@ func (g *Group) nextField() []tea.Cmd {
 
 // prevField moves to the previous field.
 func (g *Group) prevField() []tea.Cmd {
+	if g.selector.Empty() {
+		return []tea.Cmd{prevGroup}
+	}
 	blurCmd := g.selector.Selected().Blur()
 	if g.selector.OnFirst() {
 		return []tea.Cmd{blurCmd, prevGroup}
@@ -303,6 +313,12 @@ func (g *Group) styles() GroupStyles { return g.getTheme().Group }
 func (g *Group) getContent() (int, string) {
 	var fields strings.Builder
 	offset := 0
+
+	// a group can legitimately have no fields, e.g. when they were all
+	// filtered out before building it. there's nothing to render.
+	if g.selector.Empty() {
+		return offset, ""
+	}
 
 	gap := g.getTheme().FieldSeparator.Render()
 
@@ -393,7 +409,7 @@ func (g *Group) Content() string {
 func (g *Group) Footer() string {
 	var parts []string
 	errors := g.Errors()
-	if g.showHelp && len(errors) <= 0 {
+	if g.showHelp && len(errors) <= 0 && !g.selector.Empty() {
 		parts = append(parts, g.help.ShortHelpView(g.selector.Selected().KeyBinds()))
 	}
 	if g.showErrors {
