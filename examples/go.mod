@@ -12,7 +12,7 @@ require (
 	charm.land/lipgloss/v2 v2.0.5
 	charm.land/log/v2 v2.0.0
 	charm.land/ssh v0.4.2
-	charm.land/wish/v2 v2.0.2
+	charm.land/wish/v2 v2.0.3
 	github.com/charmbracelet/x/exp/strings v0.1.0
 )
 
