@@ -12,6 +12,7 @@ import (
 	"charm.land/bubbles/v2/spinner"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/charmbracelet/x/ansi"
 )
 
 func TestNewSpinner(t *testing.T) {
@@ -44,6 +45,18 @@ func TestSpinnerView(t *testing.T) {
 
 	if !strings.Contains(view, "Test") {
 		t.Errorf("Expected view to contain title 'Test', got '%s'", view)
+	}
+}
+
+func TestSpinnerTitleSpacing(t *testing.T) {
+	line := ansi.Strip(New().Type(Line).Title("Loading").View())
+	if !strings.Contains(line, "| Loading") {
+		t.Errorf("expected space between spinner and title, got %q", line)
+	}
+
+	dots := ansi.Strip(New().Type(Dots).Title("Loading").View())
+	if strings.Contains(dots, "  ") {
+		t.Errorf("expected single space between spinner and title, got %q", dots)
 	}
 }
 
