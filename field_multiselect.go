@@ -299,7 +299,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 	var cmd tea.Cmd
 	if m.filtering {
-		m.filter, cmd = m.filter.Update(msg)
+		m.filter, cmd = m.filter.Update(sanitizeKeyPressForInput(msg))
 		m.setSelectAllHelp()
 		cmds = append(cmds, cmd)
 	}
