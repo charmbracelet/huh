@@ -957,6 +957,76 @@ func TestHideGroupLastAndFirstGroupsNotHidden(t *testing.T) {
 	}
 }
 
+func TestEmptyGroup(t *testing.T) {
+	// fields can all be filtered out before the group is built, e.g. when
+	// every value was already given on the command line.
+	var fields []Field
+
+	f := NewForm(NewGroup(fields...))
+	f = batchUpdate(f, f.Init()).(*Form)
+
+	if v := ansi.Strip(f.View()); strings.TrimSpace(v) != "" {
+		t.Log(pretty.Render(v))
+		t.Error("expected an empty group to render nothing")
+	}
+
+	if v := f.GetFocusedField(); v != nil {
+		t.Error("expected no focused field")
+	}
+
+	f.Update(nextGroup())
+
+	if v := f.State; v != StateCompleted {
+		t.Error("should have been completed")
+	}
+}
+
+func TestEmptyForm(t *testing.T) {
+	// a form with no groups at all: nothing to ask, so it is already done.
+	f := NewForm()
+	f = batchUpdate(f, f.Init()).(*Form)
+
+	if v := ansi.Strip(f.View()); strings.TrimSpace(v) != "" {
+		t.Log(pretty.Render(v))
+		t.Error("expected an empty form to render nothing")
+	}
+
+	if v := f.GetFocusedField(); v != nil {
+		t.Error("expected no focused field")
+	}
+
+	if v := f.KeyBinds(); v != nil {
+		t.Error("expected no keybinds")
+	}
+
+	if v := f.Errors(); v != nil {
+		t.Error("expected no errors")
+	}
+
+	if v := f.State; v != StateCompleted {
+		t.Error("should have been completed")
+	}
+
+	if err := f.Run(); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestEmptyGroupIsSkipped(t *testing.T) {
+	f := NewForm(
+		NewGroup(),
+		NewGroup(NewNote().Description("Bar")),
+	)
+
+	f = batchUpdate(f, f.Init()).(*Form)
+	f.Update(nextGroup())
+
+	if v := ansi.Strip(f.View()); !strings.Contains(v, "Bar") {
+		t.Log(pretty.Render(v))
+		t.Error("expected Bar to be visible")
+	}
+}
+
 func TestPrevGroup(t *testing.T) {
 	f := NewForm(
 		NewGroup(NewNote().Description("Bar")),

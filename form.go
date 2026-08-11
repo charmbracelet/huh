@@ -430,17 +430,31 @@ func (f *Form) UpdateFieldPositions() *Form {
 
 // Errors returns the current groups' errors.
 func (f *Form) Errors() []error {
+	if f.selector.Empty() {
+		return nil
+	}
 	return f.selector.Selected().Errors()
 }
 
 // Help returns the current groups' help.
 func (f *Form) Help() help.Model {
+	if f.selector.Empty() {
+		return help.New()
+	}
 	return f.selector.Selected().help
 }
 
 // KeyBinds returns the current fields' keybinds.
+//
+// It returns nil if the form has no groups, or the current group has no fields.
 func (f *Form) KeyBinds() []key.Binding {
+	if f.selector.Empty() {
+		return nil
+	}
 	group := f.selector.Selected()
+	if group.selector.Empty() {
+		return nil
+	}
 	return group.selector.Selected().KeyBinds()
 }
 
@@ -501,12 +515,28 @@ func (f *Form) PrevField() tea.Cmd {
 }
 
 // GetFocusedField returns the focused form field.
+//
+// It returns nil if the form has no groups, or the current group has no fields.
 func (f *Form) GetFocusedField() Field {
-	return f.selector.Selected().selector.Selected()
+	if f.selector.Empty() {
+		return nil
+	}
+	group := f.selector.Selected()
+	if group.selector.Empty() {
+		return nil
+	}
+	return group.selector.Selected()
 }
 
 // Init initializes the form.
 func (f *Form) Init() tea.Cmd {
+	// a form without groups has nothing to ask, so it is already done.
+	if f.selector.Total() == 0 {
+		f.quitting = true
+		f.State = StateCompleted
+		return f.SubmitCmd
+	}
+
 	var cmds []tea.Cmd
 	f.selector.Range(func(i int, group *Group) bool {
 		if i == 0 {
@@ -526,8 +556,9 @@ func (f *Form) Init() tea.Cmd {
 
 // Update updates the form.
 func (f *Form) Update(msg tea.Msg) (Model, tea.Cmd) {
-	// If the form is aborted or completed there's no need to update it.
-	if f.State != StateNormal {
+	// If the form is aborted, completed, or has nothing to ask, there's no
+	// need to update it.
+	if f.State != StateNormal || f.selector.Empty() {
 		return f, nil
 	}
 
@@ -570,8 +601,10 @@ func (f *Form) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 	case nextFieldMsg:
 		// Form is progressing to the next field, let's save the value of the current field.
-		field := group.selector.Selected()
-		f.results[field.GetKey()] = field.GetValue()
+		if !group.selector.Empty() {
+			field := group.selector.Selected()
+			f.results[field.GetKey()] = field.GetValue()
+		}
 
 	case nextGroupMsg:
 		if len(group.Errors()) > 0 {
@@ -632,6 +665,11 @@ func (f *Form) Update(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 func (f *Form) isGroupHidden(group *Group) bool {
+	// a group without fields has nothing to prompt for, so treat it as
+	// hidden and let the form move on to the next one.
+	if group.selector.Empty() {
+		return true
+	}
 	hide := group.hide
 	if hide == nil {
 		return false
@@ -652,7 +690,7 @@ func (f *Form) styles() FormStyles {
 
 // View renders the form.
 func (f *Form) View() string {
-	if f.quitting {
+	if f.quitting || f.selector.Empty() {
 		return ""
 	}
 
@@ -669,7 +707,8 @@ func (f *Form) RunWithContext(ctx context.Context) error {
 	f.SubmitCmd = tea.Quit
 	f.CancelCmd = tea.Interrupt
 
-	if f.selector.Total() == 0 {
+	if f.selector.Empty() {
+		f.State = StateCompleted
 		return nil
 	}
 
