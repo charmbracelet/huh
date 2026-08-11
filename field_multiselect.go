@@ -196,7 +196,7 @@ func (m *MultiSelect[T]) Limit(limit int) *MultiSelect[T] {
 // Width sets the width of the multi-select field.
 func (m *MultiSelect[T]) Width(width int) *MultiSelect[T] {
 	// What we really want to do is set the width of the viewport, but we
-	// need a theme applied before we can calcualate its width.
+	// need a theme applied before we can calculate its width.
 	m.width = width
 	m.updateViewportSize()
 	return m
@@ -205,7 +205,7 @@ func (m *MultiSelect[T]) Width(width int) *MultiSelect[T] {
 // Height sets the height of the multi-select field.
 func (m *MultiSelect[T]) Height(height int) *MultiSelect[T] {
 	// What we really want to do is set the height of the viewport, but we
-	// need a theme applied before we can calcualate its height.
+	// need a theme applied before we can calculate its height.
 	m.height = height
 	m.updateViewportSize()
 	return m
