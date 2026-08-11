@@ -690,7 +690,7 @@ func (f *Form) styles() FormStyles {
 
 // View renders the form.
 func (f *Form) View() string {
-	if f.quitting {
+	if f.quitting || f.selector.Empty() {
 		return ""
 	}
 
