@@ -11,7 +11,7 @@ require (
 	charm.land/huh/v2 v2.0.0-00010101000000-000000000000
 	charm.land/lipgloss/v2 v2.0.5
 	charm.land/log/v2 v2.0.0
-	charm.land/ssh v0.4.2
+	charm.land/ssh v0.4.3
 	charm.land/wish/v2 v2.0.3
 	github.com/charmbracelet/x/exp/strings v0.1.0
 )
