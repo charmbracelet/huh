@@ -43,6 +43,12 @@ type Input struct {
 	theme     Theme
 	hasDarkBg bool
 	keymap    InputKeyMap
+
+	// stylesDirty flags that the underlying textinput's styles must be
+	// re-applied on the next View(). Without this flag, every View() would
+	// call textinput.SetStyles, which corrupts the cursor's blink chain
+	// (see #799).
+	stylesDirtyFlag bool
 }
 
 // NewInput creates a new input field.
@@ -63,6 +69,7 @@ func NewInput() *Input {
 		description: Eval[string]{cache: make(map[uint64]string)},
 		placeholder: Eval[string]{cache: make(map[uint64]string)},
 		suggestions: Eval[[]string]{cache: make(map[uint64][]string)},
+		stylesDirtyFlag: true,
 	}
 
 	return i
@@ -245,12 +252,14 @@ func (*Input) Zoom() bool { return false }
 // Focus focuses the input field.
 func (i *Input) Focus() tea.Cmd {
 	i.focused = true
+	i.stylesDirtyFlag = true
 	return i.textinput.Focus()
 }
 
 // Blur blurs the input field.
 func (i *Input) Blur() tea.Cmd {
 	i.focused = false
+	i.stylesDirtyFlag = true
 	i.accessor.Set(i.textinput.Value())
 	i.textinput.Blur()
 	i.err = i.validate(i.accessor.Get())
@@ -278,6 +287,7 @@ func (i *Input) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.BackgroundColorMsg:
 		i.hasDarkBg = msg.IsDark()
+		i.stylesDirtyFlag = true
 	case updateFieldMsg:
 		var cmds []tea.Cmd
 		if ok, hash := i.title.shouldUpdate(); ok {
@@ -376,20 +386,37 @@ func (i *Input) activeStyles() *FieldStyles {
 	return &theme.Theme(i.hasDarkBg).Blurred
 }
 
+// stylesDirty reports whether the underlying textinput's styles need to be
+// re-applied on the next View(). See the comment in View() for why this
+// guard matters (issue #799).
+func (i *Input) stylesDirty() bool { return i.stylesDirtyFlag }
+
 // View renders the input field.
 func (i *Input) View() string {
 	styles := i.activeStyles()
 	maxWidth := i.width - styles.Base.GetHorizontalFrameSize()
 
-	// NB: since the method is on a pointer receiver these are being mutated.
-	// Because this runs on every render this shouldn't matter in practice,
-	// however.
-	st := i.textinput.Styles()
-	st.Cursor.Color = styles.TextInput.Cursor.GetForeground()
-	st.Focused.Prompt = styles.TextInput.Prompt
-	st.Focused.Text = styles.TextInput.Text
-	st.Focused.Placeholder = styles.TextInput.Placeholder
-	i.textinput.SetStyles(st)
+	// Apply the huh theme's input styles to the underlying textinput. We
+	// only do this when the active style state actually changes (focused
+	// vs blurred, or styles-dependent colors shifting), because
+	// textinput.SetStyles calls updateVirtualCursorStyle, which calls
+	// cursor.SetMode(CursorBlink). SetMode increments the cursor's
+	// blinkTag, and the in-flight Blink() timer emits a BlinkMsg with the
+	// tag captured at call time. If the blinkTag moves before the timer
+	// fires, the cursor's Update rejects the BlinkMsg and the blink chain
+	// dies (the cursor becomes static). Calling SetStyles on every render
+	// is what causes github.com/charmbracelet/huh issue #799.
+	if i.stylesDirty() {
+		// NB: since the method is on a pointer receiver these are being
+		// mutated. Styles() returns a copy, so this is safe.
+		st := i.textinput.Styles()
+		st.Cursor.Color = styles.TextInput.Cursor.GetForeground()
+		st.Focused.Prompt = styles.TextInput.Prompt
+		st.Focused.Text = styles.TextInput.Text
+		st.Focused.Placeholder = styles.TextInput.Placeholder
+		i.textinput.SetStyles(st)
+		i.stylesDirtyFlag = false
+	}
 
 	// Adjust text input size to its char limit if it fit in its width
 	if i.textinput.CharLimit > 0 {
@@ -474,6 +501,7 @@ func (i *Input) WithTheme(theme Theme) Field {
 		return i
 	}
 	i.theme = theme
+	i.stylesDirtyFlag = true
 	return i
 }
 
