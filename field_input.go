@@ -386,9 +386,15 @@ func (i *Input) View() string {
 	// however.
 	st := i.textinput.Styles()
 	st.Cursor.Color = styles.TextInput.Cursor.GetForeground()
-	st.Focused.Prompt = styles.TextInput.Prompt
-	st.Focused.Text = styles.TextInput.Text
-	st.Focused.Placeholder = styles.TextInput.Placeholder
+	if i.focused {
+		st.Focused.Prompt = styles.TextInput.Prompt
+		st.Focused.Text = styles.TextInput.Text
+		st.Focused.Placeholder = styles.TextInput.Placeholder
+	} else {
+		st.Blurred.Prompt = styles.TextInput.Prompt
+		st.Blurred.Text = styles.TextInput.Text
+		st.Blurred.Placeholder = styles.TextInput.Placeholder
+	}
 	i.textinput.SetStyles(st)
 
 	// Adjust text input size to its char limit if it fit in its width
