@@ -346,11 +346,6 @@ func (t *Text) Update(msg tea.Msg) (Model, tea.Cmd) {
 			}
 			cmds = append(cmds, NextField)
 		case key.Matches(msg, t.keymap.Prev):
-			value := t.textarea.Value()
-			t.err = t.validate(value)
-			if t.err != nil {
-				return t, nil
-			}
 			cmds = append(cmds, PrevField)
 		}
 	}
