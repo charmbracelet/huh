@@ -182,6 +182,7 @@ func NewModel() Model {
 				Title("Focus Time").
 				Key("focus").
 				Options(
+					huh.NewOption("5 seconds", 5*time.Second),
 					huh.NewOption("25 minutes", 25*time.Minute),
 					huh.NewOption("30 minutes", 30*time.Minute),
 					huh.NewOption("45 minutes", 45*time.Minute),
@@ -193,6 +194,7 @@ func NewModel() Model {
 				Title("Break Time").
 				Key("break").
 				Options(
+					huh.NewOption("2 seconds", 2*time.Second),
 					huh.NewOption("5 minutes", 5*time.Minute),
 					huh.NewOption("10 minutes", 10*time.Minute),
 					huh.NewOption("15 minutes", 15*time.Minute),

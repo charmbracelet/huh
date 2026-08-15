@@ -7,6 +7,7 @@ import (
 	"charm.land/huh/v2"
 )
 
+// When switching between the form groups, the selection from the other groups are saved in the form
 func main() {
 	f := huh.NewForm(
 		huh.NewGroup(
