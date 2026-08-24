@@ -358,7 +358,7 @@ func (i *Input) Update(msg tea.Msg) (Model, tea.Cmd) {
 	}
 
 	var cmd tea.Cmd
-	i.textinput, cmd = i.textinput.Update(msg)
+	i.textinput, cmd = i.textinput.Update(sanitizeKeyPressForInput(msg))
 	cmds = append(cmds, cmd)
 	i.accessor.Set(i.textinput.Value())
 
