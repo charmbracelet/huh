@@ -42,6 +42,10 @@ type Group struct {
 	keymap    *KeyMap
 	hide      func() bool
 	active    bool
+
+	// validation
+	validate func() error
+	err      error
 }
 
 // NewGroup returns a new group with the given fields.
@@ -154,7 +158,18 @@ func (g *Group) WithHideFunc(hideFunc func() bool) *Group {
 	return g
 }
 
-// Errors returns the groups' fields' errors.
+// Validate sets a validation function for the group. It runs when the form
+// tries to advance past the group, and if it returns an error the form stays
+// on the group and shows the error. Unlike a field's Validate, this can look
+// at several fields at once, which is handy for checks that span fields (for
+// example, confirming that two inputs match).
+func (g *Group) Validate(validate func() error) *Group {
+	g.validate = validate
+	return g
+}
+
+// Errors returns the groups' fields' errors, along with the group's own
+// validation error, if any.
 func (g *Group) Errors() []error {
 	var errs []error
 	g.selector.Range(func(_ int, field Field) bool {
@@ -163,6 +178,9 @@ func (g *Group) Errors() []error {
 		}
 		return true
 	})
+	if g.err != nil {
+		errs = append(errs, g.err)
+	}
 	return errs
 }
 

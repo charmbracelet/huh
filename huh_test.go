@@ -1046,6 +1046,49 @@ func TestPrevGroup(t *testing.T) {
 	}
 }
 
+func TestGroupValidate(t *testing.T) {
+	valid := false
+	f := NewForm(
+		NewGroup(NewNote().Description("First")).
+			Validate(func() error {
+				if !valid {
+					return fmt.Errorf("group is not valid yet")
+				}
+				return nil
+			}),
+		NewGroup(NewNote().Description("Second")),
+	)
+
+	f = batchUpdate(f, f.Init()).(*Form)
+
+	// Try to advance while the group is invalid: we should stay put and see
+	// the error.
+	f.Update(nextGroup())
+
+	if v := ansi.Strip(f.View()); strings.Contains(v, "Second") {
+		t.Log(pretty.Render(v))
+		t.Error("expected to stay on the first group while it is invalid")
+	}
+	if v := ansi.Strip(f.View()); !strings.Contains(v, "group is not valid yet") {
+		t.Log(pretty.Render(v))
+		t.Error("expected the group validation error to be shown")
+	}
+
+	// Fix the validation and advance again: now we should move on, and the
+	// error should be gone.
+	valid = true
+	f.Update(nextGroup())
+
+	if v := ansi.Strip(f.View()); !strings.Contains(v, "Second") {
+		t.Log(pretty.Render(v))
+		t.Error("expected to advance to the second group once valid")
+	}
+	if v := ansi.Strip(f.View()); strings.Contains(v, "group is not valid yet") {
+		t.Log(pretty.Render(v))
+		t.Error("expected the group validation error to be cleared")
+	}
+}
+
 func TestNote(t *testing.T) {
 	field := NewNote().
 		Title("Taco").
