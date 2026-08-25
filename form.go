@@ -607,6 +607,9 @@ func (f *Form) Update(msg tea.Msg) (Model, tea.Cmd) {
 		}
 
 	case nextGroupMsg:
+		if group.validate != nil {
+			group.err = group.validate()
+		}
 		if len(group.Errors()) > 0 {
 			return f, nil
 		}
@@ -636,6 +639,9 @@ func (f *Form) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return f, f.selector.Selected().Init()
 
 	case prevGroupMsg:
+		// Going back leaves the group, so clear any stale group-level
+		// validation error before checking whether we can move.
+		group.err = nil
 		if len(group.Errors()) > 0 {
 			return f, nil
 		}
