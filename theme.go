@@ -111,7 +111,7 @@ func ThemeBase(bool) *Styles {
 	t.Focused.Base = lipgloss.NewStyle().PaddingLeft(1).BorderStyle(lipgloss.ThickBorder()).BorderLeft(true)
 	t.Focused.Card = t.Focused.Base
 	t.Focused.ErrorIndicator = lipgloss.NewStyle().SetString(" *")
-	t.Focused.ErrorMessage = lipgloss.NewStyle().SetString(" *")
+	t.Focused.ErrorMessage = lipgloss.NewStyle().SetString("*")
 	t.Focused.SelectSelector = lipgloss.NewStyle().SetString("> ")
 	t.Focused.NextIndicator = lipgloss.NewStyle().MarginLeft(1).SetString("→")
 	t.Focused.PrevIndicator = lipgloss.NewStyle().MarginRight(1).SetString("←")
