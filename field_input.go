@@ -485,9 +485,9 @@ func (i *Input) WithWidth(width int) Field {
 	promptWidth := lipgloss.Width(i.textinput.Styles().Focused.Prompt.Render(i.textinput.Prompt))
 	titleWidth := lipgloss.Width(styles.Title.Render(i.title.val))
 	descriptionWidth := lipgloss.Width(styles.Description.Render(i.description.val))
-	i.textinput.SetWidth(width - frameSize - promptWidth - 1)
+	i.textinput.SetWidth(max(width-frameSize-promptWidth-1, 0))
 	if i.inline {
-		i.textinput.SetWidth(i.textinput.Width() - titleWidth - descriptionWidth)
+		i.textinput.SetWidth(max(i.textinput.Width()-titleWidth-descriptionWidth, 0))
 	}
 	return i
 }
