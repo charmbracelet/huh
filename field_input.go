@@ -489,6 +489,7 @@ func (i *Input) WithWidth(width int) Field {
 	if i.inline {
 		i.textinput.SetWidth(i.textinput.Width() - titleWidth - descriptionWidth)
 	}
+	i.textinput.Width = max(i.textinput.Width, 0)
 	return i
 }
 
