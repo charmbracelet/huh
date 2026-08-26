@@ -590,14 +590,21 @@ func (m *MultiSelect[T]) descriptionView() string {
 	return m.activeStyles().Description.Render(wrap(m.description.val, maxWidth))
 }
 
-func (m *MultiSelect[T]) renderOption(option Option[T], cursor, selected bool) string {
+func (m *MultiSelect[T]) renderOption(option Option[T], cursor, selected, showUp, showDown bool) string {
 	styles := m.activeStyles()
 	var parts []string
-	if cursor {
+
+	switch {
+	case showUp:
+		parts = append(parts, styles.ScrollUpIndicator.String())
+	case showDown:
+		parts = append(parts, styles.ScrollDownIndicator.String())
+	case cursor:
 		parts = append(parts, styles.MultiSelectSelector.String())
-	} else {
+	default:
 		parts = append(parts, strings.Repeat(" ", lipgloss.Width(styles.MultiSelectSelector.String())))
 	}
+
 	if selected {
 		parts = append(parts, styles.SelectedPrefix.String())
 		parts = append(parts, styles.SelectedOption.Render(option.Key))
@@ -608,26 +615,45 @@ func (m *MultiSelect[T]) renderOption(option Option[T], cursor, selected bool) s
 	return lipgloss.JoinHorizontal(lipgloss.Left, parts...)
 }
 
-// cursorLineOffset computes the line offset and height (in lines) for the
-// current cursor position without rendering the full options string.
-func (m *MultiSelect[T]) cursorLineOffset() (offset int, height int) {
-	for i, option := range m.filteredOptions {
-		line := m.renderOption(option, m.cursor == i, m.filteredOptions[i].selected)
-		h := lipgloss.Height(line)
-		if i < m.cursor {
-			offset += h
+func (m *MultiSelect[T]) ensureCursorVisible() {
+	n := len(m.filteredOptions)
+	if n == 0 {
+		return
+	}
+
+	// collect prev, cursor, and next item offsets.
+	var prevOffset, prevHeight int
+	var cursorOffset, cursorHeight int
+	var nextOffset, nextHeight int
+	cum := 0
+	for i := 0; i < n && i <= m.cursor+1; i++ {
+		h := lipgloss.Height(m.renderOption(m.filteredOptions[i], m.cursor == i, m.filteredOptions[i].selected, false, false))
+		switch i {
+		case m.cursor - 1:
+			prevOffset = cum
+			prevHeight = h
+		case m.cursor:
+			cursorOffset = cum
+			cursorHeight = h
+		case m.cursor + 1:
+			nextOffset = cum
+			nextHeight = h
 		}
-		if i == m.cursor {
-			height = h
-			return offset, height
+		cum += h
+	}
+
+	// When the viewport is tall enough for lookahead, ensure the adjacent items
+	// are visible so the scroll indicators remain on screen. The cursor call is
+	// last so it always wins if the viewport is too small to fit everything.
+	if m.viewport.Height() >= 3 {
+		if m.cursor > 0 {
+			ensureVisible(&m.viewport, prevOffset, prevHeight)
+		}
+		if m.cursor+1 < n {
+			ensureVisible(&m.viewport, nextOffset, nextHeight)
 		}
 	}
-	return offset, height
-}
-
-func (m *MultiSelect[T]) ensureCursorVisible() {
-	offset, height := m.cursorLineOffset()
-	ensureVisible(&m.viewport, offset, height)
+	ensureVisible(&m.viewport, cursorOffset, cursorHeight)
 }
 
 func (m *MultiSelect[T]) optionsView() (string, int, int) {
@@ -639,23 +665,36 @@ func (m *MultiSelect[T]) optionsView() (string, int, int) {
 		return sb.String(), -1, 1
 	}
 
-	var cursorOffset int
-	var cursorHeight int
+	n := len(m.filteredOptions)
+
+	// Pass 1: compute per-item heights and cumulative line offsets.
+	heights := make([]int, n)
+	offsets := make([]int, n)
+	cum := 0
 	for i, option := range m.filteredOptions {
-		cursor := m.cursor == i
-		line := m.renderOption(option, cursor, m.filteredOptions[i].selected)
-		if i < m.cursor {
-			cursorOffset += lipgloss.Height(line)
-		}
-		if cursor {
-			cursorHeight = lipgloss.Height(line)
-		}
+		h := lipgloss.Height(m.renderOption(option, m.cursor == i, option.selected, false, false))
+		heights[i] = h
+		offsets[i] = cum
+		cum += h
+	}
+
+	var cursorOffset, cursorHeight int
+	if m.cursor < n {
+		cursorOffset = offsets[m.cursor]
+		cursorHeight = heights[m.cursor]
+	}
+
+	// Determine scroll indicator positions.
+	firstVisible, lastVisible := scrollIndicators(offsets, heights, cum, m.cursor, m.viewport.YOffset(), m.viewport.Height())
+
+	// Pass 2: render options with indicators.
+	for i, option := range m.filteredOptions {
+		line := m.renderOption(option, m.cursor == i, option.selected, i == firstVisible, i == lastVisible)
 		sb.WriteString(line)
 		if i < len(m.options.val)-1 {
 			sb.WriteString("\n")
 		}
 	}
-
 	for i := len(m.filteredOptions); i < len(m.options.val)-1; i++ {
 		sb.WriteString("\n")
 	}
