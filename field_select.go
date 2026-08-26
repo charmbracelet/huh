@@ -468,9 +468,10 @@ func (s *Select[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 			}
 			s.updateValue()
 		case key.Matches(msg, s.keymap.Prev):
-			if s.selected >= len(s.filteredOptions) {
+			if s.filtering && s.selected >= len(s.filteredOptions) {
 				break
 			}
+			s.setFiltering(false)
 			s.updateValue()
 			s.err = s.validate(s.accessor.Get())
 			if s.err != nil {
@@ -479,7 +480,7 @@ func (s *Select[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 			s.updateValue()
 			return s, PrevField
 		case key.Matches(msg, s.keymap.Next, s.keymap.Submit):
-			if s.selected >= len(s.filteredOptions) {
+			if s.filtering && s.selected >= len(s.filteredOptions) {
 				break
 			}
 			s.setFiltering(false)
