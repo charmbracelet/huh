@@ -698,6 +698,52 @@ func TestMultiSelect(t *testing.T) {
 	}
 }
 
+func TestMultiSelectCursorWrap(t *testing.T) {
+	field := NewMultiSelect[string]().
+		Options(NewOptions("Foo", "Bar", "Baz")...).
+		Title("Which one?")
+	f := NewForm(NewGroup(field))
+	f.Update(f.Init())
+
+	// Cursor starts on first item.
+	if got, ok := field.Hovered(); !ok || got != "Foo" {
+		t.Fatalf("Expected cursor on Foo, got %q", got)
+	}
+
+	// Press Up at first item — should wrap to last item.
+	m := batchUpdate(f.Update(keypress('k')))
+	_ = viewModel(m)
+
+	if got, ok := field.Hovered(); !ok || got != "Baz" {
+		t.Errorf("Expected cursor to wrap to Baz, got %q", got)
+	}
+
+	// Press Down — should wrap back to first item.
+	m = batchUpdate(f.Update(keypress('j')))
+	_ = viewModel(m)
+
+	if got, ok := field.Hovered(); !ok || got != "Foo" {
+		t.Errorf("Expected cursor to wrap to Foo, got %q", got)
+	}
+
+	// Navigate to last item (Foo -> Bar -> Baz).
+	m = batchUpdate(f.Update(keypress('j')))
+	m = batchUpdate(f.Update(keypress('j')))
+	_ = viewModel(m)
+
+	if got, ok := field.Hovered(); !ok || got != "Baz" {
+		t.Fatalf("Expected cursor on Baz, got %q", got)
+	}
+
+	// Press Down at last item — should wrap to first item.
+	m = batchUpdate(f.Update(keypress('j')))
+	_ = viewModel(m)
+
+	if got, ok := field.Hovered(); !ok || got != "Foo" {
+		t.Errorf("Expected cursor to wrap to Foo, got %q", got)
+	}
+}
+
 func TestMultiSelectFiltering(t *testing.T) {
 	tests := []struct {
 		name      string

@@ -391,8 +391,13 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 				break
 			}
 
-			m.cursor = max(m.cursor-1, 0)
-			m.ensureCursorVisible()
+			m.cursor = m.cursor - 1
+			if m.cursor < 0 {
+				m.cursor = len(m.filteredOptions) - 1
+				m.viewport.GotoBottom()
+			} else {
+				m.ensureCursorVisible()
+			}
 		case key.Matches(msg, m.keymap.Down):
 			//nolint:godox
 			// FIXME: should use keys in keymap
@@ -400,8 +405,13 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 				break
 			}
 
-			m.cursor = min(m.cursor+1, len(m.filteredOptions)-1)
-			m.ensureCursorVisible()
+			m.cursor = m.cursor + 1
+			if m.cursor >= len(m.filteredOptions) {
+				m.cursor = 0
+				m.viewport.GotoTop()
+			} else {
+				m.ensureCursorVisible()
+			}
 		case key.Matches(msg, m.keymap.GotoTop):
 			if m.filtering {
 				break
