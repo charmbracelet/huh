@@ -28,6 +28,27 @@ func LayoutGrid(rows int, columns int) Layout {
 	return &layoutGrid{rows: rows, columns: columns}
 }
 
+// visibleFormGroups returns all groups that are not currently hidden, in
+// order, along with the position of the currently selected group *within
+// that filtered slice*. If the selected group is itself hidden, pos is -1.
+func visibleFormGroups(f *Form) (groups []*Group, pos int) {
+	pos = -1
+	selectedIdx := f.selector.Index()
+
+	f.selector.Range(func(i int, group *Group) bool {
+		if f.isGroupHidden(group) {
+			return true
+		}
+		if i == selectedIdx {
+			pos = len(groups)
+		}
+		groups = append(groups, group)
+		return true
+	})
+
+	return groups, pos
+}
+
 type layoutDefault struct{}
 
 func (l *layoutDefault) View(f *Form) string {
@@ -43,25 +64,19 @@ type layoutColumns struct {
 }
 
 func (l *layoutColumns) visibleGroups(f *Form) []*Group {
-	segmentIndex := f.selector.Index() / l.columns
-	start := segmentIndex * l.columns
-	end := start + l.columns
-
-	total := f.selector.Total()
-	if end > total {
-		end = total
+	groups, pos := visibleFormGroups(f)
+	if len(groups) == 0 {
+		return nil
+	}
+	if pos < 0 {
+		pos = 0
 	}
 
-	var groups []*Group
-	f.selector.Range(func(i int, group *Group) bool {
-		if i >= start && i < end {
-			groups = append(groups, group)
-			return true
-		}
-		return true
-	})
+	segmentIndex := pos / l.columns
+	start := segmentIndex * l.columns
+	end := min(start+l.columns, len(groups))
 
-	return groups
+	return groups[start:end]
 }
 
 func (l *layoutColumns) View(f *Form) string {
@@ -92,11 +107,12 @@ func (l *layoutColumns) GroupWidth(_ *Form, _ *Group, w int) int {
 type layoutStack struct{}
 
 func (l *layoutStack) View(f *Form) string {
+	groups, _ := visibleFormGroups(f)
+
 	var columns []string
-	f.selector.Range(func(_ int, group *Group) bool {
+	for _, group := range groups {
 		columns = append(columns, group.Content(), "")
-		return true
-	})
+	}
 
 	if footer := f.selector.Selected().Footer(); footer != "" {
 		columns = append(columns, footer)
@@ -113,34 +129,31 @@ type layoutGrid struct {
 }
 
 func (l *layoutGrid) visibleGroups(f *Form) [][]*Group {
-	total := l.rows * l.columns
-	segmentIndex := f.selector.Index() / total
-	start := segmentIndex * total
-	end := start + total
-
-	if glen := f.selector.Total(); end > glen {
-		end = glen
+	groups, pos := visibleFormGroups(f)
+	if len(groups) == 0 {
+		return nil
+	}
+	if pos < 0 {
+		pos = 0
 	}
 
-	var visible []*Group
-	f.selector.Range(func(i int, group *Group) bool {
-		if i >= start && i < end {
-			visible = append(visible, group)
-			return true
-		}
-		return true
-	})
+	total := l.rows * l.columns
+	segmentIndex := pos / total
+	start := segmentIndex * total
+	end := min(start+total, len(groups))
+	page := groups[start:end]
+
 	grid := make([][]*Group, l.rows)
 	for i := 0; i < l.rows; i++ {
 		startRow := i * l.columns
 		endRow := startRow + l.columns
-		if startRow >= len(visible) {
+		if startRow >= len(page) {
 			break
 		}
-		if endRow > len(visible) {
-			endRow = len(visible)
+		if endRow > len(page) {
+			endRow = len(page)
 		}
-		grid[i] = visible[startRow:endRow]
+		grid[i] = page[startRow:endRow]
 	}
 	return grid
 }
