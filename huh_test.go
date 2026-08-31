@@ -277,6 +277,93 @@ func TestForm(t *testing.T) {
 	// TODO: Finish and submit form.
 }
 
+func TestLayoutStackSkipsHiddenGroups(t *testing.T) {
+	f := NewForm(
+		NewGroup(NewNote().Description("Alpha")),
+		NewGroup(NewNote().Description("Hidden")).WithHide(true),
+		NewGroup(NewNote().Description("Beta")),
+	).WithLayout(LayoutStack)
+
+	f = batchUpdate(f, f.Init()).(*Form)
+	view := viewModel(f)
+
+	if !strings.Contains(view, "Alpha") {
+		t.Log(pretty.Render(view))
+		t.Error("expected Alpha to be visible")
+	}
+
+	if !strings.Contains(view, "Beta") {
+		t.Log(pretty.Render(view))
+		t.Error("expected Beta to be visible")
+	}
+
+	if strings.Contains(view, "Hidden") {
+		t.Log(pretty.Render(view))
+		t.Error("expected the hidden group not to be rendered by the stack layout")
+	}
+}
+
+func TestLayoutColumnsSkipsHiddenGroups(t *testing.T) {
+	f := NewForm(
+		NewGroup(NewNote().Description("Alpha")),
+		NewGroup(NewNote().Description("Hidden")).WithHide(true),
+		NewGroup(NewNote().Description("Beta")),
+		NewGroup(NewNote().Description("Gamma")),
+	).WithLayout(LayoutColumns(2))
+
+	f = batchUpdate(f, f.Init()).(*Form)
+	view := viewModel(f)
+
+	if !strings.Contains(view, "Alpha") {
+		t.Log(pretty.Render(view))
+		t.Error("expected Alpha to be visible")
+	}
+
+	if !strings.Contains(view, "Beta") {
+		t.Log(pretty.Render(view))
+		t.Error("expected Beta to fill the second column on the first page")
+	}
+
+	if strings.Contains(view, "Hidden") {
+		t.Log(pretty.Render(view))
+		t.Error("expected the hidden group not to be rendered")
+	}
+
+	if strings.Contains(view, "Gamma") {
+		t.Log(pretty.Render(view))
+		t.Error("expected Gamma to be on the next page, not the first")
+	}
+}
+
+func TestLayoutGridSkipsHiddenGroups(t *testing.T) {
+	f := NewForm(
+		NewGroup(NewNote().Description("Alpha")),
+		NewGroup(NewNote().Description("Hidden1")).WithHide(true),
+		NewGroup(NewNote().Description("Beta")),
+		NewGroup(NewNote().Description("Gamma")),
+		NewGroup(NewNote().Description("Hidden2")).WithHide(true),
+		NewGroup(NewNote().Description("Delta")),
+		NewGroup(NewNote().Description("Epsilon")),
+	).WithLayout(LayoutGrid(2, 2))
+
+	f = batchUpdate(f, f.Init()).(*Form)
+	view := viewModel(f)
+
+	for _, want := range []string{"Alpha", "Beta", "Gamma", "Delta"} {
+		if !strings.Contains(view, want) {
+			t.Log(pretty.Render(view))
+			t.Errorf("expected %q to be visible on the first grid page", want)
+		}
+	}
+
+	for _, notWant := range []string{"Hidden1", "Hidden2", "Epsilon"} {
+		if strings.Contains(view, notWant) {
+			t.Log(pretty.Render(view))
+			t.Errorf("expected %q not to appear on the first grid page", notWant)
+		}
+	}
+}
+
 func TestInput(t *testing.T) {
 	field := NewInput()
 	f := NewForm(NewGroup(field))
