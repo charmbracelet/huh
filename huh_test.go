@@ -741,6 +741,38 @@ func TestMultiSelectFiltering(t *testing.T) {
 	})
 }
 
+func TestMultiSelectPrintableNavWhileFiltering(t *testing.T) {
+	keymap := NewDefaultKeyMap()
+	keymap.MultiSelect.Down.SetKeys("down", "a", "ctrl+n")
+
+	field := NewMultiSelect[string]().
+		Options(NewOptions("alpha", "bravo")...).
+		Filtering(true)
+	field.WithKeyMap(keymap)
+
+	msg := tea.KeyPressMsg(tea.Key{
+		Code: 'a',
+		Text: "a",
+	})
+	updated, _ := field.Update(msg)
+	field = updated.(*MultiSelect[string])
+
+	if got, ok := field.Hovered(); !ok || got != "alpha" {
+		t.Fatalf("printable filter key %q should not move cursor, hovered %q", "a", got)
+	}
+	if field.filter.Value() != "a" {
+		t.Fatalf("filter should receive printable text, got %q", field.filter.Value())
+	}
+
+	// Non-printable Down (arrow) should still move while filtering.
+	arrow := tea.KeyPressMsg(tea.Key{Code: tea.KeyDown})
+	updated, _ = field.Update(arrow)
+	field = updated.(*MultiSelect[string])
+	if got, ok := field.Hovered(); !ok || got != "bravo" {
+		t.Fatalf("arrow down should still navigate while filtering, hovered %q", got)
+	}
+}
+
 func TestSelectFilteringShowsMatchesAboveTheCursor(t *testing.T) {
 	// Bar and Baz sit at opposite ends of the list, so filtering for "ba"
 	// while the cursor is at the bottom leaves Bar above the visible window.

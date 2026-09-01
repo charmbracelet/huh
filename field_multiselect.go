@@ -385,18 +385,14 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 			m.filteredOptions = m.options.val
 			m.setFilter(false)
 		case key.Matches(msg, m.keymap.Up):
-			//nolint:godox
-			// FIXME: should use keys in keymap
-			if m.filtering && msg.String() == "k" {
+			if m.filtering && isPrintableKey(msg) {
 				break
 			}
 
 			m.cursor = max(m.cursor-1, 0)
 			m.ensureCursorVisible()
 		case key.Matches(msg, m.keymap.Down):
-			//nolint:godox
-			// FIXME: should use keys in keymap
-			if m.filtering && msg.String() == "j" {
+			if m.filtering && isPrintableKey(msg) {
 				break
 			}
 
@@ -415,9 +411,15 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 			m.cursor = len(m.filteredOptions) - 1
 			m.viewport.GotoBottom()
 		case key.Matches(msg, m.keymap.HalfPageUp):
+			if m.filtering && isPrintableKey(msg) {
+				break
+			}
 			m.cursor = max(m.cursor-m.viewport.Height()/2, 0)
 			m.ensureCursorVisible()
 		case key.Matches(msg, m.keymap.HalfPageDown):
+			if m.filtering && isPrintableKey(msg) {
+				break
+			}
 			m.cursor = min(m.cursor+m.viewport.Height()/2, len(m.filteredOptions)-1)
 			m.ensureCursorVisible()
 		case key.Matches(msg, m.keymap.Toggle) && !m.filtering:
@@ -844,4 +846,8 @@ func (m *MultiSelect[T]) GetValue() any {
 // GetFiltering returns whether the multi-select is filtering.
 func (m *MultiSelect[T]) GetFiltering() bool {
 	return m.filtering
+}
+
+func isPrintableKey(msg tea.KeyPressMsg) bool {
+	return msg.Key().Text != ""
 }
