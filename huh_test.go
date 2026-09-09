@@ -894,21 +894,21 @@ func TestHideGroup(t *testing.T) {
 	}
 
 	// should have no effect as previous group is hidden
-	f.Update(prevGroup())
+	f.Update(prevGroupMsg{id: f.id})
 
 	if v := f.View(); !strings.Contains(v, "Bar") {
 		t.Log(pretty.Render(v))
 		t.Error("expected Bar to be visible")
 	}
 
-	f.Update(nextGroup())
+	f.Update(nextGroupMsg{id: f.id})
 
 	if v := f.View(); !strings.Contains(v, "Baz") {
 		t.Log(pretty.Render(v))
 		t.Error("expected Baz to be visible")
 	}
 
-	f.Update(nextGroup())
+	f.Update(nextGroupMsg{id: f.id})
 
 	if v := f.View(); strings.Contains(v, "Qux") {
 		t.Log(pretty.Render(v))
@@ -936,14 +936,14 @@ func TestHideGroupLastAndFirstGroupsNotHidden(t *testing.T) {
 	}
 
 	// should have no effect as there isn't any
-	f.Update(prevGroup())
+	f.Update(prevGroupMsg{id: f.id})
 
 	if v := f.View(); !strings.Contains(v, "Bar") {
 		t.Log(pretty.Render(v))
 		t.Error("expected Bar to not be hidden")
 	}
 
-	f.Update(nextGroup())
+	f.Update(nextGroupMsg{id: f.id})
 
 	if v := ansi.Strip(f.View()); !strings.Contains(v, "Baz") {
 		t.Log(pretty.Render(v))
@@ -951,7 +951,7 @@ func TestHideGroupLastAndFirstGroupsNotHidden(t *testing.T) {
 	}
 
 	// should submit the form
-	f.Update(nextGroup())
+	f.Update(nextGroupMsg{id: f.id})
 	if v := f.State; v != StateCompleted {
 		t.Error("should have been completed")
 	}
@@ -974,7 +974,7 @@ func TestEmptyGroup(t *testing.T) {
 		t.Error("expected no focused field")
 	}
 
-	f.Update(nextGroup())
+	f.Update(nextGroupMsg{id: f.id})
 
 	if v := f.State; v != StateCompleted {
 		t.Error("should have been completed")
@@ -1019,7 +1019,7 @@ func TestEmptyGroupIsSkipped(t *testing.T) {
 	)
 
 	f = batchUpdate(f, f.Init()).(*Form)
-	f.Update(nextGroup())
+	f.Update(nextGroupMsg{id: f.id})
 
 	if v := ansi.Strip(f.View()); !strings.Contains(v, "Bar") {
 		t.Log(pretty.Render(v))
@@ -1035,16 +1035,88 @@ func TestPrevGroup(t *testing.T) {
 	)
 
 	f = batchUpdate(f, f.Init()).(*Form)
-	f.Update(nextGroup())
-	f.Update(nextGroup())
-	f.Update(prevGroup())
-	f.Update(prevGroup())
+	f.Update(nextGroupMsg{id: f.id})
+	f.Update(nextGroupMsg{id: f.id})
+	f.Update(prevGroupMsg{id: f.id})
+	f.Update(prevGroupMsg{id: f.id})
 
 	if v := ansi.Strip(f.View()); !strings.Contains(v, "Bar") {
 		t.Log(pretty.Render(v))
 		t.Error("expected Bar to not be hidden")
 	}
 }
+
+// TestMultiFormNavigationIsolation verifies that navigation messages from one
+// form don't bleed into a sibling form running in the same bubbletea program.
+func TestMultiFormNavigationIsolation(t *testing.T) {
+	var a1, a2, b1, b2 string
+	formA := NewForm(
+		NewGroup(
+			NewInput().Key("a1").Title("a1").Value(&a1),
+			NewInput().Key("a2").Title("a2").Value(&a2),
+		),
+	)
+	formB := NewForm(
+		NewGroup(
+			NewInput().Key("b1").Title("b1").Value(&b1),
+			NewInput().Key("b2").Title("b2").Value(&b2),
+		),
+	)
+
+	twin := &twinForms{a: formA, b: formB}
+	twin = batchUpdate(twin, twin.Init()).(*twinForms)
+
+	// Key input is focused on form A only; the resulting nextFieldMsg is still
+	// broadcast to every model in the program. Form B must ignore foreign ids.
+	twin = batchUpdate(twin.Update(codeKeypress(tea.KeyEnter))).(*twinForms)
+
+	if got := twin.a.GetFocusedField().GetKey(); got != "a2" {
+		t.Fatalf("form A should advance to a2, got %q", got)
+	}
+	if got := twin.b.GetFocusedField().GetKey(); got != "b1" {
+		t.Fatalf("form B should still be on b1, got %q (cross-talk from form A)", got)
+	}
+
+	// Untagged public NextField / PrevField (id==0) still match every form.
+	twin = batchUpdate(twin, NextField).(*twinForms)
+	if got := twin.b.GetFocusedField().GetKey(); got != "b2" {
+		t.Fatalf("unscoped NextField should still advance form B, got %q", got)
+	}
+}
+
+// twinForms is a minimal multi-form Model used by TestMultiFormNavigationIsolation.
+// Key presses route only to form A (focused); all other messages are broadcast,
+// matching a parent bubbletea program that fans out internal cmds.
+type twinForms struct {
+	a, b *Form
+}
+
+func (t *twinForms) Init() tea.Cmd {
+	return tea.Batch(t.a.Init(), t.b.Init())
+}
+
+func (t *twinForms) Update(msg tea.Msg) (Model, tea.Cmd) {
+	if _, ok := msg.(tea.KeyPressMsg); ok {
+		ma, ca := t.a.Update(msg)
+		t.a = ma.(*Form)
+		return t, ca
+	}
+
+	var cmds []tea.Cmd
+	ma, ca := t.a.Update(msg)
+	t.a = ma.(*Form)
+	if ca != nil {
+		cmds = append(cmds, ca)
+	}
+	mb, cb := t.b.Update(msg)
+	t.b = mb.(*Form)
+	if cb != nil {
+		cmds = append(cmds, cb)
+	}
+	return t, tea.Batch(cmds...)
+}
+
+func (t *twinForms) View() string { return t.a.View() + t.b.View() }
 
 func TestNote(t *testing.T) {
 	field := NewNote().

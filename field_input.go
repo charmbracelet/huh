@@ -24,6 +24,7 @@ type Input struct {
 	accessor Accessor[string]
 	key      string
 	id       int
+	formID   int
 
 	title       Eval[string]
 	description Eval[string]
@@ -279,6 +280,9 @@ func (i *Input) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case tea.BackgroundColorMsg:
 		i.hasDarkBg = msg.IsDark()
 	case updateFieldMsg:
+		if msg.id != 0 {
+			i.formID = msg.id
+		}
 		var cmds []tea.Cmd
 		if ok, hash := i.title.shouldUpdate(); ok {
 			i.title.bindingsHash = hash
@@ -346,14 +350,16 @@ func (i *Input) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 		switch {
 		case key.Matches(msg, i.keymap.Prev):
-			cmds = append(cmds, PrevField)
+			id := i.formID
+			cmds = append(cmds, func() tea.Msg { return prevFieldMsg{id: id} })
 		case key.Matches(msg, i.keymap.Next, i.keymap.Submit):
 			value := i.textinput.Value()
 			i.err = i.validate(value)
 			if i.err != nil {
 				return i, nil
 			}
-			cmds = append(cmds, NextField)
+			id := i.formID
+			cmds = append(cmds, func() tea.Msg { return nextFieldMsg{id: id} })
 		}
 	}
 
