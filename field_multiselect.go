@@ -40,6 +40,7 @@ type MultiSelect[T comparable] struct {
 	cursor    int
 	focused   bool
 	filtering bool
+	navigated bool // true after first keyboard navigation; keeps preselect viewport at top until then
 	filter    textinput.Model
 	viewport  viewport.Model
 	spinner   spinner.Model
@@ -151,7 +152,7 @@ func (m *MultiSelect[T]) selectOptions() {
 			continue
 		}
 		m.cursor = i
-		m.ensureCursorVisible()
+		m.syncViewportOffset()
 		break
 	}
 }
@@ -391,6 +392,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 				break
 			}
 
+			m.navigated = true
 			m.cursor = max(m.cursor-1, 0)
 			m.ensureCursorVisible()
 		case key.Matches(msg, m.keymap.Down):
@@ -400,24 +402,29 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 				break
 			}
 
+			m.navigated = true
 			m.cursor = min(m.cursor+1, len(m.filteredOptions)-1)
 			m.ensureCursorVisible()
 		case key.Matches(msg, m.keymap.GotoTop):
 			if m.filtering {
 				break
 			}
+			m.navigated = true
 			m.cursor = 0
 			m.viewport.GotoTop()
 		case key.Matches(msg, m.keymap.GotoBottom):
 			if m.filtering {
 				break
 			}
+			m.navigated = true
 			m.cursor = len(m.filteredOptions) - 1
 			m.viewport.GotoBottom()
 		case key.Matches(msg, m.keymap.HalfPageUp):
+			m.navigated = true
 			m.cursor = max(m.cursor-m.viewport.Height()/2, 0)
 			m.ensureCursorVisible()
 		case key.Matches(msg, m.keymap.HalfPageDown):
+			m.navigated = true
 			m.cursor = min(m.cursor+m.viewport.Height()/2, len(m.filteredOptions)-1)
 			m.ensureCursorVisible()
 		case key.Matches(msg, m.keymap.Toggle) && !m.filtering:
@@ -484,7 +491,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 				m.cursor = min(m.cursor, len(m.filteredOptions)-1)
 			}
 		}
-		m.ensureCursorVisible()
+		m.syncViewportOffset()
 	}
 
 	return m, tea.Batch(cmds...)
@@ -512,6 +519,7 @@ func (m *MultiSelect[T]) updateViewportSize() {
 
 	m.viewport.SetWidth(width)
 	m.viewport.SetHeight(max(minHeight, height) - yoffset)
+	m.syncViewportOffset()
 }
 
 // numSelected returns the total number of selected options.
@@ -623,6 +631,18 @@ func (m *MultiSelect[T]) cursorLineOffset() (offset int, height int) {
 		}
 	}
 	return offset, height
+}
+
+// syncViewportOffset keeps the viewport at the top until the user has
+// navigated with the keyboard, then follows the cursor as before. Mirrors
+// Select so a mid-list preselection still shows preceding options on first
+// paint (see #679).
+func (m *MultiSelect[T]) syncViewportOffset() {
+	if m.navigated {
+		m.ensureCursorVisible()
+		return
+	}
+	m.viewport.GotoTop()
 }
 
 func (m *MultiSelect[T]) ensureCursorVisible() {

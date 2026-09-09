@@ -766,6 +766,54 @@ func TestSelectFilteringShowsMatchesAboveTheCursor(t *testing.T) {
 	}
 }
 
+func TestPreselectViewportStartsAtTop(t *testing.T) {
+	// Height-constrained Select with Value() mid-list used to minimum-scroll
+	// the viewport to the cursor on first paint, hiding earlier options (#679).
+	opts := NewOptions("a-opt", "b-opt", "c-opt", "d-opt", "e-opt", "f-opt", "g-opt", "h-opt")
+	value := "f-opt"
+	field := NewSelect[string]().Options(opts...).Title("Choose").Value(&value)
+	f := NewForm(NewGroup(field)).WithHeight(6)
+	f.Update(f.Init())
+
+	view := viewModel(f)
+	for _, want := range []string{"a-opt", "b-opt", "c-opt"} {
+		if !strings.Contains(view, want) {
+			t.Log(pretty.Render(view))
+			t.Fatalf("first paint missing preceding option %q", want)
+		}
+	}
+
+	// After keyboard navigation, cursor-follow resumes (Down from f reveals g).
+	m := batchUpdate(f.Update(codeKeypress(tea.KeyDown)))
+	view = viewModel(m)
+	if !strings.Contains(view, "g-opt") {
+		t.Log(pretty.Render(view))
+		t.Fatal("after Down, expected viewport to reveal g-opt")
+	}
+
+	// MultiSelect shares the same first-paint rule for a mid-list Selected option.
+	msOpts := []Option[string]{
+		NewOption("a-opt", "a-opt"),
+		NewOption("b-opt", "b-opt"),
+		NewOption("c-opt", "c-opt"),
+		NewOption("d-opt", "d-opt"),
+		NewOption("e-opt", "e-opt"),
+		NewOption("f-opt", "f-opt").Selected(true),
+		NewOption("g-opt", "g-opt"),
+		NewOption("h-opt", "h-opt"),
+	}
+	ms := NewMultiSelect[string]().Options(msOpts...).Title("Pick").Filterable(false)
+	f2 := NewForm(NewGroup(ms)).WithHeight(6)
+	f2.Update(f2.Init())
+	view2 := viewModel(f2)
+	for _, want := range []string{"a-opt", "b-opt", "c-opt"} {
+		if !strings.Contains(view2, want) {
+			t.Log(pretty.Render(view2))
+			t.Fatalf("MultiSelect first paint missing preceding option %q", want)
+		}
+	}
+}
+
 func TestSelectPageNavigation(t *testing.T) {
 	opts := NewOptions(
 		"Qux",

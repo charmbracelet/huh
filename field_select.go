@@ -46,6 +46,7 @@ type Select[T comparable] struct {
 	selected  int
 	focused   bool
 	filtering bool
+	navigated bool // true after first keyboard navigation; keeps preselect viewport at top until then
 	filter    textinput.Model
 	spinner   spinner.Model
 
@@ -200,7 +201,7 @@ func (s *Select[T]) selectOption() {
 			break
 		}
 	}
-	s.ensureCursorVisible()
+	s.syncViewportOffset()
 }
 
 // OptionsFunc sets the options func of the select field.
@@ -423,6 +424,7 @@ func (s *Select[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 			if s.filtering && (msg.String() == "k" || msg.String() == "h") {
 				break
 			}
+			s.navigated = true
 			s.selected = s.selected - 1
 			if s.selected < 0 {
 				s.selected = len(s.filteredOptions) - 1
@@ -435,6 +437,7 @@ func (s *Select[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 			if s.filtering {
 				break
 			}
+			s.navigated = true
 			s.selected = 0
 			s.viewport.GotoTop()
 			s.updateValue()
@@ -442,13 +445,16 @@ func (s *Select[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 			if s.filtering {
 				break
 			}
+			s.navigated = true
 			s.selected = len(s.filteredOptions) - 1
 			s.viewport.GotoBottom()
 		case key.Matches(msg, s.keymap.HalfPageUp):
+			s.navigated = true
 			s.selected = max(s.selected-s.viewport.Height()/2, 0)
 			s.ensureCursorVisible()
 			s.updateValue()
 		case key.Matches(msg, s.keymap.HalfPageDown):
+			s.navigated = true
 			s.selected = min(s.selected+s.viewport.Height()/2, len(s.filteredOptions)-1)
 			s.ensureCursorVisible()
 			s.updateValue()
@@ -459,6 +465,7 @@ func (s *Select[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 			if s.filtering && (msg.String() == "j" || msg.String() == "l") {
 				break
 			}
+			s.navigated = true
 			s.selected = s.selected + 1
 			if s.selected > len(s.filteredOptions)-1 {
 				s.selected = 0
@@ -496,7 +503,7 @@ func (s *Select[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 			s.updateFilteredOptions(filterBefore)
 		}
 
-		s.ensureCursorVisible()
+		s.syncViewportOffset()
 	}
 
 	return s, cmd
@@ -543,7 +550,7 @@ func (s *Select[T]) updateViewportSize() {
 			yoffset += lipgloss.Height(ss)
 		}
 		s.viewport.SetHeight(max(minHeight, s.height-yoffset))
-		s.ensureCursorVisible()
+		s.syncViewportOffset()
 	} else {
 		// If no height is set size the viewport to the number of options.
 		v, _, _ := s.optionsView()
@@ -678,6 +685,18 @@ func ensureVisible(vp *viewport.Model, offset, height int) {
 	} else if offset+height > yOff+vHeight {
 		vp.ScrollDown(offset + height - yOff - vHeight)
 	}
+}
+
+// syncViewportOffset keeps the viewport at the top until the user has
+// navigated with the keyboard, then follows the cursor as before. This way a
+// mid-list Value()/Selected preselection still shows preceding options on
+// first paint (see #679).
+func (s *Select[T]) syncViewportOffset() {
+	if s.navigated {
+		s.ensureCursorVisible()
+		return
+	}
+	s.viewport.GotoTop()
 }
 
 func (s *Select[T]) ensureCursorVisible() {
