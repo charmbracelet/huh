@@ -712,6 +712,22 @@ func (f *Form) RunWithContext(ctx context.Context) error {
 		return nil
 	}
 
+	// Every remaining group is hidden (WithHide / WithHideFunc / empty).
+	// Nothing will be prompted, so skip tea.NewProgram — it opens /dev/tty
+	// and fails flag-only CLI/CI (#718). Mixed visible+hidden still runs.
+	allHidden := true
+	f.selector.Range(func(_ int, group *Group) bool {
+		if !f.isGroupHidden(group) {
+			allHidden = false
+			return false
+		}
+		return true
+	})
+	if allHidden {
+		f.State = StateCompleted
+		return nil
+	}
+
 	if f.accessible {
 		return f.runAccessible(
 			cmp.Or[io.Writer](f.output, os.Stdout),

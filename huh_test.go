@@ -1012,6 +1012,40 @@ func TestEmptyForm(t *testing.T) {
 	}
 }
 
+func TestAllHiddenFormRunSkipsTTY(t *testing.T) {
+	// A non-empty form whose every group is hidden must complete without
+	// tea.NewProgram (which opens /dev/tty). Flag-only CLI/CI has no TTY (#718).
+	f := NewForm(
+		NewGroup(NewInput().Title("Name")).WithHide(true),
+	)
+	if err := f.Run(); err != nil {
+		t.Fatal(err)
+	}
+	if f.State != StateCompleted {
+		t.Fatalf("expected StateCompleted, got %v", f.State)
+	}
+
+	// Mixed visible+hidden still has something to prompt, so the short-circuit
+	// must not fire. Do not Run() that case here — CI has no TTY.
+	mixed := NewForm(
+		NewGroup(NewInput().Title("Name")).WithHide(true),
+		NewGroup(NewInput().Title("Email")),
+	)
+	if mixed.selector.Empty() {
+		t.Fatal("mixed form selector should not be empty")
+	}
+	visible := 0
+	mixed.selector.Range(func(_ int, group *Group) bool {
+		if !mixed.isGroupHidden(group) {
+			visible++
+		}
+		return true
+	})
+	if visible != 1 {
+		t.Fatalf("expected 1 visible group, got %d", visible)
+	}
+}
+
 func TestEmptyGroupIsSkipped(t *testing.T) {
 	f := NewForm(
 		NewGroup(),
