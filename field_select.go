@@ -145,6 +145,7 @@ func (s *Select[T]) Filtering(filtering bool) *Select[T] {
 // This description will be static, for dynamic descriptions use `DescriptionFunc`.
 func (s *Select[T]) Description(description string) *Select[T] {
 	s.description.val = description
+	s.description.fn = nil
 	return s
 }
 

@@ -617,6 +617,65 @@ func TestSelectDynamic(t *testing.T) {
 	}
 }
 
+func TestSelectStaticDescription(t *testing.T) {
+	for _, fieldCase := range []struct {
+		name     string
+		newField func(func() string, *string) (Field, func(string))
+	}{
+		{"select", func(fn func() string, binding *string) (Field, func(string)) {
+			field := NewSelect[string]().Options(NewOptions("Option")...).DescriptionFunc(fn, binding)
+			return field, func(value string) { field.Description(value) }
+		}},
+		{"multiselect", func(fn func() string, binding *string) (Field, func(string)) {
+			field := NewMultiSelect[string]().Options(NewOptions("Option")...).DescriptionFunc(fn, binding)
+			return field, func(value string) { field.Description(value) }
+		}},
+	} {
+		for _, descriptionCase := range []struct {
+			name      string
+			value     string
+			afterInit bool
+		}{
+			{"before_init", "Static description", false},
+			{"empty_before_init", "", false},
+			{"after_init", "Static description", true},
+			{"empty_after_init", "", true},
+		} {
+			t.Run(fieldCase.name+"/"+descriptionCase.name, func(t *testing.T) {
+				binding := "initial"
+				calls := 0
+				field, setDescription := fieldCase.newField(func() string {
+					calls++
+					return "Dynamic description " + binding
+				}, &binding)
+				f := NewForm(NewGroup(field)).WithWidth(60)
+				if descriptionCase.afterInit {
+					doAllUpdates(f, f.Init())
+					requireContains(t, viewModel(f), "Dynamic description initial")
+				}
+				previousCalls := calls
+				setDescription(descriptionCase.value)
+				if !descriptionCase.afterInit {
+					doAllUpdates(f, f.Init())
+				}
+				binding = "updated"
+				_, cmd := f.Update(nil)
+				doAllUpdates(f, cmd)
+				if calls != previousCalls {
+					t.Errorf("DescriptionFunc called %d more times after setting a static description", calls-previousCalls)
+				}
+				view := viewModel(f)
+				if strings.Contains(view, "Dynamic description") {
+					t.Errorf("static description overwritten in view: %s", view)
+				}
+				if descriptionCase.value != "" {
+					requireContains(t, view, descriptionCase.value)
+				}
+			})
+		}
+	}
+}
+
 func TestMultiSelect(t *testing.T) {
 	field := NewMultiSelect[string]().
 		Options(NewOptions(
