@@ -113,6 +113,7 @@ func (m *MultiSelect[T]) TitleFunc(f func() string, bindings any) *MultiSelect[T
 // Description sets the description of the multi-select field.
 func (m *MultiSelect[T]) Description(description string) *MultiSelect[T] {
 	m.description.val = description
+	m.description.fn = nil
 	return m
 }
 
