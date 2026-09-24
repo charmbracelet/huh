@@ -249,10 +249,68 @@ accessibleMode := os.Getenv("ACCESSIBLE") != ""
 form.WithAccessible(accessibleMode)
 ```
 
-Accessible forms will drop TUIs in favor of standard prompts, providing better
-dictation and feedback of the information on screen for the visually impaired.
+Accessible forms drop the TUI in favor of standard text prompts that do not
+redraw the screen. The animation below demonstrates this mode; these examples
+describe the prompts in text. The responses marked "You type" are examples,
+not text printed by `huh?`.
 
-<img alt="Accessible cuisine form" width="600" src="https://vhs.charm.sh/vhs-19xEBn4LgzPZDtgzXRRJYS.gif">
+An `Input` titled "What’s for lunch?" asks for one line:
+
+```text
+What’s for lunch?
+You type: Soup, then Enter
+```
+
+A `Text` field titled "Tell me a story." also uses a text prompt in accessible
+mode:
+
+```text
+Tell me a story.
+You type: Once upon a time..., then Enter
+```
+
+A `Select` titled "Pick a country." reads each option with a number. Enter the
+number of the one you want:
+
+```text
+Pick a country.
+1. United States
+2. Germany
+3. Brazil
+4. Canada
+Enter a number between 1 and 4:
+You type: 2, then Enter
+```
+
+A `MultiSelect` titled "Toppings" reads numbered options and a confirmation
+choice. Enter an option number to toggle it; enter `0` to finish. The list is
+read again after each choice, with selected options marked `✓`:
+
+```text
+Toppings
+Select up to 4 options.
+1.   Lettuce
+2.   Tomatoes
+3.   Charm Sauce
+0.   Confirm selection
+Enter a number between 0 and 3:
+You type: 2, then Enter
+1.   Lettuce
+2. ✓ Tomatoes
+3.   Charm Sauce
+0.   Confirm selection
+You type: 0, then Enter
+```
+
+A `Confirm` titled "Are you sure?" presents a yes/no choice. In `[y/N]`, No
+is the default; press Enter to keep it or type `y` to choose Yes:
+
+```text
+Are you sure? [y/N]
+You type: y, then Enter
+```
+
+<img alt="Animation of accessible mode using text prompts; equivalent examples are written above" width="600" src="https://vhs.charm.sh/vhs-19xEBn4LgzPZDtgzXRRJYS.gif">
 
 ## Themes
 
