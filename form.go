@@ -576,16 +576,12 @@ func (f *Form) Update(msg tea.Msg) (Model, tea.Cmd) {
 			})
 		}
 		if f.height == 0 {
-			// calculate the needed height, which is the height of the
-			// heightest group, accounting for the width, wraps, etc.
-			neededHeight := 0
+			// Size each group to its own content height (capped by the
+			// terminal). Using the tallest group's height for every group
+			// left a large empty gap between short groups' fields and
+			// their help footers (#719).
 			f.selector.Range(func(_ int, group *Group) bool {
-				neededHeight = max(neededHeight, group.rawHeight())
-				return true
-			})
-
-			f.selector.Range(func(_ int, group *Group) bool {
-				group.WithHeight(min(neededHeight, msg.Height))
+				group.WithHeight(min(group.rawHeight(), msg.Height))
 				return true
 			})
 		}
