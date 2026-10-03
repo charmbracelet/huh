@@ -698,6 +698,39 @@ func TestMultiSelect(t *testing.T) {
 	}
 }
 
+// TestMultiSelectUnsizedShowsAllOptions pins the viewport-sizing regression
+// where a MultiSelect inside a Form without an explicit Height dropped options
+// from view. updateViewportSize subtracted the title+description yoffset from
+// a height that was already derived from the options content alone, giving
+// viewport.Height = N-2. With N=2 that was 0, which the viewport short-circuits
+// to an empty render, so every option disappeared on first paint.
+func TestMultiSelectUnsizedShowsAllOptions(t *testing.T) {
+	for _, n := range []int{1, 2, 3, 5, 10} {
+		t.Run(fmt.Sprintf("n=%d", n), func(t *testing.T) {
+			values := make([]string, n)
+			for i := range values {
+				values[i] = fmt.Sprintf("option-%d", i)
+			}
+			field := NewMultiSelect[string]().
+				Title("Pick some").
+				Description("space toggles, enter confirms").
+				Options(NewOptions(values...)...)
+			f := NewForm(NewGroup(field))
+			f.Update(f.Init())
+			// A roomy window so the viewport is never resource-constrained.
+			f.Update(tea.WindowSizeMsg{Width: 120, Height: 30})
+
+			view := viewModel(f)
+			for _, want := range values {
+				if !strings.Contains(view, want) {
+					t.Log(pretty.Render(view))
+					t.Errorf("expected view to contain %q", want)
+				}
+			}
+		})
+	}
+}
+
 func TestMultiSelectFiltering(t *testing.T) {
 	tests := []struct {
 		name      string

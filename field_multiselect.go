@@ -493,25 +493,31 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 // updateViewportSize updates the viewport size according to the Height setting
 // on this multi-select field.
 func (m *MultiSelect[T]) updateViewportSize() {
-	yoffset := 0
-	if ss := m.titleView(); ss != "" {
-		yoffset += lipgloss.Height(ss)
-	}
-	if ss := m.descriptionView(); ss != "" {
-		yoffset += lipgloss.Height(ss)
-	}
 	v, _, _ := m.optionsView()
-	height := m.height
-	if height <= 0 {
-		height = lipgloss.Height(v)
+	if m.height > 0 {
+		// m.height is the field's total height (title + description + options),
+		// so subtract the title/description rows to get the viewport (options)
+		// height.
+		yoffset := 0
+		if ss := m.titleView(); ss != "" {
+			yoffset += lipgloss.Height(ss)
+		}
+		if ss := m.descriptionView(); ss != "" {
+			yoffset += lipgloss.Height(ss)
+		}
+		m.viewport.SetHeight(max(minHeight, m.height-yoffset))
+	} else {
+		// No height set: size the viewport to the options content. The content
+		// height is already options-only — do not subtract the title/description
+		// offset, which would clip rows (and zero the viewport when the option
+		// count equals the offset, hiding every option).
+		m.viewport.SetHeight(lipgloss.Height(v))
 	}
-	width := m.width
-	if m.width <= 0 {
-		width = lipgloss.Width(v)
+	if m.width > 0 {
+		m.viewport.SetWidth(m.width)
+	} else {
+		m.viewport.SetWidth(lipgloss.Width(v))
 	}
-
-	m.viewport.SetWidth(width)
-	m.viewport.SetHeight(max(minHeight, height) - yoffset)
 }
 
 // numSelected returns the total number of selected options.
