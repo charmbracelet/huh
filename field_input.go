@@ -442,7 +442,10 @@ func (i *Input) RunAccessible(w io.Writer, r io.Reader) error {
 		prompt := styles.Title.
 			PaddingRight(1).
 			Render(cmp.Or(i.title.val, "Input:"))
-		value := accessibility.PromptString(w, r, prompt, i.GetValue().(string), validator)
+		value, err := accessibility.PromptString(w, r, prompt, i.GetValue().(string), validator)
+		if err != nil {
+			return accessibleFieldError("input", i.title.val, err)
+		}
 		i.accessor.Set(value)
 		return nil
 	default:

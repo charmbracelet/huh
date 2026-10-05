@@ -779,7 +779,10 @@ func (s *Select[T]) RunAccessible(w io.Writer, r io.Reader) error {
 		prompt = "There is only one option available; enter the number 1:"
 	}
 	for {
-		choice := accessibility.PromptInt(w, r, prompt, 1, len(s.options.val), defaultValue)
+		choice, err := accessibility.PromptInt(w, r, prompt, 1, len(s.options.val), defaultValue)
+		if err != nil {
+			return accessibleFieldError("select", s.title.val, err)
+		}
 		option := s.options.val[choice-1]
 		if err := s.validate(option.Value); err != nil {
 			_, _ = fmt.Fprintln(w, err.Error())

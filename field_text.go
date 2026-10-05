@@ -421,7 +421,7 @@ func (t *Text) RunAccessible(w io.Writer, r io.Reader) error {
 	prompt := styles.Title.
 		PaddingRight(1).
 		Render(cmp.Or(t.title.val, "Input:"))
-	t.accessor.Set(accessibility.PromptString(
+	value, err := accessibility.PromptString(
 		w,
 		r,
 		prompt,
@@ -437,7 +437,11 @@ func (t *Text) RunAccessible(w io.Writer, r io.Reader) error {
 			}
 			return nil
 		},
-	))
+	)
+	if err != nil {
+		return accessibleFieldError("text", t.title.val, err)
+	}
+	t.accessor.Set(value)
 	return nil
 }
 

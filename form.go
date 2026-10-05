@@ -763,16 +763,33 @@ func (f *Form) runAccessible(w io.Writer, r io.Reader) error {
 		return ErrTimeoutUnsupported
 	}
 
+	var err error
 	f.selector.Range(func(_ int, group *Group) bool {
 		group.selector.Range(func(_ int, field Field) bool {
 			field.Init()
 			field.Focus()
-			_ = field.RunAccessible(w, r)
+			err = field.RunAccessible(w, r)
 			_, _ = fmt.Fprintln(w)
-			return true
+			return err == nil
 		})
-		return true
+		return err == nil
 	})
 
-	return nil
+	switch {
+	case err == nil:
+		return nil
+	case errors.Is(err, io.EOF):
+		return fmt.Errorf("%w: %w", ErrUserAborted, err)
+	default:
+		return fmt.Errorf("accessible form: %w", err)
+	}
+}
+
+// accessibleFieldError names the field an accessible prompt failed in, so an
+// aborted form says which question went unanswered.
+func accessibleFieldError(kind, title string, err error) error {
+	if title == "" {
+		return fmt.Errorf("%s: %w", kind, err)
+	}
+	return fmt.Errorf("%s %q: %w", kind, title, err)
 }

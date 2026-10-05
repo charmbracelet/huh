@@ -311,7 +311,11 @@ func (c *Confirm) RunAccessible(w io.Writer, r io.Reader) error {
 	prompt := styles.Title.
 		PaddingRight(1).
 		Render(cmp.Or(c.title.val, "Choose"), opts)
-	c.accessor.Set(accessibility.PromptBool(w, r, prompt, defaultValue))
+	value, err := accessibility.PromptBool(w, r, prompt, defaultValue)
+	if err != nil {
+		return accessibleFieldError("confirm", c.title.val, err)
+	}
+	c.accessor.Set(value)
 	return nil
 }
 

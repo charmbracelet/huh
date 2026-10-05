@@ -1385,7 +1385,7 @@ func TestAccessibleFields(t *testing.T) {
 		},
 		"input with charlimit": {
 			Field: NewInput().CharLimit(2),
-			Input: "Hello",
+			Input: "Hello\nHi\n",
 			CheckOutput: func(tb testing.TB, output string) {
 				tb.Helper()
 				requireContains(tb, output, "Input cannot exceed 2 characters")
@@ -1423,6 +1423,7 @@ func TestAccessibleFields(t *testing.T) {
 				v := true
 				return NewConfirm().Value(&v)
 			},
+			Input: "\n",
 			CheckOutput: func(tb testing.TB, output string) {
 				tb.Helper()
 				requireContains(tb, output, "Choose [Y/n]")
@@ -1476,7 +1477,7 @@ func TestAccessibleFields(t *testing.T) {
 		},
 		"multiselect": {
 			Field: NewMultiSelect[string]().Options(NewOptions("a", "b")...),
-			Input: "2",
+			Input: "2\n0\n",
 			CheckOutput: func(tb testing.TB, output string) {
 				tb.Helper()
 				requireContains(tb, output, "2. ✓ b")
@@ -1493,7 +1494,7 @@ func TestAccessibleFields(t *testing.T) {
 				v := []string{"b", "c"}
 				return NewMultiSelect[string]().Options(NewOptions("a", "b", "c", "d")...).Value(&v)
 			},
-			Input: "\n",
+			Input: "0\n",
 			CheckOutput: func(tb testing.TB, output string) {
 				tb.Helper()
 				requireContains(tb, output, "2. ✓ b")
@@ -1580,7 +1581,7 @@ func TestAccessibleFields(t *testing.T) {
 		},
 		"text with limit": {
 			Field: NewText().CharLimit(2).Title("Text"),
-			Input: "hello world",
+			Input: "hello world\nhi\n",
 			CheckOutput: func(tb testing.TB, output string) {
 				tb.Helper()
 				requireContains(tb, output, "Input cannot exceed 2 characters")
