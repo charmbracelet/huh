@@ -2,7 +2,6 @@
 package accessibility
 
 import (
-	"bufio"
 	"cmp"
 	"errors"
 	"fmt"
@@ -135,8 +134,6 @@ func PromptString(
 	defaultValue string,
 	validator func(input string) error,
 ) string {
-	scanner := bufio.NewScanner(in)
-
 	var (
 		valid bool
 		input string
@@ -144,14 +141,15 @@ func PromptString(
 
 	for !valid {
 		_, _ = fmt.Fprint(out, prompt)
-		if !scanner.Scan() {
+		line, err := readLine(in)
+		if err != nil {
 			// no way to bubble up errors or signal cancellation
 			// but the program is probably not continuing if
 			// stdin sent EOF
 			_, _ = fmt.Fprintln(out)
 			break
 		}
-		input = scanner.Text()
+		input = line
 
 		if err := validator(input); err != nil {
 			_, _ = fmt.Fprintln(out, err)
@@ -162,6 +160,32 @@ func PromptString(
 	}
 
 	return cmp.Or(strings.TrimSpace(input), defaultValue)
+}
+
+// readLine reads one line from in, a byte at a time. A bufio.Scanner would
+// read ahead, and with a new scanner for every prompt the answers buffered
+// for later prompts would be lost with it. A final line without a newline is
+// still an answer; only an input that ends before any byte is io.EOF.
+func readLine(in io.Reader) (string, error) {
+	var (
+		line []byte
+		b    [1]byte
+	)
+	for {
+		n, err := in.Read(b[:])
+		if n == 1 {
+			if b[0] == '\n' {
+				return strings.TrimSuffix(string(line), "\r"), nil
+			}
+			line = append(line, b[0])
+		}
+		if err != nil {
+			if errors.Is(err, io.EOF) && len(line) > 0 {
+				return string(line), nil
+			}
+			return "", fmt.Errorf("reading input: %w", err)
+		}
+	}
 }
 
 func ptrToStr[T any](t *T, fn func(t T) string) string {
