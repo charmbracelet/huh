@@ -66,10 +66,25 @@ form := huh.NewForm(
 
 **After:**
 ```go
-isDark := lipgloss.HasDarkBackground() // or detect however you prefer
 form := huh.NewForm(
     // ...
-).WithTheme(huh.ThemeCharm(isDark))
+).WithTheme(huh.ThemeFunc(huh.ThemeCharm))
+```
+
+`WithTheme` takes a `huh.Theme`, and the built-in theme functions return
+`*huh.Styles`, so wrap them in `huh.ThemeFunc`. The form calls the function with
+`isDark` set from the terminal's background color.
+
+To pin a variant yourself (for example, after detecting the background before
+the form runs):
+
+```go
+isDark := lipgloss.HasDarkBackground(os.Stdin, os.Stdout) // or detect however you prefer
+form := huh.NewForm(
+    // ...
+).WithTheme(huh.ThemeFunc(func(bool) *huh.Styles {
+    return huh.ThemeCharm(isDark)
+}))
 ```
 
 All built-in themes now follow this pattern:
@@ -100,18 +115,25 @@ type Theme struct {
 
 **After:**
 ```go
+type Theme interface {
+    Theme(isDark bool) *Styles
+}
+
 type ThemeFunc func(isDark bool) *Styles
 ```
 
-If you created custom themes, you'll need to update them to this new function signature:
+`ThemeFunc` implements `Theme`. If you created custom themes, you'll need to
+update them to this new function signature and wrap them in `huh.ThemeFunc`:
 
 ```go
-func MyCustomTheme(isDark bool) *Styles {
+func MyCustomTheme(isDark bool) *huh.Styles {
     styles := &huh.Styles{
         // Your custom styles...
     }
     return styles
 }
+
+form.WithTheme(huh.ThemeFunc(MyCustomTheme))
 ```
 
 ### Field-Level WithAccessible Removed
@@ -294,14 +316,19 @@ import tea "charm.land/bubbletea/v2"  // Make sure it's v2!
 
 ### Theme Signature Errors
 
-If you get errors about theme functions, remember all built-in themes now require a `bool` parameter:
+If you get errors about theme functions, remember all built-in themes now take
+a `bool` parameter and return `*huh.Styles`, which must be wrapped in
+`huh.ThemeFunc` to be used as a `huh.Theme`:
 
 ```go
 // ✅ Correct
-form.WithTheme(huh.ThemeCharm(true))
+form.WithTheme(huh.ThemeFunc(huh.ThemeCharm))
 
-// ❌ Wrong
+// ❌ Wrong: ThemeCharm requires a bool parameter
 form.WithTheme(huh.ThemeCharm())
+
+// ❌ Wrong: *huh.Styles does not implement huh.Theme
+form.WithTheme(huh.ThemeCharm(true))
 ```
 
 ## Getting Help
