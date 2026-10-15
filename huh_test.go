@@ -361,6 +361,111 @@ func TestInlineInput(t *testing.T) {
 	}
 }
 
+func TestInputBlurredStyles(t *testing.T) {
+	styles := ThemeCharm(false)
+	customPrompt := lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+	customText := lipgloss.NewStyle().Foreground(lipgloss.Color("63"))
+	customPlaceholder := lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
+
+	styles.Blurred.TextInput.Prompt = customPrompt
+	styles.Blurred.TextInput.Text = customText
+	styles.Blurred.TextInput.Placeholder = customPlaceholder
+
+	styles.Focused.TextInput.Prompt = lipgloss.NewStyle().Foreground(lipgloss.Color("206"))
+	styles.Focused.TextInput.Text = lipgloss.NewStyle().Foreground(lipgloss.Color("64"))
+	styles.Focused.TextInput.Placeholder = lipgloss.NewStyle().Foreground(lipgloss.Color("241"))
+
+	theme := ThemeFunc(func(bool) *Styles { return styles })
+
+	val := "hello world"
+	field := NewInput().
+		Value(&val).
+		Placeholder("type something")
+	field.WithTheme(theme)
+
+	field.Blur()
+	viewBlurred := field.View()
+
+	st := field.textinput.Styles()
+	if st.Blurred.Prompt.GetForeground() != customPrompt.GetForeground() {
+		t.Errorf("expected blurred prompt foreground %v, got %v", customPrompt.GetForeground(), st.Blurred.Prompt.GetForeground())
+	}
+	if st.Blurred.Text.GetForeground() != customText.GetForeground() {
+		t.Errorf("expected blurred text foreground %v, got %v", customText.GetForeground(), st.Blurred.Text.GetForeground())
+	}
+	if st.Blurred.Placeholder.GetForeground() != customPlaceholder.GetForeground() {
+		t.Errorf("expected blurred placeholder foreground %v, got %v", customPlaceholder.GetForeground(), st.Blurred.Placeholder.GetForeground())
+	}
+
+	emptyVal := ""
+	fieldEmpty := NewInput().
+		Value(&emptyVal).
+		Placeholder("enter name")
+	fieldEmpty.WithTheme(theme)
+	fieldEmpty.Blur()
+	_ = fieldEmpty.View()
+
+	stEmpty := fieldEmpty.textinput.Styles()
+	if stEmpty.Blurred.Placeholder.GetForeground() != customPlaceholder.GetForeground() {
+		t.Errorf("expected blurred placeholder foreground %v, got %v", customPlaceholder.GetForeground(), stEmpty.Blurred.Placeholder.GetForeground())
+	}
+
+	field.Focus()
+	viewFocused := field.View()
+
+	stFocus := field.textinput.Styles()
+	if stFocus.Focused.Prompt.GetForeground() != styles.Focused.TextInput.Prompt.GetForeground() {
+		t.Errorf("expected focused prompt foreground %v, got %v", styles.Focused.TextInput.Prompt.GetForeground(), stFocus.Focused.Prompt.GetForeground())
+	}
+	if stFocus.Focused.Text.GetForeground() != styles.Focused.TextInput.Text.GetForeground() {
+		t.Errorf("expected focused text foreground %v, got %v", styles.Focused.TextInput.Text.GetForeground(), stFocus.Focused.Text.GetForeground())
+	}
+	if stFocus.Focused.Placeholder.GetForeground() != styles.Focused.TextInput.Placeholder.GetForeground() {
+		t.Errorf("expected focused placeholder foreground %v, got %v", styles.Focused.TextInput.Placeholder.GetForeground(), stFocus.Focused.Placeholder.GetForeground())
+	}
+
+	if viewBlurred == viewFocused {
+		t.Errorf("expected blurred view and focused view to differ, but both were %q", viewBlurred)
+	}
+}
+
+func TestInputBlurredInForm(t *testing.T) {
+	styles := ThemeCharm(false)
+	styles.Focused.TextInput.Text = lipgloss.NewStyle().Foreground(lipgloss.Color("10"))
+	styles.Blurred.TextInput.Text = lipgloss.NewStyle().Foreground(lipgloss.Color("11"))
+	theme := ThemeFunc(func(bool) *Styles { return styles })
+
+	val1 := "first"
+	val2 := "second"
+	field1 := NewInput().Value(&val1).Key("field1")
+	field2 := NewInput().Value(&val2).Key("field2")
+
+	f := NewForm(NewGroup(field1, field2)).WithTheme(theme)
+	f = batchUpdate(f, f.Init()).(*Form)
+	_ = f.View()
+
+	st1 := field1.textinput.Styles()
+	st2 := field2.textinput.Styles()
+	if st1.Focused.Text.GetForeground() != styles.Focused.TextInput.Text.GetForeground() {
+		t.Errorf("expected field1 focused text foreground %v, got %v", styles.Focused.TextInput.Text.GetForeground(), st1.Focused.Text.GetForeground())
+	}
+	if st2.Blurred.Text.GetForeground() != styles.Blurred.TextInput.Text.GetForeground() {
+		t.Errorf("expected field2 blurred text foreground %v, got %v", styles.Blurred.TextInput.Text.GetForeground(), st2.Blurred.Text.GetForeground())
+	}
+
+	f.NextField()
+	_ = f.View()
+
+	st1 = field1.textinput.Styles()
+	st2 = field2.textinput.Styles()
+	if st1.Blurred.Text.GetForeground() != styles.Blurred.TextInput.Text.GetForeground() {
+		t.Errorf("expected field1 blurred text foreground %v, got %v", styles.Blurred.TextInput.Text.GetForeground(), st1.Blurred.Text.GetForeground())
+	}
+	if st2.Focused.Text.GetForeground() != styles.Focused.TextInput.Text.GetForeground() {
+		t.Errorf("expected field2 focused text foreground %v, got %v", styles.Focused.TextInput.Text.GetForeground(), st2.Focused.Text.GetForeground())
+	}
+}
+
 func TestText(t *testing.T) {
 	field := NewText()
 	f := NewForm(NewGroup(field))
