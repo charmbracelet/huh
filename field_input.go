@@ -386,9 +386,15 @@ func (i *Input) View() string {
 	// however.
 	st := i.textinput.Styles()
 	st.Cursor.Color = styles.TextInput.Cursor.GetForeground()
-	st.Focused.Prompt = styles.TextInput.Prompt
-	st.Focused.Text = styles.TextInput.Text
-	st.Focused.Placeholder = styles.TextInput.Placeholder
+	if i.focused {
+		st.Focused.Prompt = styles.TextInput.Prompt
+		st.Focused.Text = styles.TextInput.Text
+		st.Focused.Placeholder = styles.TextInput.Placeholder
+	} else {
+		st.Blurred.Prompt = styles.TextInput.Prompt
+		st.Blurred.Text = styles.TextInput.Text
+		st.Blurred.Placeholder = styles.TextInput.Placeholder
+	}
 	i.textinput.SetStyles(st)
 
 	// Adjust text input size to its char limit if it fit in its width
@@ -482,7 +488,7 @@ func (i *Input) WithWidth(width int) Field {
 	styles := i.activeStyles()
 	i.width = width
 	frameSize := styles.Base.GetHorizontalFrameSize()
-	promptWidth := lipgloss.Width(i.textinput.Styles().Focused.Prompt.Render(i.textinput.Prompt))
+	promptWidth := lipgloss.Width(styles.TextInput.Prompt.Render(i.textinput.Prompt))
 	titleWidth := lipgloss.Width(styles.Title.Render(i.title.val))
 	descriptionWidth := lipgloss.Width(styles.Description.Render(i.description.val))
 	i.textinput.SetWidth(width - frameSize - promptWidth - 1)
