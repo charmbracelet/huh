@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"reflect"
 	"regexp"
 	"strings"
 	"testing"
@@ -1685,3 +1686,39 @@ func requireContains(tb testing.TB, s, subtr string) {
 }
 
 func viewModel(m Model) string { return ansi.Strip(m.View()) }
+
+func TestFormInitRequestsBackgroundColor(t *testing.T) {
+	var val string
+	form := NewForm(
+		NewGroup(
+			NewInput().Title("Name").Value(&val),
+		),
+	)
+
+	cmd := form.Init()
+	if cmd == nil {
+		t.Fatal("expected Form.Init to return a command")
+	}
+
+	msg := cmd()
+	v := reflect.ValueOf(msg)
+	if v.Kind() != reflect.Slice {
+		t.Fatalf("expected slice of commands from Sequence, got %T", msg)
+	}
+
+	var foundBgRequest bool
+	for i := 0; i < v.Len(); i++ {
+		subCmd, ok := v.Index(i).Interface().(tea.Cmd)
+		if !ok || subCmd == nil {
+			continue
+		}
+		if subCmd() == tea.RequestBackgroundColor() {
+			foundBgRequest = true
+			break
+		}
+	}
+
+	if !foundBgRequest {
+		t.Error("expected Form.Init to request background color")
+	}
+}

@@ -550,7 +550,7 @@ func (f *Form) Init() tea.Cmd {
 		cmds = append(cmds, nextGroup)
 	}
 
-	cmds = append(cmds, tea.RequestWindowSize)
+	cmds = append(cmds, tea.RequestWindowSize, tea.RequestBackgroundColor)
 	return tea.Sequence(cmds...)
 }
 
