@@ -3,7 +3,7 @@
 This guide will help you migrate from Huh v1 to v2. Most changes are straightforward, and many are handled automatically by your IDE or `gofmt`.
 
 > [!TIP]
-> For a high-level overview of what's new, check out [What's New in Huh v2](WHATS_NEW_V2.md).
+> For a high-level overview of what's new, check out [New Features](#new-features).
 
 ## Quick Start
 
