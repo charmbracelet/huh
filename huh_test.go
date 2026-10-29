@@ -857,6 +857,32 @@ func TestSelectPageNavigation(t *testing.T) {
 	}
 }
 
+func TestSelectGotoBottomUpdatesValue(t *testing.T) {
+	for name, msg := range map[string]tea.KeyPressMsg{
+		"G":   keypress('G'),
+		"end": tea.KeyPressMsg(tea.Key{Code: tea.KeyEnd}),
+	} {
+		t.Run(name, func(t *testing.T) {
+			var value string
+			field := NewSelect[string]().
+				Options(NewOptions("Foo", "Bar", "Baz")...).
+				Value(&value)
+			f := NewForm(NewGroup(field))
+			f.Update(f.Init())
+
+			batchUpdate(f.Update(msg))
+			if value != "Baz" {
+				t.Errorf("expected the bound value to follow the cursor to %q, got %q", "Baz", value)
+			}
+
+			batchUpdate(f.Update(keypress('g')))
+			if value != "Foo" {
+				t.Errorf("expected the bound value to follow the cursor to %q, got %q", "Foo", value)
+			}
+		})
+	}
+}
+
 func TestFile(t *testing.T) {
 	field := NewFilePicker().Title("Which file?")
 	cmd := field.Init()

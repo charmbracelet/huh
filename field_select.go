@@ -444,6 +444,7 @@ func (s *Select[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 			}
 			s.selected = len(s.filteredOptions) - 1
 			s.viewport.GotoBottom()
+			s.updateValue()
 		case key.Matches(msg, s.keymap.HalfPageUp):
 			s.selected = max(s.selected-s.viewport.Height()/2, 0)
 			s.ensureCursorVisible()
