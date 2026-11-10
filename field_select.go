@@ -363,6 +363,7 @@ func (s *Select[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 			if s.options.loadFromCache() {
 				s.filteredOptions = s.options.val
 				s.selected = ordered.Clamp(s.selected, 0, len(s.options.val)-1)
+				s.updateValue()
 			} else {
 				s.options.loading = true
 				s.options.loadingStart = time.Now()
