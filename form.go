@@ -87,6 +87,10 @@ type Form struct {
 	// options
 	width      int
 	height     int
+
+	// windowHeight is the height of the terminal. It is used to limit the
+	// automatically calculated height of the form.
+	windowHeight int
 	theme      Theme
 	hasDarkBg  bool
 	keymap     *KeyMap
@@ -575,19 +579,9 @@ func (f *Form) Update(msg tea.Msg) (Model, tea.Cmd) {
 				return true
 			})
 		}
+		f.windowHeight = msg.Height
 		if f.height == 0 {
-			// calculate the needed height, which is the height of the
-			// heightest group, accounting for the width, wraps, etc.
-			neededHeight := 0
-			f.selector.Range(func(_ int, group *Group) bool {
-				neededHeight = max(neededHeight, group.rawHeight())
-				return true
-			})
-
-			f.selector.Range(func(_ int, group *Group) bool {
-				group.WithHeight(min(neededHeight, msg.Height))
-				return true
-			})
+			f.updateHeight()
 		}
 
 	case tea.KeyPressMsg:
@@ -654,6 +648,15 @@ func (f *Form) Update(msg tea.Msg) (Model, tea.Cmd) {
 	m, cmd := group.Update(msg)
 	f.selector.Set(f.selector.Index(), m.(*Group))
 
+	// A dynamic title or description may have changed the height of the
+	// content, so the height of the form has to be recalculated.
+	if f.height == 0 {
+		switch msg.(type) {
+		case updateTitleMsg, updateDescriptionMsg, updatePlaceholderMsg:
+			f.updateHeight()
+		}
+	}
+
 	// A user input a key, this could hide or show other groups,
 	// let's update all of their positions.
 	switch msg.(type) {
@@ -662,6 +665,28 @@ func (f *Form) Update(msg tea.Msg) (Model, tea.Cmd) {
 	}
 
 	return f, cmd
+}
+
+// updateHeight calculates the height of the form based on the height of its
+// groups and applies it to them. The height of the form is limited by the
+// height of the terminal.
+func (f *Form) updateHeight() {
+	if f.windowHeight <= 0 {
+		return
+	}
+
+	// Calculate the needed height, which is the height of the tallest group,
+	// accounting for the width, wraps, etc.
+	neededHeight := 0
+	f.selector.Range(func(_ int, group *Group) bool {
+		neededHeight = max(neededHeight, group.rawHeight())
+		return true
+	})
+
+	f.selector.Range(func(_ int, group *Group) bool {
+		group.WithHeight(min(neededHeight, f.windowHeight))
+		return true
+	})
 }
 
 func (f *Form) isGroupHidden(group *Group) bool {
