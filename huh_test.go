@@ -517,6 +517,29 @@ func TestSelect(t *testing.T) {
 	}
 }
 
+func TestSelectGotoBottomUpdatesValue(t *testing.T) {
+	var v string
+	s := NewSelect[string]().
+		Options(NewOption("first", "a"), NewOption("last", "b")).
+		Value(&v)
+	s.WithKeyMap(NewDefaultKeyMap())
+	s.Focus()
+
+	if v != "a" {
+		t.Fatalf("initial bound value = %q, want a", v)
+	}
+
+	s.Update(tea.KeyPressMsg{Code: tea.KeyEnd})
+
+	hovered, ok := s.Hovered()
+	if !ok || hovered != "b" {
+		t.Fatalf("hovered = %q (ok=%v), want b", hovered, ok)
+	}
+	if v != "b" {
+		t.Fatalf("bound value = %q, want b after GotoBottom", v)
+	}
+}
+
 // doAllUpdates updates the form with the given command, then continues updating it with any resultant commands from the update until no more are returned.
 func doAllUpdates(f *Form, cmd tea.Cmd) {
 	if cmd == nil {
