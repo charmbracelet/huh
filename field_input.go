@@ -386,9 +386,19 @@ func (i *Input) View() string {
 	// however.
 	st := i.textinput.Styles()
 	st.Cursor.Color = styles.TextInput.Cursor.GetForeground()
-	st.Focused.Prompt = styles.TextInput.Prompt
-	st.Focused.Text = styles.TextInput.Text
-	st.Focused.Placeholder = styles.TextInput.Placeholder
+
+	// The text input paints from its own focus state, so the theme colours
+	// have to land on that state. Writing only Focused leaves a blurred
+	// field on the bubbles default grey.
+	if i.focused {
+		st.Focused.Prompt = styles.TextInput.Prompt
+		st.Focused.Text = styles.TextInput.Text
+		st.Focused.Placeholder = styles.TextInput.Placeholder
+	} else {
+		st.Blurred.Prompt = styles.TextInput.Prompt
+		st.Blurred.Text = styles.TextInput.Text
+		st.Blurred.Placeholder = styles.TextInput.Placeholder
+	}
 	i.textinput.SetStyles(st)
 
 	// Adjust text input size to its char limit if it fit in its width
