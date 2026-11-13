@@ -259,9 +259,9 @@ func ThemeBase16(isDark bool) *Styles {
 	t.Focused.FocusedButton = t.Focused.FocusedButton.Foreground(lipgloss.Color("7")).Background(lipgloss.Color("5"))
 	t.Focused.BlurredButton = t.Focused.BlurredButton.Foreground(lipgloss.Color("7")).Background(lipgloss.Color("0"))
 
-	t.Focused.TextInput.Cursor.Foreground(lipgloss.Color("5"))
-	t.Focused.TextInput.Placeholder.Foreground(lipgloss.Color("8"))
-	t.Focused.TextInput.Prompt.Foreground(lipgloss.Color("3"))
+	t.Focused.TextInput.Cursor = t.Focused.TextInput.Cursor.Foreground(lipgloss.Color("5"))
+	t.Focused.TextInput.Placeholder = t.Focused.TextInput.Placeholder.Foreground(lipgloss.Color("8"))
+	t.Focused.TextInput.Prompt = t.Focused.TextInput.Prompt.Foreground(lipgloss.Color("3"))
 
 	t.Blurred = t.Focused
 	t.Blurred.Base = t.Blurred.Base.BorderStyle(lipgloss.HiddenBorder())
