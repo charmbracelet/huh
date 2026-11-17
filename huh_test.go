@@ -1685,3 +1685,55 @@ func requireContains(tb testing.TB, s, subtr string) {
 }
 
 func viewModel(m Model) string { return ansi.Strip(m.View()) }
+
+func TestMultiSelectNavigateEmptyFilter(t *testing.T) {
+	field := NewMultiSelect[string]().Options(NewOptions("one", "two")...)
+	field.WithKeyMap(NewDefaultKeyMap())
+	field.Focus()
+
+	// Filter down to no matches, move down, then clear the filter again.
+	for _, msg := range []tea.Msg{
+		keypress('/'),
+		keypress('z'),
+		keypress('z'),
+		keypress('z'),
+		codeKeypress(tea.KeyDown),
+		codeKeypress(tea.KeyBackspace),
+		codeKeypress(tea.KeyBackspace),
+		codeKeypress(tea.KeyBackspace),
+		codeKeypress(tea.KeyEnter),
+	} {
+		field.Update(msg)
+	}
+
+	if field.cursor != 0 {
+		t.Fatalf("expected cursor to be 0 after the matches return, got %d", field.cursor)
+	}
+	if v, ok := field.Hovered(); !ok || v != "one" {
+		t.Fatalf("expected the first option to be hovered, got %q (%v)", v, ok)
+	}
+
+	field.Update(keypress(' '))
+	if got := field.GetValue().([]string); len(got) != 1 || got[0] != "one" {
+		t.Fatalf("expected [one] to be selected, got %v", got)
+	}
+}
+
+func TestMultiSelectNavigateNoOptions(t *testing.T) {
+	field := NewMultiSelect[string]()
+	field.WithKeyMap(NewDefaultKeyMap())
+	field.Focus()
+
+	for _, msg := range []tea.Msg{
+		codeKeypress(tea.KeyDown),
+		codeKeypress(tea.KeyEnd),
+		tea.KeyPressMsg{Code: 'd', Mod: tea.ModCtrl},
+		keypress(' '),
+	} {
+		field.Update(msg)
+	}
+
+	if field.cursor != 0 {
+		t.Fatalf("expected cursor to stay at 0 without options, got %d", field.cursor)
+	}
+}
