@@ -400,7 +400,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 				break
 			}
 
-			m.cursor = min(m.cursor+1, len(m.filteredOptions)-1)
+			m.cursor = max(min(m.cursor+1, len(m.filteredOptions)-1), 0)
 			m.ensureCursorVisible()
 		case key.Matches(msg, m.keymap.GotoTop):
 			if m.filtering {
@@ -412,15 +412,18 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 			if m.filtering {
 				break
 			}
-			m.cursor = len(m.filteredOptions) - 1
+			m.cursor = max(len(m.filteredOptions)-1, 0)
 			m.viewport.GotoBottom()
 		case key.Matches(msg, m.keymap.HalfPageUp):
 			m.cursor = max(m.cursor-m.viewport.Height()/2, 0)
 			m.ensureCursorVisible()
 		case key.Matches(msg, m.keymap.HalfPageDown):
-			m.cursor = min(m.cursor+m.viewport.Height()/2, len(m.filteredOptions)-1)
+			m.cursor = max(min(m.cursor+m.viewport.Height()/2, len(m.filteredOptions)-1), 0)
 			m.ensureCursorVisible()
 		case key.Matches(msg, m.keymap.Toggle) && !m.filtering:
+			if len(m.filteredOptions) == 0 {
+				break
+			}
 			for i, option := range m.options.val {
 				if option.Key == m.filteredOptions[m.cursor].Key {
 					if !m.options.val[m.cursor].selected && m.limit > 0 && m.numSelected() >= m.limit {
@@ -481,7 +484,7 @@ func (m *MultiSelect[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 				}
 			}
 			if len(m.filteredOptions) > 0 {
-				m.cursor = min(m.cursor, len(m.filteredOptions)-1)
+				m.cursor = ordered.Clamp(m.cursor, 0, len(m.filteredOptions)-1)
 			}
 		}
 		m.ensureCursorVisible()
