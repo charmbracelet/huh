@@ -817,6 +817,7 @@ func (s *Select[T]) WithKeyMap(k *KeyMap) Field {
 	s.keymap.Right.SetEnabled(s.inline)
 	s.keymap.Up.SetEnabled(!s.inline)
 	s.keymap.Down.SetEnabled(!s.inline)
+	s.setFiltering(s.filtering)
 	return s
 }
 

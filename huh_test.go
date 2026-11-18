@@ -517,6 +517,30 @@ func TestSelect(t *testing.T) {
 	}
 }
 
+func TestSelectFilteringTrueEscLeavesFilter(t *testing.T) {
+	var value string
+	field := NewSelect[string]().
+		Options(NewOptions("one", "two")...).
+		Value(&value).
+		Filtering(true)
+	f := NewForm(NewGroup(field))
+	f.Update(f.Init())
+
+	view := viewModel(f)
+	if !strings.Contains(view, "esc set filter") {
+		t.Errorf("expected help to show the Esc binding while filtering, got:\n%s", view)
+	}
+	if strings.Contains(view, "/ filter") {
+		t.Errorf("expected help not to show the / filter binding while filtering, got:\n%s", view)
+	}
+
+	f.Update(codeKeypress(tea.KeyEscape))
+	f.Update(keypress('j'))
+	if got, ok := field.Hovered(); !ok || got != "two" {
+		t.Errorf("after Esc and j, hovered %q, want two", got)
+	}
+}
+
 // doAllUpdates updates the form with the given command, then continues updating it with any resultant commands from the update until no more are returned.
 func doAllUpdates(f *Form, cmd tea.Cmd) {
 	if cmd == nil {
