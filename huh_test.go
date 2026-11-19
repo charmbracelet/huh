@@ -766,6 +766,82 @@ func TestSelectFilteringShowsMatchesAboveTheCursor(t *testing.T) {
 	}
 }
 
+func TestSelectNavigateEmptyFilter(t *testing.T) {
+	moves := []struct {
+		name string
+		key  tea.KeyPressMsg
+	}{
+		{"up", codeKeypress(tea.KeyUp)},
+		{"half-page-down", tea.KeyPressMsg(tea.Key{Code: 'd', Mod: tea.ModCtrl})},
+		{"down", codeKeypress(tea.KeyDown)},
+	}
+	navigation := []struct {
+		name     string
+		key      tea.KeyPressMsg
+		position FieldPosition
+		want     tea.Msg
+	}{
+		{"next", codeKeypress(tea.KeyTab), FieldPosition{Field: 1, LastField: 2}, nextFieldMsg{}},
+		{"prev", tea.KeyPressMsg(tea.Key{Code: tea.KeyTab, Mod: tea.ModShift}), FieldPosition{Field: 1, LastField: 2}, prevFieldMsg{}},
+		{"submit", codeKeypress(tea.KeyEnter), FieldPosition{}, nextFieldMsg{}},
+	}
+
+	for _, move := range moves {
+		for _, nav := range navigation {
+			t.Run(move.name+"/"+nav.name, func(t *testing.T) {
+				var value string
+				field := NewSelect[string]().Options(NewOptions("one", "two")...).Value(&value)
+				field.WithKeyMap(NewDefaultKeyMap())
+				field.WithPosition(nav.position)
+				field.Focus()
+
+				field.Update(keypress('/'))
+				field.Update(keypress('z'))
+				field.Update(move.key)
+				if field.selected < 0 {
+					t.Errorf("cursor moved below zero: %d", field.selected)
+				}
+				if got, ok := field.Hovered(); ok || got != "" {
+					t.Errorf("Hovered() = (%q, %t) with no matches, want (\"\", false)", got, ok)
+				}
+				if _, cmd := field.Update(nav.key); cmd != nil {
+					t.Fatalf("navigation with no matches returned %T and kept the stale value %q", cmd(), value)
+				}
+
+				field.Update(codeKeypress(tea.KeyBackspace))
+				if got, ok := field.Hovered(); !ok || got != "one" {
+					t.Fatalf("Hovered() = (%q, %t) after deleting the filter, want (\"one\", true)", got, ok)
+				}
+				field.Update(keypress('t'))
+				if got, ok := field.Hovered(); !ok || got != "two" {
+					t.Fatalf("Hovered() = (%q, %t) after filtering for a match, want (\"two\", true)", got, ok)
+				}
+				_, cmd := field.Update(nav.key)
+				if cmd == nil || cmd() != nav.want {
+					t.Errorf("navigation with a match did not return %T", nav.want)
+				}
+				if value != "two" {
+					t.Errorf("value after navigation = %q, want %q", value, "two")
+				}
+			})
+		}
+	}
+}
+
+func TestSelectNavigateNoOptions(t *testing.T) {
+	field := NewSelect[string]()
+	field.WithKeyMap(NewDefaultKeyMap())
+	field.Focus()
+
+	field.Update(codeKeypress(tea.KeyEnd))
+	if field.selected < 0 {
+		t.Errorf("End moved the cursor below zero: %d", field.selected)
+	}
+	if _, cmd := field.Update(codeKeypress(tea.KeyEnter)); cmd != nil {
+		t.Errorf("Enter with no options returned %T", cmd())
+	}
+}
+
 func TestSelectPageNavigation(t *testing.T) {
 	opts := NewOptions(
 		"Qux",

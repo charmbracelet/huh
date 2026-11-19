@@ -425,7 +425,7 @@ func (s *Select[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 			}
 			s.selected = s.selected - 1
 			if s.selected < 0 {
-				s.selected = len(s.filteredOptions) - 1
+				s.selected = max(0, len(s.filteredOptions)-1)
 				s.viewport.GotoBottom()
 			} else {
 				s.ensureCursorVisible()
@@ -442,14 +442,14 @@ func (s *Select[T]) Update(msg tea.Msg) (Model, tea.Cmd) {
 			if s.filtering {
 				break
 			}
-			s.selected = len(s.filteredOptions) - 1
+			s.selected = max(0, len(s.filteredOptions)-1)
 			s.viewport.GotoBottom()
 		case key.Matches(msg, s.keymap.HalfPageUp):
 			s.selected = max(s.selected-s.viewport.Height()/2, 0)
 			s.ensureCursorVisible()
 			s.updateValue()
 		case key.Matches(msg, s.keymap.HalfPageDown):
-			s.selected = min(s.selected+s.viewport.Height()/2, len(s.filteredOptions)-1)
+			s.selected = max(0, min(s.selected+s.viewport.Height()/2, len(s.filteredOptions)-1))
 			s.ensureCursorVisible()
 			s.updateValue()
 		case key.Matches(msg, s.keymap.Down, s.keymap.Right):
