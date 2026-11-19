@@ -10,7 +10,7 @@ type Model interface {
 	View() string
 }
 
-// ViewHook is a function that modifies a [tea.View].
+// ViewHook modifies a [tea.View] after its content has been populated.
 type ViewHook = func(tea.View) tea.View
 
 // ViewModel wraps a [Model] and [ViewHook].
@@ -30,10 +30,9 @@ func (w ViewModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // View implements [tea.Model].
 func (w ViewModel) View() tea.View {
-	var view tea.View
+	view := tea.NewView(w.Model.View())
 	if w.ViewHook != nil {
-		view = w.ViewHook(view)
+		return w.ViewHook(view)
 	}
-	view.SetContent(w.Model.View())
 	return view
 }
