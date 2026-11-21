@@ -135,7 +135,10 @@ func (s *Select[T]) TitleFunc(f func() string, bindings any) *Select[T] {
 
 // Filtering sets the filtering state of the select field.
 func (s *Select[T]) Filtering(filtering bool) *Select[T] {
-	s.filtering = filtering
+	// Keep the key bindings in sync even if a key map is assigned after
+	// this option is set (for example, when a form applies its default
+	// key map during construction).
+	s.setFiltering(filtering)
 	s.filter.Focus()
 	return s
 }
@@ -817,6 +820,9 @@ func (s *Select[T]) WithKeyMap(k *KeyMap) Field {
 	s.keymap.Right.SetEnabled(s.inline)
 	s.keymap.Up.SetEnabled(!s.inline)
 	s.keymap.Down.SetEnabled(!s.inline)
+	// Assigning the key map replaces its default binding states, so
+	// reconcile it with the initial filtering state set via Filtering(true).
+	s.setFiltering(s.filtering)
 	return s
 }
 
