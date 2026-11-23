@@ -1670,6 +1670,90 @@ func TestInputPasswordAccessible(t *testing.T) {
 	})
 }
 
+func TestSelectMaxHeight(t *testing.T) {
+	t.Run("wrapped options", func(t *testing.T) {
+		sel := NewSelect[string]().
+			Title("What now?").
+			Options(
+				NewOption("build: compile every package in the module and report what failed", "build"),
+				NewOption("test: run every test and say which ones did not run", "test"),
+				NewOption("ship: tag the commit and push the tag", "ship"),
+				NewOption("clean: remove what a build leaves behind", "clean"),
+			).
+			MaxHeight(24)
+		sel.WithWidth(40)
+
+		view := sel.View()
+		for _, want := range []string{"build:", "test:", "ship:", "clean:", "behind"} {
+			requireContains(t, view, want)
+		}
+	})
+
+	t.Run("short list does not pad empty lines", func(t *testing.T) {
+		sel := NewSelect[string]().
+			Title("Choose").
+			Options(
+				NewOption("Option 1", "1"),
+				NewOption("Option 2", "2"),
+			).
+			MaxHeight(10)
+		sel.WithWidth(40)
+
+		view := sel.View()
+		lines := strings.Split(strings.TrimRight(view, "\n"), "\n")
+		// Title (1 line) + 2 options (2 lines) = 3 lines total.
+		if len(lines) > 4 {
+			t.Fatalf("expected short list with MaxHeight(10) to not pad empty lines, got %d lines:\n%s", len(lines), view)
+		}
+	})
+
+	t.Run("capped at maxHeight", func(t *testing.T) {
+		opts := NewOptions("A", "B", "C", "D", "E", "F", "G", "H", "I", "J")
+		sel := NewSelect[string]().
+			Title("Choose").
+			Options(opts...).
+			MaxHeight(6)
+		sel.WithWidth(40)
+
+		view := sel.View()
+		h := lipgloss.Height(ansi.Strip(view))
+		if h > 6 {
+			t.Fatalf("expected view height <= 6, got %d:\n%s", h, view)
+		}
+	})
+}
+
+func TestMultiSelectMaxHeight(t *testing.T) {
+	t.Run("default height does not cut off options", func(t *testing.T) {
+		m := NewMultiSelect[string]().
+			Title("Choose items").
+			Options(
+				NewOption("Apple", "apple"),
+				NewOption("Banana", "banana"),
+				NewOption("Cherry", "cherry"),
+			)
+		m.WithWidth(40)
+
+		view := m.View()
+		requireContains(t, view, "Cherry")
+	})
+
+	t.Run("capped at maxHeight", func(t *testing.T) {
+		opts := NewOptions("A", "B", "C", "D", "E", "F", "G", "H", "I", "J")
+		m := NewMultiSelect[string]().
+			Title("Choose").
+			Options(opts...).
+			MaxHeight(6)
+		m.WithWidth(40)
+
+		view := m.View()
+		h := lipgloss.Height(ansi.Strip(view))
+		if h > 6 {
+			t.Fatalf("expected view height <= 6, got %d:\n%s", h, view)
+		}
+	})
+}
+
 func requireEqual[T comparable](tb testing.TB, a, b T) {
 	tb.Helper()
 	if a != b {

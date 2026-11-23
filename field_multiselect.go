@@ -47,6 +47,7 @@ type MultiSelect[T comparable] struct {
 	// options
 	width     int
 	height    int
+	maxHeight int
 	theme     Theme
 	hasDarkBg bool
 	keymap    MultiSelectKeyMap
@@ -163,7 +164,7 @@ func (m *MultiSelect[T]) OptionsFunc(f func() []Option[T], bindings any) *MultiS
 	m.filteredOptions = make([]Option[T], 0)
 	// If there is no height set, we should attach a static height since these
 	// options are possibly dynamic.
-	if m.height <= 0 {
+	if m.height <= 0 && m.maxHeight <= 0 {
 		m.height = defaultHeight
 		m.updateViewportSize()
 	}
@@ -207,6 +208,15 @@ func (m *MultiSelect[T]) Height(height int) *MultiSelect[T] {
 	// What we really want to do is set the height of the viewport, but we
 	// need a theme applied before we can calcualate its height.
 	m.height = height
+	m.updateViewportSize()
+	return m
+}
+
+// MaxHeight sets the maximum height of the multi-select field. The field will
+// be as tall as the options and titles require, up to at most maxHeight. If the
+// content exceeds maxHeight, the multi-select field will become scrollable.
+func (m *MultiSelect[T]) MaxHeight(height int) *MultiSelect[T] {
+	m.maxHeight = height
 	m.updateViewportSize()
 	return m
 }
@@ -501,17 +511,29 @@ func (m *MultiSelect[T]) updateViewportSize() {
 		yoffset += lipgloss.Height(ss)
 	}
 	v, _, _ := m.optionsView()
-	height := m.height
-	if height <= 0 {
-		height = lipgloss.Height(v)
+	contentHeight := lipgloss.Height(v)
+
+	if m.height > 0 {
+		h := m.height
+		if m.maxHeight > 0 {
+			h = min(h, m.maxHeight)
+		}
+		m.viewport.SetHeight(max(minHeight, h-yoffset))
+		m.ensureCursorVisible()
+	} else if m.maxHeight > 0 {
+		maxViewportHeight := max(minHeight, m.maxHeight-yoffset)
+		m.viewport.SetHeight(min(contentHeight, maxViewportHeight))
+		m.ensureCursorVisible()
+	} else {
+		m.viewport.SetHeight(contentHeight)
 	}
+
 	width := m.width
 	if m.width <= 0 {
 		width = lipgloss.Width(v)
 	}
 
 	m.viewport.SetWidth(width)
-	m.viewport.SetHeight(max(minHeight, height) - yoffset)
 }
 
 // numSelected returns the total number of selected options.
@@ -679,7 +701,12 @@ func (m *MultiSelect[T]) View() string {
 		sb.WriteString(m.descriptionView() + "\n")
 	}
 	sb.WriteString(m.viewport.View())
-	return styles.Base.Width(m.width).Height(m.height).
+
+	h := m.height
+	if m.maxHeight > 0 && h > 0 {
+		h = min(h, m.maxHeight)
+	}
+	return styles.Base.Width(m.width).Height(h).
 		Render(sb.String())
 }
 

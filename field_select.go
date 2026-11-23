@@ -52,6 +52,7 @@ type Select[T comparable] struct {
 	inline    bool
 	width     int
 	height    int
+	maxHeight int
 	theme     Theme
 	hasDarkBg bool
 	keymap    SelectKeyMap
@@ -231,7 +232,7 @@ func (s *Select[T]) OptionsFunc(f func() []Option[T], bindings any) *Select[T] {
 	s.options.bindings = bindings
 	// If there is no height set, we should attach a static height since these
 	// options are possibly dynamic.
-	if s.height <= 0 {
+	if s.height <= 0 && s.maxHeight <= 0 {
 		s.height = defaultHeight
 		s.updateViewportSize()
 	}
@@ -255,6 +256,15 @@ func (s *Select[T]) Inline(v bool) *Select[T] {
 // the height, the select field will become scrollable.
 func (s *Select[T]) Height(height int) *Select[T] {
 	s.height = height
+	s.updateViewportSize()
+	return s
+}
+
+// MaxHeight sets the maximum height of the select field. The select field will
+// be as tall as the options and titles require, up to at most maxHeight. If the
+// content exceeds maxHeight, the select field will become scrollable.
+func (s *Select[T]) MaxHeight(height int) *Select[T] {
+	s.maxHeight = height
 	s.updateViewportSize()
 	return s
 }
@@ -534,25 +544,35 @@ func (s *Select[T]) updateValue() {
 // updateViewportSize updates the viewport size according to the Height setting
 // on this select field.
 func (s *Select[T]) updateViewportSize() {
+	yoffset := 0
+	if ss := s.titleView(); ss != "" {
+		yoffset += lipgloss.Height(ss)
+	}
+	if ss := s.descriptionView(); ss != "" {
+		yoffset += lipgloss.Height(ss)
+	}
+
+	v, _, _ := s.optionsView()
+	contentHeight := lipgloss.Height(v)
+
 	if s.height > 0 {
-		yoffset := 0
-		if ss := s.titleView(); ss != "" {
-			yoffset += lipgloss.Height(ss)
+		h := s.height
+		if s.maxHeight > 0 {
+			h = min(h, s.maxHeight)
 		}
-		if ss := s.descriptionView(); ss != "" {
-			yoffset += lipgloss.Height(ss)
-		}
-		s.viewport.SetHeight(max(minHeight, s.height-yoffset))
+		s.viewport.SetHeight(max(minHeight, h-yoffset))
+		s.ensureCursorVisible()
+	} else if s.maxHeight > 0 {
+		maxViewportHeight := max(minHeight, s.maxHeight-yoffset)
+		s.viewport.SetHeight(min(contentHeight, maxViewportHeight))
 		s.ensureCursorVisible()
 	} else {
 		// If no height is set size the viewport to the number of options.
-		v, _, _ := s.optionsView()
-		s.viewport.SetHeight(lipgloss.Height(v))
+		s.viewport.SetHeight(contentHeight)
 	}
 	if s.width > 0 {
 		s.viewport.SetWidth(s.width)
 	} else {
-		v, _, _ := s.optionsView()
 		s.viewport.SetWidth(lipgloss.Width(v))
 	}
 }
@@ -723,7 +743,12 @@ func (s *Select[T]) View() string {
 		parts = append(parts, s.descriptionView())
 	}
 	parts = append(parts, s.viewport.View())
-	return styles.Base.Width(s.width).Height(s.height).
+
+	h := s.height
+	if s.maxHeight > 0 && h > 0 {
+		h = min(h, s.maxHeight)
+	}
+	return styles.Base.Width(s.width).Height(h).
 		Render(strings.Join(parts, "\n"))
 }
 
