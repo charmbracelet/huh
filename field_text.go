@@ -389,7 +389,7 @@ func (t *Text) View() string {
 		st.Blurred.Prompt = styles.TextInput.Prompt
 		st.Blurred.CursorLine = styles.TextInput.Text
 	}
-	st.Cursor.Color = styles.TextInput.Cursor.GetBackground()
+	st.Cursor.Color = styles.TextInput.Cursor.GetForeground()
 	t.textarea.SetStyles(st)
 
 	maxWidth := t.width - styles.Base.GetHorizontalFrameSize()
