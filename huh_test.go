@@ -1685,3 +1685,19 @@ func requireContains(tb testing.TB, s, subtr string) {
 }
 
 func viewModel(m Model) string { return ansi.Strip(m.View()) }
+
+func TestSelectFilteringTrueEscLeavesFilter(t *testing.T) {
+	// https://github.com/charmbracelet/huh/issues/854
+	var v string
+	s := NewSelect[string]().
+		Options(NewOptions("one", "two")...).
+		Value(&v).
+		Filtering(true)
+	s.WithKeyMap(NewDefaultKeyMap())
+	s.Focus()
+	s.Update(tea.KeyPressMsg(tea.Key{Code: tea.KeyEscape}))
+	s.Update(tea.KeyPressMsg(tea.Key{Text: "j", Code: 'j', ShiftedCode: 'j'}))
+	if h, _ := s.Hovered(); h != "two" {
+		t.Errorf("after Esc and j, hovered %q, want two", h)
+	}
+}

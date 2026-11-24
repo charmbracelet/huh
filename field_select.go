@@ -817,6 +817,11 @@ func (s *Select[T]) WithKeyMap(k *KeyMap) Field {
 	s.keymap.Right.SetEnabled(s.inline)
 	s.keymap.Up.SetEnabled(!s.inline)
 	s.keymap.Down.SetEnabled(!s.inline)
+	// The keymap replacement drops the binding states matching the current
+	// filtering state, so a field already filtering (for example from
+	// Filtering(true)) would keep the default bindings: Esc could not leave
+	// filter mode and the help line still offered to open the filter.
+	s.setFiltering(s.filtering)
 	return s
 }
 
