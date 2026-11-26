@@ -200,12 +200,12 @@ func (f *FilePicker) Init() tea.Cmd {
 
 // Update updates the file field.
 func (f *FilePicker) Update(msg tea.Msg) (Model, tea.Cmd) {
-	f.err = nil
-
 	switch msg := msg.(type) {
 	case tea.BackgroundColorMsg:
 		f.hasDarkBg = msg.IsDark()
 	case tea.KeyPressMsg:
+		f.err = nil
+
 		switch {
 		case key.Matches(msg, f.keymap.Open):
 			if f.picking {
@@ -215,9 +215,17 @@ func (f *FilePicker) Update(msg tea.Msg) (Model, tea.Cmd) {
 			return f, f.picker.Init()
 		case key.Matches(msg, f.keymap.Close):
 			f.setPicking(false)
+			f.err = f.validate(f.accessor.Get())
+			if f.err != nil {
+				return f, nil
+			}
 			return f, NextField
 		case key.Matches(msg, f.keymap.Next):
 			f.setPicking(false)
+			f.err = f.validate(f.accessor.Get())
+			if f.err != nil {
+				return f, nil
+			}
 			return f, NextField
 		case key.Matches(msg, f.keymap.Prev):
 			f.setPicking(false)
@@ -231,6 +239,10 @@ func (f *FilePicker) Update(msg tea.Msg) (Model, tea.Cmd) {
 	if didSelect {
 		f.accessor.Set(file)
 		f.setPicking(false)
+		f.err = f.validate(file)
+		if f.err != nil {
+			return f, nil
+		}
 		return f, NextField
 	}
 	didSelect, _ = f.picker.DidSelectDisabledFile(msg)
